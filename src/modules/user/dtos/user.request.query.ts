@@ -1,0 +1,19 @@
+// user.request.query.ts
+import extendedZod from "../../../shared/docs/dtoDocumenter";
+import { PaginationQueryDTO } from "../../../shared/dtos/commonDTO";
+
+export const UserRoleQueryDTO = extendedZod.object({
+	role: extendedZod.enum(["user", "admin"]).optional(),
+});
+
+/**
+ * Common user listing query
+ */
+export const ListUsersQueryDTO = PaginationQueryDTO.extend(
+	UserRoleQueryDTO.shape,
+).extend({
+	// I have added the defualt because, I think every API would need it's default
+	// for example you may fetch 8 comments easily, but not 8 posts, I am giving an example
+	page: extendedZod.string().default("1"),
+	limit: extendedZod.string().default("20"),
+});

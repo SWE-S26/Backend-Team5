@@ -1,0 +1,34 @@
+# DON'T TOUCH THIS FILE
+openapi: 3.0.0
+
+info:
+  title: Software Engineering API documentation
+  version: 1.0.0
+  description: |
+    Will comply with the standard HTTP status code, and standard naming conventions
+    References:
+    - [HTTP Status Code Reference](https://restfulapi.net/http-status-codes/)
+    - [API Naming Conventions](https://restfulapi.net/resource-naming/)
+
+# General tag definitions
+tags:
+  - name: Auth-Service (No JWT required)
+    description: Endpoints that do not require a JWT, like login or register
+
+# Global JWT requirement, it is not required for the Authentication Service, I
+# I manually remove it from the Authentication Service endpoints with JS
+security:
+  - bearerAuth: []
+
+# later we can add other security schemas, but for now this is good.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+# When we know the ip/URL of our server we will add a field to shit
+servers:
+  - url: http://localhost:4123
+    description: Local development server

@@ -1,0 +1,71 @@
+# 400   $ref: '#/components/responses/InvalidParameters'
+InvalidParameters:
+  description: A required parameter is missing in the request, or a something is wrong with the payload.
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          error:
+            type: string
+            example: "Invalid Payload"
+
+# 401   $ref: '#/components/responses/Unauthorized'
+Unauthorized:
+  description: Authorization token required or invalid
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          error:
+            type: string
+            example: "Authorization token required or expired"
+
+# 403   $ref: '#/components/responses/Forbidden'
+Forbidden:
+  description: Not enough permissions to access this resource
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          error:
+            type: string
+            example: "Not enough permissions to access this resource"
+
+# 404   $ref: '#/components/responses/NotFound'
+NotFound:
+  description: Property not found or not updated.
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          message:
+            type: string
+            example: "Property not found or not updated"
+
+# 500   $ref: '#/components/responses/ServerError'
+ServerError:
+  description: Internal Server Error
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          error:
+            type: string
+            example: "Internal server Error"
+
+# 503   $ref: '#/components/responses/ServiceUnavailable'
+ServiceUnavailable:
+  description: Service unavailable
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          error:
+            type: string
+            example: "Service unavailablee"

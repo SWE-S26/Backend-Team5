@@ -13,6 +13,11 @@ MSG_FILE="$1"
 
 COMMITTER_NAME=$(git config user.name)
 
+if [ -z "$COMMITTER_NAME" ]; then
+    printf "\n\x1b[31m Please configure your git user.name! So I can catch you later if you do something foolish. \x1b[0m\n\n"
+    exit 1
+fi
+
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 
 ORIGINAL_MSG=$(cat "$MSG_FILE")
