@@ -1,0 +1,18 @@
+#!/bin/sh
+
+bash "$(dirname "$0")/doc-printing.sh"
+
+echo "Running tests before push..."
+
+npm run tests
+STATUS=$?
+
+if [ $STATUS -ne 0 ]; then
+    cat "$(dirname "$0")/error-art.ans"
+    printf "\n\x1b[31m AAAYYYYYOOOOOOOOOOOOOO!!!!!!!!! WHO LET BRO COOK!? \x1b[0m\n\n"
+    echo "Tests failed. Push aborted. Fix your tests first!"
+    exit 1
+fi
+
+echo "Tests passed. Proceeding with push."
+exit 0
