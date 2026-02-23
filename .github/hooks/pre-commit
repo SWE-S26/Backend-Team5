@@ -1,3 +1,5 @@
 #!/bin/sh
 
 bash "$(dirname "$0")/doc-printing.sh"
+bash "$(dirname "$0")/perttier-formatting.sh"
+bash "$(dirname "$0")/type-checker.sh"

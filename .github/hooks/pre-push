@@ -16,10 +16,9 @@ fi
 
 if [ $STATUS -ne 0 ]; then
     printf "\n\x1b[31m AAAYYYYYOOOOOOOOOOOOOO!!!!!!!!! WHO LET BRO COOK!?\x1b[0m\n\n"
-    printf "\n\x1b[31m Looking at you $COMMITTER_NAME \x1b[0m\n\n"
+    printf "\n\x1b[31m I am watching you $COMMITTER_NAME \x1b[0m\n\n"
     cat "$(dirname "$0")/error-art.ans"
     printf "\n\x1b[31m Foolishness $COMMITTER_NAME, Foolishness.\x1b[0m\n\n"
-    echo "You really thought I'd let you push broken code?"
     printf "\x1b[34m You really thought I'd let you push broken code?\x1b[0m\n"
     exit 1
 fi
