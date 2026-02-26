@@ -2,4 +2,4 @@
 echo "Running type checker before commit..."
 npm run type-check
 
-echo "I think you are fine."
+printf "\x1b[34mI think you are fine.\x1b[0m\n"
