@@ -4,7 +4,7 @@ bash "$(dirname "$0")/doc-printing.sh"
 
 echo "Running tests before push..."
 
-npm run tests
+npm run test
 STATUS=$?
 
 COMMITTER_NAME=$(git config user.name)

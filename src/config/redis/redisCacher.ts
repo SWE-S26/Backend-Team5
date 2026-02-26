@@ -79,15 +79,6 @@ class RedisCacher {
     const keys = await this.client.keys(pattern);
     if (keys.length > 0) await this.client.del(keys);
   }
-
-  async exists(key: string): Promise<boolean> {
-    const result = await this.client.exists(key);
-    return result === 1;
-  }
-
-  async getTTL(key: string): Promise<number> {
-    return this.client.ttl(key);
-  }
 }
 
 /**

@@ -23,30 +23,3 @@ export type AuthEvent =
         email: string;
       };
     };
-
-// --- Order Events ---
-export type OrderEvent =
-  | {
-      type: 'order:placed';
-      payload: {
-        orderId: string;
-        userId: string;
-        items: { productId: string; quantity: number; price: number }[];
-        totalAmount: number;
-      };
-    }
-  | {
-      type: 'order:cancelled';
-      payload: {
-        orderId: string;
-        userId: string;
-        reason: string;
-      };
-    }
-  | {
-      type: 'order:fulfilled';
-      payload: {
-        orderId: string;
-        userId: string;
-      };
-    };
