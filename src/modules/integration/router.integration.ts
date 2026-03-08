@@ -1,15 +1,11 @@
-import { Router } from "express";
+import { Router } from 'express';
 const router = Router();
 
-import swaggerUi from "swagger-ui-express";
-import combinedSwaggerDoc from "./swagger.integration";
-router.use("/docs", swaggerUi.serve, swaggerUi.setup(combinedSwaggerDoc));
+import devSwagger from './documentationIntegrator/swagger.dev';
 
-import userRoutes from "../user/user.routes";
-router.use("/users", userRoutes);
+router.use(devSwagger);
 
-
-
-
+import userRoutes from '../user/user.routes';
+router.use('/users', userRoutes);
 
 export default router;

@@ -1,0 +1,14 @@
+# DELETE
+/api/tracks/id/{trackId}:
+  delete:
+    tags:
+      - Track Management
+    summary: Retrieve track(s) by audio ID
+    description: Returns track information associated with the provided audio ID.
+    parameters:
+      - name: trackId
+        in: path
+        required: true
+        description: The ID of the audio resource.
+        schema:
+          $ref: '#/components/schemas/Id'
