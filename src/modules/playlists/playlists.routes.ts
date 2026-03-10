@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { playlistsController } from './playlists.controller';
 
-export const playlistsRouter = Router();
+const router = Router();
 //TODO: const playlistsController = new PlaylistsController(/* TODO: inject service */);
 
 // playlistsRouter.get('/',      (req, res) => playlistsController.findAll(req, res));
@@ -10,3 +10,5 @@ export const playlistsRouter = Router();
 // playlistsRouter.put('/:id',   (req, res) => playlistsController.replace(req, res));
 // playlistsRouter.patch('/:id', (req, res) => playlistsController.update(req, res));
 // playlistsRouter.delete('/:id',(req, res) => playlistsController.remove(req, res));
+
+export default router;

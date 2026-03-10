@@ -1,6 +1,6 @@
 // user.request.query.ts
 import extendedZod from '../../../shared/docs/dtoDocumenter';
-import { PaginationQueryDto } from '../../../shared/dtos/commonDto';
+import { PaginationQueryDto } from '../../../shared/dtos/commonDTO';
 
 export const UserRoleQueryDTO = extendedZod.object({
   role: extendedZod.enum(['user', 'admin']).optional(),

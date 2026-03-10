@@ -1,5 +1,5 @@
 // user.request.params.ts
-import { idParamDto } from '../../../shared/dtos/commonDto';
+import { idParamDto } from '../../../shared/dtos/commonDTO';
 
 export const UserIdParamDTO = idParamDto.extend({});
 // to make a new copy, instead of refercing the shared variable use .extend()

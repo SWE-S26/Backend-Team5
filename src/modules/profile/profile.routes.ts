@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { profileController } from './profile.controller';
 
-export const profileRouter = Router();
+const router = Router();
 //TODO: const profileController = new ProfileController(/* TODO: inject service */);
 
 // profileRouter.get('/',      (req, res) => profileController.findAll(req, res));
@@ -10,3 +10,5 @@ export const profileRouter = Router();
 // profileRouter.put('/:id',   (req, res) => profileController.replace(req, res));
 // profileRouter.patch('/:id', (req, res) => profileController.update(req, res));
 // profileRouter.delete('/:id',(req, res) => profileController.remove(req, res));
+
+export default router;

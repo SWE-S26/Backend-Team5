@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { feedController } from './feed.controller';
 
-export const feedRouter = Router();
+const router = Router();
 //TODO: const feedController = new FeedController(/* TODO: inject service */);
 
 // feedRouter.get('/',      (req, res) => feedController.findAll(req, res));
@@ -10,3 +10,5 @@ export const feedRouter = Router();
 // feedRouter.put('/:id',   (req, res) => feedController.replace(req, res));
 // feedRouter.patch('/:id', (req, res) => feedController.update(req, res));
 // feedRouter.delete('/:id',(req, res) => feedController.remove(req, res));
+
+export default router;

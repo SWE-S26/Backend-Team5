@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { paymentController } from './payment.controller';
 
-export const paymentRouter = Router();
+const router = Router();
 //TODO: const paymentController = new PaymentController(/* TODO: inject service */);
 
 // paymentRouter.get('/',      (req, res) => paymentController.findAll(req, res));
@@ -10,3 +10,5 @@ export const paymentRouter = Router();
 // paymentRouter.put('/:id',   (req, res) => paymentController.replace(req, res));
 // paymentRouter.patch('/:id', (req, res) => paymentController.update(req, res));
 // paymentRouter.delete('/:id',(req, res) => paymentController.remove(req, res));
+
+export default router;

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { notificationsController } from './notifications.controller';
 
-export const notificationsRouter = Router();
+const router = Router();
 //TODO: const notificationsController = new NotificationsController(/* TODO: inject service */);
 
 // notificationsRouter.get('/',      (req, res) => notificationsController.findAll(req, res));
@@ -10,3 +10,5 @@ export const notificationsRouter = Router();
 // notificationsRouter.put('/:id',   (req, res) => notificationsController.replace(req, res));
 // notificationsRouter.patch('/:id', (req, res) => notificationsController.update(req, res));
 // notificationsRouter.delete('/:id',(req, res) => notificationsController.remove(req, res));
+
+export default router;

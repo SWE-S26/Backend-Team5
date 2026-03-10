@@ -8,7 +8,7 @@ export const PaginationQueryDto = extendedZod.object({
 
 /** @description - This is used when you want to add pagination for DTOs*/
 export const idParamDto = extendedZod.object({
-  id: extendedZod.string(),
+  id: extendedZod.mongoId(),
 });
 
 // ! remember to use .extend and not merge as merge is deprecated

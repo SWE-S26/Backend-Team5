@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { adminController } from './admin.controller';
 
-export const adminRouter = Router();
+const router = Router();
 //TODO: const adminController = new AdminController(/* TODO: inject service */);
 
 // adminRouter.get('/',      (req, res) => adminController.findAll(req, res));
@@ -10,3 +10,5 @@ export const adminRouter = Router();
 // adminRouter.put('/:id',   (req, res) => adminController.replace(req, res));
 // adminRouter.patch('/:id', (req, res) => adminController.update(req, res));
 // adminRouter.delete('/:id',(req, res) => adminController.remove(req, res));
+
+export default router;

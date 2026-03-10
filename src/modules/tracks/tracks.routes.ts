@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { tracksController } from './tracks.controller';
 
-export const tracksRouter = Router();
+const router = Router();
 //TODO: const tracksController = new TracksController(/* TODO: inject service */);
 
 // tracksRouter.get('/',      (req, res) => tracksController.findAll(req, res));
@@ -10,3 +10,5 @@ export const tracksRouter = Router();
 // tracksRouter.put('/:id',   (req, res) => tracksController.replace(req, res));
 // tracksRouter.patch('/:id', (req, res) => tracksController.update(req, res));
 // tracksRouter.delete('/:id',(req, res) => tracksController.remove(req, res));
+
+export default router;

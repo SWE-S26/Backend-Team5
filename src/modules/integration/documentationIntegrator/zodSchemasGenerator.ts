@@ -4,9 +4,21 @@ import {
   OpenApiGeneratorV3,
   OpenAPIRegistry,
 } from '@asteasolutions/zod-to-openapi';
+import { log } from '../../../shared/logger/logger';
 
 import userDocsRegistry from '../../user/user.registry';
-
+import authDocsRegistry from '../../auth/auth.registry';
+import adminDocsRegistry from '../../admin/admin.registry';
+import engagementDocsRegistry from '../../engagement/engagement.registry';
+import feedDocsRegistry from '../../feed/feed.registry';
+import followingDocsRegistry from '../../following/following.registry';
+import messagingDocsRegistry from '../../messaging/messaging.registry';
+import notificationsDocsRegistry from '../../notifications/notifications.registry';
+import paymentDocsRegistry from '../../payment/payment.registry';
+import playlistsDocsRegistry from '../../playlists/playlists.registry';
+import playbackDocsRegistry from '../../playback/playback.registry';
+import profileDocsRegistry from '../../profile/profile.registry';
+import tracksDocsRegistry from '../../tracks/tracks.registry';
 interface DocumentationRegistry {
   moduleName: string;
   registry: OpenAPIRegistry;
@@ -15,7 +27,21 @@ interface DocumentationRegistry {
   schemas: Record<string, any>;
 }
 
-const registries: DocumentationRegistry[] = [userDocsRegistry];
+const registries: DocumentationRegistry[] = [
+  userDocsRegistry,
+  authDocsRegistry,
+  adminDocsRegistry,
+  engagementDocsRegistry,
+  feedDocsRegistry,
+  followingDocsRegistry,
+  messagingDocsRegistry,
+  notificationsDocsRegistry,
+  paymentDocsRegistry,
+  playlistsDocsRegistry,
+  playbackDocsRegistry,
+  profileDocsRegistry,
+  tracksDocsRegistry,
+];
 
 const outputDir = path.resolve(__dirname, '..', '..');
 
@@ -44,7 +70,7 @@ for (const { moduleName, registry } of registries) {
     continue;
   }
 
-  console.log(outputDir);
+  // log(`Generating ${moduleName}Schemas.json...`, "info");
 
   const filePath = path.join(
     outputDir,
@@ -53,7 +79,7 @@ for (const { moduleName, registry } of registries) {
 
   fs.writeFileSync(filePath, JSON.stringify(schemas, null, 2));
 
-  console.log(`Generated ${moduleName}Schemas.json  @${outputDir}`);
+  // log(`Generated ${moduleName}Schemas.json  @${outputDir}`, "info");
 }
 
 export default allSchemas;

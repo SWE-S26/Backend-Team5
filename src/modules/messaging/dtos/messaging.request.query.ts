@@ -1,5 +1,5 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
-import { PaginationQueryDto } from '../../../shared/dtos/commonDto';
+import { PaginationQueryDto } from '../../../shared/dtos/commonDTO';
 
 export const MessagingRoleQueryDto = extendedZod.object({
   role: extendedZod.enum(['user', 'admin']).optional(),

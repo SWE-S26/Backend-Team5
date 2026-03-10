@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { playbackController } from './playback.controller';
 
-export const playbackRouter = Router();
+const router = Router();
 //TODO: const playbackController = new PlaybackController(/* TODO: inject service */);
 
 // playbackRouter.get('/',      (req, res) => playbackController.findAll(req, res));
@@ -10,3 +10,5 @@ export const playbackRouter = Router();
 // playbackRouter.put('/:id',   (req, res) => playbackController.replace(req, res));
 // playbackRouter.patch('/:id', (req, res) => playbackController.update(req, res));
 // playbackRouter.delete('/:id',(req, res) => playbackController.remove(req, res));
+
+export default router;
