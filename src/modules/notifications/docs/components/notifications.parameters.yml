@@ -1,1 +1,40 @@
-# OpenAPI parameter definitions for the notifications module, starting writing normally like paths
+NotificationIdParam:
+  name: notificationId
+  in: path
+  required: true
+  description: The unique identifier of the notification.
+  schema:
+    type: string
+    example: "ntf_789"
+
+NotificationsOffsetParam:
+  name: offset
+  in: query
+  required: false
+  description: Number of items to skip before returning results.
+  schema:
+    type: integer
+    minimum: 0
+    default: 0
+    example: 0
+
+NotificationsLimitParam:
+  name: limit
+  in: query
+  required: false
+  description: Number of results to return (max 50).
+  schema:
+    type: integer
+    minimum: 1
+    maximum: 50
+    default: 20
+    example: 20
+
+NotificationsReadFilterParam:
+  name: read
+  in: query
+  required: false
+  description: Filter by read state. Omit to return all notifications.
+  schema:
+    type: boolean
+    example: false

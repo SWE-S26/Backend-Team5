@@ -1,1 +1,127 @@
-# OpenAPI parameter definitions for the notifications module, starting writing normally like paths
+NotificationUserSnippet:
+  type: object
+  description: Minimal user info embedded inside a notification.
+  properties:
+    userId:
+      type: string
+      example: "usr_001"
+    displayName:
+      type: string
+      example: "Jane Smith"
+    avatarUrl:
+      type: string
+      format: uri
+      example: "https://cdn.example.com/avatars/usr_001.jpg"
+  required:
+    - userId
+    - displayName
+
+NotificationTarget:
+  type: object
+  description: The resource that was acted upon (track, comment, etc.). Null for new_follower activity type.
+  nullable: true
+  properties:
+    targetType:
+      type: string
+      enum:
+        - track
+        - comment
+        - playlist
+      example: "track"
+    targetId:
+      type: string
+      example: "trk_456"
+    title:
+      type: string
+      example: "My Awesome Track"
+  required:
+    - targetType
+    - targetId
+
+NotificationDTO:
+  type: object
+  description: A single notification delivered to a user. The activityType field indicates what happened.
+  properties:
+    notificationId:
+      type: string
+      example: "ntf_789"
+    to:
+      type: string
+      description: The userId of the notification recipient.
+      example: "usr_001"
+    read:
+      type: boolean
+      example: false
+    activityType:
+      type: string
+      enum:
+        - track_liked
+        - track_reposted
+        - new_follower
+        - new_comment
+        - comment_liked
+        - comment_reply
+      example: "track_liked"
+    actor:
+      $ref: "#/components/schemas/NotificationUserSnippet"
+    target:
+      $ref: "#/components/schemas/NotificationTarget"
+    createdAt:
+      type: string
+      format: date-time
+      example: "2025-01-15T12:00:00Z"
+  required:
+    - notificationId
+    - to
+    - read
+    - activityType
+    - actor
+    - createdAt
+
+NotificationListResponse:
+  type: object
+  properties:
+    total:
+      type: integer
+      example: 75
+    offset:
+      type: integer
+      example: 0
+    limit:
+      type: integer
+      example: 20
+    notifications:
+      type: array
+      items:
+        $ref: "#/components/schemas/NotificationDTO"
+  required:
+    - total
+    - offset
+    - limit
+    - notifications
+
+UnreadCountResponse:
+  type: object
+  properties:
+    unreadCount:
+      type: integer
+      example: 5
+  required:
+    - unreadCount
+
+MarkReadResponse:
+  type: object
+  properties:
+    notificationId:
+      type: string
+      example: "ntf_789"
+    read:
+      type: boolean
+      example: true
+    unreadCount:
+      type: integer
+      example: 4
+  required:
+    - notificationId
+    - read
+    - unreadCount

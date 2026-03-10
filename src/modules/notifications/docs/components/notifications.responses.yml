@@ -1,1 +1,1 @@
-# OpenAPI parameter definitions for the notifications module, starting writing normally like paths
+# Notifications module uses common responses (Unauthorized, Forbidden, NotFound, ServerError)

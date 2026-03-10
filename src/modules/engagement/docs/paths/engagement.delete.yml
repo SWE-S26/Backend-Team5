@@ -1,23 +1,31 @@
-# DELETE
-/api/engagement/example:
+# DELETE paths for engagement module
+
+/api/tracks/{trackId}/comments/{commentId}:
   delete:
     tags:
-      - engagement
-    summary: Get agent profile by ID.
-    description: Returns the agent profile associated with the provided ID.
+      - Comments
+    summary: Delete a comment.
+    description: Deletes a comment. The comment author or the track owner may delete it. Deleting a parent comment also removes all replies.
+    operationId: deleteComment
     parameters:
-      - $ref: '#/components/parameters/IdPathParam'
+      - $ref: "#/components/parameters/TrackIdParam"
+      - $ref: "#/components/parameters/CommentIdParam"
     responses:
-      204:
-        description: Successfully retrieved agent profile.
+      200:
+        description: Comment deleted successfully.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GetUserByIdResponseDTO'
-
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "Comment deleted successfully."
       401:
-        $ref: '#/components/responses/Unauthorized'
+        $ref: "#/components/responses/Unauthorized"
+      403:
+        $ref: "#/components/responses/Forbidden"
       404:
-        $ref: '#/components/responses/NotFound'
+        $ref: "#/components/responses/NotFound"
       500:
-        $ref: '#/components/responses/ServerError'
+        $ref: "#/components/responses/ServerError"

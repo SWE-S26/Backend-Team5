@@ -1,1 +1,1 @@
-# OpenAPI parameter definitions for the engagement module, starting writing normally like paths
+# Engagement module uses common responses (Unauthorized, Forbidden, NotFound, ServerError)

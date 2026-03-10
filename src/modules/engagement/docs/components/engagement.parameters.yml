@@ -1,1 +1,49 @@
-# OpenAPI parameter definitions for the engagement module, starting writing normally like paths
+TrackIdParam:
+  name: trackId
+  in: path
+  required: true
+  description: The unique identifier of the track.
+  schema:
+    type: string
+    example: "trk_456"
+
+CommentIdParam:
+  name: commentId
+  in: path
+  required: true
+  description: The unique identifier of the comment.
+  schema:
+    type: string
+    example: "cmt_001"
+
+PlaylistIdParam:
+  name: playlistId
+  in: path
+  required: true
+  description: The unique identifier of the playlist.
+  schema:
+    type: string
+    example: "pl_789"
+
+EngagementOffsetParam:
+  name: offset
+  in: query
+  required: false
+  description: Number of items to skip before returning results.
+  schema:
+    type: integer
+    minimum: 0
+    default: 0
+    example: 0
+
+EngagementLimitParam:
+  name: limit
+  in: query
+  required: false
+  description: Number of results to return (max 50).
+  schema:
+    type: integer
+    minimum: 1
+    maximum: 50
+    default: 20
+    example: 20

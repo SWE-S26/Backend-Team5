@@ -1,14 +1,2 @@
-import extendedZod from '../../../shared/docs/dtoDocumenter';
-export const CreateNotificationsRequestBodyDTO = extendedZod
-  .object({
-    email: extendedZod.string().email(),
-    password: extendedZod.string().min(6),
-    name: extendedZod.string().min(2),
-  })
-  .openapi('CreateNotificationsRequest', {
-    example: {
-      email: 'john.doe@example.com',
-      password: 'secret123',
-      name: 'John Doe',
-    },
-  });
+// Notifications module has no request body DTOs.
+// All operations use path parameters or query parameters only.
