@@ -1,23 +1,69 @@
-# GET
-/api/profile/example:
-  get:
-    tags:
-      - profile
-    summary: Get agent profile by ID.
-    description: Returns the agent profile associated with the provided ID.
-    parameters:
-      - $ref: '#/components/parameters/IdPathParam'
-    responses:
-      200:
-        description: Successfully retrieved agent profile.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetUserByIdResponseDTO'
-
-      401:
-        $ref: '#/components/responses/Unauthorized'
-      404:
-        $ref: '#/components/responses/NotFound'
-      500:
-        $ref: '#/components/responses/ServerError'
+  /profile/{userId}:
+    get:
+      tags:
+        - profile
+      summary: Get user profile
+      description: Returns profile information of a specific user. If the profile is private, limited information may be returned.
+      operationId: getUserProfile
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: Unique identifier of the user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: Invalid user ID supplied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidId:
+                  value:
+                    success: false
+                    message: "Invalid user ID"
+                    code: 400
+        '401':
+          description: Unauthorized — missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  value:
+                    success: false
+                    message: "Unauthorized"
+                    code: 401
+        '403':
+          description: Profile is private
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                private:
+                  value:
+                    success: false
+                    message: "Profile is private"
+                    code: 403
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    success: false
+                    message: "User not found"
+                    code: 404

@@ -1,23 +1,57 @@
-# PATCH
-/api/profile/example:
-  patch:
-    tags:
-      - profile
-    summary: patch agent profile by ID.
-    description: Returns the agent profile associated with the provided ID.
-    parameters:
-      - $ref: '#/components/parameters/IdPathParam'
-    responses:
-      200:
-        description: Successfully retrieved agent profile.
+  /profile:
+    patch:
+      tags:
+        - profile
+      summary: Update user profile
+      description: Allows updating one or more fields of the authenticated user's profile. Only the provided fields will be updated.
+      operationId: updateProfile
+      requestBody:
+        description: Fields to update
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GetUserByIdResponseDTO'
-
-      401:
-        $ref: '#/components/responses/Unauthorized'
-      404:
-        $ref: '#/components/responses/NotFound'
-      500:
-        $ref: '#/components/responses/ServerError'
+              $ref: '#/components/schemas/ProfileUpdate'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidRequest:
+                  value:
+                    success: false
+                    message: "Invalid request"
+                    code: 400
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  value:
+                    success: false
+                    message: "Unauthorized"
+                    code: 401
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validationError:
+                  value:
+                    success: false
+                    message: "Validation error"
+                    code: 422
