@@ -1,10 +1,23 @@
-import { overwrite } from 'zod';
 import cloudinary from '../config/cloudinary';
 
+export enum ImageFolder {
+  PROFILE = 'profile',
+  AUDIO = 'audio',
+  PLAYLIST = 'playlist',
+}
+
+interface CloudinaryUploadResult {
+  url: string;
+  publicId: string;
+}
+
 export class CloudinaryService {
-  static async uploadImage(filePath: string) {
+  static async uploadImage(
+    filePath: string,
+    folder: ImageFolder,
+  ): Promise<CloudinaryUploadResult> {
     const options = {
-      folder: 'images',
+      folder,
       use_filename: true,
       unique_filename: true,
       overwrite: false,
@@ -16,12 +29,9 @@ export class CloudinaryService {
     };
   }
 
-  static async deleteFile(
-    publicId: string,
-    resource_type: 'image' | 'video' = 'image',
-  ) {
+  static async deleteFile(publicId: string) {
     const options = {
-      resource_type: resource_type,
+      resource_type: 'image',
       invalidate: true,
     };
     await cloudinary.uploader.destroy(publicId, options);
