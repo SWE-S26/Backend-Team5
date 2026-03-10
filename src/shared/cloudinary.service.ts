@@ -16,21 +16,14 @@ export class CloudinaryService {
     };
   }
 
-  static async uploadAudio(filePath: string) {
+  static async deleteFile(
+    publicId: string,
+    resource_type: 'image' | 'video' = 'image',
+  ) {
     const options = {
-      folder: 'audios',
-      resourse_type: 'video',
-      use_filename: true,
-      unique_filename: true,
-      overwrite: false,
-      format: 'mp3',
+      resource_type: resource_type,
+      invalidate: true,
     };
-    const result = await cloudinary.uploader.upload(filePath, options);
-
-    return {
-      url: result.secure_url,
-      duration: result.audio_duration,
-      publicId: result.public_id,
-    };
+    await cloudinary.uploader.destroy(publicId, options);
   }
 }
