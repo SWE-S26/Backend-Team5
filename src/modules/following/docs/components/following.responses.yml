@@ -1,1 +1,21 @@
 # OpenAPI parameter definitions for the following module, starting writing normally like paths
+
+    ActionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        user:
+          $ref: '#/components/schemas/UserSummary'
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+        code:
+          type: integer

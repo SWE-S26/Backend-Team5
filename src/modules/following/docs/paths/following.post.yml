@@ -1,23 +1,234 @@
-# POST
-/api/following/example:
+api/social/follow/{userId}:
   post:
     tags:
-      - following
-    summary: create agent profile by ID.
-    description: Returns the agent profile associated with the provided ID.
+      - social
+    summary: Follow a user
+    description: Authenticated user follows another user
+    operationId: followUser
     parameters:
-      - $ref: '#/components/parameters/IdPathParam'
+      - name: userId
+        in: path
+        required: true
+        description: User ID to follow
+        schema:
+          type: string
     responses:
-      201:
-        description: Successfully created agent profile.
+      '200':
+        description: Follow successful
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GetUserByIdResponseDTO'
+              $ref: '#/components/schemas/ActionResponse'
+      '400':
+        description: Invalid user ID
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              invalidId:
+                value:
+                  success: false
+                  message: "Invalid user ID"
+                  code: 400
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              unauthorized:
+                value:
+                  success: false
+                  message: "Unauthorized"
+                  code: 401
+      '404':
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              notFound:
+                value:
+                  success: false
+                  message: "User not found"
+                  code: 404
 
-      401:
-        $ref: '#/components/responses/Unauthorized'
-      404:
-        $ref: '#/components/responses/NotFound'
-      500:
-        $ref: '#/components/responses/ServerError'
+# Unfollow a user
+api/social/unfollow/{userId}:
+  post:
+    tags:
+      - social
+    summary: Unfollow a user
+    description: Authenticated user unfollows another user
+    operationId: unfollowUser
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: User ID to unfollow
+        schema:
+          type: string
+    responses:
+      '200':
+        description: Unfollow successful
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActionResponse'
+      '400':
+        description: Invalid user ID
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              invalidId:
+                value:
+                  success: false
+                  message: "Invalid user ID"
+                  code: 400
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              unauthorized:
+                value:
+                  success: false
+                  message: "Unauthorized"
+                  code: 401
+      '404':
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              notFound:
+                value:
+                  success: false
+                  message: "User not found"
+                  code: 404
+
+
+api/social/block/{userId}:
+  post:
+    tags:
+      - social
+    summary: Block a user
+    description: Authenticated user blocks another user
+    operationId: blockUser
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: User ID to block
+        schema:
+          type: string
+    responses:
+      '200':
+        description: User blocked
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActionResponse'
+      '400':
+        description: Invalid user ID
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              invalidId:
+                value:
+                  success: false
+                  message: "Invalid user ID"
+                  code: 400
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              unauthorized:
+                value:
+                  success: false
+                  message: "Unauthorized"
+                  code: 401
+      '404':
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              notFound:
+                value:
+                  success: false
+                  message: "User not found"
+                  code: 404
+
+# Unblock a user
+api/social/unblock/{userId}:
+  post:
+    tags:
+      - social
+    summary: Unblock a user
+    description: Authenticated user unblocks another user
+    operationId: unblockUser
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: User ID to unblock
+        schema:
+          type: string
+    responses:
+      '200':
+        description: User unblocked
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActionResponse'
+      '400':
+        description: Invalid user ID
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              invalidId:
+                value:
+                  success: false
+                  message: "Invalid user ID"
+                  code: 400
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              unauthorized:
+                value:
+                  success: false
+                  message: "Unauthorized"
+                  code: 401
+      '404':
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              notFound:
+                value:
+                  success: false
+                  message: "User not found"
+                  code: 404

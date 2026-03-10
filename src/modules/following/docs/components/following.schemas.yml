@@ -1,1 +1,15 @@
 # OpenAPI parameter definitions for the following module, starting writing normally like paths
+
+    UserSummary:
+      type: object
+      properties:
+        user_id:
+          type: string
+        display_name:
+          type: string
+        profile_img_link:
+          type: string
+          format: uri
+        track_count:
+          type: integer
+          description: Number of tracks uploaded by the user
