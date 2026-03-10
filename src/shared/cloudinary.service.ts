@@ -29,11 +29,12 @@ export class CloudinaryService {
     };
   }
 
-  static async deleteFile(publicId: string) {
+  static async deleteImage(publicId: string): Promise<{ result: string }> {
     const options = {
       resource_type: 'image',
       invalidate: true,
     };
-    await cloudinary.uploader.destroy(publicId, options);
+    const result = await cloudinary.uploader.destroy(publicId, options);
+    return result;
   }
 }
