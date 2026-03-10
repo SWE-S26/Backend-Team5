@@ -1,23 +1,44 @@
-# DELETE
-/api/feed/example:
-  delete:
-    tags:
-      - feed
-    summary: Get agent profile by ID.
-    description: Returns the agent profile associated with the provided ID.
-    parameters:
-      - $ref: '#/components/parameters/IdPathParam'
-    responses:
-      204:
-        description: Successfully retrieved agent profile.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetUserByIdResponseDTO'
+  api/search/history:
+    delete:
+      tags:
+        - search
+      summary: Clear search history
+      description: Deletes all search history items for the authenticated user.
+      responses:
+        '204':
+          description: Search history cleared
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-      401:
-        $ref: '#/components/responses/Unauthorized'
-      404:
-        $ref: '#/components/responses/NotFound'
-      500:
-        $ref: '#/components/responses/ServerError'
+  api/search/history/{historyId}:
+    delete:
+      tags:
+        - search
+      summary: Delete search history item
+      description: Deletes a specific item from the user's search history.
+      parameters:
+        - name: historyId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Item deleted successfully
+        '404':
+          description: History item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+

@@ -1,23 +1,250 @@
-# GET
-/api/feed/example:
-  get:
-    tags:
-      - feed
-    summary: Get agent profile by ID.
-    description: Returns the agent profile associated with the provided ID.
-    parameters:
-      - $ref: '#/components/parameters/IdPathParam'
-    responses:
-      200:
-        description: Successfully retrieved agent profile.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetUserByIdResponseDTO'
+  api/feed:
+    get:
+      tags:
+        - feed
+      summary: Get user activity feed
+      description: Returns chronological feed of new tracks from followed artists
+      operationId: getUserFeed
+      parameters:
+        - $ref: '#/components/parameters/OffsetParam'
+        - $ref: '#/components/parameters/LimitParam' 
+      responses:
+        '200':
+          description: Feed retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  offset:
+                    type: integer
+                  limit:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TrackSummary'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-      401:
-        $ref: '#/components/responses/Unauthorized'
-      404:
-        $ref: '#/components/responses/NotFound'
-      500:
-        $ref: '#/components/responses/ServerError'
+  # Global Search
+  api/search:
+    get:
+      tags:
+        - search
+      summary: Global search
+      description: Search across Tracks, Users, Playlists, and Albums
+      operationId: globalSearch
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Keyword for search
+          schema:
+            type: string
+  
+        - $ref: '#/components/parameters/OffsetParam'
+        - $ref: '#/components/parameters/LimitParam'
+  
+        - name: type
+          in: query
+          required: false
+          description: |
+            Filter by resource type.
+            If omitted or set to "everything", returns limited preview per category.
+            If specific type is provided, pagination applies to that type only.
+          schema:
+            type: string
+            enum: [everything, track, user, playlist, album]
+  
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                
+                  tracksCount:
+                    type: integer
+                    description: Total number of tracks matching the query
+  
+                  usersCount:
+                    type: integer
+                    description: Total number of users matching the query
+  
+                  playlistsCount:
+                    type: integer
+                    description: Total number of playlists matching the query
+  
+                  albumsCount:
+                    type: integer
+                    description: Total number of albums matching the query
+                    
+                  tracks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TrackSummary'
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserSummary'
+                  playlists:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PlaylistSummary'
+                  albums:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AlbumSummary'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  
+  
+  # Search Suggestions
+  api/search/suggestions:
+    get:
+      tags:
+        - search
+      summary: Search suggestions
+      description: Returns autocomplete suggestions while the user types
+      operationId: getSearchSuggestions
+  
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Partial search keyword
+          schema:
+            type: string
+            minLength: 1
+  
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of suggestions per category
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10
+            default: 9
+  
+      responses:
+        '200':
+          description: Suggestions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  queries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/QuerySuggestion'
+                  tracks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TrackSuggestion'
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserSuggestion'
+                  playlists:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PlaylistSuggestion'
+                  albums:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AlbumSuggestion'
+                additionalProperties: false
+  
+        '400':
+          description: Invalid search query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidQuery:
+                  value:
+                    success: false
+                    message: "Query parameter 'q' must not be empty"
+                    code: 400
+  
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  api/search/history:
+    get:
+      tags:
+        - search
+      summary: Get search history
+      description: Returns the authenticated user's recent search history.
+      responses:
+        '200':
+          description: Search history retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SearchHistoryItem'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  api/trending:
+    get:
+      tags:
+        - feed
+      summary: Get trending tracks
+      description: Returns top tracks based on recent plays and engagement
+      operationId: getTrendingTracks
+      parameters:
+        - $ref: '#/components/parameters/OffsetParam'
+        - $ref: '#/components/parameters/LimitParam'      
+      responses:
+        '200':
+          description: Trending tracks retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  offset:
+                    type: integer
+                  limit:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TrackSummary'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'             

@@ -13,3 +13,22 @@
         track_count:
           type: integer
           description: Number of tracks uploaded by the user
+    ActionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        user:
+          $ref: '#/components/schemas/UserSummary'
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+        code:
+          type: integer          

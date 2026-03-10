@@ -1,23 +1,32 @@
-# POST
-/api/feed/example:
-  post:
-    tags:
-      - feed
-    summary: create agent profile by ID.
-    description: Returns the agent profile associated with the provided ID.
-    parameters:
-      - $ref: '#/components/parameters/IdPathParam'
-    responses:
-      201:
-        description: Successfully created agent profile.
+  api/search/history:
+    post:
+      tags:
+        - search
+      summary: Add item to search history
+      description: Adds a clicked search result to the authenticated user's search history.
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GetUserByIdResponseDTO'
-
-      401:
-        $ref: '#/components/responses/Unauthorized'
-      404:
-        $ref: '#/components/responses/NotFound'
-      500:
-        $ref: '#/components/responses/ServerError'
+              $ref: '#/components/schemas/SearchHistoryCreate'
+      responses:
+        '201':
+          description: Item added to history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchHistoryItem'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  
