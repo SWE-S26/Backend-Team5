@@ -1,23 +1,98 @@
-# GET
-/api/engagement/example:
+# GET paths for engagement module
+
+/api/tracks/{trackId}/likes:
   get:
     tags:
-      - engagement
-    summary: Get agent profile by ID.
-    description: Returns the agent profile associated with the provided ID.
+      - Likes
+    summary: Get users who liked a track.
+    description: Returns a paginated list of users who liked the given track. Public endpoint — no authentication required.
+    operationId: getTrackLikers
     parameters:
-      - $ref: '#/components/parameters/IdPathParam'
+      - $ref: "#/components/parameters/TrackIdParam"
+      - $ref: "#/components/parameters/EngagementOffsetParam"
+      - $ref: "#/components/parameters/EngagementLimitParam"
     responses:
       200:
-        description: Successfully retrieved agent profile.
+        description: Paginated list of users who liked the track.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GetUserByIdResponseDTO'
-
-      401:
-        $ref: '#/components/responses/Unauthorized'
+              $ref: "#/components/schemas/UserEngagementListResponse"
       404:
-        $ref: '#/components/responses/NotFound'
+        $ref: "#/components/responses/NotFound"
       500:
-        $ref: '#/components/responses/ServerError'
+        $ref: "#/components/responses/ServerError"
+    security: []
+
+/api/tracks/{trackId}/reposts:
+  get:
+    tags:
+      - Reposts
+    summary: Get users who reposted a track.
+    description: Returns a paginated list of users who reposted the given track. Public endpoint — no authentication required.
+    operationId: getTrackReposters
+    parameters:
+      - $ref: "#/components/parameters/TrackIdParam"
+      - $ref: "#/components/parameters/EngagementOffsetParam"
+      - $ref: "#/components/parameters/EngagementLimitParam"
+    responses:
+      200:
+        description: Paginated list of users who reposted the track.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserEngagementListResponse"
+      404:
+        $ref: "#/components/responses/NotFound"
+      500:
+        $ref: "#/components/responses/ServerError"
+    security: []
+
+/api/tracks/{trackId}/comments:
+  get:
+    tags:
+      - Comments
+    summary: Get top-level comments for a track.
+    description: Returns a paginated list of top-level comments ordered by created_at descending. Public endpoint — no authentication required.
+    operationId: getTrackComments
+    parameters:
+      - $ref: "#/components/parameters/TrackIdParam"
+      - $ref: "#/components/parameters/EngagementOffsetParam"
+      - $ref: "#/components/parameters/EngagementLimitParam"
+    responses:
+      200:
+        description: Paginated list of top-level comments.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentListResponse"
+      404:
+        $ref: "#/components/responses/NotFound"
+      500:
+        $ref: "#/components/responses/ServerError"
+    security: []
+
+/api/tracks/{trackId}/comments/{commentId}/replies:
+  get:
+    tags:
+      - Comments
+    summary: Get replies for a comment.
+    description: Returns a paginated list of replies for a specific top-level comment, ordered by created_at ascending. Public endpoint — no authentication required.
+    operationId: getCommentReplies
+    parameters:
+      - $ref: "#/components/parameters/TrackIdParam"
+      - $ref: "#/components/parameters/CommentIdParam"
+      - $ref: "#/components/parameters/EngagementOffsetParam"
+      - $ref: "#/components/parameters/EngagementLimitParam"
+    responses:
+      200:
+        description: Paginated list of replies.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReplyListResponse"
+      404:
+        $ref: "#/components/responses/NotFound"
+      500:
+        $ref: "#/components/responses/ServerError"
+    security: []

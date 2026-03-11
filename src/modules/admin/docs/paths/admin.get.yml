@@ -1,23 +1,207 @@
-# GET
-/api/admin/example:
+# GET paths for admin module
+
+/api/admin/users:
   get:
     tags:
-      - admin
-    summary: Get agent profile by ID.
-    description: Returns the agent profile associated with the provided ID.
+      - Admin Users
+    summary: List all users.
+    description: Returns a paginated list of all registered users. Supports filtering by role, subscription type, and suspended state. Admin only.
+    operationId: adminListUsers
     parameters:
-      - $ref: '#/components/parameters/IdPathParam'
+      - $ref: "#/components/parameters/AdminOffsetParam"
+      - $ref: "#/components/parameters/AdminLimitParam"
+      - name: role
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+            - user
+            - artist
+            - admin
+      - name: suspended
+        in: query
+        required: false
+        schema:
+          type: boolean
     responses:
       200:
-        description: Successfully retrieved agent profile.
+        description: Paginated list of users.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GetUserByIdResponseDTO'
-
+              $ref: "#/components/schemas/AdminUserListResponse"
       401:
-        $ref: '#/components/responses/Unauthorized'
-      404:
-        $ref: '#/components/responses/NotFound'
+        $ref: "#/components/responses/Unauthorized"
+      403:
+        $ref: "#/components/responses/Forbidden"
       500:
-        $ref: '#/components/responses/ServerError'
+        $ref: "#/components/responses/ServerError"
+
+/api/admin/reports:
+  get:
+    tags:
+      - Admin Reports
+    summary: List all reports.
+    description: Returns a paginated list of all submitted reports. Supports filtering by status, complaint type, and violator type. Admin only.
+    operationId: adminListReports
+    parameters:
+      - $ref: "#/components/parameters/AdminOffsetParam"
+      - $ref: "#/components/parameters/AdminLimitParam"
+      - name: status
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+            - pending
+            - resolved
+            - dismissed
+      - name: complaintType
+        in: query
+        required: false
+        schema:
+          type: string
+    responses:
+      200:
+        description: Paginated list of reports.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportListResponse"
+      401:
+        $ref: "#/components/responses/Unauthorized"
+      403:
+        $ref: "#/components/responses/Forbidden"
+      500:
+        $ref: "#/components/responses/ServerError"
+
+/api/admin/reports/{reportId}:
+  get:
+    tags:
+      - Admin Reports
+    summary: Get a single report.
+    description: Returns the full detail of a specific report. Admin only.
+    operationId: adminGetReport
+    parameters:
+      - $ref: "#/components/parameters/AdminReportIdParam"
+    responses:
+      200:
+        description: Report details.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Report"
+      401:
+        $ref: "#/components/responses/Unauthorized"
+      403:
+        $ref: "#/components/responses/Forbidden"
+      404:
+        $ref: "#/components/responses/NotFound"
+      500:
+        $ref: "#/components/responses/ServerError"
+
+/api/admin/tracks:
+  get:
+    tags:
+      - Admin Tracks
+    summary: List all tracks.
+    description: Returns a paginated list of all tracks on the platform. Supports filtering by visibility state and genre. Admin only.
+    operationId: adminListTracks
+    parameters:
+      - $ref: "#/components/parameters/AdminOffsetParam"
+      - $ref: "#/components/parameters/AdminLimitParam"
+      - name: hidden
+        in: query
+        required: false
+        schema:
+          type: boolean
+      - name: genre
+        in: query
+        required: false
+        schema:
+          type: string
+    responses:
+      200:
+        description: Paginated list of tracks.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminTrackListResponse"
+      401:
+        $ref: "#/components/responses/Unauthorized"
+      403:
+        $ref: "#/components/responses/Forbidden"
+      500:
+        $ref: "#/components/responses/ServerError"
+
+/api/artist/analytics/overview:
+  get:
+    tags:
+      - Admin Analytics
+    summary: Artist's own stats overview.
+    description: Returns an overview of the authenticated artist's performance stats. Requires Artist role with Pro subscription.
+    operationId: getArtistAnalyticsOverview
+    parameters:
+      - name: period
+        in: query
+        required: false
+        description: Time period for the stats (e.g., last_7_days, last_30_days, all_time).
+        schema:
+          type: string
+          example: "last_30_days"
+    responses:
+      200:
+        description: Artist analytics overview.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArtistAnalyticsOverviewResponse"
+      401:
+        $ref: "#/components/responses/Unauthorized"
+      403:
+        $ref: "#/components/responses/Forbidden"
+      500:
+        $ref: "#/components/responses/ServerError"
+
+/api/artist/analytics/play-through-rate:
+  get:
+    tags:
+      - Admin Analytics
+    summary: Artist's play-through rate per track.
+    description: Returns the average play-through rate across all tracks and per-track breakdowns. Requires Artist role with Pro subscription.
+    operationId: getArtistPlaythroughRate
+    responses:
+      200:
+        description: Play-through rate data.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArtistPlaythroughRateResponse"
+      401:
+        $ref: "#/components/responses/Unauthorized"
+      403:
+        $ref: "#/components/responses/Forbidden"
+      500:
+        $ref: "#/components/responses/ServerError"
+
+/api/artist/analytics/storage:
+  get:
+    tags:
+      - Admin Analytics
+    summary: Artist's storage usage.
+    description: Returns the storage usage statistics for the authenticated artist. Requires Artist role with Pro subscription.
+    operationId: getArtistStorageUsage
+    responses:
+      200:
+        description: Storage usage data.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArtistStorageResponse"
+      401:
+        $ref: "#/components/responses/Unauthorized"
+      403:
+        $ref: "#/components/responses/Forbidden"
+      500:
+        $ref: "#/components/responses/ServerError"

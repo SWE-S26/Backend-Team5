@@ -1,14 +1,24 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
-export const CreateEngagementRequestBodyDTO = extendedZod
+
+export const CreateCommentRequestBodyDTO = extendedZod
   .object({
-    email: extendedZod.string().email(),
-    password: extendedZod.string().min(6),
-    name: extendedZod.string().min(2),
+    content: extendedZod.string().max(500),
+    timestamp: extendedZod.number().min(0).optional(),
+    parentCommentId: extendedZod.string().optional(),
   })
-  .openapi('CreateEngagementRequest', {
+  .openapi('CreateCommentRequest', {
     example: {
-      email: 'john.doe@example.com',
-      password: 'secret123',
-      name: 'John Doe',
+      content: 'Great track!',
+      timestamp: 42.5,
+    },
+  });
+
+export const RepostRequestBodyDTO = extendedZod
+  .object({
+    caption: extendedZod.string().max(280).optional(),
+  })
+  .openapi('RepostRequest', {
+    example: {
+      caption: 'Love this track!',
     },
   });
