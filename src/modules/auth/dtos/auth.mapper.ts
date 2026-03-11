@@ -1,13 +1,10 @@
-import { AuthRequestDto } from './auth.request';
-import { AuthResponseDto } from './auth.response';
-
 export class AuthMapper {
-  static toResponse(entity: any): AuthResponseDto {
+  static toResponse(entity: any): any {
     // TODO: map entity fields to response DTO
-    return {} as AuthResponseDto;
+    return {} as any;
   }
 
-  static toEntity(dto: AuthRequestDto): any {
+  static toEntity(dto: any): any {
     // TODO: map request DTO fields to entity
     return {};
   }

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { feedController } from './feed.controller';
+import { FeedController } from './feed.controller';
 
 const router = Router();
 //TODO: const feedController = new FeedController(/* TODO: inject service */);

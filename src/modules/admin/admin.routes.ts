@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { adminController } from './admin.controller';
+import { AdminController } from './admin.controller';
 
 const router = Router();
 //TODO: const adminController = new AdminController(/* TODO: inject service */);

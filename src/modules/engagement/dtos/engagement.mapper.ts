@@ -1,13 +1,10 @@
-import { EngagementRequestDto } from './engagement.request';
-import { EngagementResponseDto } from './engagement.response';
-
 export class EngagementMapper {
-  static toResponse(entity: any): EngagementResponseDto {
+  static toResponse(entity: any): any {
     // TODO: map entity fields to response DTO
-    return {} as EngagementResponseDto;
+    return {} as any;
   }
 
-  static toEntity(dto: EngagementRequestDto): any {
+  static toEntity(dto: any): any {
     // TODO: map request DTO fields to entity
     return {};
   }

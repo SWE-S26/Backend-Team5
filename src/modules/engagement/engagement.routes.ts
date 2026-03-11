@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { engagementController } from './engagement.controller';
+import { EngagementController } from './engagement.controller';
 
 const router = Router();
 //TODO: const engagementController = new EngagementController(/* TODO: inject service */);

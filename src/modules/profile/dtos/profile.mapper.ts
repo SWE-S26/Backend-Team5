@@ -1,13 +1,10 @@
-import { ProfileRequestDto } from './profile.request';
-import { ProfileResponseDto } from './profile.response';
-
 export class ProfileMapper {
-  static toResponse(entity: any): ProfileResponseDto {
+  static toResponse(entity: any): any {
     // TODO: map entity fields to response DTO
-    return {} as ProfileResponseDto;
+    return {} as any;
   }
 
-  static toEntity(dto: ProfileRequestDto): any {
+  static toEntity(dto: any): any {
     // TODO: map request DTO fields to entity
     return {};
   }

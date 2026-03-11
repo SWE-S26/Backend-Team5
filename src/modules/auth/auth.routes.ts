@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authController } from './auth.controller';
+import { AuthController } from './auth.controller';
 
 const router = Router();
 //TODO: const authController = new AuthController(/* TODO: inject service */);

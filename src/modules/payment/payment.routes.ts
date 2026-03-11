@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { paymentController } from './payment.controller';
+import { PaymentController } from './payment.controller';
 
 const router = Router();
 //TODO: const paymentController = new PaymentController(/* TODO: inject service */);

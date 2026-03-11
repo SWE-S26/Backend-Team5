@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { profileController } from './profile.controller';
+import { ProfileController } from './profile.controller';
 
 const router = Router();
 //TODO: const profileController = new ProfileController(/* TODO: inject service */);

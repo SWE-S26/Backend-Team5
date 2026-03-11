@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { playbackController } from './playback.controller';
+import { PlaybackController } from './playback.controller';
 
 const router = Router();
 //TODO: const playbackController = new PlaybackController(/* TODO: inject service */);

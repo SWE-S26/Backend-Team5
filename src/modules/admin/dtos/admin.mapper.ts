@@ -1,13 +1,10 @@
-import { AdminRequestDto } from './admin.request';
-import { AdminResponseDto } from './admin.response';
-
 export class AdminMapper {
-  static toResponse(entity: any): AdminResponseDto {
+  static toResponse(entity: any): any {
     // TODO: map entity fields to response DTO
-    return {} as AdminResponseDto;
+    return {} as any;
   }
 
-  static toEntity(dto: AdminRequestDto): any {
+  static toEntity(dto: any): any {
     // TODO: map request DTO fields to entity
     return {};
   }

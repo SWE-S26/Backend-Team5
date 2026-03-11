@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { messagingController } from './messaging.controller';
+import { MessagingController } from './messaging.controller';
 
 const router = Router();
 //TODO: const messagingController = new MessagingController(/* TODO: inject service */);

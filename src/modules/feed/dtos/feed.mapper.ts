@@ -1,13 +1,10 @@
-import { FeedRequestDto } from './feed.request';
-import { FeedResponseDto } from './feed.response';
-
 export class FeedMapper {
-  static toResponse(entity: any): FeedResponseDto {
+  static toResponse(entity: any): any {
     // TODO: map entity fields to response DTO
-    return {} as FeedResponseDto;
+    return {} as any;
   }
 
-  static toEntity(dto: FeedRequestDto): any {
+  static toEntity(dto: any): any {
     // TODO: map request DTO fields to entity
     return {};
   }

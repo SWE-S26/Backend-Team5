@@ -1,13 +1,10 @@
-import { MessagingRequestDto } from './messaging.request';
-import { MessagingResponseDto } from './messaging.response';
-
 export class MessagingMapper {
-  static toResponse(entity: any): MessagingResponseDto {
+  static toResponse(entity: any): any {
     // TODO: map entity fields to response DTO
-    return {} as MessagingResponseDto;
+    return {} as any;
   }
 
-  static toEntity(dto: MessagingRequestDto): any {
+  static toEntity(dto: any): any {
     // TODO: map request DTO fields to entity
     return {};
   }
