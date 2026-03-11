@@ -3,6 +3,12 @@ import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 
+interface EmailOptions {
+  userEmail: string;
+  subject: string;
+  htmlContent: string;
+}
+
 class EmailService {
   private transporter: Transporter;
 
@@ -27,29 +33,15 @@ class EmailService {
     }
   }
 
-  async sendResetPassowordLink(username: string, userEmail: string) {
+  async sendEmail(options: EmailOptions) {
     try {
-      // get paths of html files and image assets
-      const filePath = path.join(
-        __dirname,
-        './templates/requestPasswordReset.html',
-      );
       const imagePath = path.join(__dirname, './templates/assets/beatza.png');
-      let htmlContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
-
-      // replace in html file with proper params
-      htmlContent = htmlContent.replace('[User]', username);
-      htmlContent = htmlContent.replace(
-        '[resetLink]',
-        'https://beatza-swagger.netlify.app/',
-      );
-
       // assuming email is correct
       const info = await this.transporter.sendMail({
         from: `Beatza Team <${process.env.NODE_MAILER_USER}>`,
-        to: userEmail,
-        subject: `Request to change ${username}'s BeatZa password`,
-        html: htmlContent,
+        to: options.userEmail,
+        subject: options.subject,
+        html: options.htmlContent,
         attachments: [
           {
             filename: 'beatza.png',
@@ -61,7 +53,47 @@ class EmailService {
       return true;
     } catch (error) {
       console.log('Email Service Error: ', error);
+      return false;
     }
+  }
+
+  async sendResetPassowordLink(
+    username: string,
+    userEmail: string,
+    resetLink: string,
+  ) {
+    const filePath = path.join(
+      __dirname,
+      './templates/requestPasswordReset.html',
+    );
+    let htmlContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
+    htmlContent = htmlContent.replace('[User]', username);
+    htmlContent = htmlContent.replace(
+      '[resetLink]',
+      'https://beatza-swagger.netlify.app/',
+    );
+    return await this.sendEmail({
+      userEmail: userEmail,
+      subject: `Request to change ${username}'s BeatZa password`,
+      htmlContent: htmlContent,
+    });
+  }
+
+  async sendVerifyAccountLink(
+    username: string,
+    userEmail: string,
+    verifyLink: string,
+  ) {
+    const filePath = path.join(__dirname, './templates/verifyAccount.html');
+    let htmlContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
+    htmlContent = htmlContent
+      .replace('[User]', username)
+      .replace('[verifyLink]', verifyLink);
+    return await this.sendEmail({
+      userEmail: userEmail,
+      subject: `Welcome to BeatZa!`,
+      htmlContent: htmlContent,
+    });
   }
 }
 
