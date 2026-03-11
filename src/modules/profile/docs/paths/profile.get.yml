@@ -67,3 +67,91 @@
                     success: false
                     message: "User not found"
                     code: 404
+
+
+  /api/settings/account:
+    get:
+      tags:
+        - Settings
+      summary: Get account settings
+      description: Returns account-related settings such as theme, date of birth, and gender.
+      operationId: getAccountSettings
+      responses:
+        '200':
+          description: Account settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSettings'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/ettings/content:
+    get:
+      tags:
+        - Settings
+      summary: Get content settings
+      description: Returns the user's content and RSS configuration settings.
+      operationId: getContentSettings
+      responses:
+        '200':
+          description: Content settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentSettings'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/settings/privacy:
+    get:
+      tags:
+        - Settings
+      summary: Get privacy settings
+      description: Returns the user's privacy preferences.
+      operationId: getPrivacySettings
+      responses:
+        '200':
+          description: Privacy settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivacySettings'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/settings/notifications:
+    get:
+      tags:
+        - Settings
+      summary: Get notification settings
+      description: Returns the user's notification preferences.
+      operationId: getNotificationSettings
+      responses:
+        '200':
+          description: Notification settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationSettings'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'                    

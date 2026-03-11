@@ -55,3 +55,126 @@
                     success: false
                     message: "Validation error"
                     code: 422
+
+  /api/settings/account:
+    patch:
+      tags:
+        - Settings
+      summary: Update account settings
+      description: Updates account settings such as theme, date of birth, or gender. Only provided fields will be updated.
+      operationId: updateAccountSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountSettingsUpdate'
+      responses:
+        '200':
+          description: Account settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSettings'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/settings/content:
+    patch:
+      tags:
+        - Settings
+      summary: Update content settings
+      description: Updates the user's content and RSS configuration settings.
+      operationId: updateContentSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentSettingsUpdate'
+      responses:
+        '200':
+          description: Content settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentSettings'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/settings/privacy:
+    patch:
+      tags:
+        - Settings
+      summary: Update privacy settings
+      description: Updates the user's privacy preferences.
+      operationId: updatePrivacySettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrivacySettingsUpdate'
+      responses:
+        '200':
+          description: Privacy settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivacySettings'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/settings/notifications:
+    patch:
+      tags:
+        - Settings
+      summary: Update notification settings
+      description: Updates the user's notification preferences.
+      operationId: updateNotificationSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationSettingsUpdate'
+      responses:
+        '200':
+          description: Notification settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationSettings'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'                    

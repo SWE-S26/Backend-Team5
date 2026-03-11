@@ -132,3 +132,127 @@
           type: string
         code:
           type: integer
+
+    AccountSettings:
+      type: object
+      properties:
+        theme:
+          type: string
+          enum: [Light, Dark, Automatic]
+        date_of_birth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [male, female]
+
+    AccountSettingsUpdate:
+      type: object
+      properties:
+        theme:
+          type: string
+          enum: [Light, Dark, Automatic]
+        date_of_birth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [male, female]
+
+
+    ContentSettings:
+      type: object
+      properties:
+        RSS_feed_link:
+          type: string
+        RSS_email_displayed:
+          type: string
+        custom_field_title:
+          type: string
+        category:
+          type: string
+        stats_service_url_prefix:
+          type: string
+        custom_author_name:
+          type: string
+        language:
+          type: string
+        subscriber_redirect:
+          type: string
+        contains_explicit_content:
+          type: boolean
+        include_in_rss_feed:
+          type: boolean
+        creative_commons_license:
+          type: boolean
+
+    ContentSettingsUpdate:
+      allOf:
+        - $ref: '#/components/schemas/ContentSettings'
+
+
+    PrivacySettings:
+      type: object
+      properties:
+        allow_messages_anyone:
+          type: boolean
+        show_activity_discovery:
+          type: boolean
+        show_first_top_fan:
+          type: boolean
+        show_track_top_fans:
+          type: boolean
+
+    PrivacySettingsUpdate:
+      allOf:
+        - $ref: '#/components/schemas/PrivacySettings'
+
+
+    NotificationSettings:
+      type: object
+      properties:
+        new_follower:
+          type: string
+          enum: [email, devices]
+        repost_of_your_post:
+          type: string
+          enum: [email, devices]
+        new_post_by_followed_user:
+          type: string
+          enum: [email, devices]
+        likes_and_plays_on_your_post:
+          type: string
+          enum: [email, devices]
+        comment_on_your_post:
+          type: string
+          enum: [email, devices]
+        recommended_content:
+          type: string
+          enum: [email, devices]
+        updates_from_soundcloud:
+          type: string
+          enum: [email, devices]
+        soundcloud_feature_updates_education:
+          type: string
+          enum: [email, devices]
+        surveys_and_feedback:
+          type: string
+          enum: [email, devices]
+        promotional_partnership_content:
+          type: string
+          enum: [email, devices]
+        soundcloud_newsletter:
+          type: string
+          enum: [email, devices]
+        new_message:
+          type: object
+          properties:
+            email:
+              type: boolean
+            devices:
+              type: string
+              enum: [everyone, followed, off]
+
+    NotificationSettingsUpdate:
+      allOf:
+        - $ref: '#/components/schemas/NotificationSettings'          
