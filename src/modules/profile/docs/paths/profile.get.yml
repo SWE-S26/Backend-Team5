@@ -1,23 +1,157 @@
-# GET
-/api/profile/example:
-  get:
-    tags:
-      - profile
-    summary: Get agent profile by ID.
-    description: Returns the agent profile associated with the provided ID.
-    parameters:
-      - $ref: '#/components/parameters/IdPathParam'
-    responses:
-      200:
-        description: Successfully retrieved agent profile.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetUserByIdResponseDTO'
+  api/profile/{userId}:
+    get:
+      tags:
+        - Profile-Management
+      summary: Get user profile
+      description: Returns profile information of a specific user. If the profile is private, limited information may be returned.
+      operationId: getUserProfile
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: Unique identifier of the user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: Invalid user ID supplied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidId:
+                  value:
+                    success: false
+                    message: "Invalid user ID"
+                    code: 400
+        '401':
+          description: Unauthorized — missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  value:
+                    success: false
+                    message: "Unauthorized"
+                    code: 401
+        '403':
+          description: Profile is private
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                private:
+                  value:
+                    success: false
+                    message: "Profile is private"
+                    code: 403
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    success: false
+                    message: "User not found"
+                    code: 404
 
-      401:
-        $ref: '#/components/responses/Unauthorized'
-      404:
-        $ref: '#/components/responses/NotFound'
-      500:
-        $ref: '#/components/responses/ServerError'
+
+  /api/settings/account:
+    get:
+      tags:
+        - Settings
+      summary: Get account settings
+      description: Returns account-related settings such as theme, date of birth, and gender.
+      operationId: getAccountSettings
+      responses:
+        '200':
+          description: Account settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSettings'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/ettings/content:
+    get:
+      tags:
+        - Settings
+      summary: Get content settings
+      description: Returns the user's content and RSS configuration settings.
+      operationId: getContentSettings
+      responses:
+        '200':
+          description: Content settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentSettings'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/settings/privacy:
+    get:
+      tags:
+        - Settings
+      summary: Get privacy settings
+      description: Returns the user's privacy preferences.
+      operationId: getPrivacySettings
+      responses:
+        '200':
+          description: Privacy settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivacySettings'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/settings/notifications:
+    get:
+      tags:
+        - Settings
+      summary: Get notification settings
+      description: Returns the user's notification preferences.
+      operationId: getNotificationSettings
+      responses:
+        '200':
+          description: Notification settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationSettings'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'                    

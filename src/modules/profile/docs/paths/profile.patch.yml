@@ -1,23 +1,180 @@
-# PATCH
-/api/profile/example:
-  patch:
-    tags:
-      - profile
-    summary: patch agent profile by ID.
-    description: Returns the agent profile associated with the provided ID.
-    parameters:
-      - $ref: '#/components/parameters/IdPathParam'
-    responses:
-      200:
-        description: Successfully retrieved agent profile.
+  api/profile:
+    patch:
+      tags:
+        - Profile-Management
+      summary: Update user profile
+      description: Allows updating one or more fields of the authenticated user's profile. Only the provided fields will be updated.
+      operationId: updateProfile
+      requestBody:
+        description: Fields to update
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GetUserByIdResponseDTO'
+              $ref: '#/components/schemas/ProfileUpdate'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidRequest:
+                  value:
+                    success: false
+                    message: "Invalid request"
+                    code: 400
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  value:
+                    success: false
+                    message: "Unauthorized"
+                    code: 401
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                validationError:
+                  value:
+                    success: false
+                    message: "Validation error"
+                    code: 422
 
-      401:
-        $ref: '#/components/responses/Unauthorized'
-      404:
-        $ref: '#/components/responses/NotFound'
-      500:
-        $ref: '#/components/responses/ServerError'
+  /api/settings/account:
+    patch:
+      tags:
+        - Settings
+      summary: Update account settings
+      description: Updates account settings such as theme, date of birth, or gender. Only provided fields will be updated.
+      operationId: updateAccountSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountSettingsUpdate'
+      responses:
+        '200':
+          description: Account settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSettings'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/settings/content:
+    patch:
+      tags:
+        - Settings
+      summary: Update content settings
+      description: Updates the user's content and RSS configuration settings.
+      operationId: updateContentSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentSettingsUpdate'
+      responses:
+        '200':
+          description: Content settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentSettings'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/settings/privacy:
+    patch:
+      tags:
+        - Settings
+      summary: Update privacy settings
+      description: Updates the user's privacy preferences.
+      operationId: updatePrivacySettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrivacySettingsUpdate'
+      responses:
+        '200':
+          description: Privacy settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivacySettings'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /api/settings/notifications:
+    patch:
+      tags:
+        - Settings
+      summary: Update notification settings
+      description: Updates the user's notification preferences.
+      operationId: updateNotificationSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationSettingsUpdate'
+      responses:
+        '200':
+          description: Notification settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationSettings'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'                    

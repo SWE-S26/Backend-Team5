@@ -1,1 +1,248 @@
 # OpenAPI parameter definitions for the feed module, starting writing normally like paths
+
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+        code:
+          type: integer
+    UserSummary:
+      type: object
+      properties:
+        user_id:
+          type: string
+        display_name:
+          type: string
+        profile_img_link:
+          type: string
+          format: uri
+        track_count:
+          type: integer
+          description: Number of tracks uploaded by the user
+        num_of_followers:
+          type: integer
+
+    TrackSummary:
+      type: object
+      properties:
+        track_id:
+          type: string
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+        main_artist:
+          $ref: '#/components/schemas/UserSummary'
+        genre:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        privacy:
+          type: string
+          enum: [Public, Private, Scheduled]
+        image_url:
+          type: string
+          format: uri
+        num_of_plays:
+          type: integer
+        num_of_likes:
+          type: integer
+        num_of_comments:
+          type: integer
+        num_of_reposts:
+          type: integer
+        created_at:
+          type: string
+          format: date-time          
+
+    PlaylistSummary:
+      type: object
+      properties:
+        playlist_id:
+          type: string
+        title:
+          type: string
+        artist:
+          $ref: '#/components/schemas/UserSummary'
+        tracks:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlaylistTrackItem'
+        release_date:
+          type: string
+          format: date
+        num_of_likes:
+          type: integer
+        num_of_reposts:
+          type: integer
+        type:
+          type: string
+          enum: [public, private]
+          
+          
+    PlaylistTrackItem:
+      type: object
+      properties:
+        track_id:
+          type: string
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+        image_url:
+          type: string
+          format: uri
+        num_of_plays:
+          type: integer  
+        tags:
+          type: array
+          items:
+            type: string          
+          
+
+    AlbumSummary:
+      type: object
+      properties:
+        album_id:
+          type: string
+        artist:
+          $ref: '#/components/schemas/UserSummary'
+        release_date:
+          type: string
+          format: date
+        tracks:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlaylistTrackItem'
+        num_of_likes:
+          type: integer
+        num_of_reposts:
+          type: integer            
+        type:
+          type: string
+          enum: [created, liked]    
+          
+          
+    QuerySuggestion:
+      type: object
+      properties:
+        text:
+          type: string
+        type:
+          type: string
+          example: query
+
+    TrackSuggestion:
+      type: object
+      properties:
+        track_id:
+          type: string
+        title:
+          type: string
+        image_url:
+          type: string
+          format: uri
+        type:
+          type: string
+          example: track
+
+    UserSuggestion:
+      type: object
+      properties:
+        user_id:
+          type: string
+        display_name:
+          type: string
+        image_url:
+          type: string
+          format: uri
+        type:
+          type: string
+          example: user
+
+    PlaylistSuggestion:
+      type: object
+      properties:
+        playlist_id:
+          type: string
+        title:
+          type: string
+        image_url:
+          type: string
+          format: uri
+        type:
+          type: string
+          example: playlist
+
+    AlbumSuggestion:
+      type: object
+      properties:
+        album_id:
+          type: string
+        title:
+          type: string
+        image_url:
+          type: string
+          format: uri
+        type:
+          type: string
+          example: album    
+          
+          
+    SearchHistoryItem:
+      type: object
+      properties:
+        history_id:
+          type: string
+        type:
+          type: string
+          enum:
+            - track
+            - user
+            - playlist
+            - album
+        item:
+          type: object
+          description: Summary of the searched item
+          properties:
+            id:
+              type: string
+            title:
+              type: string
+            image_url:
+              type: string
+            type:
+              type: string
+              enum:
+                - track
+                - user
+                - playlist
+                - album
+        created_at:
+          type: string
+          format: date-time   
+    SearchHistoryCreate:
+      type: object
+      required:
+        - type
+        - id
+      properties:
+        type:
+          type: string
+          enum:
+            - track
+            - user
+            - playlist
+            - album
+        id:
+          type: string
+          description: ID of the clicked item
