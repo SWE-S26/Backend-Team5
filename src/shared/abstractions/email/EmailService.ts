@@ -95,6 +95,23 @@ class EmailService {
       htmlContent: htmlContent,
     });
   }
+
+  async sendNewMessageNotification(
+    userEmail: string,
+    sender: string,
+    messageURL: string,
+  ) {
+    const filePath = path.join(__dirname, './templates/newMessageSent.html');
+    let htmlContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
+    htmlContent = htmlContent
+      .replace('[Sender]', sender)
+      .replace('[messageURL]', messageURL);
+    return await this.sendEmail({
+      userEmail: userEmail,
+      subject: `You got a new DM from ${sender}`,
+      htmlContent: htmlContent,
+    });
+  }
 }
 
 const emailService = new EmailService();
