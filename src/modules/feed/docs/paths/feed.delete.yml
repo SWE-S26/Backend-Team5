@@ -1,7 +1,7 @@
   api/search/history:
     delete:
       tags:
-        - search
+        - Search
       summary: Clear search history
       description: Deletes all search history items for the authenticated user.
       responses:
@@ -17,7 +17,7 @@
   api/search/history/{historyId}:
     delete:
       tags:
-        - search
+        - Search
       summary: Delete search history item
       description: Deletes a specific item from the user's search history.
       parameters:

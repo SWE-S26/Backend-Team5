@@ -1,7 +1,7 @@
-  /profile:
+  api/profile:
     patch:
       tags:
-        - profile
+        - Profile-Management
       summary: Update user profile
       description: Allows updating one or more fields of the authenticated user's profile. Only the provided fields will be updated.
       operationId: updateProfile

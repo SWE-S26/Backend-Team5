@@ -1,7 +1,7 @@
   api/feed:
     get:
       tags:
-        - feed
+        - Feed
       summary: Get user activity feed
       description: Returns chronological feed of new tracks from followed artists
       operationId: getUserFeed
@@ -37,7 +37,7 @@
   api/search:
     get:
       tags:
-        - search
+        - Search
       summary: Global search
       description: Search across Tracks, Users, Playlists, and Albums
       operationId: globalSearch
@@ -116,7 +116,7 @@
   api/search/suggestions:
     get:
       tags:
-        - search
+        - Search
       summary: Search suggestions
       description: Returns autocomplete suggestions while the user types
       operationId: getSearchSuggestions
@@ -193,7 +193,7 @@
   api/search/history:
     get:
       tags:
-        - search
+        - Search
       summary: Get search history
       description: Returns the authenticated user's recent search history.
       responses:
@@ -217,7 +217,7 @@
   api/trending:
     get:
       tags:
-        - feed
+        - Feed
       summary: Get trending tracks
       description: Returns top tracks based on recent plays and engagement
       operationId: getTrendingTracks

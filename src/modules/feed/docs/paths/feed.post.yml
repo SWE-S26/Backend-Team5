@@ -1,7 +1,7 @@
   api/search/history:
     post:
       tags:
-        - search
+        - Search
       summary: Add item to search history
       description: Adds a clicked search result to the authenticated user's search history.
       requestBody:

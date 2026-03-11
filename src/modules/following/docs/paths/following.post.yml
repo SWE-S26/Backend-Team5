@@ -1,7 +1,7 @@
 api/social/follow/{userId}:
   post:
     tags:
-      - social
+      - Social
     summary: Follow a user
     description: Authenticated user follows another user
     operationId: followUser
@@ -60,7 +60,7 @@ api/social/follow/{userId}:
 api/social/unfollow/{userId}:
   post:
     tags:
-      - social
+      - Social
     summary: Unfollow a user
     description: Authenticated user unfollows another user
     operationId: unfollowUser
@@ -119,7 +119,7 @@ api/social/unfollow/{userId}:
 api/social/block/{userId}:
   post:
     tags:
-      - social
+      - Social
     summary: Block a user
     description: Authenticated user blocks another user
     operationId: blockUser
@@ -178,7 +178,7 @@ api/social/block/{userId}:
 api/social/unblock/{userId}:
   post:
     tags:
-      - social
+      - Social
     summary: Unblock a user
     description: Authenticated user unblocks another user
     operationId: unblockUser

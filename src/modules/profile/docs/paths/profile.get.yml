@@ -1,7 +1,7 @@
-  /profile/{userId}:
+  api/profile/{userId}:
     get:
       tags:
-        - profile
+        - Profile-Management
       summary: Get user profile
       description: Returns profile information of a specific user. If the profile is private, limited information may be returned.
       operationId: getUserProfile

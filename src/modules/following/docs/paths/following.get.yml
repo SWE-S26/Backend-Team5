@@ -1,7 +1,7 @@
 api/social/followers/{userId}:
   get:
     tags:
-      - social
+      - Social
     summary: Get followers of a user
     description: Returns a list of users who follow the given user
     operationId: getFollowers
@@ -73,7 +73,7 @@ api/social/followers/{userId}:
 api/social/following/{userId}:
   get:
     tags:
-      - social
+      - Social
     summary: Get users followed by a user
     description: Returns a list of users that the given user is following
     operationId: getFollowing
@@ -145,7 +145,7 @@ api/social/following/{userId}:
 api/social/suggested:
   get:
     tags:
-      - social
+      - Social
     summary: Get suggested users
     description: Returns a list of users suggested for the authenticated user to follow
     operationId: getSuggestedUsers
@@ -186,7 +186,7 @@ api/social/suggested:
 api/social/blocked:
   get:
     tags:
-      - social
+      - Social
     summary: Get blocked users list
     description: Returns the list of users that the authenticated user has blocked
     operationId: getBlockedUsers
