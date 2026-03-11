@@ -1,16 +1,30 @@
-# 400   $ref: '#/components/responses/InvalidParameters'
+# 400 Bad Request
 InvalidParameters:
-  description: A required parameter is missing in the request, or a something is wrong with the payload.
+  description: A required parameter is missing or payload is invalid
   content:
     application/json:
       schema:
         type: object
         properties:
-          error:
+          success:
+            type: boolean
+            example: false
+          message:
             type: string
-            example: "Invalid Payload"
+            example: "Validation failed"
+          errors:
+            type: array
+            items:
+              type: object
+              properties:
+                field:
+                  type: string
+                  example: "email"
+                message:
+                  type: string
+                  example: "Email is required"
 
-# 401   $ref: '#/components/responses/Unauthorized'
+# 401 Unauthorized
 Unauthorized:
   description: Authorization token required or invalid
   content:
@@ -18,11 +32,17 @@ Unauthorized:
       schema:
         type: object
         properties:
-          error:
+          success:
+            type: boolean
+            example: false
+          message:
             type: string
-            example: "Authorization token required or expired"
+            example: "Authorization failed"
+          data:
+            nullable: true
+            type: object
 
-# 403   $ref: '#/components/responses/Forbidden'
+# 403 Forbidden
 Forbidden:
   description: Not enough permissions to access this resource
   content:
@@ -30,35 +50,53 @@ Forbidden:
       schema:
         type: object
         properties:
-          error:
+          success:
+            type: boolean
+            example: false
+          message:
             type: string
             example: "Not enough permissions to access this resource"
+          data:
+            nullable: true
+            type: object
 
-# 404   $ref: '#/components/responses/NotFound'
+# 404 Not Found
 NotFound:
-  description: Property not found or not updated.
+  description: Resource not found
   content:
     application/json:
       schema:
         type: object
         properties:
+          success:
+            type: boolean
+            example: false
           message:
             type: string
             example: "Property not found or not updated"
+          data:
+            nullable: true
+            type: object
 
-# 500   $ref: '#/components/responses/ServerError'
+# 500 Internal Server Error
 ServerError:
-  description: Internal Server Error
+  description: Internal server error
   content:
     application/json:
       schema:
         type: object
         properties:
-          error:
+          success:
+            type: boolean
+            example: false
+          message:
             type: string
-            example: "Internal server Error"
+            example: "Internal server error"
+          data:
+            nullable: true
+            type: object
 
-# 503   $ref: '#/components/responses/ServiceUnavailable'
+# 503 Service Unavailable
 ServiceUnavailable:
   description: Service unavailable
   content:
@@ -66,6 +104,12 @@ ServiceUnavailable:
       schema:
         type: object
         properties:
-          error:
+          success:
+            type: boolean
+            example: false
+          message:
             type: string
-            example: "Service unavailablee"
+            example: "Service unavailable"
+          data:
+            nullable: true
+            type: object
