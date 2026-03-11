@@ -1,5 +1,6 @@
 import express from 'express';
-import { initializeConfig } from './config/initializeConfig';
+import emailService from './shared/abstractions/email/EmailService';
+// import { initializeConfig } from './config/initializeConfig';
 
 const port = process.env.PORT || 4123;
 const app = express();
@@ -7,7 +8,7 @@ app.use(express.json());
 
 const start = async () => {
   try {
-    await initializeConfig();
+    // await initializeConfig();
     app.listen(port, () => {
       console.log(`Server running on port ${port}`);
     });
