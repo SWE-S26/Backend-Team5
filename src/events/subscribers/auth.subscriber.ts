@@ -1,5 +1,5 @@
-import { redisCacher } from '../../config/redis/redisCacher';
-import { redisSubscriber } from '../../config/redis/redisSubscriber';
+import { redisCacher } from '../../shared/abstractions/redis/redisCacher';
+import { redisSubscriber } from '../../shared/abstractions/redis/redisSubscriber';
 import { CHANNELS } from '../channels';
 import { AuthEvent } from '../eventPayloads';
 

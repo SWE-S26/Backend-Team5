@@ -4,7 +4,7 @@ const router = Router();
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { log } from '../../../shared/logger/logger';
+import logger from '../../../shared/logger/logger';
 
 async function applyDevSwaggerRoute() {
   if (process.env.MODE === 'DEV') {
@@ -13,7 +13,7 @@ async function applyDevSwaggerRoute() {
       await import('../swagger.integration');
 
     router.use('/docs', swaggerUi.serve, swaggerUi.setup(combinedSwaggerDoc));
-    log('Swagger UI available at /docs (development only)', 'warning');
+    logger.info('Swagger UI available at /docs (development only)');
   }
 }
 

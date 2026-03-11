@@ -4,7 +4,7 @@ import {
   OpenApiGeneratorV3,
   OpenAPIRegistry,
 } from '@asteasolutions/zod-to-openapi';
-import { log } from '../../../shared/logger/logger';
+// import logger from '../../../shared/logger/logger';
 
 import userDocsRegistry from '../../user/user.registry';
 import authDocsRegistry from '../../auth/auth.registry';
@@ -70,7 +70,7 @@ for (const { moduleName, registry } of registries) {
     continue;
   }
 
-  // log(`Generating ${moduleName}Schemas.json...`, "info");
+  // logger.info(`Generating ${moduleName}Schemas.json...`);
 
   const filePath = path.join(
     outputDir,
@@ -79,7 +79,7 @@ for (const { moduleName, registry } of registries) {
 
   fs.writeFileSync(filePath, JSON.stringify(schemas, null, 2));
 
-  // log(`Generated ${moduleName}Schemas.json  @${outputDir}`, "info");
+  // logger.info(`Generated ${moduleName}Schemas.json  @${outputDir}`);
 }
 
 export default allSchemas;
