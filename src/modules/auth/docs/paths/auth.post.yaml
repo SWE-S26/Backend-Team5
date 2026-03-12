@@ -1,0 +1,395 @@
+# POST
+/api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary:  Authenticate user and return access token
+      description:  Authenticates user credentials and, upon success, generates a JWT access token stored in a secure, HTTP-only cookie. The cookie is sent automatically with each HTTPS request, preventing access from client-side scripts and enhancing protection against XSS attacks.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  description: The email address of the user
+                  example: user@example.com
+                password:
+                  type: string
+                  description:  The user's password (minimum 8 characters, including at least one uppercase letter and one special character)
+                  example: Password@123
+      responses:
+        200:
+          description: User logged in successfully
+          content:
+            application/json:
+              example:
+                success: true
+                message: "User logged in successfully"
+                data:
+                  user:
+                    id: "123"
+                    name: "Seif Mohamed"
+                    email: "eng.seifmohamed200@example.com"
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+/api/auth/signup:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user and send a verification email
+      description: |
+        Registers a new user by collecting essential information such as email, password, display name, date of birth, and gender.
+        Upon successful registration
+        A verification email is sent to the user's email address to confirm their account.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - displayName
+                - dateOfBirth
+                - Gender
+              properties:
+                email:
+                  type: string
+                  description: The user's email address, which will be used to log in and receive verification
+                  example: user@example.com
+                password:
+                  type: string
+                  description: >
+                    The user's password. Must be at least 8 characters long and include
+                    at least one uppercase letter, one lowercase letter, and one special character.
+                  example: Password@123
+                displayName:
+                  type: string
+                  description: The name displayed on the user's profile
+                  example: John Doe
+                dateOfBirth:
+                  type: string
+                  format: date
+                  description: The user's date of birth in ISO format (YYYY-MM-DD)
+                  example: 1990-01-01
+                Gender:
+                  type: string
+                  description: The user's gender (No support for mfer gays)
+                  enum:
+                    - Male
+                    - Female
+                  example: Male
+      responses:
+        200:
+          description: Signup Successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Signup Successful"
+                  data:
+                    type: object
+                    nullable: true
+              example:
+                success: true
+                message: "Signup Successful"
+                data: null
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+/api/auth/forget-password:
+    post:
+      tags:
+        - Authentication
+      summary: Request a password reset link
+      description: |
+        Sends a password reset email to the user. The user must provide their registered email address.
+        If the email exists in the system, a secure, time-limited password reset link is sent to that email.
+        This allows the user to securely reset their password without exposing credentials.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  description: The registered email address of the user requesting a password reset
+                  example: user@example.com
+      responses:
+            200:
+              description: Password reset email sent successfully
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      message:
+                        type: string
+                        example: "Password reset email sent successfully"
+                      data:
+                        type: object
+                        nullable: true
+                  example:
+                    success: true
+                    message: "Password reset email sent successfully"
+                    data: null
+            401:
+              $ref: '#/components/responses/Unauthorized'
+            404:
+              $ref: '#/components/responses/NotFound'
+            500:
+              $ref: '#/components/responses/ServerError'
+
+/api/auth/reset-password:
+    post:
+      tags:
+        - Authentication
+      summary: Reset a user's password using the token from email
+      description: |
+        Allows a user to reset their password by providing the password reset token
+        received via email and a new password. The token is validated for authenticity
+        and expiration. Upon success, the user's password is updated securely.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+                - newPassword
+              properties:
+                token:
+                  type: string
+                  description: The password reset token sent to the user's email
+                  example: abc123xyz
+                newPassword:
+                  type: string
+                  description: The new password for the user's account. Must meet password policy requirements (e.g., minimum 8 characters, uppercase, special character)
+                  example: NewPassword@123
+      responses:
+          200:
+            description: Password reset successfully
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    message:
+                      type: string
+                      example: "Password reset successfully"
+                    data:
+                      type: object
+                      nullable: true
+                example:
+                  success: true
+                  message: "Password reset successfully"
+                  data: null
+          401:
+            $ref: '#/components/responses/Unauthorized'
+          404:
+            $ref: '#/components/responses/NotFound'
+          500:
+            $ref: '#/components/responses/ServerError'
+
+/api/auth/find-email:
+    post:
+      tags:
+        - Authentication
+      summary: Check if an email exists in the system
+      description: |
+        Verifies whether the provided email address exists in the database.
+        This endpoint is typically used before password reset or registration
+        to confirm if the email is already associated with an account.
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email address to check in the system
+                  example: user@example.com
+
+      responses:
+          200:
+            description: Email existence check completed successfully
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    message:
+                      type: string
+                      example: "Email existence check completed successfully"
+                    data:
+                      type: object
+                      properties:
+                        exists:
+                          type: boolean
+                          description: Indicates whether the email exists in the database
+                          example: true
+                example:
+                  success: true
+                  message: "Email existence check completed successfully"
+                  data:
+                    exists: true
+          401:
+            $ref: '#/components/responses/Unauthorized'
+          404:
+            $ref: '#/components/responses/NotFound'
+          500:
+            $ref: '#/components/responses/ServerError'
+
+/api/auth/cross/mobile:
+    post:
+      tags:
+        - Authentication
+      summary: Approve cross-device login from mobile
+      description: |
+        Allows a logged-in mobile user to approve a login request for a
+        desktop device by scanning the QR code.
+
+        The user's JWT must be sent in the Authorization header.
+        If the QR code is valid and not expired, the login request will
+        be approved for the desktop device.
+
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - qrCode
+              properties:
+                qrCode:
+                  type: string
+                  description: QR code value scanned from the desktop screen
+                  example: qr_abc123xyz
+
+      responses:
+        200:
+          description: Cross-device login approved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Login approved successfully"
+                  data:
+                    type: object
+                    nullable: true
+              example:
+                success: true
+                message: "Login approved successfully"
+                data: null
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+
+/api/auth/cross/desktop/poll:
+    post:
+      tags:
+        - Authentication
+      summary: Poll login status for QR authentication
+      description: |
+        The desktop client periodically calls this endpoint to check whether
+        the mobile user has approved the login request.
+
+        If the login is approved, a JWT is returned and stored in a secure
+        HTTP-only cookie.
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - qrCode
+              properties:
+                qrCode:
+                  type: string
+                  description: QR code value generated for the desktop session
+                  example: qr_abc123xyz
+
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Login successful"
+                  data:
+                    type: object
+                    nullable: true
+              example:
+                success: true
+                message: "Login successful"
+                data: null
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
