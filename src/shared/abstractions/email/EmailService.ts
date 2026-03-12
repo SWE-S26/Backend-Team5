@@ -171,14 +171,15 @@ class EmailService {
     action: Engagement,
     activiyValue: string,
   ) {
-    const filePath = path.join(__dirname, './templates/newMessageSent.html');
+    const filePath = path.join(__dirname, './templates/newActivity.html');
     const activityParams = this.getProperEngagementValues(action, activiyValue);
     let htmlContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
     htmlContent = htmlContent
       .replace('[Sender]', sender)
       .replace('[ActivityURL]', activityURL)
       .replace('[Action]', activityParams.action)
-      .replace('[ButtonValue]', activityParams.buttonValue);
+      .replace('[ButtonValue]', activityParams.buttonValue)
+      .replace('[EmailValue]', userEmail);
 
     return await this.sendEmail({
       userEmail: userEmail,
