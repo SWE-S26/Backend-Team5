@@ -186,6 +186,26 @@ class EmailService {
       htmlContent: htmlContent,
     });
   }
+
+  async sendNewFollowerRelease(
+    userEmail: string,
+    sender: string,
+    relaseName: string,
+    releaseURL: string,
+  ) {
+    const filePath = path.join(__dirname, './templates/newRelease.html');
+    let htmlContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
+    htmlContent = htmlContent
+      .replace('[Sender]', sender)
+      .replace('[messageURL]', releaseURL)
+      .replace('[EmailValue]', userEmail)
+      .replace('[newRelease]', relaseName);
+    return await this.sendEmail({
+      userEmail: userEmail,
+      subject: `New Release 🔥`,
+      htmlContent: htmlContent,
+    });
+  }
 }
 
 const emailService = new EmailService();
