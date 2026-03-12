@@ -1,23 +1,225 @@
-# GET
-/api/following/example:
+api/social/followers/{userId}:
   get:
     tags:
-      - following
-    summary: Get agent profile by ID.
-    description: Returns the agent profile associated with the provided ID.
+      - Social
+    summary: Get followers of a user
+    description: Returns a list of users who follow the given user
+    operationId: getFollowers
     parameters:
-      - $ref: '#/components/parameters/IdPathParam'
+      - name: userId
+        in: path
+        required: true
+        description: User ID
+        schema:
+          type: string
+      - $ref: '#/components/parameters/OffsetParam'
+      - $ref: '#/components/parameters/LimitParam'            
     responses:
-      200:
-        description: Successfully retrieved agent profile.
+      '200':
+        description: Followers retrieved
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GetUserByIdResponseDTO'
+              type: object
+              properties:
+                total:
+                  type: integer
+                offset:
+                  type: integer
+                limit:
+                  type: integer
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/UserSummary'
+      '400':
+        description: Invalid user ID
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              invalidId:
+                value:
+                  success: false
+                  message: "Invalid user ID"
+                  code: 400
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              unauthorized:
+                value:
+                  success: false
+                  message: "Unauthorized"
+                  code: 401
+      '404':
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              notFound:
+                value:
+                  success: false
+                  message: "User not found"
+                  code: 404
 
-      401:
-        $ref: '#/components/responses/Unauthorized'
-      404:
-        $ref: '#/components/responses/NotFound'
-      500:
-        $ref: '#/components/responses/ServerError'
+# Get following
+api/social/following/{userId}:
+  get:
+    tags:
+      - Social
+    summary: Get users followed by a user
+    description: Returns a list of users that the given user is following
+    operationId: getFollowing
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: User ID
+        schema:
+          type: string
+      - $ref: '#/components/parameters/OffsetParam'
+      - $ref: '#/components/parameters/LimitParam'             
+    responses:
+      '200':
+        description: Following list retrieved
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                total:
+                  type: integer
+                offset:
+                  type: integer
+                limit:
+                  type: integer
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/UserSummary'
+      '400':
+        description: Invalid user ID
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              invalidId:
+                value:
+                  success: false
+                  message: "Invalid user ID"
+                  code: 400
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              unauthorized:
+                value:
+                  success: false
+                  message: "Unauthorized"
+                  code: 401
+      '404':
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              notFound:
+                value:
+                  success: false
+                  message: "User not found"
+                  code: 404
+
+# Suggested users
+api/social/suggested:
+  get:
+    tags:
+      - Social
+    summary: Get suggested users
+    description: Returns a list of users suggested for the authenticated user to follow
+    operationId: getSuggestedUsers
+    parameters:
+      - $ref: '#/components/parameters/OffsetParam'
+      - $ref: '#/components/parameters/LimitParam' 
+    responses:
+      '200':
+        description: Suggested users retrieved
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                total:
+                  type: integer
+                offset:
+                  type: integer
+                limit:
+                  type: integer
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/UserSummary'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              unauthorized:
+                value:
+                  success: false
+                  message: "Unauthorized"
+                  code: 401
+
+api/social/blocked:
+  get:
+    tags:
+      - Social
+    summary: Get blocked users list
+    description: Returns the list of users that the authenticated user has blocked
+    operationId: getBlockedUsers
+    parameters:
+      - $ref: '#/components/parameters/OffsetParam'
+      - $ref: '#/components/parameters/LimitParam'
+    responses:
+      '200':
+        description: List of blocked users
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                total:
+                  type: integer
+                offset:
+                  type: integer
+                limit:
+                  type: integer
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/UserSummary'
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              unauthorized:
+                value:
+                  success: false
+                  message: "Unauthorized"
+                  code: 401

@@ -1,0 +1,214 @@
+# PATCH
+/api/message/{messageId}/read:
+  patch:
+    tags:
+      - Message
+    summary: Mark a message as read
+    description: |
+      Marks a specific message as read for the authenticated user.
+      The message must belong to the authenticated user (i.e., the user
+      must be the receiver). The authenticated user is identified using
+      the JWT stored in the secure HTTP-only cookie.
+
+    security:
+      - bearerAuth: []
+
+    parameters:
+      - name: messageId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Unique identifier of the message to mark as read
+        example: msg_12345
+
+    requestBody:
+      description: No request body required
+      required: false
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: {}
+
+    responses:
+      "200":
+        description: Message marked as read successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: Message marked as read successfully
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: true
+              message: Message marked as read successfully
+              data: null
+
+      "400":
+        description: Bad Request – invalid message ID
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: Invalid message ID
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: Invalid message ID
+              data: null
+
+      "401":
+        $ref: '#/components/responses/Unauthorized'
+
+      "403":
+        description: Forbidden – user is not allowed to modify this message
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: You are not allowed to modify this message
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: You are not allowed to modify this message
+              data: null
+
+      "404":
+        description: Message not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: Message not found
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: Message not found
+              data: null
+
+      "429":
+        description: Too Many Requests – rate limit exceeded
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: Too many requests, please try again later
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: Too many requests, please try again later
+              data: null
+
+      "500":
+        $ref: '#/components/responses/ServerError'
+
+/api/message/read-all:
+  patch:
+    tags:
+      - Message
+    summary: Mark all messages as read
+    description: |
+      Marks all unread messages for the authenticated user as read.
+      The user is identified via the JWT stored in the secure HTTP-only cookie.
+
+    security:
+      - bearerAuth: []
+
+    requestBody:
+      description: No request body required
+      required: false
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: {}
+
+    responses:
+      "200":
+        description: All messages marked as read successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: All messages marked as read successfully
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: true
+              message: All messages marked as read successfully
+              data: null
+
+      "401":
+        $ref: '#/components/responses/Unauthorized'
+
+      "429":
+        description: Too many requests – rate limit exceeded
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: Too many requests, please try again later
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: Too many requests, please try again later
+              data: null
+
+      "500":
+        $ref: '#/components/responses/ServerError'

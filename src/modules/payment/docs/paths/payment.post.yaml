@@ -1,0 +1,283 @@
+/api/payment/user:
+  post:
+    tags:
+      - Payment
+    summary: Add a new paying user
+    description: |
+      Creates a new paying user in Stripe for the authenticated user.
+      The backend retrieves the user ID from the secure HTTP-only cookie.
+      The Stripe user can then be associated with subscriptions or one-time payments.
+
+    security:
+      - bearerAuth: []
+
+    requestBody:
+      required: false
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              paymentMethodId:
+                type: string
+                description: Optional. Stripe Payment Method ID to attach for future payments
+                example: pm_1ABCXYZ
+
+    responses:
+      '201':
+        description: User created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: User created successfully
+                data:
+                  type: object
+                  nullable: true
+                  properties:
+                    userId:
+                      type: string
+                      example: usr_12345
+            example:
+              success: true
+              message: User created successfully
+              data:
+                userId: usr_12345
+
+      '400':
+        description: Bad request – invalid payment method
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: Invalid payment method
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: Invalid payment method
+              data: null
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '429':
+        description: Too many requests
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: Too many requests, try again later
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: Too many requests, try again later
+              data: null
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/payment/subscriptions:
+  post:
+    tags:
+      - Payment
+    summary: Create a subscription for the authenticated user
+    description: |
+      Creates a Stripe subscription for the currently authenticated user.
+      The server attaches the provided payment method and subscribes the user
+      to the selected pricing plan in Stripe.
+
+    security:
+      - bearerAuth: []
+
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - priceId
+              - paymentMethodId
+            properties:
+              priceId:
+                type: string
+                example: price_123456789
+              paymentMethodId:
+                type: string
+                example: pm_123456789
+
+    responses:
+      '201':
+        description: Subscription created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: Subscription created successfully
+                data:
+                  type: object
+                  nullable: true
+                  properties:
+                    subscriptionId:
+                      type: string
+                      example: sub_123456789
+            example:
+              success: true
+              message: Subscription created successfully
+              data:
+                subscriptionId: sub_123456789
+
+      '400':
+        description: Invalid request data
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: priceId and paymentMethodId are required
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: priceId and paymentMethodId are required
+              data: null
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/payment/webhook/stripe:
+  post:
+    tags:
+      - Payment
+    summary: Stripe webhook listener
+    description: Endpoint used by Stripe to send webhook events related to payments and subscriptions.
+
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                example: evt_1ABCXYZ123
+              type:
+                type: string
+                example: invoice.paid
+              data:
+                type: object
+                properties:
+                  object:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: sub_123456789
+                      customer:
+                        type: string
+                        example: cus_ABC123XYZ
+
+    responses:
+      '200':
+        description: Webhook event processed successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: Webhook processed successfully
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: true
+              message: Webhook processed successfully
+              data: null
+
+      '400':
+        description: Invalid webhook signature or malformed event
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: Invalid Stripe webhook signature
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: Invalid Stripe webhook signature
+              data: null
+
+      '429':
+        description: Too many webhook requests
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: Too many webhook events received
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: Too many webhook events received
+              data: null
+
+      '500':
+        $ref: '#/components/responses/ServerError'
