@@ -1,0 +1,32 @@
+  api/search/history:
+    post:
+      tags:
+        - Search
+      summary: Add item to search history
+      description: Adds a clicked search result to the authenticated user's search history.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchHistoryCreate'
+      responses:
+        '201':
+          description: Item added to history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchHistoryItem'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  

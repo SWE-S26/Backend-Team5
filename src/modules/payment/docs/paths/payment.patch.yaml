@@ -1,0 +1,90 @@
+/api/payment/subscriptions:
+  patch:
+    tags:
+      - Payment
+    summary: Update the user's subscription plan
+    description: Allows the authenticated user to upgrade or downgrade their subscription by providing a new Stripe price ID.
+
+    security:
+      - bearerAuth: []
+
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - priceId
+            properties:
+              priceId:
+                type: string
+                description: New Stripe price ID
+                example: price_new_plan
+
+    responses:
+      '200':
+        description: Subscription updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: Subscription updated successfully
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: true
+              message: Subscription updated successfully
+              data: null
+
+      '400':
+        description: Invalid request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: Invalid request data
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: Invalid request data
+              data: null
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '500':
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: Failed to update subscription
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: Failed to update subscription
+              data: null

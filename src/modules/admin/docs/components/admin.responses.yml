@@ -1,0 +1,1 @@
+# Admin module uses common responses (Unauthorized, Forbidden, NotFound, ServerError, InvalidParameters)

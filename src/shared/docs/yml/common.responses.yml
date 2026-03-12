@@ -1,0 +1,115 @@
+# 400 Bad Request
+InvalidParameters:
+  description: A required parameter is missing or payload is invalid
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: false
+          message:
+            type: string
+            example: "Validation failed"
+          errors:
+            type: array
+            items:
+              type: object
+              properties:
+                field:
+                  type: string
+                  example: "email"
+                message:
+                  type: string
+                  example: "Email is required"
+
+# 401 Unauthorized
+Unauthorized:
+  description: Authorization token required or invalid
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: false
+          message:
+            type: string
+            example: "Authorization failed"
+          data:
+            nullable: true
+            type: object
+
+# 403 Forbidden
+Forbidden:
+  description: Not enough permissions to access this resource
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: false
+          message:
+            type: string
+            example: "Not enough permissions to access this resource"
+          data:
+            nullable: true
+            type: object
+
+# 404 Not Found
+NotFound:
+  description: Resource not found
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: false
+          message:
+            type: string
+            example: "Property not found or not updated"
+          data:
+            nullable: true
+            type: object
+
+# 500 Internal Server Error
+ServerError:
+  description: Internal server error
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: false
+          message:
+            type: string
+            example: "Internal server error"
+          data:
+            nullable: true
+            type: object
+
+# 503 Service Unavailable
+ServiceUnavailable:
+  description: Service unavailable
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: false
+          message:
+            type: string
+            example: "Service unavailable"
+          data:
+            nullable: true
+            type: object

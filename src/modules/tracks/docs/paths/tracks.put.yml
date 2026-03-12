@@ -1,0 +1,157 @@
+# POST
+/api/tracks/id/{trackId}:
+  put:
+    tags:
+      - Track Management
+    summary: Create a new track
+    description: Creates a new audio track with metadata, permissions, licensing information, and associated media files. Flattened for multipart/form-data.
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              # BasicInfo fields
+              title:
+                type: string
+              permalink:
+                type: string
+              mainArtists:
+                type: array
+                items:
+                  type: string
+              genre:
+                type: string
+              tags:
+                type: array
+                items:
+                  type: string
+              description:
+                type: array
+                items:
+                  type: string
+              isPrivate:
+                type: boolean
+              composer:
+                type: string
+              containsMusic:
+                type: boolean
+
+              # Permissions fields
+              enableDirectDownload:
+                type: boolean
+              offlineListening:
+                type: boolean
+              includeInRssFeed:
+                type: boolean
+              displayedEmbedCode:
+                type: boolean
+              enableAppPlayback:
+                type: boolean
+
+              # Licensing fields
+              licensingType:
+                type: string
+                enum: [allRightsReserved, creativeCommon]
+              attribution:
+                type: boolean
+              nonCommercial:
+                type: boolean
+              noDerivativeWorks:
+                type: boolean
+              shareAlike:
+                type: boolean
+
+              # Audio clip
+              audioClipStart:
+                type: string
+                description: Start timestamp mm:ss
+                example: '00:01'
+              audioClipEnd:
+                type: string
+                description: End timestamp mm:ss
+                example: '00:04'
+
+              imageFile:
+                type: string
+                format: binary
+
+              buyLink:
+                type: string
+              recordLabel:
+                type: string
+              releaseDate:
+                type: date-time
+              publisher:
+                type: string
+              ISRC:
+                type: string
+              hasExplictContent:
+                type: boolean
+              pLine:
+                type: string
+
+            required:
+              - title
+              - permalink
+              - mainArtists
+              - genre
+              - isPrivate
+              - enableDirectDownload
+              - offlineListening
+              - includeInRssFeed
+              - displayedEmbedCode
+              - enableAppPlayback
+              - licensingType
+              - imageFile
+              - buyLink
+              - recordLabel
+              - releaseDate
+              - publisher
+              - ISRC
+              - hasExplictContent
+              - pLine
+
+/api/tracks/listen/{trackId}:
+  put:
+    tags:
+      - Track Management
+    summary: Increment track listening count
+    description: Increments the play count of the specified track and returns the updated number of plays.
+    parameters:
+      - name: trackId
+        in: path
+        required: true
+        description: The ID of the audio track.
+        schema:
+          $ref: "#/components/schemas/Id"
+
+    responses:
+      "200":
+        description: Listening count incremented successfully.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "incremented listening count successfully"
+                numPlays:
+                  type: integer
+              required:
+                - message
+                - numPlays
+
+      "400":
+        $ref: "#/components/responses/InvalidParameters"
+
+      "401":
+        $ref: "#/components/responses/Unauthorized"
+
+      "404":
+        $ref: "#/components/responses/NotFound"
+
+      "500":
+        $ref: "#/components/responses/ServerError"

@@ -1,0 +1,40 @@
+/api/playlists/myPlaylists/{playlistId}:
+  delete:
+    tags:
+      - Playlist Management
+    summary: Delete a playlist by ID
+    description: Deletes the specified playlist.
+    parameters:
+      - name: playlistId
+        in: path
+        required: true
+        description: The ID of the playlist to delete
+        schema:
+          type: string
+          example: pl_789
+
+    responses:
+      '200':
+        description: Playlist deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: 'Deleted successfully'
+              required:
+                - message
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'

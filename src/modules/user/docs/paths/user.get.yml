@@ -5,21 +5,21 @@
     summary: Get agent profile by ID.
     description: Returns the agent profile associated with the provided ID.
     parameters:
-      - $ref: "#/components/parameters/IdPathParam"
+      - $ref: '#/components/parameters/IdPathParam'
     responses:
       200:
         description: Successfully retrieved agent profile.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/GetUserByIdResponseDTO"
+              $ref: '#/components/schemas/GetUserByIdResponseDTO'
 
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
 /Another/example:
   get:
@@ -34,7 +34,7 @@
         description: Agent unique identifier
         schema:
           type: string
-          example: "64b8f3a9c12e4d001a9f1234"
+          example: '64b8f3a9c12e4d001a9f1234'
     responses:
       200:
         description: Successfully retrieved agent profile.
@@ -44,13 +44,13 @@
               type: object
               properties:
                 user:
-                  $ref: "#/components/schemas/GetUserByIdResponseDTO"
+                  $ref: '#/components/schemas/GetUserByIdResponseDTO'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
 /Example/example/example:
   get:
@@ -89,7 +89,7 @@
                 data:
                   type: array
                   items:
-                    $ref: "#/components/schemas/Agent"
+                    $ref: '#/components/schemas/Agent'
                 meta:
                   type: object
                   properties:
@@ -100,11 +100,11 @@
                     count:
                       type: integer
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
 /users:
   get:
@@ -112,8 +112,8 @@
       - Examples
     summary: List users
     parameters:
-      - $ref: "#/components/parameters/PageQueryParam"
-      - $ref: "#/components/parameters/LimitQueryParam"
+      - $ref: '#/components/parameters/PageQueryParam'
+      - $ref: '#/components/parameters/LimitQueryParam'
     responses:
       200:
         description: List of users
@@ -125,4 +125,4 @@
                 data:
                   type: array
                   items:
-                    $ref: "#/components/schemas/Agent"
+                    $ref: '#/components/schemas/Agent'

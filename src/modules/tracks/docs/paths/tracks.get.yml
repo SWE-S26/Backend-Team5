@@ -1,0 +1,306 @@
+/api/tracks:
+  get:
+    tags:
+      - Track Management
+    summary: Retrieve a paginated list of tracks
+    description: >
+      Returns a paginated list of public tracks with engagement statistics. 
+      Be careful when to use tags and genre together
+    parameters:
+      - $ref: "#/components/parameters/limit"
+      - $ref: "#/components/parameters/offset"
+      - name: tag
+        in: query
+        description: Filter tracks by a specific tag
+        required: false
+        schema:
+          type: string
+          example: "some random tag"
+      - name: genre
+        in: query
+        description: Filter tracks by a specific genre
+        required: false
+        schema:
+          type: string
+          example: "pop"
+
+    responses:
+      "200":
+        description: A list of tracks retrieved successfully.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  _id:
+                    $ref: "#/components/schemas/Id"
+                  basicInfo:
+                    $ref: "#/components/schemas/BasicInfo"
+                  audio_url:
+                    type: string
+                    format: uri
+                  image_url:
+                    type: string
+                    format: uri
+                  numLikes:
+                    type: integer
+                  numComments:
+                    type: integer
+                  numPlays:
+                    type: integer
+                  num_reposts:
+                    type: integer
+                required:
+                  - _id
+                  - basicInfo
+                  - audio_url
+                  - image_url
+                  - numLikes
+                  - numComments
+                  - numPlays
+                  - num_reposts
+
+      "400":
+        $ref: "#/components/responses/InvalidParameters"
+
+      "401":
+        $ref: "#/components/responses/Unauthorized"
+
+      "404":
+        $ref: "#/components/responses/NotFound"
+
+      "500":
+        $ref: "#/components/responses/ServerError"
+  
+
+    
+/api/tracks/id/{trackId}:
+  get:
+    tags:
+      - Track Management
+    summary: Retrieve track(s) by audio ID
+    description: Returns track information associated with the provided audio ID.
+    parameters:
+      - name: trackId
+        in: path
+        required: true
+        description: The ID of the audio resource.
+        schema:
+          $ref: "#/components/schemas/Id"
+
+    responses:
+      "200":
+        description: Track(s) retrieved successfully.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  _id:
+                    $ref: "#/components/schemas/Id"
+                  basicInfo:
+                    $ref: "#/components/schemas/BasicInfo"
+                  audio_url:
+                    type: string
+                    format: uri
+                  image_url:
+                    type: string
+                    format: uri
+                  numLikes:
+                    type: integer
+                  numComments:
+                    type: integer
+                  numPlays:
+                    type: integer
+                  num_reposts:
+                    type: integer
+                  permissions:
+                    $ref: "#/components/schemas/Permissions"
+                required:
+                  - _id
+                  - basicInfo
+                  - audio_url
+                  - image_url
+                  - numLikes
+                  - numComments
+                  - numPlays
+                  - num_reposts
+                  - permissions
+
+      "400":
+        $ref: "#/components/responses/InvalidParameters"
+
+      "401":
+        $ref: "#/components/responses/Unauthorized"
+
+      "404":
+        $ref: "#/components/responses/NotFound"
+
+      "500":
+        $ref: "#/components/responses/ServerError"
+
+/api/tracks/permalink/{permaLink}:
+  get:
+    tags:
+      - Track Management
+    summary: Retrieve track(s) by permalink
+    description: Returns track information associated with the provided permalink.
+    parameters:
+      - name: permaLink
+        in: path
+        required: true
+        description: The unique permalink of the track.
+        schema:
+          type: string
+
+    responses:
+      "200":
+        description: Track(s) retrieved successfully.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  _id:
+                    $ref: "#/components/schemas/Id"
+                  basicInfo:
+                    $ref: "#/components/schemas/BasicInfo"
+                  audio_url:
+                    type: string
+                    format: uri
+                  image_url:
+                    type: string
+                    format: uri
+                  numLikes:
+                    type: integer
+                  numComments:
+                    type: integer
+                  numPlays:
+                    type: integer
+                  num_reposts:
+                    type: integer
+                required:
+                  - _id
+                  - basicInfo
+                  - audio_url
+                  - image_url
+                  - numLikes
+                  - numComments
+                  - numPlays
+                  - num_reposts
+
+      "400":
+        $ref: "#/components/responses/InvalidParameters"
+
+      "401":
+        $ref: "#/components/responses/Unauthorized"
+
+      "404":
+        $ref: "#/components/responses/NotFound"
+
+      "500":
+        $ref: "#/components/responses/ServerError"
+
+/api/tracks/liked:
+  get:
+    tags:
+      - Track Management
+    summary: Get liked tracks for the authenticated user
+    description: Returns a paginated list of tracks that the user has liked.
+    parameters:
+      - $ref: "#/components/parameters/offset"
+      - $ref: "#/components/parameters/limit"
+    responses:
+      "200":
+        description: Successfully retrieved liked tracks
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  title:
+                    type: string
+                  mainArtists:
+                    type: array
+                    items:
+                      type: string
+                  imageUrl:
+                    type: array
+                    items:
+                      type: string
+                  permalink:
+                    type: string
+                  displayName:
+                    type: string
+                  userProfileLink:
+                    type: string
+      "400":
+        $ref: "#/components/responses/InvalidParameters"
+      "401":
+        $ref: "#/components/responses/Unauthorized"
+      "404":
+        $ref: "#/components/responses/NotFound"
+      "500":
+        $ref: "#/components/responses/ServerError"
+
+/api/tracks/liked/detailed:
+  get:
+    tags:
+      - Track Management
+    summary: Get liked tracks for the authenticated user
+    description: Returns a paginated list of tracks that the user has liked.
+    parameters:
+      - $ref: "#/components/parameters/offset"
+      - $ref: "#/components/parameters/limit"
+    responses:
+      "200":
+        description: Successfully retrieved liked tracks
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  title:
+                    type: string
+                  mainArtists:
+                    type: array
+                    items:
+                      type: string
+                  imageUrl:
+                    type: string
+                  permalink:
+                    type: string
+                  displayName:
+                    type: string
+                  userProfileLink:
+                    type: string
+                  numPlays:
+                    type: int
+                  numComments:
+                    type: int
+                  numReposts:
+                    type: int
+                  isReposted:
+                    type: bool
+      "400":
+        $ref: "#/components/responses/InvalidParameters"
+      "401":
+        $ref: "#/components/responses/Unauthorized"
+      "404":
+        $ref: "#/components/responses/NotFound"
+      "500":
+        $ref: "#/components/responses/ServerError"

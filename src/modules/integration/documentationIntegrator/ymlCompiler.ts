@@ -1,64 +1,27 @@
-import * as fs from "fs";
-import * as path from "path";
-import YAML from "yaml";
-import deepmerge from "deepmerge";
+import deepmerge from 'deepmerge';
 
-import { removeSecurityFromAuthEndpoints } from "../../../shared/docs/ymlLoadingHelper";
-const docsRoot = __dirname;
+import { removeSecurityFromAuthEndpoints } from '../../../shared/docs/ymlLoadingHelper';
+import { OpenAPIObject } from '@asteasolutions/zod-to-openapi/dist/types';
 
-/**
- * Load all component and path YAMLs
- */
-const baseDoc = YAML.parse(
-	fs.readFileSync(path.join(docsRoot, "./configurations.yml"), "utf8"),
-);
+import baseDoc from './ymlCompiler/ymlCompiler.configurations';
+import allPaths from './ymlCompiler/ymlCompiler.paths';
+import allResponses from './ymlCompiler/ymlCompiler.responses';
+import allSchemas from './ymlCompiler/ymlCompiler.schemas';
+import allParameters from './ymlCompiler/ymlCompiler.parameters';
 
-const commonResponses = YAML.parse(
-	fs.readFileSync(
-		path.join(docsRoot, "../../../shared/docs/yml/common.respones.yml"),
-		"utf8",
-	),
-);
-
-const commonSchemas = YAML.parse(
-	fs.readFileSync(
-		path.join(docsRoot, "../../../shared/docs/yml/common.schemas.yml"),
-		"utf8",
-	),
-);
-
-const commonParameters = YAML.parse(
-	fs.readFileSync(
-		path.join(docsRoot, "../../../shared/docs/yml/common.parameters.yml"),
-		"utf-8",
-	),
-);
-
-import userDocsRegistry from "../../user/user.registry";
-import { OpenAPIObject } from "@asteasolutions/zod-to-openapi/dist/types";
-const userDocs = userDocsRegistry.docs;
-
-// Merge all paths
-const allPaths = {
-	// ...authDocs,
-	// ...agentDocs,
-	...userDocs,
-};
-
-// Remove security from auth endpoints
 removeSecurityFromAuthEndpoints(allPaths);
 
 // Deep merge everything into final Swagger doc
 const finalSwaggerDoc: OpenAPIObject = deepmerge.all([
-	baseDoc,
-	{ paths: allPaths },
-	{
-		components: {
-			responses: commonResponses,
-			schemas: commonSchemas,
-			parameters: commonParameters,
-		},
-	},
+  baseDoc,
+  { paths: allPaths },
+  {
+    components: {
+      responses: allResponses,
+      schemas: allSchemas,
+      parameters: allParameters,
+    },
+  },
 ]) as OpenAPIObject;
 
 export default finalSwaggerDoc;

@@ -1,0 +1,129 @@
+# POST
+/api/message/send:
+  post:
+    tags:
+      - Message
+    summary: Send a message to another user
+    description: |
+      Allows an authenticated user to send a message to another user.
+      The message is stored in the database and associated with both
+      the sender and the receiver. Authentication is required and the
+      sender is identified from the JWT stored in the HTTP-only cookie.
+
+    security:
+      - bearerAuth: []
+
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - receiverId
+              - content
+            properties:
+              receiverId:
+                type: string
+                description: Unique identifier of the user who will receive the message
+                example: user_456
+              content:
+                type: string
+                description: The message text to be sent
+                example: Hello, how are you?
+
+    responses:
+      "201":
+        description: Message sent successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: Message sent successfully
+                data:
+                  type: object
+                  properties:
+                    messageId:
+                      type: string
+                      description: Unique identifier of the created message
+                  nullable: true
+            example:
+              success: true
+              message: Message sent successfully
+              data:
+                messageId: msg_12345
+
+      "400":
+        description: Bad Request – required fields are missing or invalid
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: receiverId and content are required
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: receiverId and content are required
+              data: null
+
+      "401":
+        $ref: '#/components/responses/Unauthorized'
+
+      "404":
+        description: Receiver not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: Receiver user not found
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: Receiver user not found
+              data: null
+
+      "429":
+        description: Too Many Requests – rate limit exceeded
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: Too many messages sent, try again later
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: Too many messages sent, try again later
+              data: null
+
+      "500":
+        $ref: '#/components/responses/ServerError'

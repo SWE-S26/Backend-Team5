@@ -1,0 +1,90 @@
+# GET paths for notifications module
+
+/api/notifications:
+  get:
+    tags:
+      - Notifications
+    summary: Get notifications for the authenticated user.
+    description: Returns a paginated list of notifications for the currently authenticated user, ordered by created_at descending. Supports filtering by read state.
+    operationId: getNotifications
+    parameters:
+      - $ref: "#/components/parameters/NotificationsOffsetParam"
+      - $ref: "#/components/parameters/NotificationsLimitParam"
+      - $ref: "#/components/parameters/NotificationsReadFilterParam"
+    responses:
+      200:
+        description: Paginated list of notifications.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationListResponse"
+      401:
+        $ref: "#/components/responses/Unauthorized"
+      500:
+        $ref: "#/components/responses/ServerError"
+
+/api/notifications/unread-count:
+  get:
+    tags:
+      - Notifications
+    summary: Get the unread notification count.
+    description: Returns the total number of unread notifications for the authenticated user. Intended for badge counters in the UI.
+    operationId: getUnreadCount
+    responses:
+      200:
+        description: Unread notification count.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnreadCountResponse"
+      401:
+        $ref: "#/components/responses/Unauthorized"
+      500:
+        $ref: "#/components/responses/ServerError"
+
+/api/notifications/unread:
+  get:
+    tags:
+      - Notifications
+    summary: Get all unread notifications.
+    description: Returns all unread notifications for the authenticated user, ordered by created_at descending. Designed for mobile clients populating a push notification tray on app open.
+    operationId: getUnreadNotifications
+    parameters:
+      - $ref: "#/components/parameters/NotificationsOffsetParam"
+      - $ref: "#/components/parameters/NotificationsLimitParam"
+    responses:
+      200:
+        description: List of unread notifications.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationListResponse"
+      401:
+        $ref: "#/components/responses/Unauthorized"
+      500:
+        $ref: "#/components/responses/ServerError"
+
+/api/notifications/{notificationId}:
+  get:
+    tags:
+      - Notifications
+    summary: Get a single notification.
+    description: Returns the full detail of a specific notification belonging to the authenticated user.
+    operationId: getNotificationById
+    parameters:
+      - $ref: "#/components/parameters/NotificationIdParam"
+    responses:
+      200:
+        description: Notification detail.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NotificationDTO"
+      401:
+        $ref: "#/components/responses/Unauthorized"
+      403:
+        $ref: "#/components/responses/Forbidden"
+      404:
+        $ref: "#/components/responses/NotFound"
+      500:
+        $ref: "#/components/responses/ServerError"

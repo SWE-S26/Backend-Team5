@@ -1,0 +1,354 @@
+# ─── Section 1: User Moderation ──────────────────────────────────────────
+
+AdminUserSnippet:
+  type: object
+  description: Core user information visible to admins.
+  properties:
+    userId:
+      type: string
+      example: "usr_001"
+    displayName:
+      type: string
+      example: "John Doe"
+    email:
+      type: string
+      format: email
+      example: "john.doe@example.com"
+    role:
+      type: string
+      enum:
+        - user
+        - artist
+        - admin
+      example: "user"
+    subscriptionType:
+      type: string
+      enum:
+        - free
+        - pro
+      example: "free"
+    suspended:
+      type: boolean
+      example: false
+    createdAt:
+      type: string
+      format: date-time
+      example: "2025-01-10T09:00:00Z"
+  required:
+    - userId
+    - displayName
+    - email
+    - role
+    - suspended
+    - createdAt
+
+AdminUserListResponse:
+  type: object
+  properties:
+    total:
+      type: integer
+      example: 500
+    offset:
+      type: integer
+      example: 0
+    limit:
+      type: integer
+      example: 20
+    users:
+      type: array
+      items:
+        $ref: "#/components/schemas/AdminUserSnippet"
+  required:
+    - total
+    - offset
+    - limit
+    - users
+
+SuspendRequest:
+  type: object
+  properties:
+    reason:
+      type: string
+      maxLength: 500
+      example: "Violation of community guidelines."
+
+# ─── Section 2: Reports ───────────────────────────────────────────────────
+
+CreateReportRequest:
+  type: object
+  properties:
+    violatorId:
+      type: string
+      example: "usr_002"
+    violatorType:
+      type: string
+      enum:
+        - user
+        - track
+        - comment
+      example: "track"
+    complaintType:
+      type: string
+      enum:
+        - spam
+        - harassment
+        - copyright
+        - inappropriate_content
+        - other
+      example: "spam"
+    body:
+      type: string
+      maxLength: 1000
+      example: "This track contains copyrighted material."
+  required:
+    - violatorId
+    - violatorType
+    - complaintType
+
+Report:
+  type: object
+  properties:
+    reportId:
+      type: string
+      example: "rep_123"
+    reporterId:
+      type: string
+      example: "usr_001"
+    violatorId:
+      type: string
+      example: "usr_002"
+    violatorType:
+      type: string
+      enum:
+        - user
+        - track
+        - comment
+      example: "track"
+    complaintType:
+      type: string
+      example: "spam"
+    status:
+      type: string
+      enum:
+        - pending
+        - resolved
+        - dismissed
+      example: "pending"
+    body:
+      type: string
+      example: "This content violates guidelines."
+    adminNote:
+      type: string
+      example: "Reviewed and found in violation."
+    createdAt:
+      type: string
+      format: date-time
+      example: "2025-01-12T08:00:00Z"
+    resolvedAt:
+      type: string
+      format: date-time
+      example: "2025-01-13T10:00:00Z"
+  required:
+    - reportId
+    - reporterId
+    - violatorId
+    - violatorType
+    - complaintType
+    - status
+    - createdAt
+
+ReportListResponse:
+  type: object
+  properties:
+    total:
+      type: integer
+      example: 30
+    offset:
+      type: integer
+      example: 0
+    limit:
+      type: integer
+      example: 20
+    reports:
+      type: array
+      items:
+        $ref: "#/components/schemas/Report"
+  required:
+    - total
+    - offset
+    - limit
+    - reports
+
+UpdateReportStatusRequest:
+  type: object
+  properties:
+    status:
+      type: string
+      enum:
+        - resolved
+        - dismissed
+      example: "resolved"
+    adminNote:
+      type: string
+      maxLength: 1000
+      example: "Content was removed after review."
+  required:
+    - status
+
+# ─── Section 3: Track Management ──────────────────────────────────────────
+
+AdminTrackSnippet:
+  type: object
+  description: Track information visible to admins.
+  properties:
+    trackId:
+      type: string
+      example: "trk_456"
+    title:
+      type: string
+      example: "Summer Vibes"
+    artistName:
+      type: string
+      example: "DJ Cool"
+    genre:
+      type: string
+      example: "Electronic"
+    visibility:
+      type: string
+      enum:
+        - public
+        - private
+      example: "public"
+    hidden:
+      type: boolean
+      example: false
+    createdAt:
+      type: string
+      format: date-time
+      example: "2025-01-05T14:00:00Z"
+  required:
+    - trackId
+    - title
+    - artistName
+    - visibility
+    - hidden
+    - createdAt
+
+AdminTrackListResponse:
+  type: object
+  properties:
+    total:
+      type: integer
+      example: 200
+    offset:
+      type: integer
+      example: 0
+    limit:
+      type: integer
+      example: 20
+    tracks:
+      type: array
+      items:
+        $ref: "#/components/schemas/AdminTrackSnippet"
+  required:
+    - total
+    - offset
+    - limit
+    - tracks
+
+AdminActionReasonRequest:
+  type: object
+  properties:
+    reason:
+      type: string
+      maxLength: 500
+      example: "Content violates community guidelines."
+
+# ─── Section 4: Analytics (Artist Pro) ────────────────────────────────────
+
+ArtistAnalyticsOverviewResponse:
+  type: object
+  properties:
+    totalPlays:
+      type: integer
+      example: 50000
+    totalLikes:
+      type: integer
+      example: 3200
+    totalReposts:
+      type: integer
+      example: 410
+    totalComments:
+      type: integer
+      example: 780
+    totalFollowers:
+      type: integer
+      example: 1200
+    uniqueListeners:
+      type: integer
+      example: 8500
+    period:
+      type: string
+      description: Time period for the stats (e.g., last_30_days, all_time).
+      example: "last_30_days"
+  required:
+    - totalPlays
+    - totalLikes
+    - totalReposts
+    - totalComments
+    - totalFollowers
+    - uniqueListeners
+
+TrackPlaythroughStat:
+  type: object
+  properties:
+    trackId:
+      type: string
+      example: "trk_456"
+    title:
+      type: string
+      example: "Summer Vibes"
+    averagePlaythroughRate:
+      type: number
+      format: float
+      minimum: 0
+      maximum: 1
+      example: 0.72
+  required:
+    - trackId
+    - title
+    - averagePlaythroughRate
+
+ArtistPlaythroughRateResponse:
+  type: object
+  properties:
+    averagePlaythroughRate:
+      type: number
+      format: float
+      minimum: 0
+      maximum: 1
+      example: 0.68
+    tracks:
+      type: array
+      items:
+        $ref: "#/components/schemas/TrackPlaythroughStat"
+  required:
+    - averagePlaythroughRate
+    - tracks
+
+ArtistStorageResponse:
+  type: object
+  properties:
+    usedBytes:
+      type: integer
+      example: 524288000
+    totalBytes:
+      type: integer
+      example: 10737418240
+    trackCount:
+      type: integer
+      example: 25
+  required:
+    - usedBytes
+    - totalBytes
+    - trackCount

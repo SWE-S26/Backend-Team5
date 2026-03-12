@@ -1,0 +1,44 @@
+# PATCH
+/api/tracks/id/{trackId}:
+  patch:
+    tags:
+      - Track Management
+    summary: Update track file by audio ID
+    description: Updates the track with the provided audio ID using the uploaded file.
+    parameters:
+      - name: trackId
+        in: path
+        required: true
+        description: The ID of the audio resource
+        schema:
+          $ref: '#/components/schemas/Id'
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              file:
+                type: string
+                format: binary
+                description: The audio file to upload
+    responses:
+      '200':
+        description: Track updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: updated successfully
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '404':
+        $ref: '#/components/responses/NotFound'
+      '500':
+        $ref: '#/components/responses/ServerError'

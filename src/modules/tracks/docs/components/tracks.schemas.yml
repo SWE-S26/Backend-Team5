@@ -1,0 +1,106 @@
+# OpenAPI parameter definitions for the tracks module, starting writing normally like paths
+BasicInfo:
+  type: object
+  properties:
+    title:
+      type: string
+    permalink:
+      type: string
+    mainArtists:
+      type: array
+      items:
+        type: string
+    genre:
+      type: string
+    tags:
+      type: array
+      items:
+        type: string
+    description:
+      type: array
+      items:
+        type: string
+    isPrivate:
+      type: boolean
+  required:
+    - title
+    - permalink
+    - mainArtists
+    - genre
+    - isPrivate
+
+Permissions:
+  type: object
+  properties:
+    enableDirectDownload:
+      type: boolean
+    offlineListening:
+      type: boolean
+    includeInRssFeed:
+      type: boolean
+    displayedEmbedCode:
+      type: boolean
+    enableAppPlayback:
+      type: boolean
+  required:
+    - enableDirectDownload
+    - offlineListening
+    - includeInRssFeed
+    - displayedEmbedCode
+    - enableAppPlayback
+
+AdvancedDetails:
+  type: object
+  properties:
+    buyLink:
+      type: string
+    recordLabel:
+      type: string
+    releaseDate:
+      type: date-time
+    publisher:
+      type: string
+    ISRC:
+      type: string
+    hasExplictContent:
+      type: boolean
+    pLine:
+      type: string
+  required:
+    - buyLink
+    - recordLabel
+    - releaseDate
+    - publisher
+    - ISRC
+    - hasExplictContent
+    - pLine
+
+Licensing:
+  oneOf:
+    - type: object
+      properties:
+        type:
+          type: string
+          enum: [allRightsReserved]
+      required:
+        - type
+
+    - type: object
+      properties:
+        type:
+          type: string
+          enum: [creativeCommon]
+        attribution:
+          type: boolean
+        nonCommercial:
+          type: boolean
+        noDerivativeWorks:
+          type: boolean
+        shareAlike:
+          type: boolean
+      required:
+        - type
+        - attribution
+        - nonCommercial
+        - noDerivativeWorks
+        - shareAlike

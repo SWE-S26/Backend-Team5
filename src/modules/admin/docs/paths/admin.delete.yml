@@ -1,0 +1,59 @@
+# DELETE paths for admin module
+
+/api/admin/users/{userId}:
+  delete:
+    tags:
+      - Admin Users
+    summary: Permanently delete a user account.
+    description: Hard-deletes a user account and all associated content. This operation is irreversible. Admin only.
+    operationId: adminDeleteUser
+    parameters:
+      - $ref: "#/components/parameters/AdminUserIdParam"
+    responses:
+      200:
+        description: User account permanently deleted.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "User account permanently deleted."
+      401:
+        $ref: "#/components/responses/Unauthorized"
+      403:
+        $ref: "#/components/responses/Forbidden"
+      404:
+        $ref: "#/components/responses/NotFound"
+      500:
+        $ref: "#/components/responses/ServerError"
+
+/api/admin/tracks/{trackId}:
+  delete:
+    tags:
+      - Admin Tracks
+    summary: Permanently delete a track.
+    description: Hard-deletes a track and all associated data (comments, likes, reposts). This operation is irreversible. Admin only.
+    operationId: adminDeleteTrack
+    parameters:
+      - $ref: "#/components/parameters/AdminTrackIdParam"
+    responses:
+      200:
+        description: Track permanently deleted.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "Track permanently deleted."
+      401:
+        $ref: "#/components/responses/Unauthorized"
+      403:
+        $ref: "#/components/responses/Forbidden"
+      404:
+        $ref: "#/components/responses/NotFound"
+      500:
+        $ref: "#/components/responses/ServerError"
