@@ -1,23 +1,23 @@
 # PATCH
-/api/auth/example:
-  patch:
-    tags:
-      - auth
-    summary: patch agent profile by ID.
-    description: Returns the agent profile associated with the provided ID.
-    parameters:
-      - $ref: '#/components/parameters/IdPathParam'
-    responses:
-      200:
-        description: Successfully retrieved agent profile.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/GetUserByIdResponseDTO'
+# /api/auth/example:
+#   patch:
+#     tags:
+#       - auth
+#     summary: patch agent profile by ID.
+#     description: Returns the agent profile associated with the provided ID.
+#     parameters:
+#       - $ref: '#/components/parameters/IdPathParam'
+#     responses:
+#       200:
+#         description: Successfully retrieved agent profile.
+#         content:
+#           application/json:
+#             schema:
+#               $ref: '#/components/schemas/GetUserByIdResponseDTO'
 
-      401:
-        $ref: '#/components/responses/Unauthorized'
-      404:
-        $ref: '#/components/responses/NotFound'
-      500:
-        $ref: '#/components/responses/ServerError'
+#       401:
+#         $ref: '#/components/responses/Unauthorized'
+#       404:
+#         $ref: '#/components/responses/NotFound'
+#       500:
+#         $ref: '#/components/responses/ServerError'

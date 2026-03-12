@@ -1,68 +1,68 @@
 /api/payment/subscriptions:
-    get:
-      tags:
-        - Payment
-      summary: Get the current user's subscription
-      description: Retrieves the current subscription details for the authenticated user.
+  get:
+    tags:
+      - Payment
+    summary: Get the current user's subscription
+    description: Retrieves the current subscription details for the authenticated user.
 
-      security:
-        - bearerAuth: []
+    security:
+      - bearerAuth: []
 
-      responses:
-        "200":
-          description: Subscription retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Subscription retrieved successfully
-                  data:
-                    type: object
-                    properties:
-                      plan:
-                        type: string
-                        example: pro
-                      status:
-                        type: string
-                        example: active
-                      currentPeriodEnd:
-                        type: string
-                        format: date-time
-                        example: 2026-04-01T00:00:00Z
-              example:
-                success: true
-                message: Subscription retrieved successfully
+    responses:
+      "200":
+        description: Subscription retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: Subscription retrieved successfully
                 data:
-                  plan: pro
-                  status: active
-                  currentPeriodEnd: 2026-04-01T00:00:00Z
+                  type: object
+                  properties:
+                    plan:
+                      type: string
+                      example: pro
+                    status:
+                      type: string
+                      example: active
+                    currentPeriodEnd:
+                      type: string
+                      format: date-time
+                      example: 2026-04-01T00:00:00Z
+            example:
+              success: true
+              message: Subscription retrieved successfully
+              data:
+                plan: pro
+                status: active
+                currentPeriodEnd: 2026-04-01T00:00:00Z
 
-        "401":
-          $ref: '#/components/responses/Unauthorized'
+      "401":
+        $ref: '#/components/responses/Unauthorized'
 
-        "404":
-          description: Subscription not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: Subscription not found
-                  data:
-                    type: object
-                    nullable: true
-              example:
-                success: false
-                message: Subscription not found
-                data: null
+      "404":
+        description: Subscription not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: Subscription not found
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: Subscription not found
+              data: null

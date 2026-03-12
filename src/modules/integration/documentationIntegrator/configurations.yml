@@ -15,11 +15,15 @@ tags:
   - name: Authentication
     description: Provides secure user authentication including login, registration, access token issuance, and refresh token handling.
   - name: Profile-Management
-    description: Endpoints for fetching and managing user profiles, including updating profile information, uploading profile pictures, and managing privacy settings.
+    description: Endpoints for fetching and managing user profiles, including updating profile information, uploading profile pictures.
+  - name: Settings
+    description: Endpoints for managing user settings, including notification preferences, account settings, and application configurations.
   - name: Track Management
     description: All endpoints related to track management
   - name: Playlist Management
     description: All endpoints related to playlist management
+  # - name: Listening History
+  #   description: All endpoints related to listening history.
   - name: Feed
     description: Operations for user feed, global search, trending tracks
   - name: Search
