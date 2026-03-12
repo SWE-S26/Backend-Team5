@@ -1,13 +1,10 @@
-import { PaymentRequestDto } from './payment.request';
-import { PaymentResponseDto } from './payment.response';
-
 export class PaymentMapper {
-  static toResponse(entity: any): PaymentResponseDto {
+  static toResponse(entity: any): any {
     // TODO: map entity fields to response DTO
-    return {} as PaymentResponseDto;
+    return {} as any;
   }
 
-  static toEntity(dto: PaymentRequestDto): any {
+  static toEntity(dto: any): any {
     // TODO: map request DTO fields to entity
     return {};
   }

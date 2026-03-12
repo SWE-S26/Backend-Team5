@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { tracksController } from './tracks.controller';
+import { TracksController } from './tracks.controller';
 
 const router = Router();
 //TODO: const tracksController = new TracksController(/* TODO: inject service */);

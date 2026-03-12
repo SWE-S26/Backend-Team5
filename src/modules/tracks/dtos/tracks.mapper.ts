@@ -1,13 +1,10 @@
-import { TracksRequestDto } from './tracks.request';
-import { TracksResponseDto } from './tracks.response';
-
 export class TracksMapper {
-  static toResponse(entity: any): TracksResponseDto {
+  static toResponse(entity: any): any {
     // TODO: map entity fields to response DTO
-    return {} as TracksResponseDto;
+    return {} as any;
   }
 
-  static toEntity(dto: TracksRequestDto): any {
+  static toEntity(dto: any): any {
     // TODO: map request DTO fields to entity
     return {};
   }

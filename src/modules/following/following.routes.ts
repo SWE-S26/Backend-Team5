@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { followingController } from './following.controller';
+import { FollowingController } from './following.controller';
 
 const router = Router();
 //TODO: const followingController = new FollowingController(/* TODO: inject service */);

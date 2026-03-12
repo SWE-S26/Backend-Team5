@@ -1,13 +1,10 @@
-import { NotificationsRequestDto } from './notifications.request';
-import { NotificationsResponseDto } from './notifications.response';
-
 export class NotificationsMapper {
-  static toResponse(entity: any): NotificationsResponseDto {
+  static toResponse(entity: any): any {
     // TODO: map entity fields to response DTO
-    return {} as NotificationsResponseDto;
+    return {} as any;
   }
 
-  static toEntity(dto: NotificationsRequestDto): any {
+  static toEntity(dto: any): any {
     // TODO: map request DTO fields to entity
     return {};
   }

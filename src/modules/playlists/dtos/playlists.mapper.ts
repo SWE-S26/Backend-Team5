@@ -1,13 +1,10 @@
-import { PlaylistsRequestDto } from './playlists.request';
-import { PlaylistsResponseDto } from './playlists.response';
-
 export class PlaylistsMapper {
-  static toResponse(entity: any): PlaylistsResponseDto {
+  static toResponse(entity: any): any {
     // TODO: map entity fields to response DTO
-    return {} as PlaylistsResponseDto;
+    return {} as any;
   }
 
-  static toEntity(dto: PlaylistsRequestDto): any {
+  static toEntity(dto: any): any {
     // TODO: map request DTO fields to entity
     return {};
   }

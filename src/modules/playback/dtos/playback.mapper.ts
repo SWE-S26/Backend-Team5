@@ -1,13 +1,10 @@
-import { PlaybackRequestDto } from './playback.request';
-import { PlaybackResponseDto } from './playback.response';
-
 export class PlaybackMapper {
-  static toResponse(entity: any): PlaybackResponseDto {
+  static toResponse(entity: any): any {
     // TODO: map entity fields to response DTO
-    return {} as PlaybackResponseDto;
+    return {} as any;
   }
 
-  static toEntity(dto: PlaybackRequestDto): any {
+  static toEntity(dto: any): any {
     // TODO: map request DTO fields to entity
     return {};
   }

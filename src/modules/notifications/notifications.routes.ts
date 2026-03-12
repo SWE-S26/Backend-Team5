@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { notificationsController } from './notifications.controller';
+import { NotificationsController } from './notifications.controller';
 
 const router = Router();
 //TODO: const notificationsController = new NotificationsController(/* TODO: inject service */);

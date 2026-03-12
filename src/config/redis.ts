@@ -1,9 +1,9 @@
-import { redisCacher } from './redis/redisCacher';
-import { redisPublisher } from './redis/redisPublisher';
-import { redisSubscriber } from './redis/redisSubscriber';
+import { redisCacher } from '../shared/abstractions/redis/redisCacher';
+import { redisPublisher } from '../shared/abstractions/redis/redisPublisher';
+import { redisSubscriber } from '../shared/abstractions/redis/redisSubscriber';
 
 import { initializeSubscribers } from '../events/subscribers';
-import { log } from '../shared/logger/logger';
+import logger from '../shared/logger/logger';
 
 export const initializeRedis = async (): Promise<void> => {
   await Promise.all([
@@ -11,7 +11,7 @@ export const initializeRedis = async (): Promise<void> => {
     redisPublisher.connect(),
     redisSubscriber.connect(),
   ]);
-  log('[Redis] All clients connected', 'success');
+  logger.info('[Redis] All clients connected');
 
   await initializeSubscribers();
 };

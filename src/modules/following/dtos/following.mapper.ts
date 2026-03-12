@@ -1,13 +1,10 @@
-import { FollowingRequestDto } from './following.request';
-import { FollowingResponseDto } from './following.response';
-
 export class FollowingMapper {
-  static toResponse(entity: any): FollowingResponseDto {
+  static toResponse(entity: any): any {
     // TODO: map entity fields to response DTO
-    return {} as FollowingResponseDto;
+    return {} as any;
   }
 
-  static toEntity(dto: FollowingRequestDto): any {
+  static toEntity(dto: any): any {
     // TODO: map request DTO fields to entity
     return {};
   }
