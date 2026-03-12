@@ -9,6 +9,20 @@ interface EmailOptions {
   htmlContent: string;
 }
 
+enum Engagement {
+  REPOST_TRACK,
+  COMMENT_TRACK,
+  LIKE_TRACK,
+  REPOST_PLAYLIST,
+  COMMENT_PLAYLIST,
+  LIKE_PLAYLIST,
+}
+
+type ActivityParams = {
+  action: string;
+  buttonValue: string;
+};
+
 class EmailService {
   private transporter: Transporter;
 
@@ -33,7 +47,7 @@ class EmailService {
     }
   }
 
-  async sendEmail(options: EmailOptions) {
+  private async sendEmail(options: EmailOptions) {
     try {
       const imagePath = path.join(__dirname, './templates/assets/beatza.png');
       // assuming email is correct
@@ -109,6 +123,66 @@ class EmailService {
     return await this.sendEmail({
       userEmail: userEmail,
       subject: `You got a new DM from ${sender}`,
+      htmlContent: htmlContent,
+    });
+  }
+
+  private getProperEngagementValues(Action: Engagement, activiyValue: string) {
+    const activityParams: ActivityParams = {
+      action: '',
+      buttonValue: '',
+    };
+    switch (Action) {
+      case Engagement.REPOST_TRACK:
+        activityParams['action'] = `reposted your track : ${activiyValue}`;
+        activityParams['buttonValue'] = 'Check it out 〉';
+        break;
+      case Engagement.REPOST_PLAYLIST:
+        activityParams['action'] = `reposted your playlist : ${activiyValue}`;
+        activityParams['buttonValue'] = 'Check it out 〉';
+        break;
+      case Engagement.COMMENT_TRACK:
+        activityParams['action'] = `commented on your track : ${activiyValue}`;
+        activityParams['buttonValue'] = 'View in Comment 〉';
+        break;
+      case Engagement.COMMENT_PLAYLIST:
+        activityParams['action'] =
+          `commented on your PLAYLIST : ${activiyValue}`;
+        activityParams['buttonValue'] = 'View in Comment 〉';
+        break;
+      case Engagement.LIKE_PLAYLIST:
+        activityParams['action'] = `likes your playlist : ${activiyValue}`;
+        activityParams['buttonValue'] = 'Check it out 〉';
+        break;
+      case Engagement.LIKE_TRACK:
+        activityParams['action'] = `likes your track  : ${activiyValue}`;
+        activityParams['buttonValue'] = 'Check it out 〉';
+        break;
+      default:
+        throw new Error('Unsupported engagement type');
+    }
+    return activityParams;
+  }
+
+  async sendEngagementNotification(
+    userEmail: string,
+    sender: string,
+    activityURL: string,
+    action: Engagement,
+    activiyValue: string,
+  ) {
+    const filePath = path.join(__dirname, './templates/newMessageSent.html');
+    const activityParams = this.getProperEngagementValues(action, activiyValue);
+    let htmlContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
+    htmlContent = htmlContent
+      .replace('[Sender]', sender)
+      .replace('[ActivityURL]', activityURL)
+      .replace('[Action]', activityParams.action)
+      .replace('[ButtonValue]', activityParams.buttonValue);
+
+    return await this.sendEmail({
+      userEmail: userEmail,
+      subject: `${sender} ${activityParams.action}`,
       htmlContent: htmlContent,
     });
   }
