@@ -4,12 +4,13 @@ const searchHistoryItemSchema = new Schema(
   {
     type: { 
       type: String, 
-      enum: ['track', 'user', 'playlist', 'album'], 
+      enum: ['Track', 'User', 'Playlist'], 
       required: true 
     },
     id: { 
-      type: String, 
-      required: true 
+      type: Schema.Types.ObjectId, 
+      required: true, 
+      refPath: 'type' 
     },
   },
   { _id: false }

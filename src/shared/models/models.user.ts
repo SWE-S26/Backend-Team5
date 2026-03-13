@@ -3,42 +3,38 @@ import { imgSchema } from './schemas.shared';
 
 const socialLinkSchema = new Schema(
   {
-    link_id: { 
-        type: String, 
-        required: true 
-    },
     name: { 
-        type: String, 
-        required: true 
+      type: String, 
+      default: '' 
     },
     link: { 
-        type: String, 
-        required: true 
+      type: String, 
+      required: true 
     },
   },
   { 
-    _id: false 
+    _id: true 
   }
 );
 
 const repostSchema = new Schema(
   {
     id: { 
-        type: String, 
-        required: true 
+      type: String, 
+      required: true 
     },
     caption: { 
-        type: String, 
-        default: '' 
+      type: String, 
+      default: '' 
     },
     type: { 
-        type: String, 
-        enum: ['track', 'playlist'], 
-        required: true 
+      type: String, 
+      enum: ['track', 'playlist'], 
+      required: true 
     },
     timestamp: { 
-        type: Date, 
-        default: Date.now 
+      type: Date, 
+      default: Date.now 
     },
   },
   { 
@@ -49,16 +45,16 @@ const repostSchema = new Schema(
 const quotaSchema = new Schema(
   {
     unlimited: { 
-        type: Boolean, 
-        default: false 
+      type: Boolean, 
+      default: false 
     },
     used_seconds: { 
-        type: Number, 
-        default: 0 
+      type: Number, 
+      default: 0 
     },
     left_seconds: { 
-        type: Number, 
-        default: 120 
+      type: Number, 
+      default: 120 
     },
   },
   { 
@@ -69,149 +65,133 @@ const quotaSchema = new Schema(
 const userSchema = new Schema(
   {
     email: { 
-        type: String, 
-        required: true, 
-        unique: true, 
-        lowercase: true, 
-        trim: true 
+      type: String, 
+      required: true, 
+      unique: true, 
+      lowercase: true, 
+      trim: true 
     },
     password: { 
-        type: String, 
-        required: true 
+      type: String, 
+      required: true 
     },
     role: { 
-        type: String, 
-        enum: ['Listener/Artist', 'Admin'], 
-        required: true, 
-        default: 'Listener/Artist' 
+      type: String, 
+      enum: ['Listener/Artist', 'Admin'], 
+      required: true, 
+      default: 'Listener/Artist' 
     },
     display_name: { 
-        type: String, 
-        default: '', 
-        required: true 
+      type: String, 
+      default: '', 
+      required: true 
     },
     first_name: { 
-        type: String, 
-        default: '' 
+      type: String, 
+      default: '' 
     },
     last_name: { 
-        type: String, 
-        default: '' 
+      type: String, 
+      default: '' 
     },
     city: { 
-        type: String, 
-        default: '' 
+      type: String, 
+      default: '' 
     },
     country: { 
-        type: String, 
-        default: '' 
+      type: String, 
+      default: '' 
     },
     bio: { 
-        type: String, 
-        default: '' 
+      type: String, 
+      default: '' 
     },
     date_of_birth: { 
-        type: Date, 
-        required: true 
+      type: Date, 
+      required: true 
     },
     gender: { 
-        type: String, 
-        enum: ['Male', 'Female'], 
-        required: true 
+      type: String, 
+      enum: ['Male', 'Female'], 
+      required: true 
     },
     profile_img: { 
-        type: imgSchema, 
-        default: () => ({}) 
+      type: imgSchema 
     },
     banner_img: { 
-        type: imgSchema, 
-        default: () => ({}) 
+      type: imgSchema 
     },
     social_media_links: { 
-        type: [socialLinkSchema], 
-        default: [],
-        validate: {
-            validator: (links: { link_id: string }[]) => {
-                const ids = links.map((l) => l.link_id);
-                return ids.length === new Set(ids).size;
-            },
-            message: 'social_media_links contains duplicate link_id values',
-        },
+      type: [socialLinkSchema], 
+      default: [] 
     },
     tracks: [
-        { 
-            type: Schema.Types.ObjectId, 
-            ref: 'Track' 
-        }
+      { 
+        type: Schema.Types.ObjectId, 
+        ref: 'Track' 
+      }
     ],
     profile_link: { 
-        type: String, 
-        default: '' 
+      type: String, 
+      required: true 
     },
     links: { 
-        type: [socialLinkSchema], 
-        default: [],
-        validate: {
-            validator: (links: { link_id: string }[]) => {
-                const ids = links.map((l) => l.link_id);
-                return ids.length === new Set(ids).size;
-            },
-            message: 'links contains duplicate link_id values',
-        },
+      type: [socialLinkSchema], 
+      default: [] 
     },
     support_link: { 
-        type: String, 
-        default: '' 
+      type: String, 
+      default: '' 
     },
     liked_playlists: [
-        { 
-            type: Schema.Types.ObjectId, 
-            ref: 'Playlist' 
-        }
+      { 
+        type: Schema.Types.ObjectId, 
+        ref: 'Playlist' 
+      }
     ],
     liked_tracks: [
-        { 
-            type: Schema.Types.ObjectId, 
-            ref: 'Track' 
-        }
+      { 
+        type: Schema.Types.ObjectId, 
+        ref: 'Track' 
+      }
     ],
     playlists: [
-        { 
-            type: Schema.Types.ObjectId, 
-            ref: 'Playlist' 
-        }
+      { 
+        type: Schema.Types.ObjectId, 
+        ref: 'Playlist' 
+      }
     ],
     uploads: [
-        { 
-            type: Schema.Types.ObjectId, 
-            ref: 'Track' 
-        }
+      { 
+        type: Schema.Types.ObjectId, 
+        ref: 'Track' 
+      }
     ],
     reposts: { 
-        type: [repostSchema], 
-        default: [] 
+      type: [repostSchema], 
+      default: [] 
     },
     isPaid: { 
-        type: Boolean, 
-        default: false 
+      type: Boolean, 
+      default: false 
     },
     ban: { 
-        type: Boolean, 
-        default: false 
+      type: Boolean, 
+      default: false 
     },
     banReason: { 
-        type: String, 
-        default: '' 
+      type: String, 
+      default: '' 
     },
     subscription: {
-        subscriptionType: { 
-            type: String, 
-            default: 'free' 
-        },
-        quota: { 
-            type: quotaSchema, 
-            default: () => ({}) 
-        },
+      subscriptionType: { 
+        type: String, 
+        default: 'free' 
+      },
+      quota: { 
+        type: quotaSchema, 
+        default: () => ({}) 
+      },
     },
   },
   { timestamps: true }

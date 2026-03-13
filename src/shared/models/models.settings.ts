@@ -3,8 +3,8 @@ import { Schema, model } from 'mongoose';
 const contentSettingsSchema = new Schema(
   {
     RSS_feed_link: { 
-      type: String, 
-      default: '' 
+      type: String,
+      required: true,
     },
     RSS_email_displayed: { 
       type: String, 
@@ -28,7 +28,7 @@ const contentSettingsSchema = new Schema(
     },
     language: { 
       type: String, 
-      default: '' 
+      default: 'English' 
     },
     subscriber_redirect: { 
       type: String, 
@@ -147,7 +147,8 @@ const notificationSettingsSchema = new Schema(
 const accountSettingsSchema = new Schema(
   {
     date_of_birth: { 
-      type: Date 
+      type: Date,
+      required: true
     },
     theme: { 
       type: String, 
