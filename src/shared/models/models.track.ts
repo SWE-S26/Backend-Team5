@@ -56,35 +56,44 @@ const licenseSchema = new Schema(
 
 const trackSchema = new Schema(
   {
-    title: { 
-      type: String, 
-      required: true 
+    basicInfo: {
+      title: { 
+        type: String, 
+        required: true 
+      },
+      permalink: { 
+        type: String, 
+        default: '' 
+      },
+      mainArtists: { 
+        type: [String], 
+        required: true 
+      },
+      genre: { 
+        type: String, 
+        default: '' 
+      },
+      tags: { 
+        type: [String], 
+        default: [] 
+      },
+      description: { 
+        type: [String], 
+        default: [] 
+      },
+      isPrivate: { 
+        type: Boolean, 
+        default: false 
+      },
     },
     audio_url: { 
       type: String, 
       required: true 
     },
-    main_artist: { 
-      type: Schema.Types.ObjectId, 
-      ref: 'User', 
-      required: true 
-    },
-    genre: { 
-      type: String, 
-      default: '' 
-    },
-    tags: { 
-      type: [String], 
-      default: [] 
-    },
-    description: { 
-      type: String, 
-      default: '' 
-    },
-    privacy: { 
-      type: String, 
-      enum: ['Public', 'Private', 'Schedule'], 
-      default: 'Public' 
+    posterId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
     },
     image: { 
       type: imgSchema, 
@@ -94,10 +103,12 @@ const trackSchema = new Schema(
       type: Number, 
       default: 0 
     },
-    comments: [{ 
-      type: Schema.Types.ObjectId, 
-      ref: 'Comment' 
-    }],
+    comments: [
+      { 
+        type: Schema.Types.ObjectId, 
+        ref: 'Comment' 
+      }
+    ],
     number_of_reposts: { 
       type: Number, 
       default: 0 
@@ -106,10 +117,12 @@ const trackSchema = new Schema(
       type: Number, 
       default: 0 
     },
-    liked_by: [{ 
-      type: Schema.Types.ObjectId, 
-      ref: 'User' 
-    }],
+    liked_by: [
+      { 
+        type: Schema.Types.ObjectId, 
+        ref: 'User' 
+      }
+    ],
     permissions: { 
       type: permissionsSchema, 
       default: () => ({}) 
