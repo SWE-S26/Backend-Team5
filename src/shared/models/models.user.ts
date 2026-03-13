@@ -3,198 +3,217 @@ import { imgSchema } from './schemas.shared';
 
 const socialLinkSchema = new Schema(
   {
-    name: { 
-      type: String, 
-      default: '' 
+    name: {
+      type: String,
+      default: '',
     },
-    link: { 
-      type: String, 
-      required: true 
+    link: {
+      type: String,
+      required: true,
     },
   },
-  { 
-    _id: true 
-  }
+  {
+    _id: true,
+  },
 );
 
 const repostSchema = new Schema(
   {
-    id: { 
-      type: String, 
-      required: true 
+    id: {
+      type: String,
+      required: true,
     },
-    caption: { 
-      type: String, 
-      default: '' 
+    caption: {
+      type: String,
+      default: '',
+      maxlength: 500,
     },
-    type: { 
-      type: String, 
-      enum: ['track', 'playlist'], 
-      required: true 
+    type: {
+      type: String,
+      enum: ['track', 'playlist'],
+      required: true,
     },
-    timestamp: { 
-      type: Date, 
-      default: Date.now 
+    timestamp: {
+      type: Date,
+      default: Date.now,
     },
   },
-  { 
-    _id: false 
-  }
+  {
+    _id: false,
+  },
 );
 
 const quotaSchema = new Schema(
   {
-    unlimited: { 
-      type: Boolean, 
-      default: false 
+    unlimited: {
+      type: Boolean,
+      default: false,
     },
-    used_seconds: { 
-      type: Number, 
-      default: 0 
+    usedSeconds: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
-    left_seconds: { 
-      type: Number, 
-      default: 120 
+    leftSeconds: {
+      type: Number,
+      default: 120,
+      min: 0,
     },
   },
-  { 
-    _id: false 
-  }
+  {
+    _id: false,
+  },
 );
 
 const userSchema = new Schema(
   {
-    email: { 
-      type: String, 
-      required: true, 
-      unique: true, 
-      lowercase: true, 
-      trim: true 
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
     },
-    password: { 
-      type: String, 
-      required: true 
+    password: {
+      type: String,
+      required: true,
     },
-    role: { 
-      type: String, 
-      enum: ['Listener/Artist', 'Admin'], 
-      required: true, 
-      default: 'Listener/Artist' 
+    role: {
+      type: String,
+      enum: ['Listener/Artist', 'Admin'],
+      required: true,
+      default: 'Listener/Artist',
     },
-    display_name: { 
-      type: String, 
-      default: '', 
-      required: true 
+    displayName: {
+      type: String,
+      default: '',
+      required: true,
+      minlength: 1,
+      maxlength: 50,
     },
-    first_name: { 
-      type: String, 
-      default: '' 
+    firstName: {
+      type: String,
+      default: '',
+      maxlength: 50,
     },
-    last_name: { 
-      type: String, 
-      default: '' 
+    lastName: {
+      type: String,
+      default: '',
+      maxlength: 50,
     },
-    city: { 
-      type: String, 
-      default: '' 
+    city: {
+      type: String,
+      default: '',
+      maxlength: 50,
     },
-    country: { 
-      type: String, 
-      default: '' 
+    country: {
+      type: String,
+      default: '',
     },
-    bio: { 
-      type: String, 
-      default: '' 
+    bio: {
+      type: String,
+      default: '',
+      maxlength: 500,
     },
-    date_of_birth: { 
-      type: Date, 
-      required: true 
+    dateOfBirth: {
+      type: Date,
+      required: true,
+      min: new Date('1950-01-01'),
+      validate: {
+        validator: (v: Date) => {
+          const d = new Date();
+          d.setFullYear(d.getFullYear() - 13);
+          return v <= d;
+        },
+        message: 'Must be at least 13 years old',
+      },
     },
-    gender: { 
-      type: String, 
-      enum: ['Male', 'Female'], 
-      required: true 
+    gender: {
+      type: String,
+      enum: ['Male', 'Female'],
+      required: true,
     },
-    profile_img: { 
-      type: imgSchema 
+    profileImg: {
+      type: imgSchema,
     },
-    banner_img: { 
-      type: imgSchema 
+    bannerImg: {
+      type: imgSchema,
     },
-    social_media_links: { 
-      type: [socialLinkSchema], 
-      default: [] 
+    socialMediaLinks: {
+      type: [socialLinkSchema],
+      default: [],
     },
     tracks: [
-      { 
-        type: Schema.Types.ObjectId, 
-        ref: 'Track' 
-      }
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Track',
+      },
     ],
-    profile_link: { 
-      type: String, 
-      required: true 
+    profileLink: {
+      type: String,
+      required: true,
     },
-    links: { 
-      type: [socialLinkSchema], 
-      default: [] 
+    links: {
+      type: [socialLinkSchema],
+      default: [],
     },
-    support_link: { 
-      type: String, 
-      default: '' 
+    supportLink: {
+      type: String,
+      default: '',
     },
-    liked_playlists: [
-      { 
-        type: Schema.Types.ObjectId, 
-        ref: 'Playlist' 
-      }
+    likedPlaylists: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Playlist',
+      },
     ],
-    liked_tracks: [
-      { 
-        type: Schema.Types.ObjectId, 
-        ref: 'Track' 
-      }
+    likedTracks: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Track',
+      },
     ],
     playlists: [
-      { 
-        type: Schema.Types.ObjectId, 
-        ref: 'Playlist' 
-      }
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Playlist',
+      },
     ],
     uploads: [
-      { 
-        type: Schema.Types.ObjectId, 
-        ref: 'Track' 
-      }
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Track',
+      },
     ],
-    reposts: { 
-      type: [repostSchema], 
-      default: [] 
+    reposts: {
+      type: [repostSchema],
+      default: [],
     },
-    isPaid: { 
-      type: Boolean, 
-      default: false 
+    isPaid: {
+      type: Boolean,
+      default: false,
     },
-    ban: { 
-      type: Boolean, 
-      default: false 
+    ban: {
+      type: Boolean,
+      default: false,
     },
-    banReason: { 
-      type: String, 
-      default: '' 
+    banReason: {
+      type: String,
+      default: '',
+      maxlength: 500,
     },
     subscription: {
-      subscriptionType: { 
-        type: String, 
-        default: 'free' 
+      subscriptionType: {
+        type: String,
+        default: 'free',
       },
-      quota: { 
-        type: quotaSchema, 
-        default: () => ({}) 
+      quota: {
+        type: quotaSchema,
+        default: () => ({}),
       },
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default model('User', userSchema);

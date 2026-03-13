@@ -4,7 +4,7 @@ const notificationTypeSchema = new Schema(
   {
     type: {
       type: String,
-      enum: ['follow', 'like', 'comment', 'repost', 'mention', 'new_message', 'new_track'],
+      enum: ['follow', 'like', 'comment', 'repost', 'mention', 'newMessage', 'newTrack'],
       required: true,
     },
     referenceId: { 
@@ -31,7 +31,7 @@ const notificationSchema = new Schema(
       default: false 
     },
   },
-  { timestamps: { createdAt: 'created_at', updatedAt: false } }
+  { timestamps: { createdAt: 'createdAt', updatedAt: false } }
 );
 
 export default model('Notification', notificationSchema);

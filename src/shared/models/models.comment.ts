@@ -2,33 +2,37 @@ import { Schema, model } from 'mongoose';
 
 const commentSchema = new Schema(
   {
-    user_id: { 
-      type: Schema.Types.ObjectId, 
-      ref: 'User', 
-      required: true 
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
     },
-    track_id: { 
-      type: Schema.Types.ObjectId, 
-      ref: 'Track', 
-      required: true 
+    trackId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Track',
+      required: true
     },
-    content: { 
-      type: String, 
-      required: true 
+    content: {
+      type: String,
+      required: true,
+      minlength: 1,
+      maxlength: 500
     },
-    num_likes: { 
-      type: Number, 
-      default: 0 
+    numLikes: {
+      type: Number,
+      default: 0,
+      min: 0
     },
-    reply_list: [{ 
+    replyList: [{
       type: Schema.Types.ObjectId, 
       ref: 'Comment' 
     }],
-    timestamp_seconds: { 
-      type: Number, 
-      default: 0 
+    timestampSeconds: {
+      type: Number,
+      default: 0,
+      min: 0
     },
-    liked_list: [{ 
+    likedList: [{
       type: Schema.Types.ObjectId, 
       ref: 'User' 
     }],

@@ -3,152 +3,159 @@ import { imgSchema } from './schemas.shared';
 
 const permissionsSchema = new Schema(
   {
-    enableDirectDownload: { 
-      type: Boolean, 
-      default: false 
+    enableDirectDownload: {
+      type: Boolean,
+      default: false,
     },
-    offlineListening: { 
-      type: Boolean, 
-      default: false 
+    offlineListening: {
+      type: Boolean,
+      default: false,
     },
-    includeInRssFeed: { 
-      type: Boolean, 
-      default: false 
+    includeInRssFeed: {
+      type: Boolean,
+      default: false,
     },
-    displayedEmbedCode: { 
-      type: Boolean, 
-      default: false 
+    displayedEmbedCode: {
+      type: Boolean,
+      default: false,
     },
-    enableAppPlayback: { 
-      type: Boolean, 
-      default: true 
+    enableAppPlayback: {
+      type: Boolean,
+      default: true,
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const licenseSchema = new Schema(
   {
-    type: { 
-      type: String, 
-      enum: ['allRightsReserved', 'creativeCommons'], 
-      default: 'allRightsReserved' 
+    type: {
+      type: String,
+      enum: ['allRightsReserved', 'creativeCommons'],
+      default: 'allRightsReserved',
     },
-    attribution: { 
-      type: Boolean, 
-      default: false 
+    attribution: {
+      type: Boolean,
+      default: false,
     },
-    nonCommercial: { 
-      type: Boolean, 
-      default: false 
+    nonCommercial: {
+      type: Boolean,
+      default: false,
     },
-    noDerivativeWorks: { 
-      type: Boolean, 
-      default: false 
+    noDerivativeWorks: {
+      type: Boolean,
+      default: false,
     },
-    shareAlike: { 
-      type: Boolean, 
-      default: false 
+    shareAlike: {
+      type: Boolean,
+      default: false,
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const trackSchema = new Schema(
   {
     basicInfo: {
-      title: { 
-        type: String, 
-        required: true 
+      title: {
+        type: String,
+        required: true,
+        minlength: 1,
+        maxlength: 100,
       },
-      permalink: { 
-        type: String, 
-        default: '' 
+      permalink: {
+        type: String,
+        default: '',
       },
-      mainArtists: { 
-        type: [String], 
-        required: true 
+      mainArtists: {
+        type: [String],
+        required: true,
       },
-      genre: { 
-        type: String, 
-        default: '' 
+      genre: {
+        type: String,
+        default: '',
       },
-      tags: { 
-        type: [String], 
-        default: [] 
+      tags: {
+        type: [String],
+        default: [],
       },
-      description: { 
-        type: [String], 
-        default: [] 
+      description: {
+        type: [String],
+        default: [],
       },
-      isPrivate: { 
-        type: Boolean, 
-        default: false 
+      isPrivate: {
+        type: Boolean,
+        default: false,
       },
     },
-    audio_url: { 
-      type: String, 
-      required: true 
+    audioUrl: {
+      type: String,
+      required: true,
     },
     posterId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
-    image: { 
-      type: imgSchema, 
-      default: () => ({}) 
+    image: {
+      type: imgSchema,
+      default: () => ({}),
     },
-    num_of_plays: { 
-      type: Number, 
-      default: 0 
+    numOfPlays: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
     comments: [
-      { 
-        type: Schema.Types.ObjectId, 
-        ref: 'Comment' 
-      }
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Comment',
+      },
     ],
-    number_of_reposts: { 
-      type: Number, 
-      default: 0 
+    numberOfReposts: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
-    num_of_likes: { 
-      type: Number, 
-      default: 0 
+    numOfLikes: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
-    liked_by: [
-      { 
-        type: Schema.Types.ObjectId, 
-        ref: 'User' 
-      }
+    likedBy: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
     ],
-    permissions: { 
-      type: permissionsSchema, 
-      default: () => ({}) 
+    permissions: {
+      type: permissionsSchema,
+      default: () => ({}),
     },
-    license: { 
-      type: licenseSchema, 
-      default: () => ({}) 
+    license: {
+      type: licenseSchema,
+      default: () => ({}),
     },
-    composer: { 
-      type: String, 
-      default: '' 
+    composer: {
+      type: String,
+      default: '',
     },
-    release_title: { 
-      type: String, 
-      default: '' 
+    releaseTitle: {
+      type: String,
+      default: '',
+      maxlength: 100,
     },
-    caption: { 
-      type: String, 
-      default: '' 
+    caption: {
+      type: String,
+      default: '',
+      maxlength: 500,
     },
-    hidden: { 
-      type: Boolean, 
-      default: false 
+    hidden: {
+      type: Boolean,
+      default: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default model('Track', trackSchema);

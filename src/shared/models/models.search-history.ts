@@ -18,15 +18,15 @@ const searchHistoryItemSchema = new Schema(
 
 const searchHistorySchema = new Schema(
   {
-    user_id: { 
-      type: Schema.Types.ObjectId, 
-      ref: 'User', 
-      required: true, 
-      unique: true 
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      unique: true
     },
-    history_list: { 
-      type: [searchHistoryItemSchema], 
-      default: [] 
+    historyList: {
+      type: [searchHistoryItemSchema],
+      default: []
     },
   },
   { timestamps: false }

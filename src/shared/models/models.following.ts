@@ -2,11 +2,11 @@ import { Schema, model } from 'mongoose';
 
 const followingSchema = new Schema(
   {
-    user_id: { 
-      type: Schema.Types.ObjectId, 
-      ref: 'User', 
-      required: true, 
-      unique: true 
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      unique: true
     },
     followed: [{ 
       type: Schema.Types.ObjectId, 

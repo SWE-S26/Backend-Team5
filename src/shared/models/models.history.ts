@@ -2,10 +2,10 @@ import { Schema, model } from 'mongoose';
 
 const recentlyPlayedSchema = new Schema(
   {
-    playlist_id: { 
-      type: Schema.Types.ObjectId, 
-      ref: 'Playlist', 
-      required: true 
+    playlistId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Playlist',
+      required: true
     },
     timestamp: { 
       type: Date, 
@@ -17,10 +17,10 @@ const recentlyPlayedSchema = new Schema(
 
 const historyTrackSchema = new Schema(
   {
-    track_id: { 
-      type: Schema.Types.ObjectId, 
-      ref: 'Track', 
-      required: true 
+    trackId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Track',
+      required: true
     },
     timestamp: { 
       type: Date, 
@@ -32,19 +32,19 @@ const historyTrackSchema = new Schema(
 
 const historySchema = new Schema(
   {
-    user_id: { 
-      type: Schema.Types.ObjectId, 
-      ref: 'User', 
-      required: true, 
-      unique: true 
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      unique: true
     },
-    recently_played: { 
-      type: [recentlyPlayedSchema], 
-      default: [] 
+    recentlyPlayed: {
+      type: [recentlyPlayedSchema],
+      default: []
     },
-    history_tracks: { 
-      type: [historyTrackSchema], 
-      default: [] 
+    historyTracks: {
+      type: [historyTrackSchema],
+      default: []
     },
   },
   { timestamps: false }

@@ -2,27 +2,29 @@ import { Schema, model } from 'mongoose';
 
 const messageSchema = new Schema(
   {
-    chat_id: { 
-      type: String, 
-      required: true, 
-      index: true 
+    chatId: {
+      type: String,
+      required: true,
+      index: true
     },
-    sender_id: { 
-      type: Schema.Types.ObjectId, 
-      ref: 'User', 
-      required: true 
+    senderId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
     },
-    receiver_id: { 
-      type: Schema.Types.ObjectId, 
-      ref: 'User', 
-      required: true 
+    receiverId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
     },
-    content: { 
-      type: String, 
-      required: true 
+    content: {
+      type: String,
+      required: true,
+      minlength: 1,
+      maxlength: 2000
     },
   },
-  { timestamps: { createdAt: 'created_at', updatedAt: false } }
+  { timestamps: { createdAt: 'createdAt', updatedAt: false } }
 );
 
 export default model('Message', messageSchema);

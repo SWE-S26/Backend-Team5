@@ -2,16 +2,16 @@ import { Schema, model } from 'mongoose';
 
 const reportSchema = new Schema(
   {
-    reporter_id: { 
-      type: Schema.Types.ObjectId, 
-      ref: 'User', 
-      required: true 
+    reporterId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
     },
-    reported_id: { 
-      type: Schema.Types.ObjectId, 
-      required: true 
+    reportedId: {
+      type: Schema.Types.ObjectId,
+      required: true
     },
-    complaint_type: {
+    complaintType: {
       type: String,
       enum: [
         'Spam',
@@ -23,26 +23,28 @@ const reportSchema = new Schema(
       ],
       required: true,
     },
-    violator_type: { 
-      type: String, 
-      enum: ['User', 'Comment', 'Track'], 
-      required: true 
+    violatorType: {
+      type: String,
+      enum: ['User', 'Comment', 'Track'],
+      required: true
     },
-    content: { 
-      type: String, 
-      default: '' 
+    content: {
+      type: String,
+      default: '',
+      maxlength: 2000
     },
     status: { 
       type: String, 
       enum: ['pending', 'resolved', 'dismissed'], 
       default: 'pending' 
     },
-    admin_note: { 
-      type: String, 
-      default: '' 
+    adminNote: {
+      type: String,
+      default: '',
+      maxlength: 2000
     },
   },
-  { timestamps: { createdAt: 'created_at', updatedAt: false } }
+  { timestamps: { createdAt: 'createdAt', updatedAt: false } }
 );
 
 export default model('Report', reportSchema);
