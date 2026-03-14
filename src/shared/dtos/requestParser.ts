@@ -1,5 +1,5 @@
-import { Request } from "express";
-import { z } from "zod";
+import { Request } from 'express';
+import { z } from 'zod';
 
 /**
  * The provided DTO must describe the *request structure* as an object
@@ -17,18 +17,13 @@ import { z } from "zod";
  * - `success: false` → `error` contains validation issues
  */
 export const parseRequest = <T extends z.ZodTypeAny>(
-	RequestDTO: T,
-	req: Request,
+  RequestDTO: T,
+  req: Request,
 ) => {
-	const { success, data, error } = RequestDTO.safeParse({
-		body: req.body,
-		params: req.params,
-		query: req.query,
-		headers: req.headers,
-	});
-	return {
-		success,
-		data,
-		error,
-	};
+  return RequestDTO.safeParse({
+    body: req.body,
+    params: req.params,
+    query: req.query,
+    headers: req.headers,
+  });
 };
