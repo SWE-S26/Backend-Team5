@@ -91,7 +91,7 @@
                 $ref: '#/components/schemas/ErrorResponse'
 
 
-  /api/ettings/content:
+  /api/settings/content:
     get:
       tags:
         - Settings
