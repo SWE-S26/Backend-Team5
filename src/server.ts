@@ -6,7 +6,7 @@ const port = process.env.PORT || 4123;
 
 const start = async () => {
   try {
-    await initializeConfig();
+    // await initializeConfig();
     app.listen(port, () => {
       logger.info(`Server running on port ${port}`);
     });

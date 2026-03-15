@@ -1,3 +1,4 @@
+import { z, email } from 'zod';
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 
 // ! THIS IS AN EXAMPLE DTO
