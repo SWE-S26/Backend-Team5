@@ -12,6 +12,10 @@ export interface EmailVerificationPayload {
   _id: string;
 }
 
+export interface RefreshTokenPayload {
+  _id: string;
+}
+
 declare global {
   namespace Express {
     interface Request {
@@ -23,10 +27,14 @@ declare global {
 class JWTService {
   private secretKey: string;
   private expiresIn: SignOptions['expiresIn'];
+  private refreshSecretKey: string;
+  private refreshExpiresIn: SignOptions['expiresIn'];
 
   constructor() {
     this.secretKey = process.env.JWT_SECRET!;
+    this.refreshSecretKey = process.env.REFRESH_JWT_SECRET!;
     this.expiresIn = '1h';
+    this.refreshExpiresIn = '7d';
   }
 
   createJWT(_id: string, role: string, paymentInfo: any): string {
@@ -41,6 +49,21 @@ class JWTService {
     };
 
     return jwt.sign(payload, this.secretKey, options);
+  }
+
+  createRefreshToken(_id: string): string {
+    return jwt.sign({ _id }, this.refreshSecretKey, {
+      expiresIn: this.refreshExpiresIn,
+    });
+  }
+
+  verifyRefreshToken(token: string): RefreshTokenPayload | null {
+    try {
+      return jwt.verify(token, this.refreshSecretKey) as RefreshTokenPayload;
+    } catch (err) {
+      logger.error(`Refresh token verification failed: ${err}`);
+      return null;
+    }
   }
 
   createJWTForEmails(_id: string): string {

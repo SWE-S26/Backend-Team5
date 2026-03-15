@@ -1,19 +1,19 @@
 # GET
-/api/auth/verify-email:
+/api/auth/v1/verify-email:
   get:
     tags:
       - Authentication
-    summary:  Verify a user's email address
+    summary: Verify a user's email address
     description: |
       Confirms the user's email by validating the verification token sent in the email.
       If the token is valid, the user's account is marked as verified.
     parameters:
-    - name: token
-      in: query
-      required: true
-      schema:
-        type: string
-      description: The email verification token sent to the user's email
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+        description: The email verification token sent to the user's email
     responses:
       200:
         description: Successfully Verified User Email.
@@ -24,9 +24,9 @@
               properties:
                 message:
                   type: string
-                  example: "User Verified successfully"
+                  example: 'User Verified successfully'
             example:
-              message: "User Verified successfully"
+              message: 'User Verified successfully'
       401:
         $ref: '#/components/responses/Unauthorized'
       404:
@@ -35,7 +35,7 @@
         $ref: '#/components/responses/Gone'
       500:
         $ref: '#/components/responses/ServerError'
-/api/auth/cross/desktop:
+/api/auth/v1/cross/desktop:
   get:
     tags:
       - Authentication
@@ -52,7 +52,7 @@
       their mobile device.
 
     responses:
-      "200":
+      '200':
         description: QR code generated successfully
         content:
           application/json:
@@ -64,22 +64,22 @@
                   example: true
                 message:
                   type: string
-                  example: "QR code generated successfully"
+                  example: 'QR code generated successfully'
                 data:
                   type: object
                   properties:
                     qrCode:
                       type: string
                       description: Encoded QR code value used for cross-device authentication
-                      example: "qr_abc123xyz"
+                      example: 'qr_abc123xyz'
                     expiresIn:
                       type: integer
                       description: Expiration time of the QR code in seconds
                       example: 120
 
-      "500":
+      '500':
         $ref: '#/components/responses/ServerError'
-/api/auth/logout:
+/api/auth/v1/logout:
   get:
     tags:
       - Authentication
@@ -101,20 +101,20 @@
                   example: true
                 message:
                   type: string
-                  example: "Logged out successfully"
+                  example: 'Logged out successfully'
                 data:
                   type: object
                   nullable: true
             example:
               success: true
-              message: "Logged out successfully"
+              message: 'Logged out successfully'
               data: null
       401:
         $ref: '#/components/responses/Unauthorized'
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/auth/refresh-token:
+/api/auth/v1/refresh-token:
   get:
     tags:
       - Authentication
@@ -124,29 +124,29 @@
       to remain authenticated without re-entering credentials. The new token is
       typically sent in an HTTP-only cookie to enhance security and prevent XSS attacks.
     responses:
-          200:
-            description: Token refreshed successfully
-            content:
-              application/json:
-                schema:
+      200:
+        description: Token refreshed successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: 'Token refreshed successfully'
+                data:
                   type: object
-                  properties:
-                    success:
-                      type: boolean
-                      example: true
-                    message:
-                      type: string
-                      example: "Token refreshed successfully"
-                    data:
-                      type: object
-                      nullable: true
-                example:
-                  success: true
-                  message: "Token refreshed successfully"
-                  data: null
-            401:
-              $ref: '#/components/responses/Unauthorized'
-            404:
-              $ref: '#/components/responses/NotFound'
-            500:
-              $ref: '#/components/responses/ServerError'
+                  nullable: true
+            example:
+              success: true
+              message: 'Token refreshed successfully'
+              data: null
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'

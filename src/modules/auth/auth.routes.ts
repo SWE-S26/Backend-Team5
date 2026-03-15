@@ -20,9 +20,9 @@ authRouter.post(
   authController.logInUser.bind(authController),
 );
 
-authRouter.post(
-  apiVersions.v1 + '/forgot-password',
-  authController.forgotPassword.bind(authController),
+authRouter.get(
+  apiVersions.v1 + '/refresh-token',
+  authController.refreshToken.bind(authController),
 );
 
 authRouter.post(

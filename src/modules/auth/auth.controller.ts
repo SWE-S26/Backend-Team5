@@ -92,21 +92,30 @@ export class AuthController {
 
     const logInParams = validatedRequest.data.body;
 
-    const jwtLogInToken = await this.service.logInUser(logInParams);
+    const { accessToken, refreshToken } =
+      await this.service.logInUser(logInParams);
 
     if (this.isCross(req)) {
       res.json({
         message: 'User Logged In Sucessfully',
         data: {
-          acessToken: jwtLogInToken,
+          acessToken: accessToken,
+          refreshToken: refreshToken,
         },
       });
     } else {
-      res.cookie('accessToken', jwtLogInToken, {
+      res.cookie('accessToken', accessToken, {
         httpOnly: true,
-        secure: this.isProduction ? true : false,
+        secure: this.isProduction,
         sameSite: 'strict', // CSRF protection : another website access the token if not implied
         maxAge: 1000 * 60 * 60 * 1,
+      });
+
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: this.isProduction,
+        sameSite: 'strict',
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
       });
 
       res.json({
@@ -137,6 +146,45 @@ export class AuthController {
     });
   }
 
+  async refreshToken(req: Request, res: Response): Promise<void> {
+    if (this.isCross(req)) {
+      const incomingRefreshToken =
+        req.headers['authorization']?.split(' ')[1] || '';
+      if (!incomingRefreshToken) {
+        throw new Error('Refresh token is required');
+      }
+
+      const newAccessToken =
+        await this.service.refreshAccessToken(incomingRefreshToken);
+
+      res.json({
+        message: 'Token Refreshed Successfully',
+        data: {
+          accessToken: newAccessToken,
+        },
+      });
+    } else {
+      const incomingRefreshToken = req.cookies['refreshToken'];
+      if (!incomingRefreshToken) {
+        throw new Error('Refresh token is required');
+      }
+
+      const newAccessToken =
+        await this.service.refreshAccessToken(incomingRefreshToken);
+
+      res.cookie('accessToken', newAccessToken, {
+        httpOnly: true,
+        secure: this.isProduction,
+        sameSite: 'strict',
+        maxAge: 1000 * 60 * 60 * 1,
+      });
+
+      res.json({
+        message: 'Token Refreshed Successfully',
+      });
+    }
+  }
+
   async forgotPassword(req: Request, res: Response): Promise<void> {
     const validatedRequest = parseRequest(ForgotPasswordRequestDTO, req);
 
@@ -150,6 +198,7 @@ export class AuthController {
 
     try {
       // ! 7aseb mn v1 de
+      // https:beatza/{varaible}
       const resetLink = `${this.hostUrl}${this.urlPrefix}/v1/reset-password?token=${token}`;
 
       logger.info(`Generated password reset link for ${email}: ${token}`);
@@ -193,14 +242,22 @@ export class AuthController {
         message: 'User Logged Out Sucessfully',
         data: {
           acessToken: null,
+          refreshToken: null,
         },
       });
     } else {
       res.clearCookie('accessToken', {
         httpOnly: true,
-        secure: this.isProduction ? true : false,
+        secure: this.isProduction,
         sameSite: 'strict',
       });
+
+      res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: this.isProduction,
+        sameSite: 'strict',
+      });
+
       res.json({
         message: 'User Logged Out Successfully',
       });

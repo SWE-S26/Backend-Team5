@@ -22,6 +22,11 @@ type logInDTO = {
   password: string;
 };
 
+interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
 export class AuthService {
   private readonly jwtService: JWTService;
   private readonly authRepository: AuthRepository;
@@ -119,7 +124,23 @@ export class AuthService {
     }
   }
 
-  async logInUser(logInDTO: logInDTO): Promise<String> {
+  async refreshAccessToken(incomingRefreshToken: string): Promise<string> {
+    const payload = this.jwtService.verifyRefreshToken(incomingRefreshToken);
+    if (!payload) throw UnauthorizedError('Invalid refresh token');
+
+    const user = await this.authRepository.findById(payload._id);
+    if (!user) throw UnauthorizedError('Session expired, please log in again');
+
+    const newAccessToken = this.jwtService.createJWT(
+      user._id as string,
+      user.role,
+      user.subscription,
+    );
+
+    return newAccessToken;
+  }
+
+  async logInUser(logInDTO: logInDTO): Promise<AuthTokens> {
     const searchUser = await this.authRepository.findByEmail(logInDTO.email);
 
     if (!searchUser) {
@@ -147,11 +168,20 @@ export class AuthService {
       throw NotFoundError('Invalid email or password');
     }
 
-    return this.jwtService.createJWT(
+    const accessToken = this.jwtService.createJWT(
       searchUser._id as string,
       searchUser.role,
       searchUser.subscription as any,
     );
+
+    const refreshToken = this.jwtService.createRefreshToken(
+      searchUser._id as string,
+    );
+
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
 
   async verifyEmail(token: string): Promise<Boolean> {
