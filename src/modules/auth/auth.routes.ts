@@ -12,7 +12,9 @@ const authController = new AuthController(authService);
 authRouter.post('/find-email', (req, res) =>
   authController.checkEmail(req, res),
 );
-// authRouter.get('/:id',   (req, res) => authController.findOne(req, res));
+authRouter.post('/sign-up', (req, res) =>
+  authController.registerUser(req, res),
+);
 // authRouter.post('/',     (req, res) => authController.create(req, res));
 // authRouter.put('/:id',   (req, res) => authController.replace(req, res));
 // authRouter.patch('/:id', (req, res) => authController.update(req, res));

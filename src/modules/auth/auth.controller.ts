@@ -1,13 +1,16 @@
 import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { AuthService } from './auth.service';
-import { checkEmailRequestBodyDTO } from './dtos/auth.request.body';
+import {
+  checkEmailRequestBodyDTO,
+  SignUpRequestBodyDTO,
+} from './dtos/auth.request.body';
 
 export class AuthController {
   constructor(private readonly service: AuthService) {}
 
-  async checkEmail(_req: Request, res: Response): Promise<void> {
-    const validatedRequest = parseRequest(checkEmailRequestBodyDTO, _req);
+  async checkEmail(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(checkEmailRequestBodyDTO, req);
 
     if (!validatedRequest.success) {
       throw validatedRequest.error;
@@ -25,9 +28,22 @@ export class AuthController {
     });
   }
 
-  async findOne(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
+  async registerUser(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(SignUpRequestBodyDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const userParams = validatedRequest.data.body;
+    const isNewUserCreated = await this.service.registerNewUser(userParams);
+    if (isNewUserCreated) {
+      res.json({
+        code: 200,
+        message: 'User Signed Up Sucessfully',
+        data: null,
+      });
+    }
   }
 
   async create(req: Request, res: Response): Promise<void> {
