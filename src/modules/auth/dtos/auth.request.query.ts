@@ -1,10 +1,12 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 import { PaginationQueryDto } from '../../../shared/dtos/commonDTO';
 
+// ! THIS IS AN EXAMPLE DTO
 export const AuthRoleQueryDto = extendedZod.object({
   role: extendedZod.enum(['user', 'admin']).optional(),
 });
 
+// ! THIS IS AN EXAMPLE DTO
 export const ListAuthsQueryDto = PaginationQueryDto.extend(
   AuthRoleQueryDto.shape,
 ).extend({

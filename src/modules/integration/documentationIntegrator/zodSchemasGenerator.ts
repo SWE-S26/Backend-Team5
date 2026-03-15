@@ -6,7 +6,6 @@ import {
 } from '@asteasolutions/zod-to-openapi';
 // import logger from '../../../shared/logger/logger';
 
-import userDocsRegistry from '../../user/user.registry';
 import authDocsRegistry from '../../auth/auth.registry';
 import adminDocsRegistry from '../../admin/admin.registry';
 import engagementDocsRegistry from '../../engagement/engagement.registry';
@@ -28,7 +27,6 @@ interface DocumentationRegistry {
 }
 
 const registries: DocumentationRegistry[] = [
-  userDocsRegistry,
   authDocsRegistry,
   adminDocsRegistry,
   engagementDocsRegistry,

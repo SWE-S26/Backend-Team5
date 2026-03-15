@@ -1,17 +1,19 @@
 import { Router } from 'express';
 const router = Router();
 
+router.use('/get-health', (req, res) => {
+  res.json({ status: 'I am working!' });
+});
+
 import devSwagger from './documentationIntegrator/swagger.dev';
 
 router.use(devSwagger);
 
-import userRoutes from '../user/user.routes';
-router.use('/users', userRoutes);
-
 import authRoutes from '../auth/auth.routes';
 router.use('/auth', authRoutes);
 
-//TODO: Here should lie the middleware for authentication
+import { requireAuth } from '../../shared/middleware/requireAuth';
+router.use(requireAuth);
 
 import adminRoutes from '../admin/admin.routes';
 router.use('/admin', adminRoutes);

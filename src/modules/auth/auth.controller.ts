@@ -2,14 +2,19 @@ import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { AuthService } from './auth.service';
 import {
-  checkEmailRequestBodyDTO,
-  SignUpRequestBodyDTO,
-  LoginInRequestBodyDTO,
-} from './dtos/auth.request.body';
-import { access } from 'node:fs';
+  CheckEmailRequestDTO,
+  LogInRequestDTO,
+  SignUpRequestDTO,
+} from './dtos/auth.request';
 
 export class AuthController {
-  constructor(private readonly service: AuthService) {}
+  private isProduction: boolean;
+  private readonly service: AuthService;
+
+  constructor() {
+    this.isProduction = process.env.NODE_ENV == 'PROD';
+    this.service = new AuthService();
+  }
 
   private isCross(req: Request): boolean {
     const userAgent = req.headers['user-agent'] || '';
@@ -19,18 +24,19 @@ export class AuthController {
     );
   }
 
-  async checkEmail(req: Request, res: Response): Promise<void> {
-    const validatedRequest = parseRequest(checkEmailRequestBodyDTO, req);
+  async checkEmailExists(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(CheckEmailRequestDTO, req);
 
     if (!validatedRequest.success) {
       throw validatedRequest.error;
     }
+
     const data = validatedRequest.data;
     const { email } = data.body;
-    // dont forget await this is async
+
     const exists = await this.service.doesEmailExists(email);
+
     res.json({
-      code: 200,
       message: 'Email Checked Sucessfully',
       data: {
         exists: exists,
@@ -39,7 +45,7 @@ export class AuthController {
   }
 
   async registerUser(req: Request, res: Response): Promise<void> {
-    const validatedRequest = parseRequest(SignUpRequestBodyDTO, req);
+    const validatedRequest = parseRequest(SignUpRequestDTO, req);
 
     if (!validatedRequest.success) {
       throw validatedRequest.error;
@@ -47,17 +53,18 @@ export class AuthController {
 
     const userParams = validatedRequest.data.body;
     const isNewUserCreated = await this.service.registerNewUser(userParams);
+
     if (isNewUserCreated) {
-      res.json({
-        code: 200,
+      res.status(201).json({
         message: 'User Signed Up Sucessfully',
-        data: null,
       });
+    } else {
+      throw new Error('User Registration Failed');
     }
   }
 
   async logInUser(req: Request, res: Response): Promise<void> {
-    const validatedRequest = parseRequest(LoginInRequestBodyDTO, req);
+    const validatedRequest = parseRequest(LogInRequestDTO, req);
 
     if (!validatedRequest.success) {
       throw validatedRequest.error;
@@ -69,7 +76,6 @@ export class AuthController {
 
     if (this.isCross(req)) {
       res.json({
-        code: 200,
         message: 'User Logged In Sucessfully',
         data: {
           acessToken: jwtLogInToken,
@@ -78,30 +84,14 @@ export class AuthController {
     } else {
       res.cookie('accessToken', jwtLogInToken, {
         httpOnly: true,
-        secure: false, // save cookies only on https if true- in production
+        secure: this.isProduction ? true : false,
         sameSite: 'strict', // CSRF protection : another website access the token if not implied
         maxAge: 1000 * 60 * 60 * 1,
       });
 
       res.json({
-        code: 200,
         message: 'User Logged In Successfully',
       });
     }
-  }
-
-  async replace(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
-
-  async update(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
-
-  async remove(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
   }
 }

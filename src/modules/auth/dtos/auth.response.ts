@@ -1,5 +1,6 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 
+// ! THIS IS AN EXAMPLE DTO
 export const AuthResponseDto = extendedZod
   .object({
     id: extendedZod.string(),

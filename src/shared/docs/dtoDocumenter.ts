@@ -48,7 +48,7 @@ const mongoId = () =>
       (val) =>
         Types.ObjectId.isValid(val) && String(new Types.ObjectId(val)) === val,
       {
-        message: 'Invalid MongoDB ObjectId',
+        message: 'Invalid ObjectId',
       },
     );
 

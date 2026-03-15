@@ -11,7 +11,6 @@ const commonResponses = YAML.parse(
   ),
 );
 
-import userDocsRegistry from '../../../user/user.registry';
 import authDocsRegistry from '../../../auth/auth.registry';
 import adminDocsRegistry from '../../../admin/admin.registry';
 import engagementDocsRegistry from '../../../engagement/engagement.registry';
@@ -25,7 +24,6 @@ import playbackDocsRegistry from '../../../playback/playback.registry';
 import profileDocsRegistry from '../../../profile/profile.registry';
 import tracksDocsRegistry from '../../../tracks/tracks.registry';
 
-const userResponses = userDocsRegistry.responses;
 const authResponses = authDocsRegistry.responses;
 const adminResponses = adminDocsRegistry.responses;
 const engagementResponses = engagementDocsRegistry.responses;
@@ -41,7 +39,6 @@ const tracksResponses = tracksDocsRegistry.responses;
 
 const allResponses = {
   ...commonResponses,
-  ...userResponses,
   ...authResponses,
   ...adminResponses,
   ...engagementResponses,

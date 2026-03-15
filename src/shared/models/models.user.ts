@@ -1,6 +1,67 @@
 import { Schema, model } from 'mongoose';
 import { imgSchema } from './schemas.shared';
 
+export type IUser = {
+  _id: String;
+  email: String;
+  password: String;
+  role: 'Listener/Artist' | 'Admin';
+  displayName: String;
+  firstName: String;
+  lastName: String;
+  city: String;
+  country: String;
+  bio: String;
+  dateOfBirth: Date;
+  gender: 'Male' | 'Female';
+  profileImg: {
+    url: String;
+    publicId: String;
+  };
+  bannerImg: {
+    url: String;
+    publicId: String;
+  };
+  socialMediaLinks: [
+    {
+      name: String;
+      link: String;
+    },
+  ];
+  tracks: [String];
+  profileLink: String;
+  links: [
+    {
+      name: String;
+      link: String;
+    },
+  ];
+  supportLink: String;
+  likedPlaylists: [String];
+  likedTracks: [String];
+  playlists: [String];
+  uploads: [String];
+  reposts: [
+    {
+      id: String;
+      caption: String;
+      type: 'track' | 'playlist';
+      timestamp: Date;
+    },
+  ];
+  isPaid: Boolean;
+  ban: Boolean;
+  banReason: String;
+  subscription: {
+    subscriptionType: String;
+    quota: {
+      unlimited: Boolean;
+      usedSeconds: Number;
+      leftSeconds: Number;
+    };
+  };
+};
+
 const socialLinkSchema = new Schema(
   {
     name: {
@@ -77,6 +138,7 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: true,
+      select: false,
     },
     role: {
       type: String,
@@ -216,4 +278,5 @@ const userSchema = new Schema(
   { timestamps: true },
 );
 
-export default model('User', userSchema);
+const User = model<IUser>('User', userSchema);
+export default User;

@@ -275,8 +275,6 @@
                 message: "Email existence check completed successfully"
                 data:
                   exists: true
-        401:
-          $ref: '#/components/responses/Unauthorized'
         404:
           $ref: '#/components/responses/NotFound'
         500:

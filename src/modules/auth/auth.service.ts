@@ -1,12 +1,10 @@
-import { UserRepository } from '../user/user.repository';
 import bcrypt from 'bcrypt';
 import {
+  NotFoundError,
   ResourceAlreadyExists,
-  UnauthorizedError,
 } from '../../shared/errors/responseErrors';
-import { IUser } from '../user/user.model';
-import jwt from 'jsonwebtoken';
-import { initializeConfig } from '../../config/initializeConfig';
+import { AuthRepository } from './auth.repository';
+import JWTService from '../../shared/abstractions/jwt';
 
 type newUserDTO = {
   email: string;
@@ -21,11 +19,14 @@ type logInDTO = {
   password: string;
 };
 
-const JWT_EXPIRES_IN = '1h';
-const JWT_SECRET = process.env.JWT_SECRET;
-
 export class AuthService {
-  constructor(private readonly userRepository: UserRepository) {}
+  private readonly jwtService: JWTService;
+  private readonly authRepository: AuthRepository;
+
+  constructor() {
+    this.jwtService = new JWTService();
+    this.authRepository = new AuthRepository();
+  }
 
   private async hashPassowrd(password: string) {
     const saltRounds = 10;
@@ -33,27 +34,17 @@ export class AuthService {
     return hashedPassword;
   }
 
-  private createJWT(user: IUser): string {
-    const payload = {
-      id: user._id,
-      email: user.email,
-      role: user.role,
-    };
-
-    const token = jwt.sign(payload, JWT_SECRET!, { expiresIn: JWT_EXPIRES_IN });
-
-    return token;
-  }
-
   async doesEmailExists(email: string): Promise<Boolean> {
-    // dont forget await
-    const result = await this.userRepository.findByEmail(email);
-    if (result === null) return false;
-    else return true;
+    const result = await this.authRepository.findByEmail(email);
+    if (!result) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   async registerNewUser(newUserDTO: newUserDTO): Promise<Boolean> {
-    const existingUser = await this.userRepository.findByEmail(
+    const existingUser = await this.authRepository.findByEmail(
       newUserDTO.email,
     );
 
@@ -61,38 +52,42 @@ export class AuthService {
       throw ResourceAlreadyExists('Email Already Exists');
     }
 
-    const hashedPass = await this.hashPassowrd(newUserDTO.password);
-    await this.userRepository.create({
-      ...newUserDTO,
-      password: hashedPass,
-    });
+    try {
+      const hashedPass = await this.hashPassowrd(newUserDTO.password);
+      await this.authRepository.create(
+        newUserDTO.email,
+        hashedPass,
+        newUserDTO.displayName,
+        newUserDTO.dateOfBirth,
+        newUserDTO.gender,
+      );
 
-    return true;
+      return true;
+    } catch (error) {
+      throw new Error('Failed to register new user');
+    }
   }
 
   async logInUser(logInDTO: logInDTO): Promise<String> {
-    const searchUser = await this.userRepository.findByEmail(logInDTO.email);
+    const searchUser = await this.authRepository.findByEmail(logInDTO.email);
 
     if (!searchUser) {
-      throw UnauthorizedError('Invalid email or password');
+      throw NotFoundError('Invalid email or password');
     }
 
     const isMatch = await bcrypt.compare(
       logInDTO.password,
-      searchUser.password,
+      searchUser.password as string,
     );
+
     if (!isMatch) {
-      throw UnauthorizedError('Invalid email or password');
+      throw NotFoundError('Invalid email or password');
     }
 
-    return this.createJWT(searchUser);
+    return this.jwtService.createJWT(
+      searchUser._id as string,
+      searchUser.role,
+      searchUser.subscription as any,
+    );
   }
-
-  // async update(id: string, data: any): Promise<any | null> {
-  //   return this.repository.update(id, data);
-  // }
-
-  // async delete(id: string): Promise<boolean> {
-  //   return this.repository.delete(id);
-  // }
 }
