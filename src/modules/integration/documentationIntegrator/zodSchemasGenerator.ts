@@ -1,58 +1,85 @@
-import fs from "fs";
-import path from "path";
+import fs from 'fs';
+import path from 'path';
 import {
-	OpenApiGeneratorV3,
-	OpenAPIRegistry,
-} from "@asteasolutions/zod-to-openapi";
+  OpenApiGeneratorV3,
+  OpenAPIRegistry,
+} from '@asteasolutions/zod-to-openapi';
+// import logger from '../../../shared/logger/logger';
 
-import userDocsRegistry from "../../user/user.registry";
-
+import userDocsRegistry from '../../user/user.registry';
+import authDocsRegistry from '../../auth/auth.registry';
+import adminDocsRegistry from '../../admin/admin.registry';
+import engagementDocsRegistry from '../../engagement/engagement.registry';
+import feedDocsRegistry from '../../feed/feed.registry';
+import followingDocsRegistry from '../../following/following.registry';
+import messagingDocsRegistry from '../../messaging/messaging.registry';
+import notificationsDocsRegistry from '../../notifications/notifications.registry';
+import paymentDocsRegistry from '../../payment/payment.registry';
+import playlistsDocsRegistry from '../../playlists/playlists.registry';
+import playbackDocsRegistry from '../../playback/playback.registry';
+import profileDocsRegistry from '../../profile/profile.registry';
+import tracksDocsRegistry from '../../tracks/tracks.registry';
 interface DocumentationRegistry {
-	registry: OpenAPIRegistry;
-	moduleName: string;
+  moduleName: string;
+  registry: OpenAPIRegistry;
+  paths: Record<string, any>;
+  responses: Record<string, any>;
+  schemas: Record<string, any>;
 }
 
 const registries: DocumentationRegistry[] = [
-	userDocsRegistry,
+  userDocsRegistry,
+  authDocsRegistry,
+  adminDocsRegistry,
+  engagementDocsRegistry,
+  feedDocsRegistry,
+  followingDocsRegistry,
+  messagingDocsRegistry,
+  notificationsDocsRegistry,
+  paymentDocsRegistry,
+  playlistsDocsRegistry,
+  playbackDocsRegistry,
+  profileDocsRegistry,
+  tracksDocsRegistry,
 ];
 
-const outputDir = path.resolve(__dirname, "..", "..");
+const outputDir = path.resolve(__dirname, '..', '..');
 
 if (!fs.existsSync(outputDir)) {
-	fs.mkdirSync(outputDir, { recursive: true });
+  fs.mkdirSync(outputDir, { recursive: true });
 }
 
 const allSchemas: Record<string, any> = {};
 
 for (const { moduleName, registry } of registries) {
-	const generator = new OpenApiGeneratorV3(registry.definitions);
+  const generator = new OpenApiGeneratorV3(registry.definitions);
 
-	const document = generator.generateDocument({
-		openapi: "3.0.0",
-		info: {
-			title: `${moduleName} API`,
-			version: "1.0.0",
-		},
-	});
+  const document = generator.generateDocument({
+    openapi: '3.0.0',
+    info: {
+      title: `${moduleName} API`,
+      version: '1.0.0',
+    },
+  });
 
-	const schemas = document.components?.schemas ?? {};
+  const schemas = document.components?.schemas ?? {};
 
-	Object.assign(allSchemas, schemas);
+  Object.assign(allSchemas, schemas);
 
-	if (process.env.MODE !== "DEV") {
-		continue;
-	}
+  if (process.env.MODE !== 'DEV') {
+    continue;
+  }
 
-	console.log(outputDir);
+  // logger.info(`Generating ${moduleName}Schemas.json...`);
 
-	const filePath = path.join(
-		outputDir,
-		`${moduleName}/docs/${moduleName}Schemas.json`,
-	);
+  const filePath = path.join(
+    outputDir,
+    `${moduleName}/docs/${moduleName}Schemas.json`,
+  );
 
-	fs.writeFileSync(filePath, JSON.stringify(schemas, null, 2));
+  fs.writeFileSync(filePath, JSON.stringify(schemas, null, 2));
 
-	console.log(`Generated ${moduleName}Schemas.json  @${outputDir}`);
+  // logger.info(`Generated ${moduleName}Schemas.json  @${outputDir}`);
 }
 
 export default allSchemas;

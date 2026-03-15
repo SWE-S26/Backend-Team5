@@ -40,6 +40,9 @@ build/Release
 # Dependency directories
 node_modules/
 jspm_packages/
+swagger-static/
+src/modules/**/*.json
+**/desktop.ini
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/

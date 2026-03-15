@@ -1,0 +1,55 @@
+/api/playlists:
+  post:
+    tags:
+      - Playlist Management
+    summary: Create a new playlist
+    description: Creates a new playlist with a name, list of track IDs, and privacy setting.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              playlistName:
+                type: string
+              tracks:
+                type: array
+                items:
+                  type: string
+                description: Array of track IDs
+              isPrivate:
+                type: boolean
+            required:
+              - playlistName
+              - tracks
+              - isPrivate
+
+    responses:
+      '200':
+        description: Playlist created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: 'Created successfully'
+                id:
+                  type: string
+                  example: 'playlist_id'
+              required:
+                - message
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'

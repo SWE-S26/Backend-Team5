@@ -1,0 +1,48 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Node Run Unit Tests For PRs and Pushes
+
+on:
+  push:
+    branches-ignore: [ "main" ]
+  pull_request:
+    branches-ignore: [ "main" ]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - run: npm ci
+    - run: npm run build --if-present
+    - run: npm test
+
+    - name: Comment on PR if tests fail
+      if: failure() && github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `## ⚠️ CI Failed on Node.js ${{ matrix.node-version }}
+            
+            Tests failed on this PR. Please review the [failed run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) before merging.`
+          })

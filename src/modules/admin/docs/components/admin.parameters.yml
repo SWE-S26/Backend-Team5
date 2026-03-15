@@ -1,0 +1,49 @@
+AdminUserIdParam:
+  name: userId
+  in: path
+  required: true
+  description: The unique identifier of the user.
+  schema:
+    type: string
+    example: "usr_001"
+
+AdminTrackIdParam:
+  name: trackId
+  in: path
+  required: true
+  description: The unique identifier of the track.
+  schema:
+    type: string
+    example: "trk_456"
+
+AdminReportIdParam:
+  name: reportId
+  in: path
+  required: true
+  description: The unique identifier of the report.
+  schema:
+    type: string
+    example: "rep_123"
+
+AdminOffsetParam:
+  name: offset
+  in: query
+  required: false
+  description: Number of items to skip before returning results.
+  schema:
+    type: integer
+    minimum: 0
+    default: 0
+    example: 0
+
+AdminLimitParam:
+  name: limit
+  in: query
+  required: false
+  description: Number of results to return.
+  schema:
+    type: integer
+    minimum: 1
+    maximum: 100
+    default: 20
+    example: 20

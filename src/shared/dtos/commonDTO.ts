@@ -1,14 +1,14 @@
-import extendedZod from "../docs/dtoDocumenter";
+import extendedZod from '../docs/dtoDocumenter';
 
 /** @description - This is used when you want to add pagination for DTOs*/
-export const PaginationQueryDTO = extendedZod.object({
-	page: extendedZod.string().optional(),
-	limit: extendedZod.string().optional(),
+export const PaginationQueryDto = extendedZod.object({
+  page: extendedZod.string().optional(),
+  limit: extendedZod.string().optional(),
 });
 
 /** @description - This is used when you want to add pagination for DTOs*/
-export const idParamDTO = extendedZod.object({
-	id: extendedZod.string(),
+export const idParamDto = extendedZod.object({
+  id: extendedZod.mongoId(),
 });
 
 // ! remember to use .extend and not merge as merge is deprecated

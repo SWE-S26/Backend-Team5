@@ -1,0 +1,224 @@
+ToggleLikeResponse:
+  type: object
+  properties:
+    liked:
+      type: boolean
+      example: true
+    numOfLikes:
+      type: integer
+      example: 42
+  required:
+    - liked
+    - numOfLikes
+
+ToggleRepostResponse:
+  type: object
+  properties:
+    reposted:
+      type: boolean
+      example: true
+    numberOfReposts:
+      type: integer
+      example: 15
+  required:
+    - reposted
+    - numberOfReposts
+
+ToggleCommentLikeResponse:
+  type: object
+  properties:
+    liked:
+      type: boolean
+      example: true
+    numLikes:
+      type: integer
+      example: 7
+  required:
+    - liked
+    - numLikes
+
+TogglePlaylistLikeResponse:
+  type: object
+  properties:
+    liked:
+      type: boolean
+      example: true
+    numOfLikes:
+      type: integer
+      example: 10
+  required:
+    - liked
+    - numOfLikes
+
+TogglePlaylistRepostResponse:
+  type: object
+  properties:
+    reposted:
+      type: boolean
+      example: false
+    numberOfReposts:
+      type: integer
+      example: 3
+  required:
+    - reposted
+    - numberOfReposts
+
+UserEngagementSnippet:
+  type: object
+  description: Minimal user info used in engagement lists.
+  properties:
+    userId:
+      type: string
+      example: "usr_001"
+    displayName:
+      type: string
+      example: "John Doe"
+    avatarUrl:
+      type: string
+      format: uri
+      example: "https://cdn.example.com/avatars/usr_001.jpg"
+  required:
+    - userId
+    - displayName
+
+UserEngagementListResponse:
+  type: object
+  properties:
+    total:
+      type: integer
+      example: 120
+    offset:
+      type: integer
+      example: 0
+    limit:
+      type: integer
+      example: 20
+    users:
+      type: array
+      items:
+        $ref: "#/components/schemas/UserEngagementSnippet"
+  required:
+    - total
+    - offset
+    - limit
+    - users
+
+RepostRequest:
+  type: object
+  properties:
+    caption:
+      type: string
+      maxLength: 280
+      example: "Love this track!"
+
+CreateCommentRequest:
+  type: object
+  properties:
+    content:
+      type: string
+      maxLength: 500
+      example: "Great track!"
+    timestamp:
+      type: number
+      minimum: 0
+      description: Position in the track in seconds to pin the comment.
+      example: 42.5
+    parentCommentId:
+      type: string
+      description: ID of the parent comment when posting a reply.
+      example: "cmt_001"
+  required:
+    - content
+
+CommentEntry:
+  type: object
+  properties:
+    commentId:
+      type: string
+      example: "cmt_001"
+    userId:
+      type: string
+      example: "usr_001"
+    displayName:
+      type: string
+      example: "Jane Smith"
+    avatarUrl:
+      type: string
+      format: uri
+      example: "https://cdn.example.com/avatars/usr_001.jpg"
+    content:
+      type: string
+      example: "Amazing track!"
+    timestamp:
+      type: number
+      example: 30.0
+    numLikes:
+      type: integer
+      example: 5
+    replyCount:
+      type: integer
+      example: 2
+    isLikedByUser:
+      type: boolean
+      example: false
+    isOwnComment:
+      type: boolean
+      example: false
+    createdAt:
+      type: string
+      format: date-time
+      example: "2025-01-15T12:00:00Z"
+  required:
+    - commentId
+    - userId
+    - displayName
+    - content
+    - numLikes
+    - replyCount
+    - isLikedByUser
+    - isOwnComment
+    - createdAt
+
+CommentListResponse:
+  type: object
+  properties:
+    total:
+      type: integer
+      example: 50
+    offset:
+      type: integer
+      example: 0
+    limit:
+      type: integer
+      example: 20
+    comments:
+      type: array
+      items:
+        $ref: "#/components/schemas/CommentEntry"
+  required:
+    - total
+    - offset
+    - limit
+    - comments
+
+ReplyListResponse:
+  type: object
+  properties:
+    total:
+      type: integer
+      example: 10
+    offset:
+      type: integer
+      example: 0
+    limit:
+      type: integer
+      example: 20
+    replies:
+      type: array
+      items:
+        $ref: "#/components/schemas/CommentEntry"
+  required:
+    - total
+    - offset
+    - limit
+    - replies

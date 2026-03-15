@@ -1,0 +1,290 @@
+/api/playlists/{playlistId}/recommend/{creatorId}:
+  get:
+    tags:
+      - Playlist Management
+    summary: Get playlist recommendations based on a creator
+    description: >
+      Returns a list of recommended playlists based on the specified creator's profile and activity.
+    parameters:
+      - $ref: "#/components/parameters/playlistId"
+      - name: creatorId
+        in: path
+        required: true
+        description: The ID of the creator to base recommendations on
+        schema:
+          type: string
+          example: usr_001
+
+    responses:
+      "200":
+        description: Recommended playlists retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  imageUrl:
+                    type: string
+                    format: uri
+                  numTracks:
+                    type: integer
+                  playlistType:
+                    type: string
+                    enum: ["playlist", "album", "ep", "single"]
+                required:
+                  - title
+                  - imageUrl
+                  - numTracks
+
+      "400":
+        $ref: "#/components/responses/InvalidParameters"
+
+      "401":
+        $ref: "#/components/responses/Unauthorized"
+
+      "404":
+        $ref: "#/components/responses/NotFound"
+
+      "500":
+        $ref: "#/components/responses/ServerError"
+/api/playlists/{playlistId}/creator:
+  get:
+    tags:
+      - Playlist Management
+    summary: Retrieve creator information for a playlist
+    description: Returns the creator's user information for the specified playlist.
+    parameters:
+      - $ref: "#/components/parameters/playlistId"
+      - name: creatorId
+        in: query
+        required: false
+        description: The ID of the playlist creator.
+        schema:
+          type: string
+          example: usr_001
+
+    responses:
+      "200":
+        description: Creator information retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                displayName:
+                  type: string
+                permaLink:
+                  type: string
+                imageURL:
+                  type: string
+                  format: uri
+
+                numberOfFollwed:
+                  type: integer
+                  description: Number of users following this creator (returned when the requester is not the creator)
+
+                isFollowed:
+                  type: boolean
+                  description: Indicates whether the requester follows this creator (returned when the requester is not the creator)
+
+                numberOfAudioTracksCreated:
+                  type: integer
+                  description: Number of tracks created by this user (returned when the requester is the creator)
+
+              required:
+                - displayName
+                - permaLink
+                - imageURL
+
+      "400":
+        $ref: "#/components/responses/InvalidParameters"
+
+      "401":
+        $ref: "#/components/responses/Unauthorized"
+
+      "404":
+        $ref: "#/components/responses/NotFound"
+
+      "500":
+        $ref: "#/components/responses/ServerError"
+
+/api/playlists/{playlistId}:
+  get:
+    tags:
+      - Playlist Management
+    summary: Retrieve playlist tracks
+    description: Returns playlist metadata and the list of audio tracks in the specified playlist.
+    parameters:
+      - $ref: "#/components/parameters/playlistId"
+      - $ref: "#/components/parameters/offset"
+      - $ref: "#/components/parameters/limit"
+
+    responses:
+      "200":
+        description: Playlist tracks retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                playlist_info:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                    permalink:
+                      type: string
+                    genre:
+                      type: string
+                    releaseDate:
+                      type: string
+                      format: date-time
+                    tags:
+                      type: array
+                      items:
+                        type: string
+                    description:
+                      type: string
+                    isPrivate:
+                      type: boolean
+                    buyLink:
+                      type: string
+                    recordLabel:
+                      type: string
+                    license:
+                      $ref: "#/components/schemas/Licensing"
+                    numLikes:
+                      type: integer
+                    isLiked:
+                      type: boolean
+                    numReposts:
+                      type: integer
+                    isReposted:
+                      type: boolean
+                    playlistType:
+                      type: string
+                      enum: ["playlist", "album", "ep", "single"]
+                  required:
+                    - title
+                    - permalink
+                    - genre
+                    - releaseDate
+                    - tags
+                    - description
+                    - isPrivate
+                    - numLikes
+                    - numReposts
+
+                audio_tracks:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      basicInfo:
+                        type: object
+                        properties:
+                          title:
+                            type: string
+                          mainArtists:
+                            type: array
+                            items:
+                              type: string
+                          numPlays:
+                            type: integer
+                          isLiked:
+                            type: boolean
+                          isReposted:
+                            type: boolean
+                          imageURL:
+                            type: string
+                            format: uri
+                          audioURL:
+                            type: string
+                            format: uri
+                          permalink:
+                            type: string
+                        required:
+                          - title
+                          - mainArtists
+                          - numPlays
+                          - imageURL
+                          - audioURL
+                          - permalink
+
+                      permissions:
+                        $ref: "#/components/schemas/Permissions"
+
+              required:
+                - playlist_info
+                - audio_tracks
+
+      "400":
+        $ref: "#/components/responses/InvalidParameters"
+
+      "401":
+        $ref: "#/components/responses/Unauthorized"
+
+      "404":
+        $ref: "#/components/responses/NotFound"
+
+      "500":
+        $ref: "#/components/responses/ServerError"
+  
+
+/api/playlists/myPlaylists:
+  get:
+    tags:
+      - Playlist Management
+    summary: Retrieve the current user's playlists
+    description: Returns a list of playlists created or saved by the current user.
+    parameters:
+      - name: playlistType
+        in: query
+        required: false
+        description: The type of playlist to retrieve.
+        schema:
+          type: string
+          example: playlist
+    responses:
+      "200":
+        description: User playlists retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  imageUrl:
+                    type: string
+                    format: uri
+                  numTracks:
+                    type: integer
+                  isAdded:
+                    type: boolean
+                  playlistType:
+                    type: string
+                    enum: ["playlist", "album", "ep", "single"]
+                required:
+                  - title
+                  - imageUrl
+                  - numTracks
+                  - isAdded
+                  - playlistType
+      "400":
+        $ref: "#/components/responses/InvalidParameters"
+
+      "401":
+        $ref: "#/components/responses/Unauthorized"
+
+      "404":
+        $ref: "#/components/responses/NotFound"
+
+      "500":
+        $ref: "#/components/responses/ServerError"

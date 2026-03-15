@@ -1,4 +1,14 @@
 {
+  "include": ["src/**/*"],
+  "exclude": [
+    "src/**/__tests__/**",
+    "src/**/*.test.ts",
+    "node_modules",
+    "swagger-static",
+    "logs",
+    ".github",
+    "dist"
+  ],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
     "moduleDetection": "force",

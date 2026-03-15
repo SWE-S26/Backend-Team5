@@ -1,0 +1,44 @@
+  api/search/history:
+    delete:
+      tags:
+        - Search
+      summary: Clear search history
+      description: Deletes all search history items for the authenticated user.
+      responses:
+        '204':
+          description: Search history cleared
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  api/search/history/{historyId}:
+    delete:
+      tags:
+        - Search
+      summary: Delete search history item
+      description: Deletes a specific item from the user's search history.
+      parameters:
+        - name: historyId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Item deleted successfully
+        '404':
+          description: History item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+

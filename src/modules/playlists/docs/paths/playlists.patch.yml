@@ -1,0 +1,114 @@
+# PATCH
+/api/playlists/{playlistId}:
+  patch:
+    tags:
+      - Playlist Management
+    summary: Update a playlist by adding an audio track
+    description: Adds a track (audioId) to the specified playlist.
+    parameters:
+      - name: playlistId
+        in: path
+        required: true
+        description: The ID of the playlist to update
+        schema:
+          type: string
+          example: pl_789
+
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              audioId:
+                type: string
+                description: The ID of the audio track to add
+                example: trk_456
+            required:
+              - audioId
+
+    responses:
+      '200':
+        description: Playlist updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: 'updated successfully'
+              required:
+                - message
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+        
+/api/playlists/myPlaylists/{playlistId}:
+  patch:
+    tags:
+      - Playlist Management
+    summary: Update playlist track order
+    description: >
+      The ending position of the track range. 
+      Must be provided together with `initialPosition`.
+
+    parameters:
+      - name: playlistId
+        in: path
+        required: true
+        description: The ID of the playlist to update
+        schema:
+          type: string
+          example: pl_789
+
+      - name: initialPosition
+        in: query
+        required: false
+        description: The starting position of the track range
+        schema:
+          type: integer
+          example: 1
+
+      - name: finalPosition
+        in: query
+        required: false
+        description: The ending position of the track range
+        schema:
+          type: integer
+          example: 5
+    responses:
+      "200":
+        description: Playlist track order updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "Track order updated successfully"
+              required:
+                - message
+
+      "400":
+        $ref: "#/components/responses/InvalidParameters"
+
+      "401":
+        $ref: "#/components/responses/Unauthorized"
+
+      "404":
+        $ref: "#/components/responses/NotFound"
+
+      "500":
+        $ref: "#/components/responses/ServerError"

@@ -1,0 +1,93 @@
+/api/playlists/myPlaylists/{playlistId}:
+  put:
+    tags:
+      - Playlist Management
+    summary: Update playlist metadata and tracks
+    description: >
+      Updates a playlist’s metadata, licensing, and optionally reorders tracks.
+      Remember to send how many tracks you recieved so as not to reorder the entire playlist
+      potentially deleting tracks that were added while the user was editing the playlist.
+
+    parameters:
+      - name: playlistId
+        in: path
+        required: true
+        description: The ID of the playlist to update
+        schema:
+          type: string
+          example: pl_789
+
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+              permalink:
+                type: string
+              playlistType:
+                type: string
+                enum: ['playlist', 'album', 'ep', 'single']
+              releaseDate:
+                type: string
+                format: date-time
+              genre:
+                type: string
+              tags:
+                type: array
+                items:
+                  type: string
+              description:
+                type: string
+              isPrivate:
+                type: boolean
+              audioTracks:
+                type: array
+                items:
+                  type: string
+                description: Track IDs reordered playlist
+              lengthOfRecievedTracks:
+                type: integer
+                description: Total number of tracks to reorder
+              licensing:
+                $ref: '#/components/schemas/Licensing'
+              buyLink:
+                type: string
+              recordLabel:
+                type: string
+            required:
+              - title
+              - permalink
+              - playlistType
+              - releaseDate
+              - genre
+              - isPrivate
+
+    responses:
+      '200':
+        description: Playlist updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: 'Updated successfully'
+              required:
+                - message
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'

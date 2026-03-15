@@ -1,0 +1,148 @@
+# GET
+/api/auth/verify-email:
+  get:
+    tags:
+      - Authentication
+    summary:  Verify a user's email address
+    description: |
+      Confirms the user's email by validating the verification token sent in the email.
+      If the token is valid, the user's account is marked as verified.
+    parameters:
+    - name: token
+      in: query
+      required: true
+      schema:
+        type: string
+      description: The email verification token sent to the user's email
+    responses:
+      200:
+        description: Successfully Verified User Email.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetUserByIdResponseDTO'
+            example:
+              success: true
+              message: "User Verified successfully"
+              data: null
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
+/api/auth/cross/desktop:
+  get:
+    tags:
+      - Authentication
+    summary: Generate QR code for cross-device login
+    description: |
+      Generates a QR code that allows a user to authenticate on a desktop
+      by scanning it with a logged-in mobile device.
+
+      The QR code contains a temporary token stored on the server.
+      The token expires after a short period for security reasons.
+
+      The desktop client should display the QR code and start polling
+      the server to check whether the user has approved the login from
+      their mobile device.
+
+    responses:
+      "200":
+        description: QR code generated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: "QR code generated successfully"
+                data:
+                  type: object
+                  properties:
+                    qrCode:
+                      type: string
+                      description: Encoded QR code value used for cross-device authentication
+                      example: "qr_abc123xyz"
+                    expiresIn:
+                      type: integer
+                      description: Expiration time of the QR code in seconds
+                      example: 120
+
+      "500":
+        $ref: '#/components/responses/ServerError'
+/api/auth/logout:
+  get:
+    tags:
+      - Authentication
+    summary: Log out the current user
+    description: |
+      Logs out the currently authenticated user by invalidating the session or JWT token
+      and clearing the HTTP-only authentication cookie. This prevents further access
+      to protected resources until the user logs in again.
+    responses:
+      200:
+        description: Logged out successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: "Logged out successfully"
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: true
+              message: "Logged out successfully"
+              data: null
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      500:
+        $ref: '#/components/responses/ServerError'
+
+/api/auth/refresh-token:
+  get:
+    tags:
+      - Authentication
+    summary: Refresh the JWT access token
+    description: |
+      Issues a new JWT access token using a valid refresh token. This allows the user
+      to remain authenticated without re-entering credentials. The new token is
+      typically sent in an HTTP-only cookie to enhance security and prevent XSS attacks.
+    responses:
+          200:
+            description: Token refreshed successfully
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      example: true
+                    message:
+                      type: string
+                      example: "Token refreshed successfully"
+                    data:
+                      type: object
+                      nullable: true
+                example:
+                  success: true
+                  message: "Token refreshed successfully"
+                  data: null
+            401:
+              $ref: '#/components/responses/Unauthorized'
+            404:
+              $ref: '#/components/responses/NotFound'
+            500:
+              $ref: '#/components/responses/ServerError'

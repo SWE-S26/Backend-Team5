@@ -1,6 +1,7 @@
 import { registerAuthSubscriber } from './subscribers/auth.subscriber';
+import logger from '../shared/logger/logger';
 
 export const initializeSubscribers = async (): Promise<void> => {
   await registerAuthSubscriber();
-  console.log('[Subscribers] All subscribers registered');
+  logger.info('[Subscribers] All subscribers registered');
 };
