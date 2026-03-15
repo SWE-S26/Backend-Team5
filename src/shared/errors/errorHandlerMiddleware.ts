@@ -22,7 +22,10 @@ export const errorHandler = (
 
   // Custom HttpErrors
   if (err instanceof HttpError) {
-    return res.status(err.status).json({ message: err.message });
+    return res.status(err.status).json({
+      code: err.status,
+      message: err.message,
+    });
   }
 
   console.error('Error: ', err);
