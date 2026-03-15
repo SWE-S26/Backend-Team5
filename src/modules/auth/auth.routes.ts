@@ -15,7 +15,7 @@ authRouter.post('/find-email', (req, res) =>
 authRouter.post('/sign-up', (req, res) =>
   authController.registerUser(req, res),
 );
-// authRouter.post('/',     (req, res) => authController.create(req, res));
+authRouter.post('/login', (req, res) => authController.logInUser(req, res));
 // authRouter.put('/:id',   (req, res) => authController.replace(req, res));
 // authRouter.patch('/:id', (req, res) => authController.update(req, res));
 // authRouter.delete('/:id',(req, res) => authController.remove(req, res));

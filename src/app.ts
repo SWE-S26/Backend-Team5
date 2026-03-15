@@ -5,11 +5,13 @@ import { errorHandler } from './shared/errors/errorHandlerMiddleware';
 import invalidRouter from './shared/errors/router.invalid';
 import logger from './shared/logger/logger';
 import authRouter from './modules/auth/auth.routes';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
 app.use(express.json());
 app.use(pinoHttp({ logger }));
+app.use(cookieParser());
 app.use('/api', integrationRouter);
 app.use('/auth', authRouter);
 app.use(invalidRouter);

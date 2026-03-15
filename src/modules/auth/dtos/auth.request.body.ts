@@ -60,3 +60,10 @@ export const SignUpRequestBodyDTO = extendedZod.object({
     gender: extendedZod.enum(['Male', 'Female']),
   }),
 });
+
+export const LoginInRequestBodyDTO = extendedZod.object({
+  body: extendedZod.object({
+    email: extendedZod.string().email(),
+    password: extendedZod.string(),
+  }),
+});
