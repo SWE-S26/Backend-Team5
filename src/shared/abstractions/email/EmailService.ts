@@ -2,6 +2,7 @@ import nodemailer, { Transporter } from 'nodemailer';
 import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
+import logger from '../../logger/logger';
 
 interface EmailOptions {
   userEmail: string;
@@ -24,7 +25,7 @@ type ActivityParams = {
 };
 
 class EmailService {
-  private transporter: Transporter;
+  private readonly transporter: Transporter;
 
   constructor() {
     this.transporter = nodemailer.createTransport({
@@ -47,8 +48,16 @@ class EmailService {
     }
   }
 
+  private getHtmlTemplate(templateName: string) {
+    const filePath = path.join(__dirname, `./templates/${templateName}.html`);
+    return fs.readFileSync(filePath, { encoding: 'utf-8' });
+  }
+
   private async sendEmail(options: EmailOptions) {
     try {
+      logger.info(
+        `Sending email to ${options.userEmail} with subject: ${options.subject}`,
+      );
       const imagePath = path.join(__dirname, './templates/assets/beatza.png');
       // assuming email is correct
       const info = await this.transporter.sendMail({
@@ -66,7 +75,7 @@ class EmailService {
       });
       return true;
     } catch (error) {
-      console.log('Email Service Error: ', error);
+      logger.error(`Failed to send email to ${options.userEmail}: ${error}`);
       return false;
     }
   }
@@ -76,11 +85,7 @@ class EmailService {
     userEmail: string,
     resetLink: string,
   ) {
-    const filePath = path.join(
-      __dirname,
-      './templates/requestPasswordReset.html',
-    );
-    let htmlContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
+    let htmlContent = this.getHtmlTemplate('requestPasswordReset');
     htmlContent = htmlContent.replace('[User]', username);
     htmlContent = htmlContent.replace(
       '[resetLink]',
@@ -98,8 +103,7 @@ class EmailService {
     userEmail: string,
     verifyLink: string,
   ) {
-    const filePath = path.join(__dirname, './templates/verifyAccount.html');
-    let htmlContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
+    let htmlContent = this.getHtmlTemplate('verifyAccount');
     htmlContent = htmlContent
       .replace('[User]', username)
       .replace('[verifyLink]', verifyLink);
@@ -115,11 +119,11 @@ class EmailService {
     sender: string,
     messageURL: string,
   ) {
-    const filePath = path.join(__dirname, './templates/newMessageSent.html');
-    let htmlContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
+    let htmlContent = this.getHtmlTemplate('newMessageSent');
     htmlContent = htmlContent
       .replace('[Sender]', sender)
       .replace('[messageURL]', messageURL);
+
     return await this.sendEmail({
       userEmail: userEmail,
       subject: `You got a new DM from ${sender}`,
@@ -171,9 +175,9 @@ class EmailService {
     action: Engagement,
     activiyValue: string,
   ) {
-    const filePath = path.join(__dirname, './templates/newActivity.html');
     const activityParams = this.getProperEngagementValues(action, activiyValue);
-    let htmlContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
+
+    let htmlContent = this.getHtmlTemplate('newActivity');
     htmlContent = htmlContent
       .replace('[Sender]', sender)
       .replace('[ActivityURL]', activityURL)
@@ -194,13 +198,13 @@ class EmailService {
     relaseName: string,
     releaseURL: string,
   ) {
-    const filePath = path.join(__dirname, './templates/newRelease.html');
-    let htmlContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
+    let htmlContent = this.getHtmlTemplate('newRelease');
     htmlContent = htmlContent
       .replace('[Sender]', sender)
       .replace('[messageURL]', releaseURL)
       .replace('[EmailValue]', userEmail)
       .replace('[newRelease]', relaseName);
+
     return await this.sendEmail({
       userEmail: userEmail,
       subject: `New Release 🔥`,

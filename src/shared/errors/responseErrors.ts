@@ -9,6 +9,10 @@ export class HttpError extends Error {
   }
 }
 
+export const GoneError = (message = 'Resource is no longer available') => {
+  throw new HttpError(410, message);
+};
+
 // Convenience helpers
 export const ResourceAlreadyExists = (message = 'Not found') => {
   throw new HttpError(409, message);

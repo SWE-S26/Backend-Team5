@@ -14,6 +14,7 @@ export type IUser = {
   bio: String;
   dateOfBirth: Date;
   gender: 'Male' | 'Female';
+  isVerified: Boolean;
   profileImg: {
     url: String;
     publicId: String;
@@ -194,6 +195,10 @@ const userSchema = new Schema(
       type: String,
       enum: ['Male', 'Female'],
       required: true,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
     },
     profileImg: {
       type: imgSchema,

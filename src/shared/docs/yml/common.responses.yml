@@ -78,6 +78,21 @@ NotFound:
             nullable: true
             type: object
 
+# 410 Gone
+Gone:
+  description: The requested resource is no longer available
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          success:
+            type: boolean
+            example: false
+          message:
+            type: string
+            example: "Link is expired"
+
 # 500 Internal Server Error
 ServerError:
   description: Internal server error

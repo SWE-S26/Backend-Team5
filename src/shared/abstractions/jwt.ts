@@ -1,11 +1,15 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { UnauthorizedError } from '../errors/responseErrors';
+import { GoneError, UnauthorizedError } from '../errors/responseErrors';
 import logger from '../logger/logger';
 
 export interface JWTPayload {
   _id: string;
   role: string;
   paymentInfo: unknown;
+}
+
+export interface EmailVerificationPayload {
+  _id: string;
 }
 
 declare global {
@@ -39,7 +43,31 @@ class JWTService {
     return jwt.sign(payload, this.secretKey, options);
   }
 
-  static verifyJWT(token: string): JWTPayload | undefined {
+  createJWTForEmails(_id: string): string {
+    const payload = {
+      _id,
+    };
+
+    const options: SignOptions = {
+      expiresIn: '1h',
+    };
+
+    return jwt.sign(payload, this.secretKey, options);
+  }
+
+  verifyJWTForEmails(token: string): EmailVerificationPayload | undefined {
+    try {
+      return jwt.verify(
+        token,
+        process.env.JWT_SECRET!,
+      ) as EmailVerificationPayload;
+    } catch (err) {
+      logger.error(`JWT verification failed: ${err}`);
+      GoneError('Link Expired');
+    }
+  }
+
+  static verifyJWTForMiddleware(token: string): JWTPayload | undefined {
     try {
       return jwt.verify(token, process.env.JWT_SECRET!) as JWTPayload;
     } catch (err) {

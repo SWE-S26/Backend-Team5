@@ -2,9 +2,12 @@ import bcrypt from 'bcrypt';
 import {
   NotFoundError,
   ResourceAlreadyExists,
+  UnauthorizedError,
 } from '../../shared/errors/responseErrors';
 import { AuthRepository } from './auth.repository';
 import JWTService from '../../shared/abstractions/jwt';
+import { IUser } from '../../shared/models/models.user';
+import logger from '../../shared/logger/logger';
 
 type newUserDTO = {
   email: string;
@@ -68,11 +71,71 @@ export class AuthService {
     }
   }
 
+  async createEmailVerificationToken(email: string): Promise<string> {
+    const user = await this.authRepository.findByEmail(email);
+
+    if (!user) {
+      throw NotFoundError('User not found');
+    }
+
+    const token = this.jwtService.createJWTForEmails(user._id as string);
+
+    return token;
+  }
+
+  async createPasswordResetToken(
+    email: string,
+  ): Promise<{ token: string; userName: string }> {
+    const user = await this.authRepository.findByEmail(email);
+
+    if (!user) {
+      throw NotFoundError('User not found');
+    }
+
+    const token = this.jwtService.createJWTForEmails(user._id as string);
+
+    return { token, userName: user.displayName as string };
+  }
+
+  async resetPasswordWithToken(
+    token: string,
+    newPassword: string,
+  ): Promise<Boolean> {
+    const payload = this.jwtService.verifyJWTForEmails(token);
+    try {
+      const user = await this.authRepository.findById(payload!._id);
+
+      if (!user) {
+        throw NotFoundError('User not found');
+      }
+
+      const hashedPass = await this.hashPassowrd(newPassword);
+      await this.authRepository.changePassword(user._id as string, hashedPass);
+
+      return true;
+    } catch (error) {
+      logger.error(`Failed to reset password with token: ${error}`);
+      throw new Error('Failed to reset password');
+    }
+  }
+
   async logInUser(logInDTO: logInDTO): Promise<String> {
     const searchUser = await this.authRepository.findByEmail(logInDTO.email);
 
     if (!searchUser) {
       throw NotFoundError('Invalid email or password');
+    }
+
+    if (!searchUser.isVerified) {
+      throw UnauthorizedError(
+        'Email not verified. Please verify your email before logging in.',
+      );
+    }
+
+    if (searchUser.ban) {
+      throw UnauthorizedError(
+        `Your account has been banned. Due to ${searchUser.banReason} Please contact support.`,
+      );
     }
 
     const isMatch = await bcrypt.compare(
@@ -89,5 +152,26 @@ export class AuthService {
       searchUser.role,
       searchUser.subscription as any,
     );
+  }
+
+  async verifyEmail(token: string): Promise<Boolean> {
+    try {
+      const payload = this.jwtService.verifyJWTForEmails(token);
+
+      const user = await this.authRepository.findById(payload!._id);
+
+      if (!user) {
+        throw NotFoundError('User not found');
+      }
+
+      if (user.isVerified) {
+        return true;
+      }
+
+      await this.authRepository.verifyEmail(user._id as string);
+      return true;
+    } catch (error) {
+      throw UnauthorizedError('Invalid or expired token');
+    }
   }
 }

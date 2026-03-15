@@ -9,14 +9,9 @@ export class AuthRepository {
     return user;
   }
 
-  async findAll(): Promise<IUser[]> {
-    // TODO: query your data source
-    return [];
-  }
-
   async findById(id: string): Promise<IUser | null> {
-    // TODO: query your data source
-    return null;
+    const user = await User.findById<IUser>(id);
+    return user;
   }
 
   async create(
@@ -40,13 +35,23 @@ export class AuthRepository {
     return user as IUser;
   }
 
-  async update(id: string, data: any): Promise<IUser | null> {
-    // TODO: update in your data source
-    return null;
+  async verifyEmail(id: string): Promise<IUser | null> {
+    const user = await User.findByIdAndUpdate(
+      id,
+      { isVerified: true },
+      { new: true },
+    );
+
+    return user;
   }
 
-  async delete(id: string): Promise<boolean> {
-    // TODO: delete from your data source
-    return false;
+  async changePassword(id: string, newPassword: string): Promise<IUser | null> {
+    const user = await User.findByIdAndUpdate(
+      id,
+      { password: newPassword },
+      { new: true },
+    ).select('+password');
+
+    return user;
   }
 }

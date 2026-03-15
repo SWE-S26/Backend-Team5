@@ -20,15 +20,19 @@
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GetUserByIdResponseDTO'
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "User Verified successfully"
             example:
-              success: true
               message: "User Verified successfully"
-              data: null
       401:
         $ref: '#/components/responses/Unauthorized'
       404:
         $ref: '#/components/responses/NotFound'
+      410:
+        $ref: '#/components/responses/Gone'
       500:
         $ref: '#/components/responses/ServerError'
 /api/auth/cross/desktop:

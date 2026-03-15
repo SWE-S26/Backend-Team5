@@ -15,3 +15,7 @@ export const ListAuthsQueryDto = PaginationQueryDto.extend(
   page: extendedZod.string().default('1'),
   limit: extendedZod.string().default('20'),
 });
+
+export const VerifyEmailQueryDto = extendedZod.object({
+  token: extendedZod.string(),
+});

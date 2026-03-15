@@ -28,7 +28,7 @@ export const requireAuth = (
     throw UnauthorizedError('Unauthorized Access');
   }
 
-  const payload = JWTService.verifyJWT(accessToken);
+  const payload = JWTService.verifyJWTForMiddleware(accessToken);
 
   req.userInfo = payload;
 

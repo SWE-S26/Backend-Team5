@@ -5,11 +5,12 @@ import { errorHandler } from './shared/errors/errorHandlerMiddleware';
 import invalidRouter from './shared/errors/router.invalid';
 import logger from './shared/logger/logger';
 import cookieParser from 'cookie-parser';
-import emailService from './shared/abstractions/email/EmailService';
+import cors from 'cors';
 
 const app = express();
 
 app.use(express.json());
+app.use(cors({ origin: '*' }));
 app.use(pinoHttp({ logger }));
 app.use(cookieParser());
 app.use('/api', integrationRouter);

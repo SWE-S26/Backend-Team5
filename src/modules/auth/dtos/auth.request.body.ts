@@ -63,3 +63,34 @@ export const LoginInRequestBodyDTO = extendedZod.object({
   email: extendedZod.email(),
   password: extendedZod.string(),
 });
+
+export const ForgotPasswordRequestBodyDTO = extendedZod
+  .object({
+    email: extendedZod.email(),
+  })
+  .openapi('forgotPasswordRequest', {
+    example: {
+      email: 'john.doe@example.com',
+    },
+  });
+
+export const ResetPasswordRequestBodyDTO = extendedZod
+  .object({
+    token: extendedZod.string(),
+    newPassword: extendedZod
+      .string()
+      .min(8, 'Password must be at least 8 characters long')
+      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+      .regex(/[0-9]/, 'Password must contain at least one number')
+      .regex(
+        /[^A-za-z0-9]/,
+        'Password must contain at least one special character',
+      ),
+  })
+  .openapi('resetPasswordRequest', {
+    example: {
+      token:
+        'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.amno345pqr678stu901vwx234yz567',
+      newPassword: 'NewPassword123!',
+    },
+  });
