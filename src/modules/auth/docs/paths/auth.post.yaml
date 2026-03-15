@@ -1,5 +1,5 @@
 # POST
-/api/auth/login:
+/api/auth/v1/login:
   post:
     tags:
       - Authentication
@@ -43,7 +43,7 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/auth/signup:
+/api/auth/v1/signup:
   post:
     tags:
       - Authentication
@@ -119,7 +119,7 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/auth/forget-password:
+/api/auth/v1/forget-password:
   post:
     tags:
       - Authentication
@@ -169,7 +169,7 @@
           500:
             $ref: '#/components/responses/ServerError'
 
-/api/auth/reset-password:
+/api/auth/v1/reset-password:
   post:
     tags:
       - Authentication
@@ -224,7 +224,7 @@
         500:
           $ref: '#/components/responses/ServerError'
 
-/api/auth/find-email:
+/api/auth/v1/find-email:
   post:
     tags:
       - Authentication
@@ -275,14 +275,12 @@
                 message: "Email existence check completed successfully"
                 data:
                   exists: true
-        401:
-          $ref: '#/components/responses/Unauthorized'
         404:
           $ref: '#/components/responses/NotFound'
         500:
           $ref: '#/components/responses/ServerError'
 
-/api/auth/cross/mobile:
+/api/auth/v1/cross/mobile:
   post:
     tags:
       - Authentication
@@ -340,7 +338,7 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/auth/cross/desktop/poll:
+/api/auth/v1/cross/desktop/poll:
   post:
     tags:
       - Authentication

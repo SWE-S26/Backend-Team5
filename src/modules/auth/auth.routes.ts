@@ -1,23 +1,43 @@
 import { Router } from 'express';
 import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { UserRepository } from '../user/user.repository';
+import apiVersions from '../../shared/middleware/apiVersions';
 
 const authRouter = Router();
-const userRepository = new UserRepository();
-const authService = new AuthService(userRepository);
-const authController = new AuthController(authService);
+const authController = new AuthController();
 
-// find email
-authRouter.post('/find-email', (req, res) =>
-  authController.checkEmail(req, res),
+authRouter.post(
+  apiVersions.v1 + '/find-email',
+  authController.checkEmailExists.bind(authController),
 );
-authRouter.post('/sign-up', (req, res) =>
-  authController.registerUser(req, res),
+
+authRouter.post(
+  apiVersions.v1 + '/sign-up',
+  authController.registerUser.bind(authController),
 );
-authRouter.post('/login', (req, res) => authController.logInUser(req, res));
-// authRouter.put('/:id',   (req, res) => authController.replace(req, res));
-// authRouter.patch('/:id', (req, res) => authController.update(req, res));
-// authRouter.delete('/:id',(req, res) => authController.remove(req, res));
+
+authRouter.post(
+  apiVersions.v1 + '/login',
+  authController.logInUser.bind(authController),
+);
+
+authRouter.get(
+  apiVersions.v1 + '/refresh-token',
+  authController.refreshToken.bind(authController),
+);
+
+authRouter.post(
+  apiVersions.v1 + '/reset-password',
+  authController.resetPassword.bind(authController),
+);
+
+authRouter.get(
+  apiVersions.v1 + '/verify-email',
+  authController.verifyEmail.bind(authController),
+);
+
+authRouter.get(
+  apiVersions.v1 + '/logout',
+  authController.logout.bind(authController),
+);
 
 export default authRouter;

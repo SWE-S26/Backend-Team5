@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import { HttpError } from './responseErrors';
+import logger from '../logger/logger';
 
 export const errorHandler = (
   err: unknown,
@@ -8,10 +9,8 @@ export const errorHandler = (
   res: Response,
   next: NextFunction,
 ) => {
-  // Zod validation errors
   if (err instanceof ZodError) {
     return res.status(400).json({
-      code: 400,
       message: 'Validation failed',
       errors: err.issues.map((issue) => ({
         field: issue.path.join('.'),
@@ -20,15 +19,14 @@ export const errorHandler = (
     });
   }
 
-  // Custom HttpErrors
   if (err instanceof HttpError) {
     return res.status(err.status).json({
-      code: err.status,
       message: err.message,
     });
   }
 
-  console.error('Error: ', err);
+  logger.error(`Unexpected error occurred: ${err}`);
+
   // Fallback for unexpected errors
   return res.status(500).json({ message: 'Internal server error' });
 };
