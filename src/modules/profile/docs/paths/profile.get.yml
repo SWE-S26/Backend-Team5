@@ -1,4 +1,4 @@
-  api/profile/{userId}:
+  api/v1/profile/{userId}:
     get:
       tags:
         - Profile-Management
@@ -69,7 +69,7 @@
                     code: 404
 
 
-  /api/settings/account:
+  /api/v1/settings/account:
     get:
       tags:
         - Settings
@@ -91,7 +91,7 @@
                 $ref: '#/components/schemas/ErrorResponse'
 
 
-  /api/settings/content:
+  /api/v1/settings/content:
     get:
       tags:
         - Settings
@@ -113,7 +113,7 @@
                 $ref: '#/components/schemas/ErrorResponse'
 
 
-  /api/settings/privacy:
+  /api/v1/settings/privacy:
     get:
       tags:
         - Settings
@@ -135,7 +135,7 @@
                 $ref: '#/components/schemas/ErrorResponse'
 
 
-  /api/settings/notifications:
+  /api/v1/settings/notifications:
     get:
       tags:
         - Settings

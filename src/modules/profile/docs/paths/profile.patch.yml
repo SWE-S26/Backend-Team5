@@ -1,4 +1,4 @@
-  api/profile:
+  api/v1/profile:
     patch:
       tags:
         - Profile-Management
@@ -56,7 +56,7 @@
                     message: "Validation error"
                     code: 422
 
-  /api/settings/account:
+  /api/v1/settings/account:
     patch:
       tags:
         - Settings
@@ -90,7 +90,7 @@
                 $ref: '#/components/schemas/ErrorResponse'
 
 
-  /api/settings/content:
+  /api/v1/settings/content:
     patch:
       tags:
         - Settings
@@ -124,7 +124,7 @@
                 $ref: '#/components/schemas/ErrorResponse'
 
 
-  /api/settings/privacy:
+  /api/v1/settings/privacy:
     patch:
       tags:
         - Settings
@@ -152,7 +152,7 @@
                 $ref: '#/components/schemas/ErrorResponse'
 
 
-  /api/settings/notifications:
+  /api/v1/settings/notifications:
     patch:
       tags:
         - Settings
