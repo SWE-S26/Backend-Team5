@@ -1,19 +1,5 @@
+import { extend } from 'zod/v4/core/util.cjs';
 import extendedZod from '../../../shared/docs/dtoDocumenter';
-
-// ! THIS IS AN EXAMPLE DTO
-export const CreateAuthRequestBodyDTO = extendedZod
-  .object({
-    email: extendedZod.email(),
-    password: extendedZod.string().min(6),
-    name: extendedZod.string().min(2),
-  })
-  .openapi('CreateAuthRequest', {
-    example: {
-      email: 'john.doe@example.com',
-      password: 'secret123',
-      name: 'John Doe',
-    },
-  });
 
 export const checkEmailRequestBodyDTO = extendedZod
   .object({
@@ -123,5 +109,41 @@ export const GoogleCompleteSignUpRequestBodyDTO = extendedZod
         'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.amno345pqr678stu901vwx234yz567',
       dateOfBirth: '1990-05-15',
       gender: 'Male',
+    },
+  });
+
+export const GoogleVerifyCodeRequestBodyDTO = extendedZod
+  .object({
+    pendingToken: extendedZod.string(
+      'Missing pending token from Google sign-in process',
+    ),
+    code: extendedZod.string('Missing verification code sent to email'),
+  })
+  .openapi('GoogleVerifyCodeRequest', {
+    example: {
+      pendingToken:
+        'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.amno345pqr678stu901vwx234yz567',
+      code: '123456',
+    },
+  });
+
+export const DesktopPollingRequestBodyDTO = extendedZod
+  .object({
+    qrCode: extendedZod.string('Missing QR code'),
+  })
+  .openapi('DesktopPollingRequest', {
+    example: {
+      qrCode:
+        'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.amno345pqr678stu901vwx234yz567',
+    },
+  });
+
+export const MobileApproveLoginRequestBodyDTO =
+  DesktopPollingRequestBodyDTO.extend(
+    DesktopPollingRequestBodyDTO.shape,
+  ).openapi('MobileApproveLoginRequest', {
+    example: {
+      qrCode:
+        'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.amno345pqr678stu901vwx234yz567',
     },
   });

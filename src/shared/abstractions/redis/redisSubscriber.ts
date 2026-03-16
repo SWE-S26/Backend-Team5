@@ -1,4 +1,5 @@
 import { createClient, RedisClientType } from 'redis';
+import logger from '../../logger/logger';
 
 type MessageHandler<T = unknown> = (message: T, channel: string) => void;
 
@@ -21,17 +22,17 @@ class RedisSubscriber {
 
     this.client.on('connect', () => {
       this.isConnected = true;
-      console.log('[RedisSubscriber] Connected');
+      logger.info('[RedisSubscriber] Connected');
     });
 
     this.client.on('error', (err) => {
       this.isConnected = false;
-      console.error('[RedisSubscriber] Error:', err.message);
+      logger.error('[RedisSubscriber] Error:', err.message);
     });
 
     this.client.on('reconnecting', () => {
       this.isConnected = false;
-      console.warn('[RedisSubscriber] Reconnecting...');
+      logger.warn('[RedisSubscriber] Reconnecting...');
     });
   }
 
@@ -59,14 +60,13 @@ class RedisSubscriber {
       try {
         const parsed = JSON.parse(rawMessage) as T;
         handler(parsed, channel);
-      } catch {
-        console.error(
-          `[RedisSubscriber] Failed to parse message on channel "${channel}":`,
-          rawMessage,
+      } catch (err) {
+        logger.error(
+          `[RedisSubscriber] Failed to parse message on channel "${channel}": ${JSON.stringify(rawMessage)}`,
         );
       }
     });
-    console.log(`[RedisSubscriber] Subscribed to channel: ${channel}`);
+    logger.info(`[RedisSubscriber] Subscribed to channel: ${channel}`);
   }
 
   /**
@@ -75,7 +75,7 @@ class RedisSubscriber {
    */
   async unsubscribe(channel: string): Promise<void> {
     await this.client.unsubscribe(channel);
-    console.log(`[RedisSubscriber] Unsubscribed from channel: ${channel}`);
+    logger.info(`[RedisSubscriber] Unsubscribed from channel: ${channel}`);
   }
 }
 

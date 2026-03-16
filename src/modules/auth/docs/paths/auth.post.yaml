@@ -3,8 +3,8 @@
   post:
     tags:
       - Authentication
-    summary:  Authenticate user and return access token
-    description:  Authenticates user credentials and, upon success, generates a JWT access token stored in a secure, HTTP-only cookie. The cookie is sent automatically with each HTTPS request, preventing access from client-side scripts and enhancing protection against XSS attacks.
+    summary: Authenticate user and return access token
+    description: Authenticates user credentials and, upon success, generates a JWT access token stored in a secure, HTTP-only cookie. The cookie is sent automatically with each HTTPS request, preventing access from client-side scripts and enhancing protection against XSS attacks.
     requestBody:
       required: true
       content:
@@ -21,21 +21,33 @@
                 example: user@example.com
               password:
                 type: string
-                description:  The user's password (minimum 8 characters, including at least one uppercase letter and one special character)
+                description: The user's password (minimum 8 characters, including at least one uppercase letter and one special character)
                 example: Password@123
     responses:
       200:
         description: User logged in successfully
+        headers:
+          Set-Cookie:
+            description: |
+              Two HTTP-only cookies are set for web clients:
+              - `accessToken` (1 hour)
+              - `refreshToken` (7 days, scoped to /api/auth/v1/refresh-token)
+            schema:
+              type: string
         content:
           application/json:
-            example:
-              success: true
-              message: "User logged in successfully"
-              data:
-                user:
-                  id: "123"
-                  name: "Seif Mohamed"
-                  email: "eng.seifmohamed200@example.com"
+            examples:
+              web_client:
+                summary: Web — tokens delivered via cookies
+                value:
+                  message: 'Authenticated successfully'
+              mobile_client:
+                summary: Mobile — tokens delivered in body
+                value:
+                  message: 'Authenticated successfully'
+                  data:
+                    accessToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.access123'
+                    refreshToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.refresh456'
       401:
         $ref: '#/components/responses/Unauthorized'
       404:
@@ -104,13 +116,13 @@
                   example: true
                 message:
                   type: string
-                  example: "Signup Successful"
+                  example: 'Signup Successful'
                 data:
                   type: object
                   nullable: true
             example:
               success: true
-              message: "Signup Successful"
+              message: 'Signup Successful'
               data: null
       401:
         $ref: '#/components/responses/Unauthorized'
@@ -142,32 +154,32 @@
                 description: The registered email address of the user requesting a password reset
                 example: user@example.com
     responses:
-          200:
-            description: Password reset email sent successfully
-            content:
-              application/json:
-                schema:
+      200:
+        description: Password reset email sent successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: 'Password reset email sent successfully'
+                data:
                   type: object
-                  properties:
-                    success:
-                      type: boolean
-                      example: true
-                    message:
-                      type: string
-                      example: "Password reset email sent successfully"
-                    data:
-                      type: object
-                      nullable: true
-                example:
-                  success: true
-                  message: "Password reset email sent successfully"
-                  data: null
-          401:
-            $ref: '#/components/responses/Unauthorized'
-          404:
-            $ref: '#/components/responses/NotFound'
-          500:
-            $ref: '#/components/responses/ServerError'
+                  nullable: true
+            example:
+              success: true
+              message: 'Password reset email sent successfully'
+              data: null
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
 
 /api/auth/v1/reset-password:
   post:
@@ -197,32 +209,32 @@
                 description: The new password for the user's account. Must meet password policy requirements (e.g., minimum 8 characters, uppercase, special character)
                 example: NewPassword@123
     responses:
-        200:
-          description: Password reset successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "Password reset successfully"
-                  data:
-                    type: object
-                    nullable: true
-              example:
-                success: true
-                message: "Password reset successfully"
-                data: null
-        401:
-          $ref: '#/components/responses/Unauthorized'
-        404:
-          $ref: '#/components/responses/NotFound'
-        500:
-          $ref: '#/components/responses/ServerError'
+      200:
+        description: Password reset successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: 'Password reset successfully'
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: true
+              message: 'Password reset successfully'
+              data: null
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
 
 /api/auth/v1/find-email:
   post:
@@ -250,35 +262,35 @@
                 example: user@example.com
 
     responses:
-        200:
-          description: Email existence check completed successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "Email existence check completed successfully"
-                  data:
-                    type: object
-                    properties:
-                      exists:
-                        type: boolean
-                        description: Indicates whether the email exists in the database
-                        example: true
-              example:
-                success: true
-                message: "Email existence check completed successfully"
+      200:
+        description: Email existence check completed successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: 'Email existence check completed successfully'
                 data:
-                  exists: true
-        404:
-          $ref: '#/components/responses/NotFound'
-        500:
-          $ref: '#/components/responses/ServerError'
+                  type: object
+                  properties:
+                    exists:
+                      type: boolean
+                      description: Indicates whether the email exists in the database
+                      example: true
+            example:
+              success: true
+              message: 'Email existence check completed successfully'
+              data:
+                exists: true
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
 
 /api/auth/v1/cross/mobile:
   post:
@@ -323,13 +335,13 @@
                   example: true
                 message:
                   type: string
-                  example: "Login approved successfully"
+                  example: 'Login approved successfully'
                 data:
                   type: object
                   nullable: true
             example:
               success: true
-              message: "Login approved successfully"
+              message: 'Login approved successfully'
               data: null
       401:
         $ref: '#/components/responses/Unauthorized'
@@ -377,17 +389,134 @@
                   example: true
                 message:
                   type: string
-                  example: "Login successful"
+                  example: 'Login successful'
                 data:
                   type: object
                   nullable: true
             example:
               success: true
-              message: "Login successful"
+              message: 'Login successful'
               data: null
       401:
         $ref: '#/components/responses/Unauthorized'
       404:
         $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
+
+/api/auth/v1/google/verify-code:
+  post:
+    tags:
+      - Authentication
+    summary: Verify the Google sign-in email code for existing users
+    description: |
+      Completes sign-in for an existing user who authenticated via Google.
+      The user receives a 6-digit code by email after the callback step.
+
+      Submit the `pendingToken` from the callback response alongside that code.
+      The code is **one-time use** and expires in **5 minutes**.
+
+      On success, issues an access token and refresh token.
+      - **Web clients** receive tokens as HTTP-only cookies.
+      - **Mobile clients** receive tokens in the response body.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GoogleVerifyCodeRequestBodyDTO'
+    responses:
+      200:
+        description: Code verified — user authenticated successfully
+        headers:
+          Set-Cookie:
+            description: |
+              Two HTTP-only cookies are set for web clients:
+              - `accessToken` (1 hour)
+              - `refreshToken` (7 days, scoped to /api/auth/v1/refresh-token)
+            schema:
+              type: string
+        content:
+          application/json:
+            examples:
+              web_client:
+                summary: Web — tokens delivered via cookies
+                value:
+                  message: 'Authenticated successfully'
+              mobile_client:
+                summary: Mobile — tokens delivered in body
+                value:
+                  message: 'Authenticated successfully'
+                  data:
+                    accessToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.access123'
+                    refreshToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.refresh456'
+      400:
+        $ref: '#/components/responses/BadRequest'
+      401:
+        description: Invalid or expired verification code / pending token
+        content:
+          application/json:
+            example:
+              success: false
+              message: 'Invalid or expired verification code'
+      500:
+        $ref: '#/components/responses/ServerError'
+
+/api/auth/v1/google/complete:
+  post:
+    tags:
+      - Authentication
+    summary: Complete Google sign-up for new users
+    description: |
+      Finalises registration for a user who authenticated with Google for the first time.
+      Google does not provide `dateOfBirth` or `gender`, so the frontend must collect
+      these and submit them here alongside the `incompleteToken` from the callback step.
+
+      The `incompleteToken` expires in **15 minutes**.
+      The created account is marked as verified immediately — Google already verified the email.
+
+      On success, issues an access token and refresh token.
+      - **Web clients** receive tokens as HTTP-only cookies.
+      - **Mobile clients** receive tokens in the response body.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GoogleCompleteSignUpRequestBodyDTO'
+    responses:
+      201:
+        description: Account created — user authenticated successfully
+        headers:
+          Set-Cookie:
+            description: |
+              Two HTTP-only cookies are set for web clients:
+              - `accessToken` (1 hour)
+              - `refreshToken` (7 days, scoped to /api/auth/v1/refresh-token)
+            schema:
+              type: string
+        content:
+          application/json:
+            examples:
+              web_client:
+                summary: Web — tokens delivered via cookies
+                value:
+                  message: 'Authenticated successfully'
+              mobile_client:
+                summary: Mobile — tokens delivered in body
+                value:
+                  message: 'Authenticated successfully'
+                  data:
+                    accessToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.access123'
+                    refreshToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.refresh456'
+      400:
+        $ref: '#/components/responses/BadRequest'
+      401:
+        description: Incomplete token is invalid or expired
+        content:
+          application/json:
+            example:
+              success: false
+              message: 'Signup session expired, please try again'
       500:
         $ref: '#/components/responses/ServerError'

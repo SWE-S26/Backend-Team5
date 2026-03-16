@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { AuthController } from './auth.controller';
 import apiVersions from '../../shared/middleware/apiVersions';
+import { requireAuth } from '../../shared/middleware/requireAuth';
 
 const authRouter = Router();
 const authController = new AuthController();
@@ -40,8 +41,37 @@ authRouter.get(
   authController.logout.bind(authController),
 );
 
-authRouter.get('/v1/google', authController.googleRedirect);
-authRouter.get('/v1/google/callback', authController.googleCallback);
-authRouter.post('/v1/google/complete', authController.googleCompleteSignUp);
+authRouter.get(apiVersions.v1 + '/google', authController.googleRedirect);
+
+authRouter.get(
+  apiVersions.v1 + '/google/callback',
+  authController.googleCallback,
+);
+
+authRouter.post(
+  apiVersions.v1 + '/google/complete',
+  authController.googleCompleteSignUp,
+);
+
+authRouter.post(
+  apiVersions.v1 + '/google/verify-code',
+  authController.googleVerifyCode,
+);
+
+authRouter.get(
+  apiVersions.v1 + '/cross/desktop',
+  authController.createQRCode.bind(authController),
+);
+
+authRouter.post(
+  apiVersions.v1 + '/cross/mobile',
+  requireAuth,
+  authController.approveLoginFromMobile.bind(authController),
+);
+
+authRouter.post(
+  apiVersions.v1 + '/cross/desktop/poll',
+  authController.pollQRCode.bind(authController),
+);
 
 export default authRouter;

@@ -1,4 +1,15 @@
 # 400 Bad Request
+BadRequest:
+  description: Bad request due to invalid parameters or payload
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          message:
+            type: string
+            example: 'WHAT DID YOU DO!!!!?!?!?!??'
+            
 InvalidParameters:
   description: A required parameter is missing or payload is invalid
   content:
@@ -6,12 +17,9 @@ InvalidParameters:
       schema:
         type: object
         properties:
-          success:
-            type: boolean
-            example: false
           message:
             type: string
-            example: "Validation failed"
+            example: 'Validation failed'
           errors:
             type: array
             items:
@@ -19,10 +27,10 @@ InvalidParameters:
               properties:
                 field:
                   type: string
-                  example: "email"
+                  example: 'email'
                 message:
                   type: string
-                  example: "Email is required"
+                  example: 'Email is required'
 
 # 401 Unauthorized
 Unauthorized:
@@ -37,7 +45,7 @@ Unauthorized:
             example: false
           message:
             type: string
-            example: "Authorization failed"
+            example: 'Authorization failed'
           data:
             nullable: true
             type: object
@@ -55,7 +63,7 @@ Forbidden:
             example: false
           message:
             type: string
-            example: "Not enough permissions to access this resource"
+            example: 'Not enough permissions to access this resource'
           data:
             nullable: true
             type: object
@@ -73,7 +81,7 @@ NotFound:
             example: false
           message:
             type: string
-            example: "Property not found or not updated"
+            example: 'Property not found or not updated'
           data:
             nullable: true
             type: object
@@ -91,7 +99,7 @@ Gone:
             example: false
           message:
             type: string
-            example: "Link is expired"
+            example: 'Link is expired'
 
 # 500 Internal Server Error
 ServerError:
@@ -106,7 +114,7 @@ ServerError:
             example: false
           message:
             type: string
-            example: "Internal server error"
+            example: 'Internal server error'
           data:
             nullable: true
             type: object
@@ -124,7 +132,7 @@ ServiceUnavailable:
             example: false
           message:
             type: string
-            example: "Service unavailable"
+            example: 'Service unavailable'
           data:
             nullable: true
             type: object

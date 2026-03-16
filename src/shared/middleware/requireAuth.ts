@@ -36,7 +36,7 @@ export const requireAuth = (
     `
     Authenticated user with ID: ${payload!._id}, 
     role: ${payload!.role}, 
-    paymentInfo: ${JSON.stringify(payload!.paymentInfo)}
+    paymentInfo:
     `,
   );
 

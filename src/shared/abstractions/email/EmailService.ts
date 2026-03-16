@@ -87,10 +87,7 @@ class EmailService {
   ) {
     let htmlContent = this.getHtmlTemplate('requestPasswordReset');
     htmlContent = htmlContent.replace('[User]', username);
-    htmlContent = htmlContent.replace(
-      '[resetLink]',
-      'https://beatza-swagger.netlify.app/',
-    );
+    htmlContent = htmlContent.replace('[resetLink]', resetLink);
     return await this.sendEmail({
       userEmail: userEmail,
       subject: `Request to change ${username}'s BeatZa password`,
@@ -110,6 +107,22 @@ class EmailService {
     return await this.sendEmail({
       userEmail: userEmail,
       subject: `Welcome to BeatZa!`,
+      htmlContent: htmlContent,
+    });
+  }
+
+  async sendGoogleSignInVerificationCode(
+    username: string,
+    userEmail: string,
+    verificationCode: string,
+  ) {
+    let htmlContent = this.getHtmlTemplate('googleSignInVerificationCode');
+    htmlContent = htmlContent
+      .replace('[User]', username)
+      .replace('[verificationCode]', verificationCode);
+    return await this.sendEmail({
+      userEmail: userEmail,
+      subject: `Your verification code is ${verificationCode}`,
       htmlContent: htmlContent,
     });
   }

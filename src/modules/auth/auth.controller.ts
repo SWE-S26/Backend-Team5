@@ -3,10 +3,13 @@ import { parseRequest } from '../../shared/dtos/requestParser';
 import { AuthService, GoogleCompleteSignUpBody } from './auth.service';
 import {
   CheckEmailRequestDTO,
+  DesktopPollingRequestDTO,
   ForgotPasswordRequestDTO,
   GoogleCallbackRequestDTO,
   GoogleCompleteSignUpRequestDTO,
+  GoogleVerifyCodeRequestDTO,
   LogInRequestDTO,
+  MobileLoginApprovalRequestDTO,
   ResetPasswordRequestDTO,
   SignUpRequestDTO,
   VerifyEmailRequestDTO,
@@ -17,7 +20,9 @@ import logger from '../../shared/logger/logger';
 import {
   BadRequestError,
   ForbiddenError,
+  UnauthorizedError,
 } from '../../shared/errors/responseErrors';
+import { JWTPayload } from '../../shared/abstractions/jwt';
 
 export class AuthController {
   private isProduction: boolean;
@@ -133,7 +138,7 @@ export class AuthController {
       const incomingRefreshToken =
         req.headers['authorization']?.split(' ')[1] || '';
       if (!incomingRefreshToken) {
-        throw new Error('Refresh token is required');
+        throw UnauthorizedError('Refresh token is required');
       }
 
       const newAccessToken =
@@ -148,7 +153,7 @@ export class AuthController {
     } else {
       const incomingRefreshToken = req.cookies['refreshToken'];
       if (!incomingRefreshToken) {
-        throw new Error('Refresh token is required');
+        throw UnauthorizedError('Refresh token is required');
       }
 
       const newAccessToken =
@@ -268,6 +273,10 @@ export class AuthController {
         if (!payload)
           return next(ForbiddenError('Google authentication failed'));
 
+        logger.info(
+          `Google authentication successful for email: ${JSON.stringify(payload)}`,
+        );
+
         if (payload.status === 'new') {
           const incompleteToken = this.service.issueIncompleteToken({
             googleId: payload.googleId,
@@ -283,21 +292,43 @@ export class AuthController {
           });
         }
 
-        // payload.status === 'existing'
-        const tokens = this.service.issueTokenPair(
-          payload.userId,
-          payload.role,
-          payload.subscription,
-        );
+        const { pendingToken } = await this.service.initiateGoogleSignIn({
+          userId: payload.userId,
+          role: payload.role,
+          subscription: payload.subscription,
+          email: payload.email,
+          displayName: payload.displayName,
+          googleId: payload.googleId,
+        });
 
-        return this.sendTokenResponse(
-          req,
-          res,
-          tokens.accessToken,
-          tokens.refreshToken,
-        );
+        return res.status(200).json({
+          status: 'verify',
+          pendingToken,
+        });
       },
     )(req, res, next);
+  };
+
+  googleVerifyCode = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    const validatedRequest = parseRequest(GoogleVerifyCodeRequestDTO, req);
+    if (!validatedRequest.success) {
+      return next(BadRequestError('Invalid request data'));
+    }
+
+    try {
+      const { pendingToken, code } = validatedRequest.data.body;
+      const tokens = await this.service.verifyGoogleSignInCode(
+        pendingToken,
+        code,
+      );
+      this.sendTokenResponse(req, res, tokens.accessToken, tokens.refreshToken);
+    } catch (err) {
+      next(err);
+    }
   };
 
   googleCompleteSignUp = async (
@@ -324,6 +355,57 @@ export class AuthController {
     } catch (err) {
       next(err);
     }
+  };
+
+  createQRCode = async (req: Request, res: Response): Promise<void> => {
+    const pendingToken = await this.service.createQRCodeForDesktopLogin();
+    res.json({
+      message: 'QR Code generated successfully',
+      pendingToken,
+    });
+  };
+
+  pollQRCode = async (req: Request, res: Response): Promise<void> => {
+    const validatedRequest = parseRequest(DesktopPollingRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const { qrCode } = validatedRequest.data.body;
+
+    const tokens = await this.service.pollQRCodeForLogin(qrCode);
+
+    if (!tokens) {
+      res.json({
+        message: 'QR Code not yet scanned',
+        data: null,
+      });
+      return;
+    }
+
+    this.sendTokenResponse(req, res, tokens.accessToken, tokens.refreshToken);
+  };
+
+  approveLoginFromMobile = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
+    const validatedRequest = parseRequest(MobileLoginApprovalRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      return next(BadRequestError('Invalid request data'));
+    }
+    const { qrCode } = validatedRequest.data.body;
+
+    const { _id, role, paymentInfo } = req.userInfo! as JWTPayload;
+
+    await this.service.approveDesktopLogin(qrCode, _id, role, paymentInfo);
+
+    res.json({
+      message: 'Login approved successfully',
+    });
   };
 
   private sendTokenResponse(
