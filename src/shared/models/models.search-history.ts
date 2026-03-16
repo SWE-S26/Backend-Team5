@@ -1,19 +1,27 @@
-import { Schema, model } from 'mongoose';
+import { Schema, Types, model } from 'mongoose';
+
+export type ISearchHistory = {
+  userId: Types.ObjectId;
+  historyList: {
+    type: 'Track' | 'User' | 'Playlist';
+    id: Schema.Types.ObjectId;
+  }[];
+};
 
 const searchHistoryItemSchema = new Schema(
   {
-    type: { 
-      type: String, 
-      enum: ['Track', 'User', 'Playlist'], 
-      required: true 
+    type: {
+      type: String,
+      enum: ['Track', 'User', 'Playlist'],
+      required: true,
     },
-    id: { 
-      type: Schema.Types.ObjectId, 
-      required: true, 
-      refPath: 'type' 
+    id: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      refPath: 'type',
     },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const searchHistorySchema = new Schema(
@@ -22,14 +30,18 @@ const searchHistorySchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      unique: true
+      unique: true,
     },
     historyList: {
       type: [searchHistoryItemSchema],
-      default: []
+      default: [],
     },
   },
-  { timestamps: false }
+  { timestamps: false },
 );
 
-export default model('SearchHistory', searchHistorySchema);
+const SearchHistory = model<ISearchHistory>(
+  'SearchHistory',
+  searchHistorySchema,
+);
+export default SearchHistory;

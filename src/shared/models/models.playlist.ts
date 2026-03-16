@@ -1,5 +1,24 @@
-import { Schema, model } from 'mongoose';
+import { Schema, Types, model } from 'mongoose';
 import { imgSchema } from './schemas.shared';
+
+export type IPlaylist = {
+  _id: Types.ObjectId;
+  artistId: Types.ObjectId;
+  title: string;
+  image: {
+    url: string;
+    publicId: string;
+  };
+  listOfTracks: [Types.ObjectId];
+  releaseDate: Date;
+  type: 'public' | 'private';
+  numOfLikes: number;
+  numOfReposts: number;
+  playlistType: string;
+  likedUser: [Types.ObjectId];
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 const playlistSchema = new Schema(
   {
@@ -57,4 +76,5 @@ const playlistSchema = new Schema(
   { timestamps: true },
 );
 
-export default model('Playlist', playlistSchema);
+const Playlist = model<IPlaylist>('Playlist', playlistSchema);
+export default Playlist;

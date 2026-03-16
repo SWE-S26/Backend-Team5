@@ -6,7 +6,6 @@ import {
 } from '../../shared/errors/responseErrors';
 import { AuthRepository } from './auth.repository';
 import JWTService from '../../shared/abstractions/jwt';
-import { IUser } from '../../shared/models/models.user';
 import logger from '../../shared/logger/logger';
 
 type newUserDTO = {
@@ -20,6 +19,12 @@ type newUserDTO = {
 type logInDTO = {
   email: string;
   password: string;
+};
+
+export type GoogleCompleteSignUpBody = {
+  incompleteToken: string;
+  dateOfBirth: Date;
+  gender: 'Male' | 'Female';
 };
 
 interface AuthTokens {
@@ -83,7 +88,7 @@ export class AuthService {
       throw NotFoundError('User not found');
     }
 
-    const token = this.jwtService.createJWTForEmails(user._id as string);
+    const token = this.jwtService.createJWTForEmails(user._id.toString());
 
     return token;
   }
@@ -97,7 +102,7 @@ export class AuthService {
       throw NotFoundError('User not found');
     }
 
-    const token = this.jwtService.createJWTForEmails(user._id as string);
+    const token = this.jwtService.createJWTForEmails(user._id.toString());
 
     return { token, userName: user.displayName as string };
   }
@@ -115,7 +120,7 @@ export class AuthService {
       }
 
       const hashedPass = await this.hashPassowrd(newPassword);
-      await this.authRepository.changePassword(user._id as string, hashedPass);
+      await this.authRepository.changePassword(user._id.toString(), hashedPass);
 
       return true;
     } catch (error) {
@@ -132,7 +137,7 @@ export class AuthService {
     if (!user) throw UnauthorizedError('Session expired, please log in again');
 
     const newAccessToken = this.jwtService.createJWT(
-      user._id as string,
+      user._id.toString(),
       user.role,
       user.subscription,
     );
@@ -169,13 +174,13 @@ export class AuthService {
     }
 
     const accessToken = this.jwtService.createJWT(
-      searchUser._id as string,
+      searchUser._id.toString(),
       searchUser.role,
       searchUser.subscription as any,
     );
 
     const refreshToken = this.jwtService.createRefreshToken(
-      searchUser._id as string,
+      searchUser._id.toString(),
     );
 
     return {
@@ -198,10 +203,67 @@ export class AuthService {
         return true;
       }
 
-      await this.authRepository.verifyEmail(user._id as string);
+      await this.authRepository.verifyEmail(user._id.toString());
       return true;
     } catch (error) {
       throw UnauthorizedError('Invalid or expired token');
     }
+  }
+
+  issueTokenPair(
+    userId: string,
+    role: string,
+    subscription: unknown,
+  ): AuthTokens {
+    return {
+      accessToken: this.jwtService.createJWT(userId, role, subscription),
+      refreshToken: this.jwtService.createRefreshToken(userId),
+    };
+  }
+
+  issueIncompleteToken(payload: {
+    googleId: string;
+    email: string;
+    displayName: string;
+  }): string {
+    return this.jwtService.signIncomplete(payload);
+  }
+
+  async completeGoogleSignUp(
+    body: GoogleCompleteSignUpBody,
+  ): Promise<AuthTokens> {
+    const payload = this.jwtService.verifyIncomplete(body.incompleteToken);
+
+    // Race condition guard: user registered between the two steps
+    const alreadyExists = await this.authRepository.findByEmail(payload.email);
+    if (alreadyExists) {
+      return {
+        accessToken: this.jwtService.createJWT(
+          alreadyExists._id.toString(),
+          alreadyExists.role,
+          alreadyExists.subscription,
+        ),
+        refreshToken: this.jwtService.createRefreshToken(
+          alreadyExists._id.toString(),
+        ),
+      };
+    }
+
+    const newUser = await this.authRepository.createWithGoogle({
+      googleId: payload.googleId,
+      email: payload.email,
+      displayName: payload.displayName,
+      dateOfBirth: body.dateOfBirth,
+      gender: body.gender,
+    });
+
+    return {
+      accessToken: this.jwtService.createJWT(
+        newUser._id.toString(),
+        newUser.role,
+        newUser.subscription,
+      ),
+      refreshToken: this.jwtService.createRefreshToken(newUser._id.toString()),
+    };
   }
 }
