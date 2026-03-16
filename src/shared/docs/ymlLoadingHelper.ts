@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import YAML from 'yaml';
 import deepmerge from 'deepmerge';
+import logger from '../logger/logger';
 /**
  * @param callingDirectory - The directory where the function is called
  * @param relativeDirPath - The path of directory which contains the yml docs,
@@ -66,6 +67,12 @@ export const removeSecurityFromAuthEndpoints = (
 ): void => {
   for (const [route, methods] of Object.entries(paths)) {
     if (!methods || typeof methods !== 'object') continue;
+
+    if (route === '/api/auth/v1/cross/mobile') {
+      logger.info(`Checking route: ${route} for authentication tags...`);
+      continue;
+    }
+
     for (const [method, operationRaw] of Object.entries(methods)) {
       const operation = operationRaw as any;
       if (
@@ -73,7 +80,7 @@ export const removeSecurityFromAuthEndpoints = (
         typeof operation === 'object' &&
         'tags' in operation &&
         Array.isArray(operation.tags) &&
-        operation.tags.some((tag: string) => tag.includes('No JWT required'))
+        operation.tags.some((tag: string) => tag.includes('Authentication'))
       ) {
         operation.security = [];
       }

@@ -25,7 +25,7 @@ import {
 import { JWTPayload } from '../../shared/abstractions/jwt';
 
 export class AuthController {
-  private isProduction: boolean;
+  private readonly isProduction: boolean;
   private readonly service: AuthService;
   private readonly hostUrl: string =
     process.env.HOST_URL || 'http://localhost:4123';
@@ -276,6 +276,20 @@ export class AuthController {
         logger.info(
           `Google authentication successful for email: ${JSON.stringify(payload)}`,
         );
+
+        if (payload.status === 'returning_google') {
+          const tokens = this.service.issueTokenPair(
+            payload.userId,
+            payload.role,
+            payload.subscription,
+          );
+          return this.sendTokenResponse(
+            req,
+            res,
+            tokens.accessToken,
+            tokens.refreshToken,
+          );
+        }
 
         if (payload.status === 'new') {
           const incompleteToken = this.service.issueIncompleteToken({
