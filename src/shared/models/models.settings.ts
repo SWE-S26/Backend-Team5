@@ -1,4 +1,43 @@
-import { Schema, model } from 'mongoose';
+import { Schema, Types, model } from 'mongoose';
+
+export type ISettings = {
+  userId: Types.ObjectId;
+  account: {
+    dateOfBirth: Date;
+    theme: 'Light' | 'Dark' | 'Automatic';
+  };
+  content: {
+    rssFeedLink: string;
+    rssEmailDisplayed: string;
+    customFieldTitle: string;
+    category: string;
+    statsServiceUrlPrefix: string;
+    customAuthorName: string;
+  };
+  privacy: {
+    allowMessagesAnyone: boolean;
+    showActivityDiscovery: boolean;
+    showFirstTopFan: boolean;
+    showTrackTopFans: boolean;
+  };
+  notifications: {
+    newFollower: 'email' | 'devices' | 'both' | 'off';
+    repostOfYourPost: 'email' | 'devices' | 'both' | 'off';
+    newPostByFollowedUser: 'email' | 'devices' | 'both' | 'off';
+    likesAndPlaysOnYourPost: 'email' | 'devices' | 'both' | 'off';
+    commentOnYourPost: 'email' | 'devices' | 'both' | 'off';
+    recommendedContent: 'email' | 'devices' | 'both' | 'off';
+    newMessage: {
+      email: boolean;
+      devices: 'everyone' | 'followed' | 'off';
+    };
+    updatesFromSoundcloud: 'email' | 'devices' | 'both' | 'off';
+    soundcloudFeatureUpdatesEducation: 'email' | 'devices' | 'both' | 'off';
+    surveysAndFeedback: 'email' | 'devices' | 'both' | 'off';
+    promotionalPartnershipContent: 'email' | 'devices' | 'both' | 'off';
+    soundcloudNewsletter: 'email' | 'devices' | 'both' | 'off';
+  };
+};
 
 const contentSettingsSchema = new Schema(
   {
@@ -196,4 +235,5 @@ const settingsSchema = new Schema(
   { timestamps: false },
 );
 
-export default model('Settings', settingsSchema);
+const Settings = model<ISettings>('Settings', settingsSchema);
+export default Settings;

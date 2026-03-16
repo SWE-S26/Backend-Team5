@@ -1,4 +1,10 @@
-import { Schema, model } from 'mongoose';
+import { Schema, Types, model } from 'mongoose';
+
+export type IFollowing = {
+  userId: Types.ObjectId;
+  followed: Types.ObjectId[];
+  followers: Types.ObjectId[];
+};
 
 const followingSchema = new Schema(
   {
@@ -6,18 +12,23 @@ const followingSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      unique: true
+      unique: true,
     },
-    followed: [{ 
-      type: Schema.Types.ObjectId, 
-      ref: 'User' 
-    }],
-    followers: [{ 
-      type: Schema.Types.ObjectId, 
-      ref: 'User' 
-    }],
+    followed: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    followers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
-  { timestamps: false }
+  { timestamps: false },
 );
 
-export default model('Following', followingSchema);
+const Following = model<IFollowing>('Following', followingSchema);
+export default Following;

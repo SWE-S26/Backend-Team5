@@ -90,6 +90,31 @@ class JWTService {
     }
   }
 
+  signIncomplete(payload: {
+    googleId: string;
+    email: string;
+    displayName: string;
+  }): string {
+    return jwt.sign(payload, this.secretKey, { expiresIn: '15m' });
+  }
+
+  verifyIncomplete(token: string): {
+    googleId: string;
+    email: string;
+    displayName: string;
+  } {
+    try {
+      return jwt.verify(token, this.secretKey) as {
+        googleId: string;
+        email: string;
+        displayName: string;
+      };
+    } catch (err) {
+      logger.error(`Incomplete token verification failed: ${err}`);
+      throw UnauthorizedError('Incomplete signup token is invalid or expired');
+    }
+  }
+
   static verifyJWTForMiddleware(token: string): JWTPayload | undefined {
     try {
       return jwt.verify(token, process.env.JWT_SECRET!) as JWTPayload;

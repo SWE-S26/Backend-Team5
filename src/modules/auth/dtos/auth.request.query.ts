@@ -19,3 +19,7 @@ export const ListAuthsQueryDto = PaginationQueryDto.extend(
 export const VerifyEmailQueryDto = extendedZod.object({
   token: extendedZod.string(),
 });
+
+export const GoogleCallbackQueryDto = extendedZod.object({
+  code: extendedZod.string(),
+});

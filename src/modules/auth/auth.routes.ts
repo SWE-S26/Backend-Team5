@@ -40,4 +40,8 @@ authRouter.get(
   authController.logout.bind(authController),
 );
 
+authRouter.get('/v1/google', authController.googleRedirect);
+authRouter.get('/v1/google/callback', authController.googleCallback);
+authRouter.post('/v1/google/complete', authController.googleCompleteSignUp);
+
 export default authRouter;

@@ -54,4 +54,36 @@ export class AuthRepository {
 
     return user;
   }
+
+  async linkGoogleId(userId: string, googleId: string): Promise<void> {
+    await User.findByIdAndUpdate(userId, { googleId });
+  }
+
+  async createWithGoogle(data: {
+    googleId: string;
+    email: string;
+    displayName: string;
+    dateOfBirth: Date;
+    gender: 'Male' | 'Female';
+  }): Promise<IUser> {
+    const user = await User.create({
+      ...data,
+      role: 'Listener/Artist',
+      isVerified: true,
+      profileLink:
+        data.displayName.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(),
+    });
+
+    return user as IUser;
+  }
+
+  async createWithCredentials(data: {
+    email: string;
+    password: string;
+    displayName: string;
+    dateOfBirth: Date;
+    gender: 'Male' | 'Female';
+  }): Promise<IUser> {
+    return User.create(data);
+  }
 }

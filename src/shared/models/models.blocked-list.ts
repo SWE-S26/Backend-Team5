@@ -1,4 +1,9 @@
-import { Schema, model } from 'mongoose';
+import { Schema, Types, model } from 'mongoose';
+
+export type IBlockedList = {
+  blockerId: Types.ObjectId;
+  blockedIds: Types.ObjectId[];
+};
 
 const blockedListSchema = new Schema(
   {
@@ -6,14 +11,17 @@ const blockedListSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      unique: true
+      unique: true,
     },
-    blockedIds: [{
-      type: Schema.Types.ObjectId, 
-      ref: 'User' 
-    }],
+    blockedIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
-  { timestamps: false }
+  { timestamps: false },
 );
 
-export default model('BlockedList', blockedListSchema);
+const BlockedList = model<IBlockedList>('BlockedList', blockedListSchema);
+export default BlockedList;

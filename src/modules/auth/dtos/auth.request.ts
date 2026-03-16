@@ -1,10 +1,15 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 import { AuthIdParamDTO } from './auth.request.params';
-import { ListAuthsQueryDto, VerifyEmailQueryDto } from './auth.request.query';
+import {
+  GoogleCallbackQueryDto,
+  ListAuthsQueryDto,
+  VerifyEmailQueryDto,
+} from './auth.request.query';
 import {
   checkEmailRequestBodyDTO,
   CreateAuthRequestBodyDTO,
   ForgotPasswordRequestBodyDTO,
+  GoogleCompleteSignUpRequestBodyDTO,
   LoginInRequestBodyDTO,
   ResetPasswordRequestBodyDTO,
   SignUpRequestBodyDTO,
@@ -39,4 +44,12 @@ export const ForgotPasswordRequestDTO = extendedZod.object({
 
 export const ResetPasswordRequestDTO = extendedZod.object({
   body: ResetPasswordRequestBodyDTO,
+});
+
+export const GoogleCallbackRequestDTO = extendedZod.object({
+  query: GoogleCallbackQueryDto,
+});
+
+export const GoogleCompleteSignUpRequestDTO = extendedZod.object({
+  body: GoogleCompleteSignUpRequestBodyDTO,
 });

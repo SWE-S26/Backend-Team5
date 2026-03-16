@@ -1,64 +1,65 @@
-import { Schema, model } from 'mongoose';
+import { Schema, Types, model } from 'mongoose';
 import { imgSchema } from './schemas.shared';
 
 export type IUser = {
-  _id: String;
-  email: String;
-  password: String;
+  _id: Types.ObjectId;
+  email: string;
+  password: string;
+  googleId?: string;
   role: 'Listener/Artist' | 'Admin';
-  displayName: String;
-  firstName: String;
-  lastName: String;
-  city: String;
-  country: String;
-  bio: String;
+  displayName: string;
+  firstName: string;
+  lastName: string;
+  city: string;
+  country: string;
+  bio: string;
   dateOfBirth: Date;
   gender: 'Male' | 'Female';
-  isVerified: Boolean;
+  isVerified: boolean;
   profileImg: {
-    url: String;
-    publicId: String;
+    url: string;
+    publicId: string;
   };
   bannerImg: {
-    url: String;
-    publicId: String;
+    url: string;
+    publicId: string;
   };
   socialMediaLinks: [
     {
-      name: String;
-      link: String;
+      name: string;
+      link: string;
     },
   ];
-  tracks: [String];
-  profileLink: String;
+  tracks: [Types.ObjectId];
+  profileLink: string;
   links: [
     {
-      name: String;
-      link: String;
+      name: string;
+      link: string;
     },
   ];
-  supportLink: String;
-  likedPlaylists: [String];
-  likedTracks: [String];
-  playlists: [String];
-  uploads: [String];
+  supportLink: string;
+  likedPlaylists: [Types.ObjectId];
+  likedTracks: [Types.ObjectId];
+  playlists: [Types.ObjectId];
+  uploads: [Types.ObjectId];
   reposts: [
     {
-      id: String;
-      caption: String;
+      id: string;
+      caption: string;
       type: 'track' | 'playlist';
       timestamp: Date;
     },
   ];
-  isPaid: Boolean;
-  ban: Boolean;
-  banReason: String;
+  isPaid: boolean;
+  ban: boolean;
+  banReason: string;
   subscription: {
-    subscriptionType: String;
+    subscriptionType: string;
     quota: {
-      unlimited: Boolean;
-      usedSeconds: Number;
-      leftSeconds: Number;
+      unlimited: boolean;
+      usedSeconds: number;
+      leftSeconds: number;
     };
   };
 };
@@ -138,8 +139,12 @@ const userSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
       select: false,
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
     },
     role: {
       type: String,

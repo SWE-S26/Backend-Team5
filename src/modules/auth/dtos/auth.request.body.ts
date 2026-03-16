@@ -1,4 +1,3 @@
-import { z, email } from 'zod';
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 
 // ! THIS IS AN EXAMPLE DTO
@@ -92,5 +91,37 @@ export const ResetPasswordRequestBodyDTO = extendedZod
       token:
         'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.amno345pqr678stu901vwx234yz567',
       newPassword: 'NewPassword123!',
+    },
+  });
+
+export const GoogleCompleteSignUpRequestBodyDTO = extendedZod
+  .object({
+    // passed back as a short-lived "incomplete" JWT from the callback step
+    incompleteToken: extendedZod.string(),
+
+    dateOfBirth: extendedZod.preprocess(
+      (value) => {
+        if (typeof value === 'string' || value instanceof String)
+          return new Date(value as string);
+        return value;
+      },
+      extendedZod
+        .date()
+        .min(new Date('1950-01-01'), '')
+        .refine((dob) => {
+          const diff = new Date().getTime() - dob.getTime();
+          const age = Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+          return age >= 13;
+        }, "Users' age doesn't meet BeatZa's minimum age requirements"),
+    ),
+
+    gender: extendedZod.enum(['Male', 'Female']),
+  })
+  .openapi('GoogleCompleteSignUpRequest', {
+    example: {
+      incompleteToken:
+        'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.amno345pqr678stu901vwx234yz567',
+      dateOfBirth: '1990-05-15',
+      gender: 'Male',
     },
   });

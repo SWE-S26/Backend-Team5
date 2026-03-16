@@ -1,4 +1,19 @@
-import { Schema, model } from 'mongoose';
+import { Schema, Types, model } from 'mongoose';
+
+export type IAdvancedAudioDetails = {
+  trackId: Types.ObjectId;
+  buyLink?: string;
+  recordLabel?: string;
+  releaseDate?: Date;
+  publisher?: string;
+  isrc?: string;
+  explicitContent?: boolean;
+  pLine?: string;
+  audioClip?: {
+    start: number;
+    end: number;
+  };
+};
 
 const audioClipSchema = new Schema(
   {
@@ -61,4 +76,8 @@ const advancedAudioDetailsSchema = new Schema(
   { timestamps: false },
 );
 
-export default model('AdvancedAudioDetails', advancedAudioDetailsSchema);
+const AdvancedAudioDetails = model<IAdvancedAudioDetails>(
+  'AdvancedAudioDetails',
+  advancedAudioDetailsSchema,
+);
+export default AdvancedAudioDetails;

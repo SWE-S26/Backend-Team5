@@ -1,5 +1,10 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 
+// In case you just respond with a message, no nned for a response DTO
+// In case you fetch something from the Database and want to return a portion of it
+// USE THE MAPPER TO MAP THE ENTITY TO A RESPONSE DTO
+// Last thing I need is for someone to return a hashed password in the response.
+
 // ! THIS IS AN EXAMPLE DTO
 export const AuthResponseDto = extendedZod
   .object({

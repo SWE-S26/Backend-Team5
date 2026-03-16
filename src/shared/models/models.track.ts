@@ -1,5 +1,49 @@
-import { Schema, model } from 'mongoose';
+import { Types, Schema, model } from 'mongoose';
 import { imgSchema } from './schemas.shared';
+
+export type ITrack = {
+  _id: Types.ObjectId;
+  basicInfo: {
+    title: string;
+    permalink: string;
+    mainArtists: [string];
+    genre: string;
+    tags: [string];
+    description: [string];
+    isPrivate: boolean;
+  };
+  audioUrl: string;
+  posterId: Types.ObjectId;
+  image: {
+    url: string;
+    publicId: string;
+  };
+  numOfPlays: number;
+  comments: [Types.ObjectId];
+  numberOfReposts: number;
+  numOfLikes: number;
+  likedBy: [Types.ObjectId];
+  permissions: {
+    enableDirectDownload: boolean;
+    offlineListening: boolean;
+    includeInRssFeed: boolean;
+    displayedEmbedCode: boolean;
+    enableAppPlayback: boolean;
+  };
+  license: {
+    type: 'allRightsReserved' | 'creativeCommons';
+    attribution: boolean;
+    nonCommercial: boolean;
+    noDerivativeWorks: boolean;
+    shareAlike: boolean;
+  };
+  composer: string;
+  releaseTitle: string;
+  caption: string;
+  hidden: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 const permissionsSchema = new Schema(
   {
@@ -158,4 +202,5 @@ const trackSchema = new Schema(
   { timestamps: true },
 );
 
-export default model('Track', trackSchema);
+const Track = model<ITrack>('Track', trackSchema);
+export default Track;
