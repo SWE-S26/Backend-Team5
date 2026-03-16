@@ -60,6 +60,18 @@ class PublitioMediaStorage {
     return res.data;
   }
 
+  async deleteAudioTrack(audioId: string) {
+    const authParams = this.generateReqAuthHeaders();
+    const res = await axios.delete(
+      `https://api.publit.io/v1/files/delete/${audioId}`,
+      {
+        params: authParams,
+      },
+    );
+
+    return res.data;
+  }
+
   async testUpload() {
     try {
       // Path to your local file
@@ -84,6 +96,16 @@ class PublitioMediaStorage {
       console.log('Publitio response:', result);
     } catch (err: any) {
       console.error('Error uploading file:', err.message);
+    }
+  }
+
+  async testDelete(audioId: string) {
+    try {
+      // delete from Publitio
+      const result = await publitioMediaStorage.deleteAudioTrack(audioId);
+      console.log('Publitio response:', result);
+    } catch (err: any) {
+      console.error('Error deleting file:', err.message);
     }
   }
 }

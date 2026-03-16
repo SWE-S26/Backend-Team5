@@ -11,9 +11,7 @@ const start = async () => {
     app.listen(port, () => {
       logger.info(`Server running on port ${port}`);
       logger.info(`testing publitio`);
-      logger.info(`${process.env.PUBLITO_KEY}`);
-      logger.info(`${process.env.PUBLITO_SECRET}`);
-      publitioMediaStorage.testUpload();
+      publitioMediaStorage.testDelete('PbgfBAnb');
     });
   } catch (error) {
     logger.error({ error }, `[Server] Failed to start:`);
