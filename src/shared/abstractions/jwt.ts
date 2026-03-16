@@ -8,6 +8,13 @@ export interface JWTPayload {
   paymentInfo: unknown;
 }
 
+interface PendingTokenPayload {
+  userId: string;
+  role: string;
+  subscription: unknown;
+  googleId: string;
+}
+
 export interface EmailVerificationPayload {
   _id: string;
 }
@@ -87,6 +94,27 @@ class JWTService {
     } catch (err) {
       logger.error(`JWT verification failed: ${err}`);
       GoneError('Link Expired');
+    }
+  }
+
+  generateQrCode(randomString: string): string {
+    return jwt.sign({ qrCode: randomString }, this.secretKey, {
+      expiresIn: '5m',
+    });
+  }
+
+  signPending(payload: PendingTokenPayload): string {
+    return jwt.sign(payload, this.secretKey, { expiresIn: '5m' });
+  }
+
+  verifyPending(token: string): PendingTokenPayload {
+    try {
+      return jwt.verify(token, this.secretKey) as PendingTokenPayload;
+    } catch (err) {
+      logger.error(`Pending token verification failed: ${err}`);
+      throw UnauthorizedError(
+        'Verification session expired, please sign in again',
+      );
     }
   }
 

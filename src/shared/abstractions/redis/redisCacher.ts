@@ -1,4 +1,5 @@
 import { createClient, RedisClientType } from 'redis';
+import logger from '../../logger/logger';
 
 class RedisCacher {
   private static instance: RedisCacher;
@@ -19,17 +20,17 @@ class RedisCacher {
 
     this.client.on('connect', () => {
       this.isConnected = true;
-      console.log('[RedisCacher] Connected');
+      logger.info('[RedisCacher] Connected');
     });
 
     this.client.on('error', (err) => {
       this.isConnected = false;
-      console.error('[RedisCacher] Error:', err.message);
+      logger.error('[RedisCacher] Error:', err.message);
     });
 
     this.client.on('reconnecting', () => {
       this.isConnected = false;
-      console.warn('[RedisCacher] Reconnecting...');
+      logger.warn('[RedisCacher] Reconnecting...');
     });
   }
 

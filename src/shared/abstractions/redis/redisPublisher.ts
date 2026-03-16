@@ -1,4 +1,5 @@
 import { createClient, RedisClientType } from 'redis';
+import logger from '../../logger/logger';
 
 class RedisPublisher {
   private static instance: RedisPublisher;
@@ -19,17 +20,17 @@ class RedisPublisher {
 
     this.client.on('connect', () => {
       this.isConnected = true;
-      console.log('[RedisPublisher] Connected');
+      logger.info('[RedisPublisher] Connected');
     });
 
     this.client.on('error', (err) => {
       this.isConnected = false;
-      console.error('[RedisPublisher] Error:', err.message);
+      logger.error('[RedisPublisher] Error:', err.message);
     });
 
     this.client.on('reconnecting', () => {
       this.isConnected = false;
-      console.warn('[RedisPublisher] Reconnecting...');
+      logger.warn('[RedisPublisher] Reconnecting...');
     });
   }
 

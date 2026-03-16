@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Verify Account</title>
+    <title>Your Verification Code</title>
   </head>
 
   <body
@@ -10,6 +10,7 @@
       margin: 0;
       padding: 20px;
       font-family: 'Inter', Arial, sans-serif;
+      background-color: #f4f4f4;
       text-align: left;
     "
   >
@@ -22,6 +23,7 @@
         border-radius: 8px;
       "
     >
+      <!-- Logo -->
       <div style="text-align: center">
         <img
           src="cid:beatza-logo"
@@ -29,6 +31,8 @@
           style="padding: 15px 10px; width: 6rem; text-align: center"
         />
       </div>
+
+      <!-- Title -->
       <h1
         style="
           margin: 0 auto 32px auto;
@@ -37,67 +41,135 @@
           line-height: 48px;
           color: #121212;
           text-align: left;
-          text-decoration: none;
-          text-transform: none;
           font-family: 'Inter', Arial, sans-serif;
-          font-style: normal;
         "
       >
-        Thanks for signing up to BeatZa!
+        One-Time Passcode
       </h1>
+
+      <!-- Greeting -->
       <p
         style="
           font-size: 16px;
           font-weight: 400;
           line-height: 24px;
           color: #121212;
+          margin: 0 0 12px 0;
         "
       >
-        Hey [User]
+        Hey [User]!
       </p>
+
+      <!-- Body -->
       <p
         style="
           font-size: 16px;
           font-weight: 400;
           line-height: 24px;
           color: #121212;
+          margin: 0 0 24px 0;
         "
       >
-        Thanks for joining us.
+        You requested a one-time passcode. Your 6-digit code is:
       </p>
-      <p
+
+      <!-- OTP Code Block -->
+      <div
         style="
-          font-size: 16px;
-          font-weight: 400;
-          line-height: 24px;
-          color: #121212;
+          background-color: #f7f7f7;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          text-align: center;
+          padding: 24px 16px;
+          margin: 0 0 28px 0;
         "
       >
-        <span style="font-weight: 700"
-          >Please click the link below to complete your BeatZa
-          registration.</span
+        <span
+          style="
+            font-size: 40px;
+            font-weight: 700;
+            letter-spacing: 10px;
+            color: #121212;
+            font-family: 'Courier New', Courier, monospace;
+          "
+          >[verificationCode]</span
         >
-        Doing so gives you full access to SoundCloud’s features and makes it
-        easy to recover your account.
+      </div>
+
+      <!-- Notes Header -->
+      <p
+        style="
+          font-size: 16px;
+          font-weight: 600;
+          line-height: 24px;
+          color: #121212;
+          margin: 0 0 8px 0;
+        "
+      >
+        Please note
       </p>
 
-      <a
-        href="[verifyLink]"
-        style="display: inline-block; text-decoration: none"
+      <!-- Notes List -->
+      <ul
+        style="
+          font-size: 15px;
+          font-weight: 400;
+          line-height: 26px;
+          color: #444444;
+          padding-left: 20px;
+          margin: 0 0 28px 0;
+        "
       >
-        Confirm your email by clicking here.
-      </a>
+        <li>
+          This code is only valid for the next <strong>5 minutes</strong>.
+        </li>
+        <li>If the code expires, you will need to request a new one.</li>
+        <li>
+          This code is generated only for your account.
+          <strong>Do not share it with anyone.</strong>
+        </li>
+        <li>
+          If you did not request this code, you can safely ignore and delete
+          this email. Your account remains secure.
+        </li>
+      </ul>
 
-      <p>Thanks</p>
+      <p
+        style="
+          font-size: 15px;
+          font-weight: 400;
+          line-height: 24px;
+          color: #888888;
+          margin: 0 0 32px 0;
+        "
+      >
+        You were sent this service message because of your recent account
+        activity. View our
+        <a href="#" style="color: #121212; text-decoration: underline"
+          >Terms of Use</a
+        >
+        and
+        <a href="#" style="color: #121212; text-decoration: underline"
+          >Privacy Policy</a
+        >.
+      </p>
 
-      <div style="background-color: #121212; padding: 15px 10px">
+      <!-- Footer -->
+      <div
+        style="
+          background-color: #121212;
+          padding: 24px 10px;
+          border-radius: 0 0 6px 6px;
+        "
+      >
+        <!-- Social Icons -->
         <table align="center" cellpadding="0" cellspacing="0" border="0">
           <tr>
             <td style="padding: 0 10px">
               <a href="https://instagram.com" target="_blank">
                 <img
                   src="https://cdn.simpleicons.org/instagram/ffffff"
-                  width="30"
+                  width="28"
                   alt="Instagram"
                 />
               </a>
@@ -106,33 +178,33 @@
               <a href="https://facebook.com" target="_blank">
                 <img
                   src="https://cdn.simpleicons.org/facebook/ffffff"
-                  width="30"
+                  width="28"
                   alt="Facebook"
                 />
               </a>
             </td>
-
             <td style="padding: 0 10px">
               <a href="https://x.com" target="_blank">
                 <img
                   src="https://cdn.simpleicons.org/x/ffffff"
-                  width="30"
+                  width="28"
                   alt="X"
                 />
               </a>
             </td>
-
             <td style="padding: 0 10px">
               <a href="https://youtube.com" target="_blank">
                 <img
                   src="https://cdn.simpleicons.org/youtube/ffffff"
-                  width="30"
+                  width="28"
                   alt="YouTube"
                 />
               </a>
             </td>
           </tr>
         </table>
+
+        <!-- App Store Badges -->
         <table
           align="center"
           cellpadding="0"
@@ -159,6 +231,8 @@
             </td>
           </tr>
         </table>
+
+        <!-- Legal Footer -->
         <footer
           style="
             font-family: Arial, sans-serif;

@@ -2,13 +2,15 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { AuthRepository } from './auth.repository';
 
-// This is the ONLY type the controller will see — no IUser
 export type GoogleAuthPayload =
   | {
       status: 'existing';
       userId: string;
       role: string;
       subscription: unknown;
+      email: string;
+      displayName: string;
+      googleId: string;
     }
   | {
       status: 'new';
@@ -39,19 +41,14 @@ passport.use(
         const existingUser = await authRepository.findByEmail(email);
 
         if (existingUser) {
-          if (!existingUser.googleId) {
-            await authRepository.linkGoogleId(
-              existingUser._id.toString(),
-              googleId,
-            );
-          }
-
-          // Convert IUser → plain object so controller never imports IUser
           const payload: GoogleAuthPayload = {
             status: 'existing',
             userId: existingUser._id.toString(),
             role: existingUser.role,
             subscription: existingUser.subscription,
+            email: existingUser.email,
+            displayName: existingUser.displayName,
+            googleId: googleId,
           };
 
           return done(null, payload);

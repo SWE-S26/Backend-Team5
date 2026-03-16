@@ -150,3 +150,103 @@
           $ref: '#/components/responses/NotFound'
         500:
           $ref: '#/components/responses/ServerError'
+/api/auth/v1/google:
+  get:
+    tags:
+      - Authentication
+    summary: Initiate Google OAuth sign-in
+    description: |
+      Redirects the user to Google's consent screen to authenticate.
+      This endpoint is browser-only — do not call it from Postman or a REST client.
+      Google will redirect back to /api/auth/v1/google/callback upon completion.
+    responses:
+      302:
+        description: Redirects to Google consent screen
+        headers:
+          Location:
+            schema:
+              type: string
+              example: 'https://accounts.google.com/o/oauth2/v2/auth?...'
+      500:
+        $ref: '#/components/responses/ServerError'
+
+/api/auth/v1/google/callback:
+  get:
+    tags:
+      - Authentication
+    summary: Google OAuth callback
+    description: |
+      This endpoint is called automatically by Google after the user grants consent.
+      Do not call this endpoint directly.
+
+      Returns one of two shapes depending on whether the user exists in the system:
+
+      - **new user** — returns `status: incomplete` with an `incompleteToken`. 
+        Frontend must collect `dateOfBirth` and `gender`, then POST to `/google/complete`.
+
+      - **existing user** — returns `status: verify` with a `pendingToken`.
+        A 6-digit verification code is sent to the user's email.
+        Frontend must POST that code to `/google/verify-code`.
+    parameters:
+      - in: query
+        name: code
+        required: true
+        schema:
+          type: string
+        description: Authorization code issued by Google — sent automatically, not by the client
+      - in: query
+        name: scope
+        required: false
+        schema:
+          type: string
+        description: Scopes granted by the user — sent automatically by Google
+    responses:
+      200:
+        description: Google authentication successful
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - title: New User
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      enum: [incomplete]
+                    incompleteToken:
+                      type: string
+                      description: Short-lived JWT (15min) carrying googleId, email, displayName. Send back in /google/complete.
+                    email:
+                      type: string
+                    displayName:
+                      type: string
+                  required: [status, incompleteToken, email, displayName]
+                - title: Existing User
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      enum: [verify]
+                    pendingToken:
+                      type: string
+                      description: Short-lived JWT (5min) carrying userId, role, subscription. Send back in /google/verify-code alongside the emailed code.
+                  required: [status, pendingToken]
+            examples:
+              new_user:
+                summary: Brand new user — needs to complete profile
+                value:
+                  status: incomplete
+                  incompleteToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.abc123'
+                  email: 'user@example.com'
+                  displayName: 'John Doe'
+              existing_user:
+                summary: Existing user — verification code sent to email
+                value:
+                  status: verify
+                  pendingToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.xyz789'
+      400:
+        $ref: '#/components/responses/BadRequest'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      500:
+        $ref: '#/components/responses/ServerError'

@@ -1,5 +1,7 @@
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import {
+  GoneError,
   NotFoundError,
   ResourceAlreadyExists,
   UnauthorizedError,
@@ -7,6 +9,9 @@ import {
 import { AuthRepository } from './auth.repository';
 import JWTService from '../../shared/abstractions/jwt';
 import logger from '../../shared/logger/logger';
+import { redisCacher } from '../../shared/abstractions/redis/redisCacher';
+import emailService from '../../shared/abstractions/email/EmailService';
+import { stat } from 'node:fs';
 
 type newUserDTO = {
   email: string;
@@ -21,10 +26,30 @@ type logInDTO = {
   password: string;
 };
 
+type QRSession = {
+  status: 'pending' | 'verified';
+  userId: string | null;
+  role: string | null;
+  subscription: unknown | null;
+};
+
+const QR_PREFIX = 'qr-login:';
+const QR_TTL_SECONDS = 120; // 2 minutes initial
+const QR_EXTEND_SECONDS = 180; // +3 minutes on approval
+
 export type GoogleCompleteSignUpBody = {
   incompleteToken: string;
   dateOfBirth: Date;
   gender: 'Male' | 'Female';
+};
+
+export type InitiateGoogleSignInDTO = {
+  userId: string;
+  role: string;
+  subscription: unknown;
+  email: string;
+  displayName: string;
+  googleId: string;
 };
 
 interface AuthTokens {
@@ -210,6 +235,55 @@ export class AuthService {
     }
   }
 
+  async initiateGoogleSignIn(
+    data: InitiateGoogleSignInDTO,
+  ): Promise<{ pendingToken: string }> {
+    const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits
+    const TTL_SECONDS = 300; // 5 minutes
+
+    await redisCacher.set(`google-signin:${data.userId}`, code, TTL_SECONDS);
+
+    await emailService.sendGoogleSignInVerificationCode(
+      data.displayName,
+      data.email,
+      code,
+    );
+
+    const pendingToken = this.jwtService.signPending({
+      userId: data.userId,
+      role: data.role,
+      subscription: data.subscription,
+      googleId: data.googleId,
+    });
+
+    return { pendingToken };
+  }
+
+  async verifyGoogleSignInCode(
+    pendingToken: string,
+    code: string,
+  ): Promise<AuthTokens> {
+    const payload = this.jwtService.verifyPending(pendingToken);
+
+    const storedCode = await redisCacher.get<string>(
+      `google-signin:${payload.userId}`,
+    );
+
+    if (!storedCode || storedCode !== code) {
+      throw UnauthorizedError('Invalid or expired verification code');
+    }
+
+    redisCacher.delete(`google-signin:${payload.userId}`);
+
+    this.authRepository.linkGoogleId(payload.userId, payload.googleId);
+
+    return this.issueTokenPair(
+      payload.userId,
+      payload.role,
+      payload.subscription,
+    );
+  }
+
   issueTokenPair(
     userId: string,
     role: string,
@@ -234,19 +308,12 @@ export class AuthService {
   ): Promise<AuthTokens> {
     const payload = this.jwtService.verifyIncomplete(body.incompleteToken);
 
-    // Race condition guard: user registered between the two steps
+    // ! Race condition guard: user registered between the two steps
     const alreadyExists = await this.authRepository.findByEmail(payload.email);
     if (alreadyExists) {
-      return {
-        accessToken: this.jwtService.createJWT(
-          alreadyExists._id.toString(),
-          alreadyExists.role,
-          alreadyExists.subscription,
-        ),
-        refreshToken: this.jwtService.createRefreshToken(
-          alreadyExists._id.toString(),
-        ),
-      };
+      throw ResourceAlreadyExists(
+        'This user is logged in normally, sign in with google again, please.',
+      );
     }
 
     const newUser = await this.authRepository.createWithGoogle({
@@ -266,4 +333,78 @@ export class AuthService {
       refreshToken: this.jwtService.createRefreshToken(newUser._id.toString()),
     };
   }
+
+  createQRCodeForDesktopLogin = async (): Promise<{
+    qrCode: string;
+    expiresIn: number;
+  }> => {
+    const qrCode = `qr_${crypto.randomBytes(16).toString('hex')}`;
+
+    const session: QRSession = {
+      status: 'pending',
+      userId: null,
+      role: null,
+      subscription: null,
+    };
+
+    await redisCacher.set<QRSession>(
+      `${QR_PREFIX}${qrCode}`,
+      session,
+      QR_TTL_SECONDS,
+    );
+
+    return { qrCode, expiresIn: QR_TTL_SECONDS };
+  };
+
+  pollQRCodeForLogin = async (qrCode: string): Promise<AuthTokens | null> => {
+    const session = await redisCacher.get<QRSession>(`${QR_PREFIX}${qrCode}`);
+
+    if (!session) {
+      throw GoneError('QR code has expired. Please generate a new one.');
+    }
+
+    if (session.status === 'pending') {
+      throw NotFoundError('Waiting for mobile approval.');
+    }
+
+    // Verified — consume the session and issue tokens
+    await redisCacher.delete(`${QR_PREFIX}${qrCode}`);
+
+    return this.issueTokenPair(
+      session.userId!,
+      session.role!,
+      session.subscription,
+    );
+  };
+
+  approveDesktopLogin = async (
+    qrCode: string,
+    userId: string,
+    role: string,
+    subscription: unknown,
+  ): Promise<void> => {
+    const session = await redisCacher.get<QRSession>(`${QR_PREFIX}${qrCode}`);
+
+    if (!session) {
+      throw GoneError('QR code has expired. Please generate a new one.');
+    }
+
+    if (session.status === 'verified') {
+      return; // idempotent — already approved, do nothing
+    }
+
+    const updatedSession: QRSession = {
+      status: 'verified',
+      userId,
+      role,
+      subscription,
+    };
+
+    // Extend TTL to give the desktop time to poll and collect the token
+    await redisCacher.set<QRSession>(
+      `${QR_PREFIX}${qrCode}`,
+      updatedSession,
+      QR_EXTEND_SECONDS,
+    );
+  };
 }

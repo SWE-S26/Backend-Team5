@@ -7,10 +7,12 @@ import {
 } from './auth.request.query';
 import {
   checkEmailRequestBodyDTO,
-  CreateAuthRequestBodyDTO,
+  DesktopPollingRequestBodyDTO,
   ForgotPasswordRequestBodyDTO,
   GoogleCompleteSignUpRequestBodyDTO,
+  GoogleVerifyCodeRequestBodyDTO,
   LoginInRequestBodyDTO,
+  MobileApproveLoginRequestBodyDTO,
   ResetPasswordRequestBodyDTO,
   SignUpRequestBodyDTO,
 } from './auth.request.body';
@@ -19,7 +21,6 @@ import {
 export const CreateAuthRequestDTO = extendedZod.object({
   params: AuthIdParamDTO,
   query: ListAuthsQueryDto,
-  body: CreateAuthRequestBodyDTO,
 });
 
 export const SignUpRequestDTO = extendedZod.object({
@@ -52,4 +53,16 @@ export const GoogleCallbackRequestDTO = extendedZod.object({
 
 export const GoogleCompleteSignUpRequestDTO = extendedZod.object({
   body: GoogleCompleteSignUpRequestBodyDTO,
+});
+
+export const GoogleVerifyCodeRequestDTO = extendedZod.object({
+  body: GoogleVerifyCodeRequestBodyDTO,
+});
+
+export const DesktopPollingRequestDTO = extendedZod.object({
+  body: DesktopPollingRequestBodyDTO,
+});
+
+export const MobileLoginApprovalRequestDTO = extendedZod.object({
+  body: MobileApproveLoginRequestBodyDTO,
 });
