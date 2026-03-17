@@ -1,1 +1,20 @@
 # OpenAPI parameter definitions for the auth module, starting writing normally like paths
+AuthSuccessResponse:
+  type: object
+  properties:
+    message:
+      type: string
+    data:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserCredientialsResponseDto'
+        accessToken:
+          type: string
+          description: Present only for mobile clients
+        refreshToken:
+          type: string
+          description: Present only for mobile clients
+  required:
+    - message
+    - data
