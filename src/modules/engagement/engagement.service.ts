@@ -30,4 +30,32 @@ export class EngagementService {
     ]);
     return { liked: true, numOfLikes: updated.numOfLikes };
   }
+
+  async togglePlaylistLike(
+    playlistId: string,
+    userId: string,
+  ): Promise<{ liked: boolean; numOfLikes: number }> {
+    const playlist = await this.repository.findPlaylistById(playlistId);
+
+    if (!playlist) NotFoundError('Playlist not found');
+
+    const userObjectId = new Types.ObjectId(userId);
+    const alreadyLiked = playlist!.likedUser.some((id) =>
+      id.equals(userObjectId),
+    );
+
+    if (alreadyLiked) {
+      const [updated] = await Promise.all([
+        this.repository.removeLikeFromPlaylist(playlistId, userId),
+        this.repository.removePlaylistFromUserLikes(userId, playlistId),
+      ]);
+      return { liked: false, numOfLikes: updated.numOfLikes };
+    }
+
+    const [updated] = await Promise.all([
+      this.repository.addLikeToPlaylist(playlistId, userId),
+      this.repository.addPlaylistToUserLikes(userId, playlistId),
+    ]);
+    return { liked: true, numOfLikes: updated.numOfLikes };
+  }
 }
