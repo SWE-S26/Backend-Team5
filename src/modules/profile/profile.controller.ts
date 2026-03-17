@@ -58,17 +58,8 @@ export class ProfileController {
 
   async getPrivacySettings(req: Request, res: Response): Promise<void> {
     try {
-      console.log('userId================================================');
       const userId = req.userInfo!._id;
-      console.log(
-        'userId================================================',
-        userId,
-      );
       const settings = await this.service.getPrivacySettings(userId);
-      console.log(
-        'settings================================================',
-        settings,
-      );
       if (!settings) {
         res.status(404).json({ message: 'User settings not found' });
         return;
