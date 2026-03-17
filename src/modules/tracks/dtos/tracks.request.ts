@@ -8,3 +8,7 @@ export const CreateTracksRequestDTO = extendedZod.object({
   query: ListTrackssQueryDto,
   body: CreateTracksRequestBodyDTO,
 });
+
+export const DeleteTrackRequestDTO = extendedZod.object({
+  params: TracksIdParamDTO,
+});
