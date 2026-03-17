@@ -34,7 +34,7 @@ export class AuthController {
   private readonly refreshTokenPath: string = '/api/auth/v1/refresh-token';
 
   constructor() {
-    this.isProduction = process.env.NODE_ENV == 'PROD';
+    this.isProduction = process.env.MODE == 'PROD';
     this.service = new AuthService();
   }
 
