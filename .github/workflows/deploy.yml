@@ -24,6 +24,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -42,6 +45,7 @@ jobs:
         env:
           PORT: ${{ secrets.PORT }}
           MODE: ${{ secrets.MODE }}
+          HOST_URL: ${{ secrets.HOST_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           REFRESH_JWT_SECRET: ${{ secrets.REFRESH_JWT_SECRET }}
           MONGO_URI: ${{ secrets.MONGO_URI }}
@@ -71,6 +75,7 @@ jobs:
             {
                 echo "PORT=${PORT}"
                 echo "MODE=${MODE}"
+                echo "HOST_URL=${HOST_URL}"
                 echo "JWT_SECRET=${JWT_SECRET}"
                 echo "REFRESH_JWT_SECRET=${REFRESH_JWT_SECRET}"
                 echo "MONGO_URI=${MONGO_URI}"
@@ -96,5 +101,4 @@ jobs:
             docker pull ghcr.io/swe-s26/backend-team5:latest
             docker compose up -d --no-deps --force-recreate backend
 
-            rm ~/beatza/.env.backend
             docker image prune -f
