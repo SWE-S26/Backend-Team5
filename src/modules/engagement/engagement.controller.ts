@@ -36,7 +36,12 @@ export class EngagementController {
 
   async getTrackLikers(req: Request, res: Response): Promise<void> {
     const parsed = parseRequest(GetTrackLikersRequestDTO, req);
-    if (!parsed.success) BadRequestError(parsed.error.message);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+    // console.log('Parsed Request:', parsed);
+    // console.log('Request Params:', parsed.error?.message);
+    // if (!parsed.success) BadRequestError(parsed.error.message);
 
     const { trackId } = parsed.data!.params;
     const { offset, limit } = parsed.data!.query;
@@ -47,12 +52,19 @@ export class EngagementController {
 
   async getPlaylistLikers(req: Request, res: Response): Promise<void> {
     const parsed = parseRequest(GetPlaylistLikersRequestDTO, req);
-    if (!parsed.success) BadRequestError(parsed.error.message);
+    // if (!parsed.success) BadRequestError(parsed.error.message);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
 
     const { playlistId } = parsed.data!.params;
     const { offset, limit } = parsed.data!.query;
 
-    const result = await this.service.getPlaylistLikers(playlistId, offset, limit);
+    const result = await this.service.getPlaylistLikers(
+      playlistId,
+      offset,
+      limit,
+    );
     res.json(result);
   }
 }

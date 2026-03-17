@@ -13,7 +13,7 @@ import authRoutes from '../auth/auth.routes';
 router.use('/auth', authRoutes);
 
 import publicIntegrationRouter from './router.public.integration';
-router.use(publicIntegrationRouter);
+router.use('/public', publicIntegrationRouter);
 
 import { requireAuth } from '../../shared/middleware/requireAuth';
 router.use(requireAuth);
