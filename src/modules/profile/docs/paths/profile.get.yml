@@ -1,4 +1,4 @@
-  api/profile/v1/{userId}:
+  /api/profile/v1/{userId}:
     get:
       tags:
         - Profile-Management

@@ -1,4 +1,4 @@
-  api/profile/v1:
+  /api/profile/v1:
     patch:
       tags:
         - Profile-Management

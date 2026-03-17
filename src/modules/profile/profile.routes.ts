@@ -16,8 +16,16 @@ profileRouter.get(
 );
 profileRouter.patch(
   apiVersions.v1 + '/',
-  requireAuth,
   profileController.update.bind(profileController),
+);
+
+profileRouter.get(
+  apiVersions.v1 + '/settings/privacy',
+  profileController.getPrivacySettings.bind(profileController),
+);
+profileRouter.patch(
+  apiVersions.v1 + '/settings/privacy',
+  profileController.updatePrivacySettings.bind(profileController),
 );
 
 export default profileRouter;

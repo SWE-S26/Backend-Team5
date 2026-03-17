@@ -2,7 +2,10 @@ import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { ProfileService } from './profile.service';
 import { ProfileIdParamDTO } from './dtos/profile.request.params';
-import { UpdateProfileRequestDTO } from './dtos/profile.request';
+import {
+  UpdateProfileRequestDTO,
+  UpdatePrivacySettingsRequestDTO,
+} from './dtos/profile.request';
 
 export class ProfileController {
   constructor(private readonly service: ProfileService) {}
@@ -37,17 +40,66 @@ export class ProfileController {
         throw validatedRequest.error;
       }
 
-      const updatedProfile = await this.service.update(
+      const updated = await this.service.update(
         userId,
         validatedRequest.data.body,
       );
 
-      if (!updatedProfile) {
+      if (!updated) {
         res.status(404).json({ message: 'User not found' });
         return;
       }
 
-      res.json(updatedProfile);
+      res.json(updated);
+    } catch (err) {
+      res.status(500).json({ message: 'Server error', error: err });
+    }
+  }
+
+  async getPrivacySettings(req: Request, res: Response): Promise<void> {
+    try {
+      console.log('userId================================================');
+      const userId = req.userInfo!._id;
+      console.log(
+        'userId================================================',
+        userId,
+      );
+      const settings = await this.service.getPrivacySettings(userId);
+      console.log(
+        'settings================================================',
+        settings,
+      );
+      if (!settings) {
+        res.status(404).json({ message: 'User settings not found' });
+        return;
+      }
+      res.json(settings);
+    } catch (err) {
+      res.status(500).json({ message: 'Server error', error: err });
+    }
+  }
+
+  async updatePrivacySettings(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.userInfo!._id;
+      const validatedRequest = parseRequest(
+        UpdatePrivacySettingsRequestDTO,
+        req,
+      );
+
+      if (!validatedRequest.success) {
+        throw validatedRequest.error;
+      }
+
+      const updated = await this.service.updatePrivacySettings(
+        userId,
+        validatedRequest.data.body,
+      );
+      if (!updated) {
+        res.status(404).json({ message: 'User settings not found' });
+        return;
+      }
+      res.json(updated);
     } catch (err) {
       res.status(500).json({ message: 'Server error', error: err });
     }
