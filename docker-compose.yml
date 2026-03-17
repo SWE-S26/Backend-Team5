@@ -1,0 +1,67 @@
+name: beatza
+
+services:
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - beatza-network
+
+  backend:
+    image: ghcr.io/swe-s26/backend-team5:latest
+    restart: always
+    env_file:
+      - .env.backend
+    # ports:
+      # - 4123:4123
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - beatza-network
+
+  frontend:
+    image: ghcr.io/swe-s26/frontend-team5:latest
+    # image: beatza-fe:1.0
+    restart: always
+    # ports:
+    #   - 3000:3000
+    depends_on:
+      - backend
+    networks:
+      - beatza-network
+
+  redis:
+    image: redis:alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+    restart: always
+    volumes:
+      - redis-data:/data
+    # ports:
+    #   - 6379:6379
+    networks:
+      - beatza-network
+
+networks:
+  beatza-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+
+# secrets:
