@@ -4,8 +4,10 @@ WORKDIR /beatza
 
 COPY package*.json ./
 
-# installs ALL deps, including typescript/tsc
-RUN npm ci --ignore-scripts                  
+RUN npm config set fetch-retries 5 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm ci --ignore-scripts                
 
 
 COPY tsconfig.json ./
@@ -23,7 +25,10 @@ WORKDIR /beatza
 COPY package*.json ./
 
 # only prod deps
-RUN npm ci --omit=dev --ignore-scripts   
+RUN npm config set fetch-retries 5 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm ci --omit=dev --ignore-scripts                  
 
 COPY --from=builder /beatza/dist ./dist
 
