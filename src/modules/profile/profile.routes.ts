@@ -20,11 +20,11 @@ profileRouter.patch(
 );
 
 profileRouter.get(
-  apiVersions.v1 + '/settings',
+  apiVersions.v1 + '/settings/privacy',
   profileController.getPrivacySettings.bind(profileController),
 );
 profileRouter.patch(
-  apiVersions.v1 + '/settings',
+  apiVersions.v1 + '/settings/privacy',
   profileController.updatePrivacySettings.bind(profileController),
 );
 

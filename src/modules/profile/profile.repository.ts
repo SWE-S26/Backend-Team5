@@ -27,7 +27,7 @@ export class ProfileRepository {
   }
 
   async getPrivacySettings(id: string): Promise<ISettings['privacy'] | null> {
-    const doc = await Settings.findOne({ id }, { privacy: 1 }).lean();
+    const doc = await Settings.findOne({ userId: id }, { privacy: 1 }).lean();
     return doc?.privacy ?? null;
   }
 
@@ -36,10 +36,10 @@ export class ProfileRepository {
     data: Partial<UpdatePrivacySettingsDTOType>,
   ): Promise<ISettings['privacy'] | null> {
     const updated = await Settings.findOneAndUpdate(
-      { id },
+      { userId: id },
       { privacy: data },
       { new: true, runValidators: true, projection: { privacy: 1 } },
-    );
+    ).lean();
     return updated?.privacy ?? null;
   }
 }
