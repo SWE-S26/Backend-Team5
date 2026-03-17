@@ -4,7 +4,6 @@ import {
   UpdateProfileRequestBodyDTOType,
   UpdatePrivacySettingsDTOType,
 } from './dtos/profile.request.body';
-import { promises } from 'node:dns';
 
 export class ProfileRepository {
   async findById(id: string): Promise<IUser | null> {

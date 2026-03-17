@@ -4,7 +4,18 @@ import { IUser } from '../../shared/models/models.user';
 import { ProfileMapper } from './dtos/profile.mapper';
 import { ProfileRepository } from './profile.repository';
 import { ProfileResponseDTOType } from './dtos/profile.response';
-import { UpdateProfileRequestBodyDTOType } from './dtos/profile.request.body';
+import {
+  UpdateProfileRequestBodyDTOType,
+  UpdatePrivacySettingsDTOType,
+} from './dtos/profile.request.body';
+import Settings, { ISettings } from '../../shared/models/models.settings';
+
+const defaultPrivacySettings: UpdatePrivacySettingsDTOType = {
+  allowMessagesAnyone: true,
+  showActivityDiscovery: true,
+  showFirstTopFan: true,
+  showTrackTopFans: true,
+};
 
 export class ProfileService {
   constructor(private readonly repository: ProfileRepository) {}
@@ -48,5 +59,23 @@ export class ProfileService {
     };
 
     return ProfileMapper.toResponse(combined);
+  }
+
+  async getPrivacySettings(
+    id: string,
+  ): Promise<UpdatePrivacySettingsDTOType | null> {
+    const settings: ISettings['privacy'] | null =
+      await this.repository.getPrivacySettings(id);
+    if (!settings) return null;
+    return { ...defaultPrivacySettings, ...settings };
+  }
+
+  async updatePrivacySettings(
+    id: string,
+    data: Partial<UpdatePrivacySettingsDTOType>,
+  ): Promise<UpdatePrivacySettingsDTOType | null> {
+    const updated = await this.repository.updatePrivacySettings(id, data);
+    if (!updated) return null;
+    return updated;
   }
 }
