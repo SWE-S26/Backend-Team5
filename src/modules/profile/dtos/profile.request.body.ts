@@ -54,6 +54,10 @@ export const UpdatePrivacySettingsDTO = extendedZod.object({
   showTrackTopFans: extendedZod.boolean().optional(),
 });
 
+export type UpdatePrivacySettingsDTOType = z.infer<
+  typeof UpdatePrivacySettingsDTO
+>;
+
 export const UpdateNotificationsSettingsDTO = extendedZod.object({
   newFollower: extendedZod.enum(['email', 'devices', 'both', 'off']).optional(),
   repostOfYourPost: extendedZod
