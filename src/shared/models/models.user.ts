@@ -17,11 +17,11 @@ export type IUser = {
   gender: 'Male' | 'Female';
   isVerified: boolean;
   profileImg: {
-    url: string;
+    imgLink: string;
     publicId: string;
   };
   bannerImg: {
-    url: string;
+    imgLink: string;
     publicId: string;
   };
   socialMediaLinks: [

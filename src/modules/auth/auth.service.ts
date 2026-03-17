@@ -6,12 +6,13 @@ import {
   ResourceAlreadyExists,
   UnauthorizedError,
 } from '../../shared/errors/responseErrors';
+import { LoginResponse } from './dtos/auth.response';
 import { AuthRepository } from './auth.repository';
 import JWTService from '../../shared/abstractions/jwt';
 import logger from '../../shared/logger/logger';
 import { redisCacher } from '../../shared/abstractions/redis/redisCacher';
 import emailService from '../../shared/abstractions/email/EmailService';
-import { stat } from 'node:fs';
+import { AuthMapper } from './dtos/auth.mapper';
 
 type newUserDTO = {
   email: string;
@@ -31,6 +32,11 @@ type QRSession = {
   userId: string | null;
   role: string | null;
   subscription: unknown | null;
+};
+
+type LoginSession = {
+  tokens: AuthTokens;
+  userDetails: LoginResponse;
 };
 
 const QR_PREFIX = 'qr-login:';
@@ -118,6 +124,16 @@ export class AuthService {
     return token;
   }
 
+  async getUserIntialDetails(userId: string): Promise<LoginResponse> {
+    const user = await this.authRepository.findById(userId);
+
+    if (!user) {
+      throw NotFoundError('User not found');
+    }
+
+    return AuthMapper.toUserCredientialsResponse(user);
+  }
+
   async createPasswordResetToken(
     email: string,
   ): Promise<{ token: string; userName: string }> {
@@ -154,23 +170,26 @@ export class AuthService {
     }
   }
 
-  async refreshAccessToken(incomingRefreshToken: string): Promise<string> {
+  async refreshAccessToken(
+    incomingRefreshToken: string,
+  ): Promise<{ tokens: AuthTokens; userId: string }> {
     const payload = this.jwtService.verifyRefreshToken(incomingRefreshToken);
     if (!payload) throw UnauthorizedError('Invalid refresh token');
 
     const user = await this.authRepository.findById(payload._id);
-    if (!user) throw UnauthorizedError('Session expired, please log in again');
+    if (!user)
+      throw NotFoundError('How did you even get this token? User not found');
 
-    const newAccessToken = this.jwtService.createJWT(
+    const tokens = this.issueTokenPair(
       user._id.toString(),
       user.role,
       user.subscription,
     );
 
-    return newAccessToken;
+    return { tokens, userId: user._id.toString() };
   }
 
-  async logInUser(logInDTO: logInDTO): Promise<AuthTokens> {
+  async logInUser(logInDTO: logInDTO): Promise<LoginSession> {
     const searchUser = await this.authRepository.findByEmail(logInDTO.email);
 
     if (!searchUser) {
@@ -198,19 +217,17 @@ export class AuthService {
       throw NotFoundError('Invalid email or password');
     }
 
-    const accessToken = this.jwtService.createJWT(
+    const { accessToken, refreshToken } = this.issueTokenPair(
       searchUser._id.toString(),
       searchUser.role,
-      searchUser.subscription as any,
+      searchUser.subscription,
     );
 
-    const refreshToken = this.jwtService.createRefreshToken(
-      searchUser._id.toString(),
-    );
+    const userDetails = AuthMapper.toUserCredientialsResponse(searchUser);
 
     return {
-      accessToken,
-      refreshToken,
+      tokens: { accessToken, refreshToken },
+      userDetails,
     };
   }
 
@@ -262,7 +279,7 @@ export class AuthService {
   async verifyGoogleSignInCode(
     pendingToken: string,
     code: string,
-  ): Promise<AuthTokens> {
+  ): Promise<LoginSession> {
     const payload = this.jwtService.verifyPending(pendingToken);
 
     const storedCode = await redisCacher.get<string>(
@@ -277,11 +294,16 @@ export class AuthService {
 
     this.authRepository.linkGoogleId(payload.userId, payload.googleId);
 
-    return this.issueTokenPair(
+    const tokens = this.issueTokenPair(
       payload.userId,
       payload.role,
       payload.subscription,
     );
+
+    const user = await this.authRepository.findById(payload.userId);
+
+    const userDetails = AuthMapper.toUserCredientialsResponse(user!);
+    return { tokens, userDetails };
   }
 
   issueTokenPair(
@@ -305,7 +327,7 @@ export class AuthService {
 
   async completeGoogleSignUp(
     body: GoogleCompleteSignUpBody,
-  ): Promise<AuthTokens> {
+  ): Promise<{ tokens: AuthTokens; userDetails: LoginResponse }> {
     const payload = this.jwtService.verifyIncomplete(body.incompleteToken);
 
     // ! Race condition guard: user registered between the two steps
@@ -324,13 +346,15 @@ export class AuthService {
       gender: body.gender,
     });
 
+    const tokens = this.issueTokenPair(
+      newUser._id.toString(),
+      newUser.role,
+      newUser.subscription,
+    );
+
     return {
-      accessToken: this.jwtService.createJWT(
-        newUser._id.toString(),
-        newUser.role,
-        newUser.subscription,
-      ),
-      refreshToken: this.jwtService.createRefreshToken(newUser._id.toString()),
+      tokens,
+      userDetails: AuthMapper.toUserCredientialsResponse(newUser),
     };
   }
 
@@ -356,7 +380,7 @@ export class AuthService {
     return { qrCode, expiresIn: QR_TTL_SECONDS };
   };
 
-  pollQRCodeForLogin = async (qrCode: string): Promise<AuthTokens | null> => {
+  pollQRCodeForLogin = async (qrCode: string): Promise<LoginSession | null> => {
     const session = await redisCacher.get<QRSession>(`${QR_PREFIX}${qrCode}`);
 
     if (!session) {
@@ -370,11 +394,22 @@ export class AuthService {
     // Verified — consume the session and issue tokens
     await redisCacher.delete(`${QR_PREFIX}${qrCode}`);
 
-    return this.issueTokenPair(
+    const tokens = this.issueTokenPair(
       session.userId!,
       session.role!,
       session.subscription,
     );
+
+    const user = await this.authRepository.findById(session.userId!);
+    if (user?.ban) {
+      throw UnauthorizedError(
+        `Your account has been banned. Due to ${user.banReason} Please contact support.`,
+      );
+    }
+
+    const userDetails = AuthMapper.toUserCredientialsResponse(user!);
+
+    return { tokens, userDetails };
   };
 
   approveDesktopLogin = async (

@@ -1,4 +1,3 @@
-import { extend } from 'zod/v4/core/util.cjs';
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 
 export const checkEmailRequestBodyDTO = extendedZod
