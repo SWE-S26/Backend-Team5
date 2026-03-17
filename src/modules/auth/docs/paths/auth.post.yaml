@@ -82,7 +82,7 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/auth/v1/signup:
+/api/auth/v1/sign-up:
   post:
     tags:
       - Authentication
