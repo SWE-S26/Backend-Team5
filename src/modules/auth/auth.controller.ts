@@ -23,9 +23,10 @@ import {
   UnauthorizedError,
 } from '../../shared/errors/responseErrors';
 import { JWTPayload } from '../../shared/abstractions/jwt';
+import { LoginResponse } from './dtos/auth.response';
 
 export class AuthController {
-  private isProduction: boolean;
+  private readonly isProduction: boolean;
   private readonly service: AuthService;
   private readonly hostUrl: string =
     process.env.HOST_URL || 'http://localhost:4123';
@@ -105,10 +106,15 @@ export class AuthController {
 
     const logInParams = validatedRequest.data.body;
 
-    const { accessToken, refreshToken } =
-      await this.service.logInUser(logInParams);
+    const { tokens, userDetails } = await this.service.logInUser(logInParams);
 
-    this.sendTokenResponse(req, res, accessToken, refreshToken);
+    this.sendTokenResponse(
+      req,
+      res,
+      tokens.accessToken,
+      tokens.refreshToken,
+      userDetails,
+    );
   }
 
   async verifyEmail(req: Request, res: Response): Promise<void> {
@@ -134,42 +140,27 @@ export class AuthController {
   }
 
   async refreshToken(req: Request, res: Response): Promise<void> {
+    let incomingRefreshToken: string;
     if (this.isCross(req)) {
-      const incomingRefreshToken =
-        req.headers['authorization']?.split(' ')[1] || '';
-      if (!incomingRefreshToken) {
-        throw UnauthorizedError('Refresh token is required');
-      }
-
-      const newAccessToken =
-        await this.service.refreshAccessToken(incomingRefreshToken);
-
-      res.json({
-        message: 'Token Refreshed Successfully',
-        data: {
-          accessToken: newAccessToken,
-        },
-      });
+      incomingRefreshToken = req.headers['authorization']?.split(' ')[1] || '';
     } else {
-      const incomingRefreshToken = req.cookies['refreshToken'];
-      if (!incomingRefreshToken) {
-        throw UnauthorizedError('Refresh token is required');
-      }
-
-      const newAccessToken =
-        await this.service.refreshAccessToken(incomingRefreshToken);
-
-      res.cookie('accessToken', newAccessToken, {
-        httpOnly: true,
-        secure: this.isProduction,
-        sameSite: 'strict',
-        maxAge: 1000 * 60 * 60 * 1,
-      });
-
-      res.json({
-        message: 'Token Refreshed Successfully',
-      });
+      incomingRefreshToken = req.cookies['refreshToken'];
     }
+
+    if (!incomingRefreshToken) {
+      throw UnauthorizedError('Refresh token is required');
+    }
+
+    const { tokens, userId } =
+      await this.service.refreshAccessToken(incomingRefreshToken);
+    const userDetails = await this.service.getUserIntialDetails(userId);
+    this.sendTokenResponse(
+      req,
+      res,
+      tokens.accessToken,
+      tokens.refreshToken,
+      userDetails,
+    );
   }
 
   async forgotPassword(req: Request, res: Response): Promise<void> {
@@ -277,6 +268,26 @@ export class AuthController {
           `Google authentication successful for email: ${JSON.stringify(payload)}`,
         );
 
+        if (payload.status === 'returning_google') {
+          const userCreditianls = await this.service.getUserIntialDetails(
+            payload.userId,
+          );
+
+          const tokens = this.service.issueTokenPair(
+            payload.userId,
+            payload.role,
+            payload.subscription,
+          );
+
+          return this.sendTokenResponse(
+            req,
+            res,
+            tokens.accessToken,
+            tokens.refreshToken,
+            userCreditianls,
+          );
+        }
+
         if (payload.status === 'new') {
           const incompleteToken = this.service.issueIncompleteToken({
             googleId: payload.googleId,
@@ -321,11 +332,17 @@ export class AuthController {
 
     try {
       const { pendingToken, code } = validatedRequest.data.body;
-      const tokens = await this.service.verifyGoogleSignInCode(
+      const { tokens, userDetails } = await this.service.verifyGoogleSignInCode(
         pendingToken,
         code,
       );
-      this.sendTokenResponse(req, res, tokens.accessToken, tokens.refreshToken);
+      this.sendTokenResponse(
+        req,
+        res,
+        tokens.accessToken,
+        tokens.refreshToken,
+        userDetails,
+      );
     } catch (err) {
       next(err);
     }
@@ -344,12 +361,14 @@ export class AuthController {
 
     try {
       const body = req.body as GoogleCompleteSignUpBody;
-      const tokens = await this.service.completeGoogleSignUp(body);
+      const { tokens, userDetails } =
+        await this.service.completeGoogleSignUp(body);
       this.sendTokenResponse(
         req,
         res,
         tokens.accessToken,
         tokens.refreshToken,
+        userDetails,
         201,
       );
     } catch (err) {
@@ -374,9 +393,9 @@ export class AuthController {
 
     const { qrCode } = validatedRequest.data.body;
 
-    const tokens = await this.service.pollQRCodeForLogin(qrCode);
+    const poll = await this.service.pollQRCodeForLogin(qrCode);
 
-    if (!tokens) {
+    if (!poll) {
       res.json({
         message: 'QR Code not yet scanned',
         data: null,
@@ -384,7 +403,13 @@ export class AuthController {
       return;
     }
 
-    this.sendTokenResponse(req, res, tokens.accessToken, tokens.refreshToken);
+    this.sendTokenResponse(
+      req,
+      res,
+      poll.tokens.accessToken,
+      poll.tokens.refreshToken,
+      poll.userDetails,
+    );
   };
 
   approveLoginFromMobile = async (
@@ -413,12 +438,17 @@ export class AuthController {
     res: Response,
     accessToken: string,
     refreshToken: string,
+    userCreditianls?: LoginResponse,
     status = 200,
   ) {
     if (this.isCross(req)) {
       return res.status(status).json({
         message: 'Authenticated successfully',
-        data: { accessToken, refreshToken },
+        data: {
+          accessToken,
+          refreshToken,
+          user: userCreditianls,
+        },
       });
     }
 
@@ -437,6 +467,9 @@ export class AuthController {
       path: this.refreshTokenPath,
     });
 
-    return res.status(status).json({ message: 'Authenticated successfully' });
+    return res.status(status).json({
+      message: 'Authenticated successfully',
+      data: { user: userCreditianls },
+    });
   }
 }

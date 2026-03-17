@@ -4,6 +4,12 @@ import { AuthRepository } from './auth.repository';
 
 export type GoogleAuthPayload =
   | {
+      status: 'returning_google';
+      userId: string;
+      role: string;
+      subscription: unknown;
+    }
+  | {
       status: 'existing';
       userId: string;
       role: string;
@@ -41,6 +47,16 @@ passport.use(
         const existingUser = await authRepository.findByEmail(email);
 
         if (existingUser) {
+          if (existingUser.googleId) {
+            const payload: GoogleAuthPayload = {
+              status: 'returning_google',
+              userId: existingUser._id.toString(),
+              role: existingUser.role,
+              subscription: existingUser.subscription,
+            };
+            return done(null, payload);
+          }
+
           const payload: GoogleAuthPayload = {
             status: 'existing',
             userId: existingUser._id.toString(),

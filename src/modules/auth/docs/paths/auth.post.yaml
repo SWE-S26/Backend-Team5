@@ -41,11 +41,38 @@
                 summary: Web — tokens delivered via cookies
                 value:
                   message: 'Authenticated successfully'
+                  data:
+                    user:
+                      id: '69b801097eabbb6c286e6455'
+                      displayName: 'Naaauuuh This is too much'
+                      role: 'Listener/Artist'
+                      profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
+                      profileImg:
+                        imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
+                        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi'
+                      subscription:
+                        subscriptionType: 'free'
+                        quota:
+                          unlimited: false
+                          usedSeconds: 0
               mobile_client:
                 summary: Mobile — tokens delivered in body
                 value:
                   message: 'Authenticated successfully'
                   data:
+                    user:
+                      id: '69b801097eabbb6c286e6455'
+                      displayName: 'Naaauuuh This is too much'
+                      role: 'Listener/Artist'
+                      profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
+                      profileImg:
+                        imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
+                        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi'
+                      subscription:
+                        subscriptionType: 'free'
+                        quota:
+                          unlimited: false
+                          usedSeconds: 0
                     accessToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.access123'
                     refreshToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.refresh456'
       401:
@@ -292,6 +319,222 @@
       500:
         $ref: '#/components/responses/ServerError'
 
+/api/auth/v1/google/verify-code:
+  post:
+    tags:
+      - Authentication
+    summary: Verify Google sign-in code and authenticate user
+    description: |
+      Completes sign-in for an existing user who authenticated via Google.
+
+      After the Google callback step, a 6-digit verification code is sent to the user's email.
+      The client must send the `pendingToken` along with the code.
+
+      The code is one-time use and expires in 5 minutes.
+
+      On success:
+      - Web clients receive tokens via HTTP-only cookies
+      - Mobile clients receive tokens in the response body
+
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - pendingToken
+              - code
+            properties:
+              pendingToken:
+                type: string
+                description: Short-lived JWT from Google callback step
+                example: 'eyJhbGciOi...'
+              code:
+                type: string
+                description: 6-digit verification code sent to email
+                example: '123456'
+
+    responses:
+      200:
+        description: User authenticated successfully
+        headers:
+          Set-Cookie:
+            description: |
+              Two HTTP-only cookies are set for web clients:
+              - `accessToken` (1 hour)
+              - `refreshToken` (7 days)
+            schema:
+              type: string
+
+        content:
+          application/json:
+            examples:
+              web_client:
+                summary: Web — tokens via cookies
+                value:
+                  message: 'Authenticated successfully'
+                  data:
+                    user:
+                      id: '69b801097eabbb6c286e6455'
+                      displayName: 'Naaauuuh This is too much'
+                      role: 'Listener/Artist'
+                      profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
+                      profileImg:
+                        imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
+                        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi'
+                      subscription:
+                        subscriptionType: 'free'
+                        quota:
+                          unlimited: false
+                          usedSeconds: 0
+
+              mobile_client:
+                summary: Mobile — tokens in body
+                value:
+                  message: 'Authenticated successfully'
+                  data:
+                    user:
+                      id: '69b801097eabbb6c286e6455'
+                      displayName: 'Naaauuuh This is too much'
+                      role: 'Listener/Artist'
+                      profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
+                      profileImg:
+                        imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
+                        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi'
+                      subscription:
+                        subscriptionType: 'free'
+                        quota:
+                          unlimited: false
+                          usedSeconds: 0
+                    accessToken: 'eyJhbGciOi...'
+                    refreshToken: 'eyJhbGciOi...'
+
+      400:
+        $ref: '#/components/responses/InvalidParameters'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      410:
+        $ref: '#/components/responses/Gone'
+      500:
+        $ref: '#/components/responses/ServerError'
+
+/api/auth/v1/google/complete:
+  post:
+    tags:
+      - Authentication
+    summary: Complete Google sign-up for new users
+    description: |
+      Final step for users who signed in with Google but do not yet have a complete account.
+
+      The client must send:
+      - `incompleteToken` (from Google callback)
+      - `dateOfBirth`
+      - `gender`
+
+      On success:
+      - A new user is created
+      - User is authenticated immediately
+      - Response is identical to `api/auth/v1/login`
+
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - incompleteToken
+              - dateOfBirth
+              - gender
+            properties:
+              incompleteToken:
+                type: string
+                description: Short-lived JWT from Google callback
+                example: 'eyJhbGciOi...'
+              dateOfBirth:
+                type: string
+                format: date
+                description: Must be >= 13 years old
+                example: '1990-05-15'
+              gender:
+                type: string
+                enum: [Male, Female]
+                example: 'Male'
+
+    responses:
+      201:
+        description: User created and authenticated successfully
+        headers:
+          Set-Cookie:
+            description: |
+              Two HTTP-only cookies are set for web clients:
+              - `accessToken` (1 hour)
+              - `refreshToken` (7 days)
+            schema:
+              type: string
+
+        content:
+          application/json:
+            examples:
+              web_client:
+                summary: Web — tokens via cookies
+                value:
+                  message: 'Authenticated successfully'
+                  data:
+                    user:
+                      id: '69b801097eabbb6c286e6455'
+                      displayName: 'Naaauuuh This is too much'
+                      role: 'Listener/Artist'
+                      profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
+                      profileImg:
+                        imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
+                        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi'
+                      subscription:
+                        subscriptionType: 'free'
+                        quota:
+                          unlimited: false
+                          usedSeconds: 0
+
+              mobile_client:
+                summary: Mobile — tokens in body
+                value:
+                  message: 'Authenticated successfully'
+                  data:
+                    user:
+                      id: '69b801097eabbb6c286e6455'
+                      displayName: 'Naaauuuh This is too much'
+                      role: 'Listener/Artist'
+                      profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
+                      profileImg:
+                        imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
+                        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi'
+                      subscription:
+                        subscriptionType: 'free'
+                        quota:
+                          unlimited: false
+                          usedSeconds: 0
+                    accessToken: 'eyJhbGciOi...'
+                    refreshToken: 'eyJhbGciOi...'
+
+      400:
+        $ref: '#/components/responses/InvalidParameters'
+
+      401:
+        $ref: '#/components/responses/Unauthorized'
+
+      410:
+        description: Incomplete token expired
+        content:
+          application/json:
+            example:
+              success: false
+              message: 'Incomplete sign-up token expired'
+              data: null
+
+      500:
+        $ref: '#/components/responses/ServerError'
+
 /api/auth/v1/cross/mobile:
   post:
     tags:
@@ -381,134 +624,29 @@
         description: Login successful
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: true
-                message:
-                  type: string
-                  example: 'Login successful'
-                data:
-                  type: object
-                  nullable: true
-            example:
-              success: true
-              message: 'Login successful'
-              data: null
-      401:
-        $ref: '#/components/responses/Unauthorized'
-      404:
-        $ref: '#/components/responses/NotFound'
-      500:
-        $ref: '#/components/responses/ServerError'
-
-/api/auth/v1/google/verify-code:
-  post:
-    tags:
-      - Authentication
-    summary: Verify the Google sign-in email code for existing users
-    description: |
-      Completes sign-in for an existing user who authenticated via Google.
-      The user receives a 6-digit code by email after the callback step.
-
-      Submit the `pendingToken` from the callback response alongside that code.
-      The code is **one-time use** and expires in **5 minutes**.
-
-      On success, issues an access token and refresh token.
-      - **Web clients** receive tokens as HTTP-only cookies.
-      - **Mobile clients** receive tokens in the response body.
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/GoogleVerifyCodeRequestBodyDTO'
-    responses:
-      200:
-        description: Code verified — user authenticated successfully
-        headers:
-          Set-Cookie:
-            description: |
-              Two HTTP-only cookies are set for web clients:
-              - `accessToken` (1 hour)
-              - `refreshToken` (7 days, scoped to /api/auth/v1/refresh-token)
-            schema:
-              type: string
-        content:
-          application/json:
             examples:
-              web_client:
+              web_client_waiting:
+                summary: Web — waiting for approval
+                value:
+                  message: 'QR code not scanned, waiting for approval.'
+              web_client_success:
                 summary: Web — tokens delivered via cookies
                 value:
                   message: 'Authenticated successfully'
-              mobile_client:
-                summary: Mobile — tokens delivered in body
-                value:
-                  message: 'Authenticated successfully'
                   data:
-                    accessToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.access123'
-                    refreshToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.refresh456'
-      400:
-        $ref: '#/components/responses/BadRequest'
-      401:
-        description: Invalid or expired verification code / pending token
-        content:
-          application/json:
-            example:
-              success: false
-              message: 'Invalid or expired verification code'
-      500:
-        $ref: '#/components/responses/ServerError'
-
-/api/auth/v1/google/complete:
-  post:
-    tags:
-      - Authentication
-    summary: Complete Google sign-up for new users
-    description: |
-      Finalises registration for a user who authenticated with Google for the first time.
-      Google does not provide `dateOfBirth` or `gender`, so the frontend must collect
-      these and submit them here alongside the `incompleteToken` from the callback step.
-
-      The `incompleteToken` expires in **15 minutes**.
-      The created account is marked as verified immediately — Google already verified the email.
-
-      On success, issues an access token and refresh token.
-      - **Web clients** receive tokens as HTTP-only cookies.
-      - **Mobile clients** receive tokens in the response body.
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/GoogleCompleteSignUpRequestBodyDTO'
-    responses:
-      201:
-        description: Account created — user authenticated successfully
-        headers:
-          Set-Cookie:
-            description: |
-              Two HTTP-only cookies are set for web clients:
-              - `accessToken` (1 hour)
-              - `refreshToken` (7 days, scoped to /api/auth/v1/refresh-token)
-            schema:
-              type: string
-        content:
-          application/json:
-            examples:
-              web_client:
-                summary: Web — tokens delivered via cookies
-                value:
-                  message: 'Authenticated successfully'
-              mobile_client:
-                summary: Mobile — tokens delivered in body
-                value:
-                  message: 'Authenticated successfully'
-                  data:
-                    accessToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.access123'
-                    refreshToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.refresh456'
+                    user:
+                      id: '69b801097eabbb6c286e6455'
+                      displayName: 'Naaauuuh This is too much'
+                      role: 'Listener/Artist'
+                      profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
+                      profileImg:
+                        imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
+                        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi'
+                      subscription:
+                        subscriptionType: 'free'
+                        quota:
+                          unlimited: false
+                          usedSeconds: 0
       400:
         $ref: '#/components/responses/BadRequest'
       401:

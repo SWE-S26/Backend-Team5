@@ -1,10 +1,10 @@
 import {
   CloudinaryService,
   ImageFolder,
-} from '../../src/shared/abstractions/cloudinary.service';
-import cloudinary from '../../src/config/cloudinary';
+} from '../../../src/shared/abstractions/cloudinary.service';
+import cloudinary from '../../../src/config/cloudinary';
 
-jest.mock('../../src/config/cloudinary', () => ({
+jest.mock('../../../src/config/cloudinary', () => ({
   uploader: {
     upload: jest.fn(),
     destroy: jest.fn(),

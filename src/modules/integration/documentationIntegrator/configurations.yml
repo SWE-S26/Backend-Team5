@@ -70,11 +70,16 @@ x-tagGroups:
 # Global JWT requirement, it is not required for the Authentication Service, I
 # I manually remove it from the Authentication Service endpoints with JS
 security:
+  - cookieAuth: []
   - bearerAuth: []
 
 # later we can add other security schemas, but for now this is good.
 components:
   securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: accessToken
     bearerAuth:
       type: http
       scheme: bearer

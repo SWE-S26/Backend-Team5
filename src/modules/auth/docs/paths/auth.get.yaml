@@ -59,9 +59,6 @@
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
                 message:
                   type: string
                   example: 'QR code generated successfully'
@@ -96,9 +93,6 @@
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
                 message:
                   type: string
                   example: 'Logged out successfully'
@@ -106,7 +100,6 @@
                   type: object
                   nullable: true
             example:
-              success: true
               message: 'Logged out successfully'
               data: null
       401:
@@ -128,22 +121,45 @@
         description: Token refreshed successfully
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: true
-                message:
-                  type: string
-                  example: 'Token refreshed successfully'
-                data:
-                  type: object
-                  nullable: true
-            example:
-              success: true
-              message: 'Token refreshed successfully'
-              data: null
+            examples:
+              web_client:
+                summary: Web — tokens delivered via cookies
+                value:
+                  message: 'Authenticated successfully'
+                  data:
+                    user:
+                      id: '69b801097eabbb6c286e6455'
+                      displayName: 'Naaauuuh This is too much'
+                      role: 'Listener/Artist'
+                      profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
+                      profileImg:
+                        imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
+                        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi'
+                      subscription:
+                        subscriptionType: 'free'
+                        quota:
+                          unlimited: false
+                          usedSeconds: 0
+              mobile_client:
+                summary: Mobile — tokens delivered in body
+                value:
+                  message: 'Authenticated successfully'
+                  data:
+                    user:
+                      id: '69b801097eabbb6c286e6455'
+                      displayName: 'Naaauuuh This is too much'
+                      role: 'Listener/Artist'
+                      profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
+                      profileImg:
+                        imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
+                        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi'
+                      subscription:
+                        subscriptionType: 'free'
+                        quota:
+                          unlimited: false
+                          usedSeconds: 0
+                    accessToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.access123'
+                    refreshToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.refresh456'
         401:
           $ref: '#/components/responses/Unauthorized'
         404:
@@ -187,6 +203,9 @@
       - **existing user** — returns `status: verify` with a `pendingToken`.
         A 6-digit verification code is sent to the user's email.
         Frontend must POST that code to `/google/verify-code`.
+
+      - **user who used sign with google before** -returns 'status:returning_google' 
+        with an access token and refresh token, and the frontend should log them in directly without asking for verification code or profile completion.
     parameters:
       - in: query
         name: code
@@ -231,19 +250,80 @@
                       type: string
                       description: Short-lived JWT (5min) carrying userId, role, subscription. Send back in /google/verify-code alongside the emailed code.
                   required: [status, pendingToken]
+                - type: object
+                  properties:
+                    status:
+                      type: string
+                      enum: [returning_google]
+                    message:
+                      type: string
+                    data:
+                      type: object
+                      properties:
+                        user:
+                          $ref: '#/components/schemas/UserCredientialsResponseDto'
+                        accessToken:
+                          type: string
+                        refreshToken:
+                          type: string
+                  required: [status, message, data]
+
             examples:
               new_user:
-                summary: Brand new user — needs to complete profile
+                summary: New user — needs profile completion
                 value:
                   status: incomplete
-                  incompleteToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.abc123'
+                  incompleteToken: 'eyJhbGciOi...'
                   email: 'user@example.com'
                   displayName: 'John Doe'
+
               existing_user:
-                summary: Existing user — verification code sent to email
+                summary: Existing user — verification required
                 value:
                   status: verify
-                  pendingToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.xyz789'
+                  pendingToken: 'eyJhbGciOi...'
+
+              returning_google_web:
+                summary: Returning Google user (web)
+                value:
+                  status: returning_google
+                  message: 'Authenticated successfully'
+                  data:
+                    user:
+                      id: '69b801097eabbb6c286e6455'
+                      displayName: 'Naaauuuh This is too much'
+                      role: 'Listener/Artist'
+                      profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
+                      profileImg:
+                        imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
+                        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi'
+                      subscription:
+                        subscriptionType: 'free'
+                        quota:
+                          unlimited: false
+                          usedSeconds: 0
+
+              returning_google_mobile:
+                summary: Returning Google user (mobile)
+                value:
+                  status: returning_google
+                  message: 'Authenticated successfully'
+                  data:
+                    user:
+                      id: '69b801097eabbb6c286e6455'
+                      displayName: 'Naaauuuh This is too much'
+                      role: 'Listener/Artist'
+                      profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
+                      profileImg:
+                        imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
+                        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi'
+                      subscription:
+                        subscriptionType: 'free'
+                        quota:
+                          unlimited: false
+                          usedSeconds: 0
+                    accessToken: 'eyJhbGciOi...'
+                    refreshToken: 'eyJhbGciOi...'
       400:
         $ref: '#/components/responses/BadRequest'
       401:
