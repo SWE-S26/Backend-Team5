@@ -24,6 +24,30 @@
         $ref: '#/components/responses/ServerError'
     security: []
 
+/api/engagement/playlists/v1/{playlistId}/likes:
+  get:
+    tags:
+      - Likes
+    summary: Get users who liked a playlist.
+    description: Returns a paginated list of users who liked the given playlist. Public endpoint — no authentication required.
+    operationId: getPlaylistLikers
+    parameters:
+      - $ref: '#/components/parameters/PlaylistIdParam'
+      - $ref: '#/components/parameters/EngagementOffsetParam'
+      - $ref: '#/components/parameters/EngagementLimitParam'
+    responses:
+      200:
+        description: Paginated list of users who liked the playlist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserEngagementListResponse'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
+    security: []
+
 /api/engagement/tracks/v1/{trackId}/reposts:
   get:
     tags:

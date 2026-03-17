@@ -98,4 +98,38 @@ export class EngagementService {
       parsedLimit,
     );
   }
+
+  async getPlaylistLikers(
+    playlistId: string,
+    page = '1',
+    limit = '20',
+  ): Promise<TrackLikersResponse> {
+    const playlist = await this.repository.findPlaylistById(playlistId);
+
+    if (!playlist) NotFoundError('Playlist not found');
+
+    const parsedPage = Math.max(1, Number.parseInt(page, 10) || 1);
+    const parsedLimit = Math.max(1, Number.parseInt(limit, 10) || 20);
+    const skip = (parsedPage - 1) * parsedLimit;
+    const total = playlist!.likedUser.length;
+    const pagedUserIds = playlist!.likedUser.slice(skip, skip + parsedLimit);
+
+    const [users, followersCountByUserId] = await Promise.all([
+      this.repository.findTrackLikers(pagedUserIds),
+      this.repository.findFollowersCountByUserIds(pagedUserIds),
+    ]);
+
+    const usersById = new Map(users.map((user) => [user._id.toString(), user]));
+    const orderedUsers = pagedUserIds
+      .map((id) => usersById.get(id.toString()))
+      .filter((user): user is (typeof users)[number] => Boolean(user));
+
+    return EngagementMapper.toTrackLikersResponse(
+      orderedUsers,
+      followersCountByUserId,
+      total,
+      parsedPage,
+      parsedLimit,
+    );
+  }
 }

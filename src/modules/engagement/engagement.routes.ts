@@ -15,6 +15,10 @@ engagementPublicRouter.get('/tracks' + apiVersions.v1 + '/:trackId/likes', (req,
   engagementController.getTrackLikers(req, res),
 );
 
+engagementPublicRouter.get('/playlists' + apiVersions.v1 + '/:playlistId/likes', (req, res) =>
+  engagementController.getPlaylistLikers(req, res),
+);
+
 engagementProtectedRouter.post('/tracks' + apiVersions.v1 + '/:trackId/like', (req, res) =>
   engagementController.toggleTrackLike(req, res),
 );

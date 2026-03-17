@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { EngagementService } from './engagement.service';
 import {
+  GetPlaylistLikersRequestDTO,
   GetTrackLikersRequestDTO,
   ToggleTrackLikeRequestDTO,
   TogglePlaylistLikeRequestDTO,
@@ -41,6 +42,17 @@ export class EngagementController {
     const { offset, limit } = parsed.data!.query;
 
     const result = await this.service.getTrackLikers(trackId, offset, limit);
+    res.json(result);
+  }
+
+  async getPlaylistLikers(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetPlaylistLikersRequestDTO, req);
+    if (!parsed.success) BadRequestError(parsed.error.message);
+
+    const { playlistId } = parsed.data!.params;
+    const { offset, limit } = parsed.data!.query;
+
+    const result = await this.service.getPlaylistLikers(playlistId, offset, limit);
     res.json(result);
   }
 }

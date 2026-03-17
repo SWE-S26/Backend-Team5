@@ -26,3 +26,8 @@ export const GetTrackLikersRequestDTO = extendedZod.object({
   params: TrackIdParamDTO,
   query: GetTrackLikersQueryDto,
 });
+
+export const GetPlaylistLikersRequestDTO = extendedZod.object({
+  params: PlaylistIdParamDTO,
+  query: GetTrackLikersQueryDto,
+});
