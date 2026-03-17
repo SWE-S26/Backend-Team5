@@ -27,7 +27,7 @@ export const UpdateProfileRequestBodyDTO = extendedZod.object({
 export const UpdateAccountSettingsDTO = extendedZod.object({
   theme: extendedZod.enum(['Light', 'Dark', 'Automatic']).optional(),
   dateOfBirth: extendedZod.string().optional(), // format date
-  gender: extendedZod.enum(['male', 'female']).optional(),
+  gender: extendedZod.enum(['Male', 'Female']).optional(),
 });
 
 export const UpdateContentSettingsDTO = extendedZod.object({
