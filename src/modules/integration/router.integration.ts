@@ -12,10 +12,8 @@ router.use(devSwagger);
 import authRoutes from '../auth/auth.routes';
 router.use('/auth', authRoutes);
 
-import engagementRouter, {
-  engagementPublicRouter,
-} from '../engagement/engagement.routes';
-router.use('/engagement', engagementPublicRouter);
+import publicIntegrationRouter from './router.public.integration';
+router.use(publicIntegrationRouter);
 
 import { requireAuth } from '../../shared/middleware/requireAuth';
 router.use(requireAuth);
@@ -23,6 +21,7 @@ router.use(requireAuth);
 import adminRoutes from '../admin/admin.routes';
 router.use('/admin', adminRoutes);
 
+import engagementRouter from '../engagement/engagement.routes';
 router.use('/engagement', engagementRouter);
 
 import feedRoutes from '../feed/feed.routes';
