@@ -3,8 +3,10 @@ import { Server } from 'socket.io';
 import app from './app';
 import { initializeConfig } from './config/initializeConfig';
 import logger from './shared/logger/logger';
+import publitioMediaStorage from './shared/abstractions/publitio';
 import { initSocket } from './sockets/socket.config';
 import type { SocketService } from './sockets/socket.service';
+
 
 const port = process.env.PORT || 4123;
 
@@ -25,6 +27,8 @@ const start = async () => {
 
     httpServer.listen(port, () => {
       logger.info(`Server running on port ${port}`);
+      logger.info(`testing publitio`);
+      publitioMediaStorage.testDelete('PbgfBAnb');
     });
   } catch (error) {
     logger.error({ error }, `[Server] Failed to start:`);
