@@ -1,6 +1,6 @@
 # POST paths for engagement module
 
-/api/tracks/{trackId}/like:
+/api/engagement/tracks/v1/{trackId}/like:
   post:
     tags:
       - Likes
@@ -8,22 +8,22 @@
     description: Likes a track if the user has not liked it yet. If the user already liked it, the like is removed (unlike). Updates the number_of_likes count atomically.
     operationId: toggleTrackLike
     parameters:
-      - $ref: "#/components/parameters/TrackIdParam"
+      - $ref: '#/components/parameters/TrackIdParam'
     responses:
       200:
         description: Like toggled successfully.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ToggleLikeResponse"
+              $ref: '#/components/schemas/ToggleLikeResponse'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
-/api/tracks/{trackId}/repost:
+/api/engagement/tracks/v1/{trackId}/repost:
   post:
     tags:
       - Reposts
@@ -31,28 +31,28 @@
     description: Reposts a track if the user has not reposted it yet. If the user already reposted it, the repost is removed. Updates the number_of_reposts count atomically.
     operationId: toggleTrackRepost
     parameters:
-      - $ref: "#/components/parameters/TrackIdParam"
+      - $ref: '#/components/parameters/TrackIdParam'
     requestBody:
       required: false
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/RepostRequest"
+            $ref: '#/components/schemas/RepostRequest'
     responses:
       200:
         description: Repost toggled successfully.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ToggleRepostResponse"
+              $ref: '#/components/schemas/ToggleRepostResponse'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
-/api/playlists/{playlistId}/like:
+/api/engagement/playlists/v1/{playlistId}/like:
   post:
     tags:
       - Likes
@@ -60,22 +60,22 @@
     description: Likes a playlist if the user has not liked it yet. If the user already liked it, the like is removed (unlike). Updates the numOfLikes count atomically.
     operationId: togglePlaylistLike
     parameters:
-      - $ref: "#/components/parameters/PlaylistIdParam"
+      - $ref: '#/components/parameters/PlaylistIdParam'
     responses:
       200:
         description: Like toggled successfully.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/TogglePlaylistLikeResponse"
+              $ref: '#/components/schemas/TogglePlaylistLikeResponse'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
-/api/playlists/{playlistId}/repost:
+/api/engagement/playlists/v1/{playlistId}/repost:
   post:
     tags:
       - Reposts
@@ -83,28 +83,28 @@
     description: Reposts a playlist if the user has not reposted it yet. If the user already reposted it, the repost is removed. Updates the numberOfReposts count atomically.
     operationId: togglePlaylistRepost
     parameters:
-      - $ref: "#/components/parameters/PlaylistIdParam"
+      - $ref: '#/components/parameters/PlaylistIdParam'
     requestBody:
       required: false
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/RepostRequest"
+            $ref: '#/components/schemas/RepostRequest'
     responses:
       200:
         description: Repost toggled successfully.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/TogglePlaylistRepostResponse"
+              $ref: '#/components/schemas/TogglePlaylistRepostResponse'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
-/api/tracks/{trackId}/comments:
+/api/engagement/tracks/v1/{trackId}/comments:
   post:
     tags:
       - Comments
@@ -112,28 +112,28 @@
     description: Creates a new comment on a track. Comments can be pinned to a specific timestamp. If parentCommentId is provided, the comment is treated as a reply. Requires allow_comments to be enabled on the track.
     operationId: createComment
     parameters:
-      - $ref: "#/components/parameters/TrackIdParam"
+      - $ref: '#/components/parameters/TrackIdParam'
     requestBody:
       required: true
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/CreateCommentRequest"
+            $ref: '#/components/schemas/CreateCommentRequest'
     responses:
       201:
         description: Comment created successfully.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CommentEntry"
+              $ref: '#/components/schemas/CommentEntry'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
-/api/tracks/{trackId}/comments/{commentId}/like:
+/api/engagement/tracks/v1/{trackId}/comments/{commentId}/like:
   post:
     tags:
       - Comments
@@ -141,18 +141,18 @@
     description: Likes a comment if the user has not liked it yet. If the user already liked it, the like is removed (unlike). Updates the numLikes count on the comment atomically.
     operationId: toggleCommentLike
     parameters:
-      - $ref: "#/components/parameters/TrackIdParam"
-      - $ref: "#/components/parameters/CommentIdParam"
+      - $ref: '#/components/parameters/TrackIdParam'
+      - $ref: '#/components/parameters/CommentIdParam'
     responses:
       200:
         description: Comment like toggled successfully.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ToggleCommentLikeResponse"
+              $ref: '#/components/schemas/ToggleCommentLikeResponse'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'

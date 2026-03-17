@@ -1,37 +1,70 @@
 import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { EngagementService } from './engagement.service';
+import {
+  GetPlaylistLikersRequestDTO,
+  GetTrackLikersRequestDTO,
+  ToggleTrackLikeRequestDTO,
+  TogglePlaylistLikeRequestDTO,
+} from './dtos/engagement.request';
+import { BadRequestError } from '../../shared/errors/responseErrors';
 
 export class EngagementController {
   constructor(private readonly service: EngagementService) {}
 
-  async findAll(_req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
+  async toggleTrackLike(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(ToggleTrackLikeRequestDTO, req);
+    if (!parsed.success) BadRequestError(parsed.error.message);
+
+    const { trackId } = parsed.data!.params;
+    const userId = req.userInfo!._id;
+
+    const result = await this.service.toggleTrackLike(trackId, userId);
+    res.json(result);
   }
 
-  async findOne(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
+  async togglePlaylistLike(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(TogglePlaylistLikeRequestDTO, req);
+    if (!parsed.success) BadRequestError(parsed.error.message);
+
+    const { playlistId } = parsed.data!.params;
+    const userId = req.userInfo!._id;
+
+    const result = await this.service.togglePlaylistLike(playlistId, userId);
+    res.json(result);
   }
 
-  async create(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
+  async getTrackLikers(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetTrackLikersRequestDTO, req);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+    // console.log('Parsed Request:', parsed);
+    // console.log('Request Params:', parsed.error?.message);
+    // if (!parsed.success) BadRequestError(parsed.error.message);
+
+    const { trackId } = parsed.data!.params;
+    const { offset, limit } = parsed.data!.query;
+
+    const result = await this.service.getTrackLikers(trackId, offset, limit);
+    res.json(result);
   }
 
-  async replace(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
+  async getPlaylistLikers(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetPlaylistLikersRequestDTO, req);
+    // if (!parsed.success) BadRequestError(parsed.error.message);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
 
-  async update(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
+    const { playlistId } = parsed.data!.params;
+    const { offset, limit } = parsed.data!.query;
 
-  async remove(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
+    const result = await this.service.getPlaylistLikers(
+      playlistId,
+      offset,
+      limit,
+    );
+    res.json(result);
   }
 }

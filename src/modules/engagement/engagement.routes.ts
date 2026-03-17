@@ -1,14 +1,31 @@
 import { Router } from 'express';
 import { EngagementController } from './engagement.controller';
+import { EngagementService } from './engagement.service';
+import { EngagementRepository } from './engagement.repository';
+import apiVersions from '../../shared/middleware/apiVersions';
 
-const router = Router();
-//TODO: const engagementController = new EngagementController(/* TODO: inject service */);
+const engagementPublicRouter = Router();
+const engagementProtectedRouter = Router();
 
-// engagementRouter.get('/',      (req, res) => engagementController.findAll(req, res));
-// engagementRouter.get('/:id',   (req, res) => engagementController.findOne(req, res));
-// engagementRouter.post('/',     (req, res) => engagementController.create(req, res));
-// engagementRouter.put('/:id',   (req, res) => engagementController.replace(req, res));
-// engagementRouter.patch('/:id', (req, res) => engagementController.update(req, res));
-// engagementRouter.delete('/:id',(req, res) => engagementController.remove(req, res));
+const engagementController = new EngagementController(
+  new EngagementService(new EngagementRepository()),
+);
 
-export default router;
+engagementPublicRouter.get('/tracks' + apiVersions.v1 + '/:trackId/likes', (req, res) =>
+  engagementController.getTrackLikers(req, res),
+);
+
+engagementPublicRouter.get('/playlists' + apiVersions.v1 + '/:playlistId/likes', (req, res) =>
+  engagementController.getPlaylistLikers(req, res),
+);
+
+engagementProtectedRouter.post('/tracks' + apiVersions.v1 + '/:trackId/like', (req, res) =>
+  engagementController.toggleTrackLike(req, res),
+);
+
+engagementProtectedRouter.post('/playlists' + apiVersions.v1 + '/:playlistId/like', (req, res) =>
+  engagementController.togglePlaylistLike(req, res),
+);
+
+export { engagementPublicRouter };
+export default engagementProtectedRouter;

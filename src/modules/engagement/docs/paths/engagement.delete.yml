@@ -1,6 +1,6 @@
 # DELETE paths for engagement module
 
-/api/tracks/{trackId}/comments/{commentId}:
+/api/engagement/tracks/v1/{trackId}/comments/{commentId}:
   delete:
     tags:
       - Comments
@@ -8,8 +8,8 @@
     description: Deletes a comment. The comment author or the track owner may delete it. Deleting a parent comment also removes all replies.
     operationId: deleteComment
     parameters:
-      - $ref: "#/components/parameters/TrackIdParam"
-      - $ref: "#/components/parameters/CommentIdParam"
+      - $ref: '#/components/parameters/TrackIdParam'
+      - $ref: '#/components/parameters/CommentIdParam'
     responses:
       200:
         description: Comment deleted successfully.
@@ -20,12 +20,12 @@
               properties:
                 message:
                   type: string
-                  example: "Comment deleted successfully."
+                  example: 'Comment deleted successfully.'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       403:
-        $ref: "#/components/responses/Forbidden"
+        $ref: '#/components/responses/Forbidden'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'

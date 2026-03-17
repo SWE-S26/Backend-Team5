@@ -1,8 +1,33 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
-import { EngagementIdParamDTO } from './engagement.request.params';
-import { ListEngagementsQueryDto } from './engagement.request.query';
+import {
+  EngagementIdParamDTO,
+  PlaylistIdParamDTO,
+  TrackIdParamDTO,
+} from './engagement.request.params';
+import {
+  GetTrackLikersQueryDto,
+  ListEngagementsQueryDto,
+} from './engagement.request.query';
 
 export const CreateEngagementRequestDTO = extendedZod.object({
   params: EngagementIdParamDTO,
   query: ListEngagementsQueryDto,
+});
+
+export const ToggleTrackLikeRequestDTO = extendedZod.object({
+  params: TrackIdParamDTO,
+});
+
+export const TogglePlaylistLikeRequestDTO = extendedZod.object({
+  params: PlaylistIdParamDTO,
+});
+
+export const GetTrackLikersRequestDTO = extendedZod.object({
+  params: TrackIdParamDTO,
+  query: GetTrackLikersQueryDto,
+});
+
+export const GetPlaylistLikersRequestDTO = extendedZod.object({
+  params: PlaylistIdParamDTO,
+  query: GetTrackLikersQueryDto,
 });
