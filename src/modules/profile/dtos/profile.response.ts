@@ -2,7 +2,7 @@ import z from 'zod';
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 import { LinkDTO } from './profile.request.body';
 
-export const ProfileResponseDto = extendedZod.object({
+export const ProfileResponseDTO = extendedZod.object({
   userId: extendedZod.mongoId(),
   displayName: extendedZod.string(),
   firstName: extendedZod.string().nullable(),
@@ -18,11 +18,11 @@ export const ProfileResponseDto = extendedZod.object({
   supportLink: extendedZod.string().url().nullable().optional(),
   favoriteGenres: extendedZod.array(extendedZod.string()).optional(),
   followersCount: extendedZod.number().optional(),
-  followingsCount: extendedZod.number().optional(),
+  followedCount: extendedZod.number().optional(),
   trackCount: extendedZod.number().optional(),
 });
 
-export type ProfileResponseDtoType = z.infer<typeof ProfileResponseDto>;
+export type ProfileResponseDTOType = z.infer<typeof ProfileResponseDTO>;
 
 export const AccountSettingsResponseDTO = extendedZod.object({
   theme: extendedZod.enum(['Light', 'Dark', 'Automatic']),

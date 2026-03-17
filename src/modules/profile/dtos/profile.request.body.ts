@@ -1,4 +1,5 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
+import z from 'zod';
 
 export const LinkDTO = extendedZod.object({
   linkId: extendedZod.mongoId(),
@@ -23,6 +24,10 @@ export const UpdateProfileRequestBodyDTO = extendedZod.object({
   supportLink: extendedZod.string().url().nullable().optional(),
   favoriteGenres: extendedZod.array(extendedZod.string()).optional(),
 });
+
+export type UpdateProfileRequestBodyDTOType = z.infer<
+  typeof UpdateProfileRequestBodyDTO
+>;
 
 export const UpdateAccountSettingsDTO = extendedZod.object({
   theme: extendedZod.enum(['Light', 'Dark', 'Automatic']).optional(),

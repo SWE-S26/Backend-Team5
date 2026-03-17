@@ -1,8 +1,8 @@
 import { Types } from 'mongoose';
-import { ProfileResponseDtoType } from './profile.response';
+import { ProfileResponseDTOType } from './profile.response';
 
 export class ProfileMapper {
-  static toResponse(user: any): ProfileResponseDtoType {
+  static toResponse(user: any): ProfileResponseDTOType {
     return {
       userId: user._id.toString(),
       displayName: user.displayName,
@@ -27,7 +27,7 @@ export class ProfileMapper {
       supportLink: user.supportLink || null,
       favoriteGenres: user.favoriteGenres || [],
       followersCount: user.followersCount || 0,
-      followingsCount: user.followingsCount || 0,
+      followedCount: user.followedCount || 0,
       trackCount: user.trackCount || 0,
     };
   }
