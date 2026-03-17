@@ -1,4 +1,5 @@
 import User, { IUser } from '../../shared/models/models.user';
+import { Types } from 'mongoose';
 
 export class ProfileRepository {
   async findById(id: string): Promise<IUser | null> {
