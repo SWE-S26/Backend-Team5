@@ -4,7 +4,7 @@
   "description": "Backend of the Beatza project made with NodeJS",
   "main": "node src/server.ts",
   "scripts": {
-    "copy-assets": "copyfiles -u 1 \"src/**/*.html\" \"src/**/*.css\" dist/",
+    "copy-assets": "copyfiles -u 1 \"src/**/*.html\" \"src/**/*.css\" \"src/**/*.png\" dist/",
     "build": "tsc && npm run copy-assets",
     "build:swagger": "tsx scripts/build-swagger-static.ts",
     "create:component": "tsx scripts/create-component.ts",
