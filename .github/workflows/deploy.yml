@@ -45,6 +45,7 @@ jobs:
         env:
           PORT: ${{ secrets.PORT }}
           MODE: ${{ secrets.MODE }}
+          HOST_URL: ${{ secrets.HOST_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           REFRESH_JWT_SECRET: ${{ secrets.REFRESH_JWT_SECRET }}
           MONGO_URI: ${{ secrets.MONGO_URI }}
