@@ -13,3 +13,8 @@ export const ListEngagementsQueryDto = PaginationQueryDto.extend(
   page: extendedZod.string().default('1'),
   limit: extendedZod.string().default('20'),
 });
+
+export const GetTrackLikersQueryDto = extendedZod.object({
+  offset: extendedZod.string().default('0'),
+  limit: extendedZod.string().default('20'),
+});

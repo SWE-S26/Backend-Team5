@@ -18,4 +18,8 @@ router.post('/playlists' + apiVersions.v1 + '/:playlistId/like', (req, res) =>
   engagementController.togglePlaylistLike(req, res),
 );
 
+router.get('/tracks' + apiVersions.v1 + '/:trackId/likes', (req, res) =>
+  engagementController.getTrackLikers(req, res),
+);
+
 export default router;

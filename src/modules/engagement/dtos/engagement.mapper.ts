@@ -1,6 +1,9 @@
 import { IPlaylist } from '../../../shared/models/models.playlist';
 import { ITrack } from '../../../shared/models/models.track';
+import { IUser } from '../../../shared/models/models.user';
 import {
+  TrackLikersResponse,
+  TrackLikersResponseDTO,
   ToggleLikeResponse,
   ToggleLikeResponseDTO,
   TogglePlaylistLikeResponse,
@@ -25,6 +28,26 @@ export class EngagementMapper {
     return TogglePlaylistLikeResponseDTO.parse({
       liked,
       numOfLikes: playlist.numOfLikes,
+    });
+  }
+
+  static toTrackLikersResponse(
+    users: Pick<IUser, '_id' | 'displayName' | 'profileImg'>[],
+    followersCountByUserId: Record<string, number>,
+    total: number,
+    offset: number,
+    limit: number,
+  ): TrackLikersResponse {
+    return TrackLikersResponseDTO.parse({
+      total,
+      offset,
+      limit,
+      users: users.map((user) => ({
+        userId: user._id.toString(),
+        displayName: user.displayName,
+        avatarUrl: user.profileImg?.imgLink || undefined,
+        followersCount: followersCountByUserId[user._id.toString()] ?? 0,
+      })),
     });
   }
 }
