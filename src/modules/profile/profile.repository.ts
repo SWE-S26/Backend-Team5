@@ -10,19 +10,13 @@ export class ProfileRepository {
     id: string,
     data: Partial<UpdateProfileRequestBodyDTOType>,
   ): Promise<IUser | null> {
-    const updatedData: any = { ...data };
+    const { links, bannerLinks, ...otherFields } = data;
+    const updateData: any = { ...otherFields };
 
-    if (data.linksToRemove) {
-      updatedData.links = { $pull: { _id: { $in: data.linksToRemove } } };
-    }
+    if (links) updateData.links = links;
+    if (bannerLinks) updateData.bannerLinks = bannerLinks;
 
-    if (data.bannerLinksToRemove) {
-      updatedData.bannerLinks = {
-        $pull: { _id: { $in: data.bannerLinksToRemove } },
-      };
-    }
-
-    return await User.findByIdAndUpdate(id, updatedData, {
+    return await User.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
     }).lean();

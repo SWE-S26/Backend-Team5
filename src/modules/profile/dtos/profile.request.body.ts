@@ -2,7 +2,7 @@ import extendedZod from '../../../shared/docs/dtoDocumenter';
 import z from 'zod';
 
 export const LinkDTO = extendedZod.object({
-  linkId: extendedZod.mongoId(),
+  linkId: extendedZod.mongoId().optional(),
   name: extendedZod.string().nullable().optional(),
   link: extendedZod.string().url(),
 });
@@ -11,16 +11,14 @@ export const UpdateProfileRequestBodyDTO = extendedZod.object({
   displayName: extendedZod.string().optional(),
   firstName: extendedZod.string().nullable().optional(),
   lastName: extendedZod.string().nullable().optional(),
-  profileUrl: extendedZod.string().optional(),
+  profileLink: extendedZod.string().optional(),
   bio: extendedZod.string().nullable().optional(),
   city: extendedZod.string().nullable().optional(),
   country: extendedZod.string().nullable().optional(),
   profileImgLink: extendedZod.string().url().nullable().optional(),
   bannerImgLink: extendedZod.string().url().nullable().optional(),
   links: extendedZod.array(LinkDTO).optional(),
-  linksToRemove: extendedZod.array(extendedZod.mongoId()).optional(),
   bannerLinks: extendedZod.array(LinkDTO).optional(),
-  bannerLinksToRemove: extendedZod.array(extendedZod.mongoId()).optional(),
   supportLink: extendedZod.string().url().nullable().optional(),
   favoriteGenres: extendedZod.array(extendedZod.string()).optional(),
 });

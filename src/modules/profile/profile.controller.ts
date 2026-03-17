@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { ProfileService } from './profile.service';
 import { ProfileIdParamDTO } from './dtos/profile.request.params';
-import { UpdateProfileRequestBodyDTO } from './dtos/profile.request.body';
+import { UpdateProfileRequestDTO } from './dtos/profile.request';
 
 export class ProfileController {
   constructor(private readonly service: ProfileService) {}
@@ -13,7 +13,8 @@ export class ProfileController {
       if (!validatedRequest.success) {
         throw validatedRequest.error;
       }
-      const userId = validatedRequest.data!.id;
+
+      const userId = validatedRequest.data!.params.id;
       const profile = await this.service.findById(userId);
 
       if (!profile) {
@@ -30,14 +31,17 @@ export class ProfileController {
   async update(req: Request, res: Response): Promise<void> {
     try {
       const userId = req.userInfo!._id;
-      const validatedRequest = parseRequest(UpdateProfileRequestBodyDTO, req);
+      const validatedRequest = parseRequest(UpdateProfileRequestDTO, req);
+
       if (!validatedRequest.success) {
         throw validatedRequest.error;
       }
+
       const updatedProfile = await this.service.update(
         userId,
-        validatedRequest.data,
+        validatedRequest.data.body,
       );
+
       if (!updatedProfile) {
         res.status(404).json({ message: 'User not found' });
         return;
