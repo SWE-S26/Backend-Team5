@@ -88,20 +88,10 @@
           type: array
           items:
             $ref: '#/components/schemas/Link'
-        linksToRemove:
-          type: array
-          items:
-            type: string
-            description: link_id of the link to delete
         bannerLinks:
           type: array
           items:
             $ref: '#/components/schemas/Link'
-        bannerLinksToRemove:
-          type: array
-          items:
-            type: string
-            description: link_id of the banner link to delete
         supportLink:
           type: string
           format: uri
