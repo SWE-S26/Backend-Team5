@@ -1,4 +1,5 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
+import { z } from 'zod';
 
 export const ToggleLikeResponseDTO = extendedZod
   .object({
@@ -59,3 +60,8 @@ export const TogglePlaylistRepostResponseDTO = extendedZod
       numberOfReposts: 3,
     },
   });
+
+export type ToggleLikeResponse = z.infer<typeof ToggleLikeResponseDTO>;
+export type TogglePlaylistLikeResponse = z.infer<
+  typeof TogglePlaylistLikeResponseDTO
+>;

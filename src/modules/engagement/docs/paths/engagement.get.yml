@@ -1,6 +1,6 @@
 # GET paths for engagement module
 
-/api/v1/tracks/{trackId}/likes:
+/api/tracks/v1/{trackId}/likes:
   get:
     tags:
       - Likes
@@ -24,7 +24,7 @@
         $ref: '#/components/responses/ServerError'
     security: []
 
-/api/v1/tracks/{trackId}/reposts:
+/api/tracks/v1/{trackId}/reposts:
   get:
     tags:
       - Reposts
@@ -48,7 +48,7 @@
         $ref: '#/components/responses/ServerError'
     security: []
 
-/api/v1/tracks/{trackId}/comments:
+/api/tracks/v1/{trackId}/comments:
   get:
     tags:
       - Comments
@@ -72,7 +72,7 @@
         $ref: '#/components/responses/ServerError'
     security: []
 
-/api/v1/tracks/{trackId}/comments/{commentId}/replies:
+/api/tracks/v1/{trackId}/comments/{commentId}/replies:
   get:
     tags:
       - Comments

@@ -1,6 +1,6 @@
 # DELETE paths for engagement module
 
-/api/v1/tracks/{trackId}/comments/{commentId}:
+/api/tracks/v1/{trackId}/comments/{commentId}:
   delete:
     tags:
       - Comments

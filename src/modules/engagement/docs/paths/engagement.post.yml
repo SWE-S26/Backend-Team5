@@ -1,6 +1,6 @@
 # POST paths for engagement module
 
-/api/v1/tracks/{trackId}/like:
+/api/tracks/v1/{trackId}/like:
   post:
     tags:
       - Likes
@@ -23,7 +23,7 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/v1/tracks/{trackId}/repost:
+/api/tracks/v1/{trackId}/repost:
   post:
     tags:
       - Reposts
@@ -52,7 +52,7 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/v1/playlists/{playlistId}/like:
+/api/playlists/v1/{playlistId}/like:
   post:
     tags:
       - Likes
@@ -75,7 +75,7 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/v1/playlists/{playlistId}/repost:
+/api/playlists/v1/{playlistId}/repost:
   post:
     tags:
       - Reposts
@@ -104,7 +104,7 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/v1/tracks/{trackId}/comments:
+/api/tracks/v1/{trackId}/comments:
   post:
     tags:
       - Comments
@@ -133,7 +133,7 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/v1/tracks/{trackId}/comments/{commentId}/like:
+/api/tracks/v1/{trackId}/comments/{commentId}/like:
   post:
     tags:
       - Comments
