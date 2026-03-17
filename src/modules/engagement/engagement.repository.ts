@@ -1,26 +1,41 @@
+import { Types } from 'mongoose';
+import Track, { ITrack } from '../../shared/models/models.track';
+import User from '../../shared/models/models.user';
+
 export class EngagementRepository {
-  async findAll(): Promise<any[]> {
-    // TODO: query your data source
-    return [];
+  async findTrackById(trackId: string): Promise<ITrack | null> {
+    return Track.findById(trackId).select('likedBy numOfLikes');
   }
 
-  async findById(id: string): Promise<any | null> {
-    // TODO: query your data source
-    return null;
+  async addLikeToTrack(trackId: string, userId: string): Promise<ITrack> {
+    const userObjectId = new Types.ObjectId(userId);
+    return Track.findByIdAndUpdate(
+      trackId,
+      { $addToSet: { likedBy: userObjectId }, $inc: { numOfLikes: 1 } },
+      { new: true },
+    ).select('numOfLikes') as Promise<ITrack>;
   }
 
-  async create(data: any): Promise<any> {
-    // TODO: insert into your data source
-    return data;
+  async removeLikeFromTrack(trackId: string, userId: string): Promise<ITrack> {
+    const userObjectId = new Types.ObjectId(userId);
+    return Track.findByIdAndUpdate(
+      trackId,
+      { $pull: { likedBy: userObjectId }, $inc: { numOfLikes: -1 } },
+      { new: true },
+    ).select('numOfLikes') as Promise<ITrack>;
   }
 
-  async update(id: string, data: any): Promise<any | null> {
-    // TODO: update in your data source
-    return null;
+  async addTrackToUserLikes(userId: string, trackId: string): Promise<void> {
+    const trackObjectId = new Types.ObjectId(trackId);
+    await User.findByIdAndUpdate(userId, {
+      $addToSet: { likedTracks: trackObjectId },
+    });
   }
 
-  async delete(id: string): Promise<boolean> {
-    // TODO: delete from your data source
-    return false;
+  async removeTrackFromUserLikes(userId: string, trackId: string): Promise<void> {
+    const trackObjectId = new Types.ObjectId(trackId);
+    await User.findByIdAndUpdate(userId, {
+      $pull: { likedTracks: trackObjectId },
+    });
   }
 }

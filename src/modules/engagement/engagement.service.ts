@@ -1,25 +1,33 @@
+import { Types } from 'mongoose';
+import { NotFoundError } from '../../shared/errors/responseErrors';
 import { EngagementRepository } from './engagement.repository';
 
 export class EngagementService {
   constructor(private readonly repository: EngagementRepository) {}
 
-  async findAll(): Promise<any[]> {
-    return this.repository.findAll();
-  }
+  async toggleTrackLike(
+    trackId: string,
+    userId: string,
+  ): Promise<{ liked: boolean; numOfLikes: number }> {
+    const track = await this.repository.findTrackById(trackId);
 
-  async findById(id: string): Promise<any | null> {
-    return this.repository.findById(id);
-  }
+    if (!track) NotFoundError('Track not found');
 
-  async create(data: any): Promise<any> {
-    return this.repository.create(data);
-  }
+    const userObjectId = new Types.ObjectId(userId);
+    const alreadyLiked = track!.likedBy.some((id) => id.equals(userObjectId));
 
-  async update(id: string, data: any): Promise<any | null> {
-    return this.repository.update(id, data);
-  }
+    if (alreadyLiked) {
+      const [updated] = await Promise.all([
+        this.repository.removeLikeFromTrack(trackId, userId),
+        this.repository.removeTrackFromUserLikes(userId, trackId),
+      ]);
+      return { liked: false, numOfLikes: updated.numOfLikes };
+    }
 
-  async delete(id: string): Promise<boolean> {
-    return this.repository.delete(id);
+    const [updated] = await Promise.all([
+      this.repository.addLikeToTrack(trackId, userId),
+      this.repository.addTrackToUserLikes(userId, trackId),
+    ]);
+    return { liked: true, numOfLikes: updated.numOfLikes };
   }
 }
