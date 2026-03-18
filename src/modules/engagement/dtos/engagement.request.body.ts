@@ -22,3 +22,13 @@ export const RepostRequestBodyDTO = extendedZod
       caption: 'Love this track!',
     },
   });
+
+export const UpdateRepostCaptionBodyDTO = extendedZod
+  .object({
+    caption: extendedZod.string().max(280),
+  })
+  .openapi('UpdateRepostCaptionRequest', {
+    example: {
+      caption: 'Updated caption text!',
+    },
+  });

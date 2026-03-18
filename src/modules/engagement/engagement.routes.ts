@@ -11,20 +11,64 @@ const engagementController = new EngagementController(
   new EngagementService(new EngagementRepository()),
 );
 
-engagementPublicRouter.get('/tracks' + apiVersions.v1 + '/:trackId/likes', (req, res) =>
-  engagementController.getTrackLikers(req, res),
+engagementPublicRouter.get(
+  '/tracks' + apiVersions.v1 + '/:trackId/likes',
+  (req, res) => engagementController.getTrackLikers(req, res),
 );
 
-engagementPublicRouter.get('/playlists' + apiVersions.v1 + '/:playlistId/likes', (req, res) =>
-  engagementController.getPlaylistLikers(req, res),
+engagementPublicRouter.get(
+  '/playlists' + apiVersions.v1 + '/:playlistId/likes',
+  (req, res) => engagementController.getPlaylistLikers(req, res),
 );
 
-engagementProtectedRouter.post('/tracks' + apiVersions.v1 + '/:trackId/like', (req, res) =>
-  engagementController.toggleTrackLike(req, res),
+engagementPublicRouter.get(
+  '/tracks' + apiVersions.v1 + '/:trackId/reposts',
+  (req, res) => engagementController.getTrackReposters(req, res),
 );
 
-engagementProtectedRouter.post('/playlists' + apiVersions.v1 + '/:playlistId/like', (req, res) =>
-  engagementController.togglePlaylistLike(req, res),
+engagementPublicRouter.get(
+  '/playlists' + apiVersions.v1 + '/:playlistId/reposts',
+  (req, res) => engagementController.getPlaylistReposters(req, res),
+);
+
+engagementProtectedRouter.post(
+  '/tracks' + apiVersions.v1 + '/:trackId/like',
+  (req, res) => engagementController.toggleTrackLike(req, res),
+);
+
+engagementProtectedRouter.post(
+  '/tracks' + apiVersions.v1 + '/:trackId/repost',
+  (req, res) => engagementController.toggleTrackRepost(req, res),
+);
+
+engagementProtectedRouter.get(
+  '/tracks' + apiVersions.v1 + '/:trackId/repost',
+  (req, res) => engagementController.getTrackRepostStatus(req, res),
+);
+
+engagementProtectedRouter.patch(
+  '/tracks' + apiVersions.v1 + '/:trackId/repost',
+  (req, res) => engagementController.updateTrackRepostCaption(req, res),
+);
+
+engagementProtectedRouter.post(
+  '/playlists' + apiVersions.v1 + '/:playlistId/like',
+  (req, res) => engagementController.togglePlaylistLike(req, res),
+);
+
+engagementProtectedRouter.post(
+  '/playlists' + apiVersions.v1 + '/:playlistId/repost',
+  (req, res) => engagementController.togglePlaylistRepost(req, res),
+);
+
+engagementProtectedRouter.get(
+  '/playlists' + apiVersions.v1 + '/:playlistId/repost',
+  (req, res) => engagementController.getPlaylistRepostStatus(req, res),
+);
+
+engagementProtectedRouter.patch(
+  '/playlists' + apiVersions.v1 + '/:playlistId/repost',
+  (req, res) => engagementController.updatePlaylistRepostCaption(req, res),
 );
 
 export { engagementPublicRouter };

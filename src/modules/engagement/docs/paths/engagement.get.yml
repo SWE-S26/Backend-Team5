@@ -72,6 +72,30 @@
         $ref: '#/components/responses/ServerError'
     security: []
 
+/api/public/engagement/playlists/v1/{playlistId}/reposts:
+  get:
+    tags:
+      - Reposts
+    summary: Get users who reposted a playlist.
+    description: Returns a paginated list of users who reposted the given playlist. Public endpoint — no authentication required.
+    operationId: getPlaylistReposters
+    parameters:
+      - $ref: '#/components/parameters/PlaylistIdParam'
+      - $ref: '#/components/parameters/EngagementOffsetParam'
+      - $ref: '#/components/parameters/EngagementLimitParam'
+    responses:
+      200:
+        description: Paginated list of users who reposted the playlist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserEngagementListResponse'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
+    security: []
+
 /api/public/engagement/tracks/v1/{trackId}/comments:
   get:
     tags:
@@ -120,3 +144,53 @@
       500:
         $ref: '#/components/responses/ServerError'
     security: []
+
+/api/engagement/tracks/v1/{trackId}/repost:
+  get:
+    tags:
+      - Reposts
+    summary: Check if user has reposted a track.
+    description: Returns the repost status for the authenticated user, including caption and timestamp if reposted. Requires authentication.
+    operationId: getTrackRepostStatus
+    parameters:
+      - $ref: '#/components/parameters/TrackIdParam'
+    responses:
+      200:
+        description: Repost status for the authenticated user.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrackRepostStatusResponse'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
+    security:
+      - BearerAuth: []
+
+/api/engagement/playlists/v1/{playlistId}/repost:
+  get:
+    tags:
+      - Reposts
+    summary: Check if user has reposted a playlist.
+    description: Returns the repost status for the authenticated user, including caption and timestamp if reposted. Requires authentication.
+    operationId: getPlaylistRepostStatus
+    parameters:
+      - $ref: '#/components/parameters/PlaylistIdParam'
+    responses:
+      200:
+        description: Repost status for the authenticated user.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaylistRepostStatusResponse'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
+    security:
+      - BearerAuth: []
