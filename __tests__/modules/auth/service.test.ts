@@ -1068,3 +1068,201 @@ describe('AuthService : issueIncompleteToken', () => {
     });
   });
 });
+
+describe('AuthService : completeGoogleSignUp', () => {
+  const googleCompleteBody = {
+    incompleteToken: 'fake_incomplete_token',
+    dateOfBirth: new Date('1995-01-01'),
+    gender: 'Male' as 'Male' | 'Female',
+  };
+
+  const fakePayload = {
+    googleId: 'google_123456',
+    email: 'test@mail.com',
+    displayName: 'John Doe',
+  };
+
+  const fakeTokens = {
+    accessToken: 'fake_access_token',
+    refreshToken: 'fake_refresh_token',
+  };
+
+  beforeEach(() => {
+    authService = new AuthService();
+    jest.clearAllMocks();
+  });
+
+  it('should return tokens and userDetails on success', async () => {
+    jest
+      .spyOn(JWTService.prototype, 'verifyIncomplete')
+      .mockReturnValue(fakePayload);
+    (AuthRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(null);
+    (AuthRepository.prototype.createWithGoogle as jest.Mock).mockResolvedValue(
+      fakeUser,
+    );
+    jest
+      .spyOn(authService as any, 'issueTokenPair')
+      .mockReturnValue(fakeTokens);
+    jest
+      .spyOn(AuthMapper, 'toUserCredientialsResponse')
+      .mockReturnValue(fakeLoginResponse);
+
+    const result = await authService.completeGoogleSignUp(googleCompleteBody);
+
+    expect(result).toEqual({
+      tokens: fakeTokens,
+      userDetails: fakeLoginResponse,
+    });
+  });
+
+  it('should throw ResourceAlreadyExists when user already exists', async () => {
+    jest
+      .spyOn(JWTService.prototype, 'verifyIncomplete')
+      .mockReturnValue(fakePayload);
+    (AuthRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(
+      fakeUser,
+    );
+
+    await expect(
+      authService.completeGoogleSignUp(googleCompleteBody),
+    ).rejects.toThrow('This user is logged in normally');
+  });
+
+  it('should call verifyIncomplete with correct token', async () => {
+    const jwtSpy = jest
+      .spyOn(JWTService.prototype, 'verifyIncomplete')
+      .mockReturnValue(fakePayload);
+    (AuthRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(null);
+    (AuthRepository.prototype.createWithGoogle as jest.Mock).mockResolvedValue(
+      fakeUser,
+    );
+    jest
+      .spyOn(authService as any, 'issueTokenPair')
+      .mockReturnValue(fakeTokens);
+    jest
+      .spyOn(AuthMapper, 'toUserCredientialsResponse')
+      .mockReturnValue(fakeLoginResponse);
+
+    await authService.completeGoogleSignUp(googleCompleteBody);
+
+    expect(jwtSpy).toHaveBeenCalledWith('fake_incomplete_token');
+  });
+
+  it('should call findByEmail with email from payload', async () => {
+    jest
+      .spyOn(JWTService.prototype, 'verifyIncomplete')
+      .mockReturnValue(fakePayload);
+    (AuthRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(null);
+    (AuthRepository.prototype.createWithGoogle as jest.Mock).mockResolvedValue(
+      fakeUser,
+    );
+    jest
+      .spyOn(authService as any, 'issueTokenPair')
+      .mockReturnValue(fakeTokens);
+    jest
+      .spyOn(AuthMapper, 'toUserCredientialsResponse')
+      .mockReturnValue(fakeLoginResponse);
+
+    await authService.completeGoogleSignUp(googleCompleteBody);
+
+    expect(AuthRepository.prototype.findByEmail).toHaveBeenCalledWith(
+      'test@mail.com',
+    );
+  });
+
+  it('should call createWithGoogle with correct args', async () => {
+    jest
+      .spyOn(JWTService.prototype, 'verifyIncomplete')
+      .mockReturnValue(fakePayload);
+    (AuthRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(null);
+    (AuthRepository.prototype.createWithGoogle as jest.Mock).mockResolvedValue(
+      fakeUser,
+    );
+    jest
+      .spyOn(authService as any, 'issueTokenPair')
+      .mockReturnValue(fakeTokens);
+    jest
+      .spyOn(AuthMapper, 'toUserCredientialsResponse')
+      .mockReturnValue(fakeLoginResponse);
+
+    await authService.completeGoogleSignUp(googleCompleteBody);
+
+    expect(AuthRepository.prototype.createWithGoogle).toHaveBeenCalledWith({
+      googleId: 'google_123456',
+      email: 'test@mail.com',
+      displayName: 'John Doe',
+      dateOfBirth: new Date('1995-01-01'),
+      gender: 'Male',
+    });
+  });
+
+  it('should call issueTokenPair with correct user fields', async () => {
+    jest
+      .spyOn(JWTService.prototype, 'verifyIncomplete')
+      .mockReturnValue(fakePayload);
+    (AuthRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(null);
+    (AuthRepository.prototype.createWithGoogle as jest.Mock).mockResolvedValue(
+      fakeUser,
+    );
+    const issueSpy = jest
+      .spyOn(authService as any, 'issueTokenPair')
+      .mockReturnValue(fakeTokens);
+    jest
+      .spyOn(AuthMapper, 'toUserCredientialsResponse')
+      .mockReturnValue(fakeLoginResponse);
+
+    await authService.completeGoogleSignUp(googleCompleteBody);
+
+    expect(issueSpy).toHaveBeenCalledWith(
+      fakeUser._id.toString(),
+      fakeUser.role,
+      fakeUser.subscription,
+    );
+  });
+
+  it('should call AuthMapper with correct user', async () => {
+    jest
+      .spyOn(JWTService.prototype, 'verifyIncomplete')
+      .mockReturnValue(fakePayload);
+    (AuthRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(null);
+    (AuthRepository.prototype.createWithGoogle as jest.Mock).mockResolvedValue(
+      fakeUser,
+    );
+    jest
+      .spyOn(authService as any, 'issueTokenPair')
+      .mockReturnValue(fakeTokens);
+    const mapperSpy = jest
+      .spyOn(AuthMapper, 'toUserCredientialsResponse')
+      .mockReturnValue(fakeLoginResponse);
+
+    await authService.completeGoogleSignUp(googleCompleteBody);
+
+    expect(mapperSpy).toHaveBeenCalledWith(fakeUser);
+  });
+
+  it('should throw when verifyIncomplete throws', async () => {
+    jest
+      .spyOn(JWTService.prototype, 'verifyIncomplete')
+      .mockImplementation(() => {
+        throw new Error('invalid token');
+      });
+
+    await expect(
+      authService.completeGoogleSignUp(googleCompleteBody),
+    ).rejects.toThrow('invalid token');
+  });
+
+  it('should throw when createWithGoogle throws', async () => {
+    jest
+      .spyOn(JWTService.prototype, 'verifyIncomplete')
+      .mockReturnValue(fakePayload);
+    (AuthRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(null);
+    (AuthRepository.prototype.createWithGoogle as jest.Mock).mockRejectedValue(
+      new Error('DB is down'),
+    );
+
+    await expect(
+      authService.completeGoogleSignUp(googleCompleteBody),
+    ).rejects.toThrow('DB is down');
+  });
+});
