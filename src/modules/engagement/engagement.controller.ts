@@ -6,6 +6,14 @@ import {
   GetTrackLikersRequestDTO,
   ToggleTrackLikeRequestDTO,
   TogglePlaylistLikeRequestDTO,
+  ToggleTrackRepostRequestDTO,
+  GetTrackRepostStatusRequestDTO,
+  UpdateTrackRepostRequestDTO,
+  TogglePlaylistRepostRequestDTO,
+  GetPlaylistRepostStatusRequestDTO,
+  UpdatePlaylistRepostRequestDTO,
+  GetTrackRepostersRequestDTO,
+  GetPlaylistRepostersRequestDTO,
 } from './dtos/engagement.request';
 import { BadRequestError } from '../../shared/errors/responseErrors';
 
@@ -14,7 +22,10 @@ export class EngagementController {
 
   async toggleTrackLike(req: Request, res: Response): Promise<void> {
     const parsed = parseRequest(ToggleTrackLikeRequestDTO, req);
-    if (!parsed.success) BadRequestError(parsed.error.message);
+
+    if (!parsed.success) {
+      throw parsed.error;
+    }
 
     const { trackId } = parsed.data!.params;
     const userId = req.userInfo!._id;
@@ -23,9 +34,31 @@ export class EngagementController {
     res.json(result);
   }
 
+  async toggleTrackRepost(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(ToggleTrackRepostRequestDTO, req);
+
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { trackId } = parsed.data!.params;
+    const userId = req.userInfo!._id;
+    const caption = parsed.data!.body?.caption;
+
+    const result = await this.service.toggleTrackRepost(
+      trackId,
+      userId,
+      caption,
+    );
+    res.json(result);
+  }
+
   async togglePlaylistLike(req: Request, res: Response): Promise<void> {
     const parsed = parseRequest(TogglePlaylistLikeRequestDTO, req);
-    if (!parsed.success) BadRequestError(parsed.error.message);
+
+    if (!parsed.success) {
+      throw parsed.error;
+    }
 
     const { playlistId } = parsed.data!.params;
     const userId = req.userInfo!._id;
@@ -39,9 +72,6 @@ export class EngagementController {
     if (!parsed.success) {
       throw parsed.error;
     }
-    // console.log('Parsed Request:', parsed);
-    // console.log('Request Params:', parsed.error?.message);
-    // if (!parsed.success) BadRequestError(parsed.error.message);
 
     const { trackId } = parsed.data!.params;
     const { offset, limit } = parsed.data!.query;
@@ -52,7 +82,7 @@ export class EngagementController {
 
   async getPlaylistLikers(req: Request, res: Response): Promise<void> {
     const parsed = parseRequest(GetPlaylistLikersRequestDTO, req);
-    // if (!parsed.success) BadRequestError(parsed.error.message);
+
     if (!parsed.success) {
       throw parsed.error;
     }
@@ -61,6 +91,122 @@ export class EngagementController {
     const { offset, limit } = parsed.data!.query;
 
     const result = await this.service.getPlaylistLikers(
+      playlistId,
+      offset,
+      limit,
+    );
+    res.json(result);
+  }
+
+  async getTrackRepostStatus(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetTrackRepostStatusRequestDTO, req);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { trackId } = parsed.data!.params;
+    const userId = req.userInfo!._id;
+
+    const result = await this.service.getTrackRepostStatus(trackId, userId);
+    res.json(result);
+  }
+
+  async updateTrackRepostCaption(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(UpdateTrackRepostRequestDTO, req);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { trackId } = parsed.data!.params;
+    const { caption } = parsed.data!.body;
+    const userId = req.userInfo!._id;
+
+    const result = await this.service.updateTrackRepostCaption(
+      trackId,
+      userId,
+      caption,
+    );
+    res.json(result);
+  }
+
+  async togglePlaylistRepost(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(TogglePlaylistRepostRequestDTO, req);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { playlistId } = parsed.data!.params;
+    const userId = req.userInfo!._id;
+    const caption = parsed.data!.body?.caption;
+
+    const result = await this.service.togglePlaylistRepost(
+      playlistId,
+      userId,
+      caption,
+    );
+    res.json(result);
+  }
+
+  async getPlaylistRepostStatus(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetPlaylistRepostStatusRequestDTO, req);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { playlistId } = parsed.data!.params;
+    const userId = req.userInfo!._id;
+
+    const result = await this.service.getPlaylistRepostStatus(
+      playlistId,
+      userId,
+    );
+    res.json(result);
+  }
+
+  async updatePlaylistRepostCaption(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const parsed = parseRequest(UpdatePlaylistRepostRequestDTO, req);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { playlistId } = parsed.data!.params;
+    const { caption } = parsed.data!.body;
+    const userId = req.userInfo!._id;
+
+    const result = await this.service.updatePlaylistRepostCaption(
+      playlistId,
+      userId,
+      caption,
+    );
+    res.json(result);
+  }
+
+  async getTrackReposters(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetTrackRepostersRequestDTO, req);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { trackId } = parsed.data!.params;
+    const { offset, limit } = parsed.data!.query;
+
+    const result = await this.service.getTrackReposters(trackId, offset, limit);
+    res.json(result);
+  }
+
+  async getPlaylistReposters(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetPlaylistRepostersRequestDTO, req);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { playlistId } = parsed.data!.params;
+    const { offset, limit } = parsed.data!.query;
+
+    const result = await this.service.getPlaylistReposters(
       playlistId,
       offset,
       limit,

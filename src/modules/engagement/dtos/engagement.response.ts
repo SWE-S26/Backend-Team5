@@ -75,8 +75,61 @@ export const TrackLikersResponseDTO = extendedZod.object({
   users: extendedZod.array(TrackLikerUserResponseDTO),
 });
 
+export const TrackRepostStatusResponseDTO = extendedZod
+  .object({
+    reposted: extendedZod.boolean(),
+    caption: extendedZod.string().optional(),
+    repostedAt: extendedZod.string().optional(),
+  })
+  .openapi('TrackRepostStatusResponse', {
+    example: {
+      reposted: true,
+      caption: 'Love this track!',
+      repostedAt: '2025-01-15T12:00:00Z',
+    },
+  });
+
+export const UpdateRepostCaptionResponseDTO = extendedZod
+  .object({
+    success: extendedZod.boolean(),
+    caption: extendedZod.string(),
+  })
+  .openapi('UpdateRepostCaptionResponse', {
+    example: {
+      success: true,
+      caption: 'Updated caption text!',
+    },
+  });
+
+export const PlaylistRepostStatusResponseDTO = extendedZod
+  .object({
+    reposted: extendedZod.boolean(),
+    caption: extendedZod.string().optional(),
+    repostedAt: extendedZod.string().optional(),
+  })
+  .openapi('PlaylistRepostStatusResponse', {
+    example: {
+      reposted: true,
+      caption: 'Amazing playlist!',
+      repostedAt: '2025-01-15T12:00:00Z',
+    },
+  });
+
 export type ToggleLikeResponse = z.infer<typeof ToggleLikeResponseDTO>;
+export type ToggleRepostResponse = z.infer<typeof ToggleRepostResponseDTO>;
 export type TogglePlaylistLikeResponse = z.infer<
   typeof TogglePlaylistLikeResponseDTO
 >;
+export type TogglePlaylistRepostResponse = z.infer<
+  typeof TogglePlaylistRepostResponseDTO
+>;
 export type TrackLikersResponse = z.infer<typeof TrackLikersResponseDTO>;
+export type TrackRepostStatusResponse = z.infer<
+  typeof TrackRepostStatusResponseDTO
+>;
+export type PlaylistRepostStatusResponse = z.infer<
+  typeof PlaylistRepostStatusResponseDTO
+>;
+export type UpdateRepostCaptionResponse = z.infer<
+  typeof UpdateRepostCaptionResponseDTO
+>;

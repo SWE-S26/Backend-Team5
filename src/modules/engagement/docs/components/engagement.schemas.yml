@@ -116,6 +116,45 @@ RepostRequest:
       maxLength: 280
       example: 'Love this track!'
 
+TrackRepostStatusResponse:
+  type: object
+  properties:
+    reposted:
+      type: boolean
+      example: true
+    caption:
+      type: string
+      example: 'Love this track!'
+    repostedAt:
+      type: string
+      format: date-time
+      example: '2025-01-15T12:00:00Z'
+  required:
+    - reposted
+
+UpdateRepostCaptionRequest:
+  type: object
+  properties:
+    caption:
+      type: string
+      maxLength: 280
+      example: 'Updated caption text!'
+  required:
+    - caption
+
+UpdateRepostCaptionResponse:
+  type: object
+  properties:
+    success:
+      type: boolean
+      example: true
+    caption:
+      type: string
+      example: 'Updated caption text!'
+  required:
+    - success
+    - caption
+
 CreateCommentRequest:
   type: object
   properties:
