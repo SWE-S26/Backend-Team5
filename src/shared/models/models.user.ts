@@ -1,5 +1,6 @@
 import { Schema, Types, model } from 'mongoose';
 import { imgSchema } from './schemas.shared';
+import Settings from './models.settings';
 
 export type IUser = {
   _id: Types.ObjectId;
@@ -287,6 +288,22 @@ const userSchema = new Schema(
   },
   { timestamps: true },
 );
+
+userSchema.post('save', async function (doc) {
+  try {
+    const existingSettings = await Settings.findOne({ userId: doc._id });
+    if (!existingSettings) {
+      await Settings.create({
+        userId: doc._id,
+        account: { dateOfBirth: doc.dateOfBirth },
+        content: { rssFeedLink: 'https://example.com/rss' },
+      });
+      console.log(`Settings created for user ${doc._id}`);
+    }
+  } catch (err) {
+    console.error(`Failed to create settings for user ${doc._id}:`, err);
+  }
+});
 
 const User = model<IUser>('User', userSchema);
 export default User;

@@ -1,26 +1,45 @@
+import User, { IUser } from '../../shared/models/models.user';
+import Settings, { ISettings } from '../../shared/models/models.settings';
+import {
+  UpdateProfileRequestBodyDTOType,
+  UpdatePrivacySettingsDTOType,
+} from './dtos/profile.request.body';
+
 export class ProfileRepository {
-  async findAll(): Promise<any[]> {
-    // TODO: query your data source
-    return [];
+  async findById(id: string): Promise<IUser | null> {
+    return await User.findById(id).lean();
   }
 
-  async findById(id: string): Promise<any | null> {
-    // TODO: query your data source
-    return null;
+  async update(
+    id: string,
+    data: Partial<UpdateProfileRequestBodyDTOType>,
+  ): Promise<IUser | null> {
+    const { links, bannerLinks, ...otherFields } = data;
+    const updateData: any = { ...otherFields };
+
+    if (links) updateData.links = links;
+    if (bannerLinks) updateData.bannerLinks = bannerLinks;
+
+    return await User.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    }).lean();
   }
 
-  async create(data: any): Promise<any> {
-    // TODO: insert into your data source
-    return data;
+  async getPrivacySettings(id: string): Promise<ISettings['privacy'] | null> {
+    const doc = await Settings.findOne({ userId: id }, { privacy: 1 }).lean();
+    return doc?.privacy ?? null;
   }
 
-  async update(id: string, data: any): Promise<any | null> {
-    // TODO: update in your data source
-    return null;
-  }
-
-  async delete(id: string): Promise<boolean> {
-    // TODO: delete from your data source
-    return false;
+  async updatePrivacySettings(
+    id: string,
+    data: Partial<UpdatePrivacySettingsDTOType>,
+  ): Promise<ISettings['privacy'] | null> {
+    const updated = await Settings.findOneAndUpdate(
+      { userId: id },
+      { privacy: data },
+      { new: true, runValidators: true, projection: { privacy: 1 } },
+    ).lean();
+    return updated?.privacy ?? null;
   }
 }

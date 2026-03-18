@@ -1,37 +1,107 @@
 import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { ProfileService } from './profile.service';
+import { ProfileIdParamDTO } from './dtos/profile.request.params';
+import {
+  UpdateProfileRequestDTO,
+  UpdatePrivacySettingsRequestDTO,
+} from './dtos/profile.request';
 
 export class ProfileController {
   constructor(private readonly service: ProfileService) {}
 
-  async findAll(_req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
-
   async findOne(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
+    try {
+      const validatedRequest = parseRequest(ProfileIdParamDTO, req);
+      if (!validatedRequest.success) {
+        throw validatedRequest.error;
+      }
 
-  async create(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
+      const userId = validatedRequest.data!.params.id;
+      const profile = await this.service.findById(userId);
 
-  async replace(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
+      if (!profile) {
+        res.status(404).json({ message: 'User not found' });
+        return;
+      }
+
+      res.json(profile);
+    } catch (err) {
+      res.status(500).json({ message: 'Server error', error: err });
+    }
   }
 
   async update(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
+    try {
+      const userId = req.userInfo!._id;
+      const validatedRequest = parseRequest(UpdateProfileRequestDTO, req);
+
+      if (!validatedRequest.success) {
+        throw validatedRequest.error;
+      }
+
+      const updated = await this.service.update(
+        userId,
+        validatedRequest.data.body,
+      );
+
+      if (!updated) {
+        res.status(404).json({ message: 'User not found' });
+        return;
+      }
+
+      res.json(updated);
+    } catch (err) {
+      res.status(500).json({ message: 'Server error', error: err });
+    }
   }
 
-  async remove(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
+  async getPrivacySettings(req: Request, res: Response): Promise<void> {
+    try {
+      console.log('userId================================================');
+      const userId = req.userInfo!._id;
+      console.log(
+        'userId================================================',
+        userId,
+      );
+      const settings = await this.service.getPrivacySettings(userId);
+      console.log(
+        'settings================================================',
+        settings,
+      );
+      if (!settings) {
+        res.status(404).json({ message: 'User settings not found' });
+        return;
+      }
+      res.json(settings);
+    } catch (err) {
+      res.status(500).json({ message: 'Server error', error: err });
+    }
+  }
+
+  async updatePrivacySettings(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.userInfo!._id;
+      const validatedRequest = parseRequest(
+        UpdatePrivacySettingsRequestDTO,
+        req,
+      );
+
+      if (!validatedRequest.success) {
+        throw validatedRequest.error;
+      }
+
+      const updated = await this.service.updatePrivacySettings(
+        userId,
+        validatedRequest.data.body,
+      );
+      if (!updated) {
+        res.status(404).json({ message: 'User settings not found' });
+        return;
+      }
+      res.json(updated);
+    } catch (err) {
+      res.status(500).json({ message: 'Server error', error: err });
+    }
   }
 }

@@ -1,11 +1,34 @@
-export class ProfileMapper {
-  static toResponse(entity: any): any {
-    // TODO: map entity fields to response DTO
-    return {} as any;
-  }
+import { Types } from 'mongoose';
+import { ProfileResponseDTOType } from './profile.response';
 
-  static toEntity(dto: any): any {
-    // TODO: map request DTO fields to entity
-    return {};
+export class ProfileMapper {
+  static toResponse(user: any): ProfileResponseDTOType {
+    return {
+      userId: user._id.toString(),
+      displayName: user.displayName,
+      firstName: user.firstName || null,
+      lastName: user.lastName || null,
+      profileLink: user.profileLink,
+      profileImgLink: user.profileImg?.url || null,
+      bannerImgLink: user.bannerImg?.url || null,
+      bio: user.bio || null,
+      city: user.city || null,
+      country: user.country || null,
+      links: user.links?.map((link: any) => ({
+        linkId: link._id || new Types.ObjectId(),
+        title: link.name || null,
+        link: link.link,
+      })),
+      bannerLinks: user.bannerLinks?.map((link: any) => ({
+        linkId: link._id || new Types.ObjectId(),
+        title: link.name || null,
+        link: link.link,
+      })),
+      supportLink: user.supportLink || null,
+      favoriteGenres: user.favoriteGenres || [],
+      followersCount: user.followersCount || 0,
+      followedCount: user.followedCount || 0,
+      trackCount: user.trackCount || 0,
+    };
   }
 }
