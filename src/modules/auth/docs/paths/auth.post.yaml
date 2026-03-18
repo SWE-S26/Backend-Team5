@@ -325,16 +325,19 @@
       - Authentication
     summary: Verify Google sign-in code and authenticate user
     description: |
-      Completes sign-in for an existing user who authenticated via Google.
+      Completes sign-in for an existing user who authenticated via Google for the first time.
 
-      After the Google callback step, a 6-digit verification code is sent to the user's email.
-      The client must send the `pendingToken` along with the code.
+      After the Google callback redirects to `/verify-code`, a 6-digit code is sent to the user's email.
+      Read `pendingToken` from the redirect URL's query string, collect the code from the user,
+      then POST both here.
 
-      The code is one-time use and expires in 5 minutes.
+      The code is one-time use and expires in **5 minutes**.
 
-      On success:
-      - Web clients receive tokens via HTTP-only cookies
-      - Mobile clients receive tokens in the response body
+      On success, the response differs by client type:
+      - **Web clients** — tokens are set as HTTP-only cookies. The response body contains only user details.
+      - **Mobile clients (web-view)** — tokens are included in the response body in addition to being set
+        as cookies, since web-views cannot access HTTP-only cookies directly. Read them from the body
+        and store them in your secure store.
 
     requestBody:
       required: true
@@ -371,7 +374,7 @@
           application/json:
             examples:
               web_client:
-                summary: Web — tokens via cookies
+                summary: Web — tokens via cookies ignore tokens in body
                 value:
                   message: 'Authenticated successfully'
                   data:
@@ -388,6 +391,8 @@
                         quota:
                           unlimited: false
                           usedSeconds: 0
+                      accessToken: 'eyJhbGciOi...'
+                      refreshToken: 'eyJhbGciOi...'
 
               mobile_client:
                 summary: Mobile — tokens in body
@@ -478,7 +483,7 @@
           application/json:
             examples:
               web_client:
-                summary: Web — tokens via cookies
+                summary: Web — tokens via cookies Ignore tokens in body
                 value:
                   message: 'Authenticated successfully'
                   data:
@@ -495,6 +500,8 @@
                         quota:
                           unlimited: false
                           usedSeconds: 0
+                      accessToken: 'eyJhbGciOi...'
+                      refreshToken: 'eyJhbGciOi...'
 
               mobile_client:
                 summary: Mobile — tokens in body

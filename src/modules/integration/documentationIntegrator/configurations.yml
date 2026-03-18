@@ -3,12 +3,16 @@ openapi: 3.0.0
 
 info:
   title: Beatza API Documentation
-  version: 1.0.1
+  version: 1.0.4
   description: |
     Will comply with the standard HTTP status code, and standard naming conventions
     References:
     - [HTTP Status Code Reference](https://restfulapi.net/http-status-codes/)
     - [API Naming Conventions](https://restfulapi.net/resource-naming/)
+
+    [The main website Beatza URL](https://beatza.me)
+
+    [Real footage of the backend teamleader when asked about the project](https://www.youtube.com/watch?v=YkTSEja2nng)
 
 # General tag definitions
 tags:
@@ -55,18 +59,6 @@ tags:
   - name: Admin Reports
     description: All endpoints related to admin reports
 
-x-tagGroups:
-  - name: Public APIs
-    tags:
-      - Authentication
-      - Track Management
-
-  - name: Admin APIs
-    tags:
-      - Admin Users
-      - Admin Tracks
-      - Admin Analytics
-      - Admin Reports
 # Global JWT requirement, it is not required for the Authentication Service, I
 # I manually remove it from the Authentication Service endpoints with JS
 security:
@@ -87,5 +79,7 @@ components:
 
 # When we know the ip/URL of our server we will add a field to shit
 servers:
+  - url: https://beatza.me
+    description: Production server
   - url: http://localhost:4123
     description: Local development server

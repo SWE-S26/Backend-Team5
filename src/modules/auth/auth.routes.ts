@@ -27,6 +27,11 @@ authRouter.get(
 );
 
 authRouter.post(
+  apiVersions.v1 + '/forgot-password',
+  authController.forgotPassword.bind(authController),
+);
+
+authRouter.post(
   apiVersions.v1 + '/reset-password',
   authController.resetPassword.bind(authController),
 );
