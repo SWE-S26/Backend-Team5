@@ -1,19 +1,11 @@
 name: Deploy API Docs to Netlify
 
 on:
-  push:
-    branches:
-      - main
-
-  pull_request:
-    branches:
-      - main
-    types:
-      - synchronize
-      - closed
+  workflow_dispatch:
 
 jobs:
   deploy-docs:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     steps:
