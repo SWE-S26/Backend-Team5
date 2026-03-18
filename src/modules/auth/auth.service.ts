@@ -388,7 +388,7 @@ export class AuthService {
     }
 
     if (session.status === 'pending') {
-      throw NotFoundError('Waiting for mobile approval.');
+      return null; // not verified yet, keep polling
     }
 
     // Verified — consume the session and issue tokens

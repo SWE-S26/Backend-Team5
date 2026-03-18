@@ -9,8 +9,23 @@ import cors from 'cors';
 
 const app = express();
 
+export const allowedOrigins = ['http://localhost:3000', process.env.HOST_URL];
+
 app.use(express.json());
-app.use(cors({ origin: '*' }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+  }),
+);
 app.use(pinoHttp({ logger }));
 app.use(cookieParser());
 app.use('/api', integrationRouter);
