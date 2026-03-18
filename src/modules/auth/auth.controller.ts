@@ -30,7 +30,6 @@ export class AuthController {
   private readonly service: AuthService;
   private readonly hostUrl: string =
     process.env.HOST_URL || 'http://localhost:4123';
-  private readonly urlPrefix: string = '/api/auth';
   private readonly refreshTokenPath: string = '/api/auth/v1/refresh-token';
 
   constructor() {
@@ -41,6 +40,29 @@ export class AuthController {
     console.log(verifyLink);
     const resetLink = `${this.hostUrl}/reset-password`;
     console.log(resetLink);
+
+    const redirectUrlNewUser = new URL(
+      `${this.hostUrl}/oauth-continue-details`,
+    );
+    redirectUrlNewUser.searchParams.set(
+      'incompleteToken',
+      'Some Incomplete Token',
+    );
+    redirectUrlNewUser.searchParams.set('email', 'Some email');
+    redirectUrlNewUser.searchParams.set('displayName', 'Some Display Name');
+    console.log(redirectUrlNewUser.toString());
+
+    const redirectUrlUserSignedInBefore = new URL(`${this.hostUrl}/home`);
+    redirectUrlUserSignedInBefore.searchParams.set('accessToken', 'some token');
+    redirectUrlUserSignedInBefore.searchParams.set(
+      'refreshToken',
+      'some refresh token',
+    );
+    console.log(redirectUrlUserSignedInBefore.toString());
+
+    const redirectUrlVerifyCode = new URL(`${this.hostUrl}/verify-code`);
+    redirectUrlVerifyCode.searchParams.set('pendingToken', 'Some token');
+    console.log(redirectUrlVerifyCode.toString());
   }
 
   private isCross(req: Request): boolean {
@@ -247,6 +269,34 @@ export class AuthController {
     }
   }
 
+  private sendGoogleTokenResponse(
+    req: Request,
+    res: Response,
+    accessToken: string,
+    refreshToken: string,
+  ): void {
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: this.isProduction,
+      sameSite: 'strict',
+      maxAge: 1000 * 60 * 60 * 1,
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: this.isProduction,
+      sameSite: 'strict',
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+      path: this.refreshTokenPath,
+    });
+
+    const redirectUrl = new URL(`${this.hostUrl}/home`);
+    redirectUrl.searchParams.set('accessToken', accessToken);
+    redirectUrl.searchParams.set('refreshToken', refreshToken);
+
+    return res.redirect(redirectUrl.toString());
+  }
+
   googleRedirect = (req: Request, res: Response, next: NextFunction): void => {
     passport.authenticate('google', {
       scope: ['profile', 'email'],
@@ -283,12 +333,11 @@ export class AuthController {
             payload.subscription,
           );
 
-          return this.sendTokenResponse(
+          return this.sendGoogleTokenResponse(
             req,
             res,
             tokens.accessToken,
             tokens.refreshToken,
-            userCreditianls,
           );
         }
 
@@ -299,12 +348,12 @@ export class AuthController {
             displayName: payload.displayName,
           });
 
-          return res.status(200).json({
-            status: 'incomplete',
-            incompleteToken,
-            email: payload.email,
-            displayName: payload.displayName,
-          });
+          const redirectUrl = new URL(`${this.hostUrl}/oauth-continue-details`);
+          redirectUrl.searchParams.set('incompleteToken', incompleteToken);
+          redirectUrl.searchParams.set('email', payload.email);
+          redirectUrl.searchParams.set('displayName', payload.displayName);
+
+          return res.redirect(redirectUrl.toString());
         }
 
         const { pendingToken } = await this.service.initiateGoogleSignIn({
@@ -316,10 +365,10 @@ export class AuthController {
           googleId: payload.googleId,
         });
 
-        return res.status(200).json({
-          status: 'verify',
-          pendingToken,
-        });
+        const redirectUrl = new URL(`${this.hostUrl}/verify-code`);
+        redirectUrl.searchParams.set('pendingToken', pendingToken);
+
+        return res.redirect(redirectUrl.toString());
       },
     )(req, res, next);
   };
@@ -340,12 +389,11 @@ export class AuthController {
         pendingToken,
         code,
       );
-      this.sendTokenResponse(
+      this.sendGoogleTokenResponse(
         req,
         res,
         tokens.accessToken,
         tokens.refreshToken,
-        userDetails,
       );
     } catch (err) {
       next(err);
@@ -367,13 +415,11 @@ export class AuthController {
       const body = req.body as GoogleCompleteSignUpBody;
       const { tokens, userDetails } =
         await this.service.completeGoogleSignUp(body);
-      this.sendTokenResponse(
+      this.sendGoogleTokenResponse(
         req,
         res,
         tokens.accessToken,
         tokens.refreshToken,
-        userDetails,
-        201,
       );
     } catch (err) {
       next(err);
