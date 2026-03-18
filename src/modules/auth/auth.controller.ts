@@ -36,6 +36,11 @@ export class AuthController {
   constructor() {
     this.isProduction = process.env.MODE == 'PROD';
     this.service = new AuthService();
+
+    const verifyLink = `${this.hostUrl}/verify-email`;
+    console.log(verifyLink);
+    const resetLink = `${this.hostUrl}/reset-password`;
+    console.log(resetLink);
   }
 
   private isCross(req: Request): boolean {
@@ -89,7 +94,7 @@ export class AuthController {
     );
 
     // ! 7aseb mn v1 de
-    const verifyLink = `${this.hostUrl}${this.urlPrefix}/v1/verify-email?token=${token}`;
+    const verifyLink = `${this.hostUrl}/verify-email?token=${token}`;
     emailService.sendVerifyAccountLink(
       userParams.displayName,
       userParams.email,
@@ -176,10 +181,9 @@ export class AuthController {
 
     try {
       // ! 7aseb mn v1 de
-      // https:beatza/{varaible}
-      const resetLink = `${this.hostUrl}${this.urlPrefix}/v1/reset-password?token=${token}`;
+      const resetLink = `${this.hostUrl}/reset-password?token=${token}`;
 
-      logger.info(`Generated password reset link for ${email}: ${token}`);
+      logger.debug(`Generated password reset link for ${email}: ${token}`);
 
       await emailService.sendResetPassowordLink(userName, email, resetLink);
       res.json({
@@ -398,7 +402,6 @@ export class AuthController {
     if (!poll) {
       res.json({
         message: 'QR Code not yet scanned',
-        data: null,
       });
       return;
     }
