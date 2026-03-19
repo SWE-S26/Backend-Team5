@@ -329,14 +329,10 @@ export class AuthController {
           return next(ForbiddenError('Google authentication failed'));
 
         logger.info(
-          `Google authentication successful for email: ${JSON.stringify(payload)}`,
+          `Google authentication successful for email: ${payload.status}`,
         );
 
         if (payload.status === 'returning_google') {
-          const userCreditianls = await this.service.getUserIntialDetails(
-            payload.userId,
-          );
-
           const tokens = this.service.issueTokenPair(
             payload.userId,
             payload.role,
@@ -395,16 +391,9 @@ export class AuthController {
 
     try {
       const { pendingToken, code } = validatedRequest.data.body;
-      const { tokens, userDetails } = await this.service.verifyGoogleSignInCode(
-        pendingToken,
-        code,
-      );
-      this.sendGoogleTokenResponse(
-        req,
-        res,
-        tokens.accessToken,
-        tokens.refreshToken,
-      );
+      const { accessToken, refreshToken } =
+        await this.service.verifyGoogleSignInCode(pendingToken, code);
+      this.sendGoogleTokenResponse(req, res, accessToken, refreshToken);
     } catch (err) {
       next(err);
     }
@@ -423,14 +412,9 @@ export class AuthController {
 
     try {
       const body = req.body as GoogleCompleteSignUpBody;
-      const { tokens, userDetails } =
+      const { accessToken, refreshToken } =
         await this.service.completeGoogleSignUp(body);
-      this.sendGoogleTokenResponse(
-        req,
-        res,
-        tokens.accessToken,
-        tokens.refreshToken,
-      );
+      this.sendGoogleTokenResponse(req, res, accessToken, refreshToken);
     } catch (err) {
       next(err);
     }

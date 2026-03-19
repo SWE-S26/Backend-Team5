@@ -287,7 +287,7 @@ export class AuthService {
   async verifyGoogleSignInCode(
     pendingToken: string,
     code: string,
-  ): Promise<LoginSession> {
+  ): Promise<AuthTokens> {
     const payload = this.jwtService.verifyPending(pendingToken);
 
     const storedCode = await redisCacher.get<string>(
@@ -308,10 +308,7 @@ export class AuthService {
       payload.subscription,
     );
 
-    const user = await this.authRepository.findById(payload.userId);
-
-    const userDetails = AuthMapper.toUserCredientialsResponse(user!);
-    return { tokens, userDetails };
+    return tokens;
   }
 
   issueTokenPair(
@@ -335,7 +332,7 @@ export class AuthService {
 
   async completeGoogleSignUp(
     body: GoogleCompleteSignUpBody,
-  ): Promise<{ tokens: AuthTokens; userDetails: LoginResponse }> {
+  ): Promise<AuthTokens> {
     const payload = this.jwtService.verifyIncomplete(body.incompleteToken);
 
     // ! Race condition guard: user registered between the two steps
@@ -360,10 +357,7 @@ export class AuthService {
       newUser.subscription,
     );
 
-    return {
-      tokens,
-      userDetails: AuthMapper.toUserCredientialsResponse(newUser),
-    };
+    return tokens;
   }
 
   createQRCodeForDesktopLogin = async (): Promise<{
