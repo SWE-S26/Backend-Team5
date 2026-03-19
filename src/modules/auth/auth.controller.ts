@@ -24,6 +24,7 @@ import {
 } from '../../shared/errors/responseErrors';
 import { JWTPayload } from '../../shared/abstractions/jwt';
 import { LoginResponse } from './dtos/auth.response';
+import SecureParams from '../../shared/abstractions/security.service';
 
 export class AuthController {
   private readonly isProduction: boolean;
@@ -87,22 +88,20 @@ export class AuthController {
       userParams.email,
     );
 
-    // ! 7aseb mn v1 de
-    const verifyLink = `${this.hostUrl}/verify-email?token=${token}`;
+    const verifyLinkUrl = new URL(`${this.hostUrl}/verify-email`);
+    const encryptedToken = SecureParams.encrypt(token);
+    verifyLinkUrl.searchParams.set('token', encryptedToken);
+
     try {
       await emailService.sendVerifyAccountLink(
         userParams.displayName,
         userParams.email,
-        verifyLink,
+        verifyLinkUrl.toString(),
       );
     } catch (error) {
       logger.error(`Error sending verification email: ${error}`);
       throw new Error('Failed to send verification email');
     }
-
-    res.json({
-      message: 'Email Resent successfully',
-    });
   }
 
   async resendVerificationEmail(req: Request, res: Response): Promise<void> {
@@ -120,8 +119,8 @@ export class AuthController {
     const user = await this.service.findByEmail(email);
 
     const verifyLink = new URL(`${this.hostUrl}/verify-email`);
-
-    verifyLink.searchParams.set('token', token);
+    const encryptedToken = SecureParams.encrypt(token);
+    verifyLink.searchParams.set('token', encryptedToken);
 
     emailService.sendVerifyAccountLink(
       user.displayName,
@@ -163,9 +162,13 @@ export class AuthController {
 
     const token = validatedRequest!.data!.query.token;
 
-    logger.info(`Received email verification request with token: ${token}`);
+    const decryptedToken = SecureParams.decrypt(token);
 
-    const isVerified = await this.service.verifyEmail(token);
+    logger.info(
+      `Received email verification request with token: ${decryptedToken}`,
+    );
+
+    const isVerified = await this.service.verifyEmail(decryptedToken);
 
     if (!isVerified) {
       throw new Error('Email Verification Failed');
@@ -213,11 +216,20 @@ export class AuthController {
 
     try {
       // ! 7aseb mn v1 de
-      const resetLink = `${this.hostUrl}/reset-password?token=${token}`;
+      const resetLink = new URL(`${this.hostUrl}/reset-password`);
 
-      logger.debug(`Generated password reset link for ${email}: ${token}`);
+      const encryptedToken = SecureParams.encrypt(token);
+      resetLink.searchParams.set('token', encryptedToken);
 
-      await emailService.sendResetPassowordLink(userName, email, resetLink);
+      logger.debug(
+        `Generated password reset link for ${email}: ${encryptedToken}`,
+      );
+
+      await emailService.sendResetPassowordLink(
+        userName,
+        email,
+        resetLink.toString(),
+      );
       res.json({
         message: 'Password reset email sent successfully',
       });
@@ -236,8 +248,14 @@ export class AuthController {
 
     const { token, newPassword } = validatedRequest.data.body;
 
+    const decryptedToken = SecureParams.decrypt(token);
+
+    logger.debug(
+      `Received password reset request with token: ${decryptedToken}`,
+    );
+
     const isPasswordReset = await this.service.resetPasswordWithToken(
-      token,
+      decryptedToken,
       newPassword,
     );
 
@@ -355,9 +373,10 @@ export class AuthController {
           });
 
           const redirectUrl = new URL(`${this.hostUrl}/oauth-continue-details`);
+
           redirectUrl.searchParams.set('incompleteToken', incompleteToken);
-          redirectUrl.searchParams.set('email', payload.email);
-          redirectUrl.searchParams.set('displayName', payload.displayName);
+          redirectUrl.searchParams.set('email', 'No');
+          redirectUrl.searchParams.set('displayName', 'No');
 
           return res.redirect(redirectUrl.toString());
         }
@@ -512,7 +531,11 @@ export class AuthController {
 
     return res.status(status).json({
       message: 'Authenticated successfully',
-      data: { user: userCreditianls },
+      data: {
+        user: userCreditianls,
+        accessToken,
+        refreshToken,
+      },
     });
   }
 }

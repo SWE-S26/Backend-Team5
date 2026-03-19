@@ -1103,15 +1103,12 @@ describe('AuthService : completeGoogleSignUp', () => {
     jest
       .spyOn(authService as any, 'issueTokenPair')
       .mockReturnValue(fakeTokens);
-    jest
-      .spyOn(AuthMapper, 'toUserCredientialsResponse')
-      .mockReturnValue(fakeLoginResponse);
 
     const result = await authService.completeGoogleSignUp(googleCompleteBody);
 
     expect(result).toEqual({
-      tokens: fakeTokens,
-      userDetails: fakeLoginResponse,
+      accessToken: fakeTokens.accessToken,
+      refreshToken: fakeTokens.refreshToken,
     });
   });
 
@@ -1181,9 +1178,6 @@ describe('AuthService : completeGoogleSignUp', () => {
     jest
       .spyOn(authService as any, 'issueTokenPair')
       .mockReturnValue(fakeTokens);
-    jest
-      .spyOn(AuthMapper, 'toUserCredientialsResponse')
-      .mockReturnValue(fakeLoginResponse);
 
     await authService.completeGoogleSignUp(googleCompleteBody);
 
@@ -1218,26 +1212,6 @@ describe('AuthService : completeGoogleSignUp', () => {
       fakeUser.role,
       fakeUser.subscription,
     );
-  });
-
-  it('should call AuthMapper with correct user', async () => {
-    jest
-      .spyOn(JWTService.prototype, 'verifyIncomplete')
-      .mockReturnValue(fakePayload);
-    (AuthRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(null);
-    (AuthRepository.prototype.createWithGoogle as jest.Mock).mockResolvedValue(
-      fakeUser,
-    );
-    jest
-      .spyOn(authService as any, 'issueTokenPair')
-      .mockReturnValue(fakeTokens);
-    const mapperSpy = jest
-      .spyOn(AuthMapper, 'toUserCredientialsResponse')
-      .mockReturnValue(fakeLoginResponse);
-
-    await authService.completeGoogleSignUp(googleCompleteBody);
-
-    expect(mapperSpy).toHaveBeenCalledWith(fakeUser);
   });
 
   it('should throw when verifyIncomplete throws', async () => {
