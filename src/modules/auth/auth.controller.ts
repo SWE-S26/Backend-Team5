@@ -347,7 +347,7 @@ export class AuthController {
           return next(ForbiddenError('Google authentication failed'));
 
         logger.info(
-          `Google authentication successful for email: ${payload.status}`,
+          `Google authentication intiation successful with status: ${payload.status}`,
         );
 
         if (payload.status === 'returning_google') {
