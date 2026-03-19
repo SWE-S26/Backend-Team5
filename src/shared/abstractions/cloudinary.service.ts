@@ -1,4 +1,7 @@
-import cloudinary from '../../config/cloudinary';
+import cloudinary, {
+  UploadApiResponse,
+  UploadApiErrorResponse,
+} from '../../config/cloudinary';
 
 export enum ImageFolder {
   PROFILE = 'profile',
@@ -27,6 +30,34 @@ export class CloudinaryService {
       url: result.secure_url,
       publicId: result.public_id,
     };
+  }
+
+  static async uploadBuffer(
+    buffer: Buffer,
+    folder: ImageFolder,
+  ): Promise<CloudinaryUploadResult> {
+    return new Promise((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          {
+            folder,
+            use_filename: true,
+            unique_filename: true,
+            overwrite: false,
+          },
+          (
+            err: UploadApiErrorResponse | undefined,
+            result: UploadApiResponse | undefined,
+          ) => {
+            if (err) return reject(err);
+            resolve({
+              url: result!.secure_url,
+              publicId: result!.public_id,
+            });
+          },
+        )
+        .end(buffer);
+    });
   }
 
   static async deleteImage(publicId: string): Promise<{ result: string }> {
