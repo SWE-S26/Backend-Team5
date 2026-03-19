@@ -25,7 +25,7 @@
           type: string
         country:
           type: string
-        links:
+        socialMediaLinks:
           type: array
           items:
             $ref: '#/components/schemas/Link'
