@@ -35,34 +35,6 @@ export class AuthController {
   constructor() {
     this.isProduction = process.env.MODE == 'PROD';
     this.service = new AuthService();
-
-    const verifyLink = `${this.hostUrl}/verify-email`;
-    console.log(verifyLink);
-    const resetLink = `${this.hostUrl}/reset-password`;
-    console.log(resetLink);
-
-    const redirectUrlNewUser = new URL(
-      `${this.hostUrl}/oauth-continue-details`,
-    );
-    redirectUrlNewUser.searchParams.set(
-      'incompleteToken',
-      'Some Incomplete Token',
-    );
-    redirectUrlNewUser.searchParams.set('email', 'Some email');
-    redirectUrlNewUser.searchParams.set('displayName', 'Some Display Name');
-    console.log(redirectUrlNewUser.toString());
-
-    const redirectUrlUserSignedInBefore = new URL(`${this.hostUrl}/home`);
-    redirectUrlUserSignedInBefore.searchParams.set('accessToken', 'some token');
-    redirectUrlUserSignedInBefore.searchParams.set(
-      'refreshToken',
-      'some refresh token',
-    );
-    console.log(redirectUrlUserSignedInBefore.toString());
-
-    const redirectUrlVerifyCode = new URL(`${this.hostUrl}/verify-code`);
-    redirectUrlVerifyCode.searchParams.set('pendingToken', 'Some token');
-    console.log(redirectUrlVerifyCode.toString());
   }
 
   private isCross(req: Request): boolean {
@@ -117,11 +89,49 @@ export class AuthController {
 
     // ! 7aseb mn v1 de
     const verifyLink = `${this.hostUrl}/verify-email?token=${token}`;
+    try {
+      await emailService.sendVerifyAccountLink(
+        userParams.displayName,
+        userParams.email,
+        verifyLink,
+      );
+    } catch (error) {
+      logger.error(`Error sending verification email: ${error}`);
+      throw new Error('Failed to send verification email');
+    }
+
+    res.json({
+      message: 'Email Resent successfully',
+    });
+  }
+
+  async resendVerificationEmail(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(CheckEmailRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const data = validatedRequest.data;
+    const { email } = data.body;
+
+    const token = await this.service.createEmailVerificationToken(email);
+
+    const user = await this.service.findByEmail(email);
+
+    const verifyLink = new URL(`${this.hostUrl}/verify-email`);
+
+    verifyLink.searchParams.set('token', token);
+
     emailService.sendVerifyAccountLink(
-      userParams.displayName,
-      userParams.email,
-      verifyLink,
+      user.displayName,
+      email,
+      verifyLink.toString(),
     );
+
+    res.json({
+      message: 'Verification email resent successfully',
+    });
   }
 
   async logInUser(req: Request, res: Response): Promise<void> {
