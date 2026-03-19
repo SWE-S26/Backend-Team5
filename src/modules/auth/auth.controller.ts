@@ -24,6 +24,7 @@ import {
 } from '../../shared/errors/responseErrors';
 import { JWTPayload } from '../../shared/abstractions/jwt';
 import { LoginResponse } from './dtos/auth.response';
+import SecureParams from '../../shared/abstractions/security.service';
 
 export class AuthController {
   private readonly isProduction: boolean;
@@ -163,9 +164,13 @@ export class AuthController {
 
     const token = validatedRequest!.data!.query.token;
 
-    logger.info(`Received email verification request with token: ${token}`);
+    const decryptedToken = SecureParams.decrypt(token);
 
-    const isVerified = await this.service.verifyEmail(token);
+    logger.info(
+      `Received email verification request with token: ${decryptedToken}`,
+    );
+
+    const isVerified = await this.service.verifyEmail(decryptedToken);
 
     if (!isVerified) {
       throw new Error('Email Verification Failed');
@@ -213,11 +218,20 @@ export class AuthController {
 
     try {
       // ! 7aseb mn v1 de
-      const resetLink = `${this.hostUrl}/reset-password?token=${token}`;
+      const resetLink = new URL(`${this.hostUrl}/reset-password`);
 
-      logger.debug(`Generated password reset link for ${email}: ${token}`);
+      const encryptedToken = SecureParams.encrypt(token);
+      resetLink.searchParams.set('token', encryptedToken);
 
-      await emailService.sendResetPassowordLink(userName, email, resetLink);
+      logger.debug(
+        `Generated password reset link for ${email}: ${encryptedToken}`,
+      );
+
+      await emailService.sendResetPassowordLink(
+        userName,
+        email,
+        resetLink.toString(),
+      );
       res.json({
         message: 'Password reset email sent successfully',
       });
@@ -236,8 +250,14 @@ export class AuthController {
 
     const { token, newPassword } = validatedRequest.data.body;
 
+    const decryptedToken = SecureParams.decrypt(token);
+
+    logger.debug(
+      `Received password reset request with token: ${decryptedToken}`,
+    );
+
     const isPasswordReset = await this.service.resetPasswordWithToken(
-      token,
+      decryptedToken,
       newPassword,
     );
 
@@ -329,14 +349,10 @@ export class AuthController {
           return next(ForbiddenError('Google authentication failed'));
 
         logger.info(
-          `Google authentication successful for email: ${JSON.stringify(payload)}`,
+          `Google authentication intiation successful with status: ${payload.status}`,
         );
 
         if (payload.status === 'returning_google') {
-          const userCreditianls = await this.service.getUserIntialDetails(
-            payload.userId,
-          );
-
           const tokens = this.service.issueTokenPair(
             payload.userId,
             payload.role,
@@ -359,9 +375,10 @@ export class AuthController {
           });
 
           const redirectUrl = new URL(`${this.hostUrl}/oauth-continue-details`);
+
           redirectUrl.searchParams.set('incompleteToken', incompleteToken);
-          redirectUrl.searchParams.set('email', payload.email);
-          redirectUrl.searchParams.set('displayName', payload.displayName);
+          redirectUrl.searchParams.set('email', 'No');
+          redirectUrl.searchParams.set('displayName', 'No');
 
           return res.redirect(redirectUrl.toString());
         }
@@ -395,16 +412,9 @@ export class AuthController {
 
     try {
       const { pendingToken, code } = validatedRequest.data.body;
-      const { tokens, userDetails } = await this.service.verifyGoogleSignInCode(
-        pendingToken,
-        code,
-      );
-      this.sendGoogleTokenResponse(
-        req,
-        res,
-        tokens.accessToken,
-        tokens.refreshToken,
-      );
+      const { accessToken, refreshToken } =
+        await this.service.verifyGoogleSignInCode(pendingToken, code);
+      this.sendGoogleTokenResponse(req, res, accessToken, refreshToken);
     } catch (err) {
       next(err);
     }
@@ -423,14 +433,9 @@ export class AuthController {
 
     try {
       const body = req.body as GoogleCompleteSignUpBody;
-      const { tokens, userDetails } =
+      const { accessToken, refreshToken } =
         await this.service.completeGoogleSignUp(body);
-      this.sendGoogleTokenResponse(
-        req,
-        res,
-        tokens.accessToken,
-        tokens.refreshToken,
-      );
+      this.sendGoogleTokenResponse(req, res, accessToken, refreshToken);
     } catch (err) {
       next(err);
     }
@@ -528,7 +533,11 @@ export class AuthController {
 
     return res.status(status).json({
       message: 'Authenticated successfully',
-      data: { user: userCreditianls },
+      data: {
+        user: userCreditianls,
+        accessToken,
+        refreshToken,
+      },
     });
   }
 }
