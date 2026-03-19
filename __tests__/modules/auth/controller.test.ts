@@ -5,7 +5,6 @@ import emailService from '../../../src/shared/abstractions/email/EmailService';
 import { LoginResponse } from '../../../src/modules/auth/dtos/auth.response';
 import { JwtPayload } from 'jsonwebtoken';
 import passport from '../../../src/modules/auth/auth.utils';
-import { REPLCommand } from 'node:repl';
 jest.mock('passport', () => ({
   authenticate: jest.fn(),
   use: jest.fn(),
@@ -27,7 +26,6 @@ let authController: AuthController;
 let mockReq: Partial<Request>;
 let mockRes: Partial<Response>;
 
-<<<<<<< HEAD
 const fakeLoginResponse: LoginResponse = {
   id: '507f1f77bcf86cd799439011',
   displayName: 'John Doe',
@@ -51,8 +49,6 @@ const mockTokens = {
   refreshToken: 'fake_refresh_token',
 };
 
-=======
->>>>>>> a43a91c9ac97d01619f05f2d2910ca2dc0d569e9
 describe('AuthController : checkEmailExists', () => {
   beforeEach(() => {
     authController = new AuthController();
