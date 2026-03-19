@@ -24,6 +24,7 @@ import {
 } from '../../shared/errors/responseErrors';
 import { JWTPayload } from '../../shared/abstractions/jwt';
 import { LoginResponse } from './dtos/auth.response';
+import SecureParams from '../../shared/abstractions/security.service';
 
 export class AuthController {
   private readonly isProduction: boolean;
@@ -35,34 +36,6 @@ export class AuthController {
   constructor() {
     this.isProduction = process.env.MODE == 'PROD';
     this.service = new AuthService();
-
-    const verifyLink = `${this.hostUrl}/verify-email`;
-    console.log(verifyLink);
-    const resetLink = `${this.hostUrl}/reset-password`;
-    console.log(resetLink);
-
-    const redirectUrlNewUser = new URL(
-      `${this.hostUrl}/oauth-continue-details`,
-    );
-    redirectUrlNewUser.searchParams.set(
-      'incompleteToken',
-      'Some Incomplete Token',
-    );
-    redirectUrlNewUser.searchParams.set('email', 'Some email');
-    redirectUrlNewUser.searchParams.set('displayName', 'Some Display Name');
-    console.log(redirectUrlNewUser.toString());
-
-    const redirectUrlUserSignedInBefore = new URL(`${this.hostUrl}/home`);
-    redirectUrlUserSignedInBefore.searchParams.set('accessToken', 'some token');
-    redirectUrlUserSignedInBefore.searchParams.set(
-      'refreshToken',
-      'some refresh token',
-    );
-    console.log(redirectUrlUserSignedInBefore.toString());
-
-    const redirectUrlVerifyCode = new URL(`${this.hostUrl}/verify-code`);
-    redirectUrlVerifyCode.searchParams.set('pendingToken', 'Some token');
-    console.log(redirectUrlVerifyCode.toString());
   }
 
   private isCross(req: Request): boolean {
@@ -115,13 +88,49 @@ export class AuthController {
       userParams.email,
     );
 
-    // ! 7aseb mn v1 de
-    const verifyLink = `${this.hostUrl}/verify-email?token=${token}`;
+    const verifyLinkUrl = new URL(`${this.hostUrl}/verify-email`);
+    const encryptedToken = SecureParams.encrypt(token);
+    verifyLinkUrl.searchParams.set('token', encryptedToken);
+
+    try {
+      await emailService.sendVerifyAccountLink(
+        userParams.displayName,
+        userParams.email,
+        verifyLinkUrl.toString(),
+      );
+    } catch (error) {
+      logger.error(`Error sending verification email: ${error}`);
+      throw new Error('Failed to send verification email');
+    }
+  }
+
+  async resendVerificationEmail(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(CheckEmailRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const data = validatedRequest.data;
+    const { email } = data.body;
+
+    const token = await this.service.createEmailVerificationToken(email);
+
+    const user = await this.service.findByEmail(email);
+
+    const verifyLink = new URL(`${this.hostUrl}/verify-email`);
+    const encryptedToken = SecureParams.encrypt(token);
+    verifyLink.searchParams.set('token', encryptedToken);
+
     emailService.sendVerifyAccountLink(
-      userParams.displayName,
-      userParams.email,
-      verifyLink,
+      user.displayName,
+      email,
+      verifyLink.toString(),
     );
+
+    res.json({
+      message: 'Verification email resent successfully',
+    });
   }
 
   async logInUser(req: Request, res: Response): Promise<void> {
@@ -153,9 +162,13 @@ export class AuthController {
 
     const token = validatedRequest!.data!.query.token;
 
-    logger.info(`Received email verification request with token: ${token}`);
+    const decryptedToken = SecureParams.decrypt(token);
 
-    const isVerified = await this.service.verifyEmail(token);
+    logger.info(
+      `Received email verification request with token: ${decryptedToken}`,
+    );
+
+    const isVerified = await this.service.verifyEmail(decryptedToken);
 
     if (!isVerified) {
       throw new Error('Email Verification Failed');
@@ -203,11 +216,20 @@ export class AuthController {
 
     try {
       // ! 7aseb mn v1 de
-      const resetLink = `${this.hostUrl}/reset-password?token=${token}`;
+      const resetLink = new URL(`${this.hostUrl}/reset-password`);
 
-      logger.debug(`Generated password reset link for ${email}: ${token}`);
+      const encryptedToken = SecureParams.encrypt(token);
+      resetLink.searchParams.set('token', encryptedToken);
 
-      await emailService.sendResetPassowordLink(userName, email, resetLink);
+      logger.debug(
+        `Generated password reset link for ${email}: ${encryptedToken}`,
+      );
+
+      await emailService.sendResetPassowordLink(
+        userName,
+        email,
+        resetLink.toString(),
+      );
       res.json({
         message: 'Password reset email sent successfully',
       });
@@ -226,8 +248,14 @@ export class AuthController {
 
     const { token, newPassword } = validatedRequest.data.body;
 
+    const decryptedToken = SecureParams.decrypt(token);
+
+    logger.debug(
+      `Received password reset request with token: ${decryptedToken}`,
+    );
+
     const isPasswordReset = await this.service.resetPasswordWithToken(
-      token,
+      decryptedToken,
       newPassword,
     );
 
@@ -319,14 +347,10 @@ export class AuthController {
           return next(ForbiddenError('Google authentication failed'));
 
         logger.info(
-          `Google authentication successful for email: ${JSON.stringify(payload)}`,
+          `Google authentication intiation successful with status: ${payload.status}`,
         );
 
         if (payload.status === 'returning_google') {
-          const userCreditianls = await this.service.getUserIntialDetails(
-            payload.userId,
-          );
-
           const tokens = this.service.issueTokenPair(
             payload.userId,
             payload.role,
@@ -349,9 +373,10 @@ export class AuthController {
           });
 
           const redirectUrl = new URL(`${this.hostUrl}/oauth-continue-details`);
+
           redirectUrl.searchParams.set('incompleteToken', incompleteToken);
-          redirectUrl.searchParams.set('email', payload.email);
-          redirectUrl.searchParams.set('displayName', payload.displayName);
+          redirectUrl.searchParams.set('email', 'No');
+          redirectUrl.searchParams.set('displayName', 'No');
 
           return res.redirect(redirectUrl.toString());
         }
@@ -385,16 +410,9 @@ export class AuthController {
 
     try {
       const { pendingToken, code } = validatedRequest.data.body;
-      const { tokens, userDetails } = await this.service.verifyGoogleSignInCode(
-        pendingToken,
-        code,
-      );
-      this.sendGoogleTokenResponse(
-        req,
-        res,
-        tokens.accessToken,
-        tokens.refreshToken,
-      );
+      const { accessToken, refreshToken } =
+        await this.service.verifyGoogleSignInCode(pendingToken, code);
+      this.sendGoogleTokenResponse(req, res, accessToken, refreshToken);
     } catch (err) {
       next(err);
     }
@@ -413,14 +431,9 @@ export class AuthController {
 
     try {
       const body = req.body as GoogleCompleteSignUpBody;
-      const { tokens, userDetails } =
+      const { accessToken, refreshToken } =
         await this.service.completeGoogleSignUp(body);
-      this.sendGoogleTokenResponse(
-        req,
-        res,
-        tokens.accessToken,
-        tokens.refreshToken,
-      );
+      this.sendGoogleTokenResponse(req, res, accessToken, refreshToken);
     } catch (err) {
       next(err);
     }
@@ -518,7 +531,11 @@ export class AuthController {
 
     return res.status(status).json({
       message: 'Authenticated successfully',
-      data: { user: userCreditianls },
+      data: {
+        user: userCreditianls,
+        accessToken,
+        refreshToken,
+      },
     });
   }
 }
