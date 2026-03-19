@@ -87,6 +87,14 @@ export class AuthService {
     }
   }
 
+  async findByEmail(email: string) {
+    const user = await this.authRepository.findByEmail(email);
+    if (!user) {
+      throw NotFoundError('User not found');
+    }
+    return AuthMapper.toUserCredientialsResponse(user);
+  }
+
   async registerNewUser(newUserDTO: newUserDTO): Promise<Boolean> {
     const existingUser = await this.authRepository.findByEmail(
       newUserDTO.email,

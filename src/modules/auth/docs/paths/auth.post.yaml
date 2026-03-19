@@ -158,7 +158,7 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/auth/v1/forget-password:
+/api/auth/v1/forgot-password:
   post:
     tags:
       - Authentication
@@ -309,6 +309,53 @@
                       type: boolean
                       description: Indicates whether the email exists in the database
                       example: true
+            example:
+              success: true
+              message: 'Email existence check completed successfully'
+              data:
+                exists: true
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
+
+/api/auth/v1/resend-verification-email:
+  post:
+    tags:
+      - Authentication
+    summary: Resend email verification link
+    description: |
+      Resends the email verification link to the user's email address.
+      Verifies whether the provided email address exists in the database.
+      This endpoint is typically used before password reset or registration
+      to confirm if the email is already associated with an account.
+
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - email
+            properties:
+              email:
+                type: string
+                format: email
+                description: Email address to check in the system
+                example: user@example.com
+
+    responses:
+      200:
+        description: Email existence check completed successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: 'Email Resent successfully!'
             example:
               success: true
               message: 'Email existence check completed successfully'
