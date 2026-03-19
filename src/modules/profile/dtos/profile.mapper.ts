@@ -14,12 +14,12 @@ export class ProfileMapper {
       bio: user.bio || null,
       city: user.city || null,
       country: user.country || null,
-      links: user.links?.map((link: any) => ({
+      links: user.socialMediaLinks?.map((link: any) => ({
         linkId: link._id || new Types.ObjectId(),
         name: link.name || null,
         link: link.link,
       })),
-      bannerLinks: user.bannerLinks?.map((link: any) => ({
+      bannerLinks: user.links?.map((link: any) => ({
         linkId: link._id || new Types.ObjectId(),
         name: link.name || null,
         link: link.link,
