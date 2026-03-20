@@ -152,11 +152,8 @@ export class AuthController {
     const { tokens, userDetails } = await this.service.logInUser(logInParams);
 
     if (validatedRequest.data.query.client === 'Android') {
-      return this.sendGoogleTokenResponse(
-        req,
-        res,
-        tokens.accessToken,
-        tokens.refreshToken,
+      return res.redirect(
+        `${this.hostUrl}/cross-callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
       );
     }
 
@@ -318,6 +315,7 @@ export class AuthController {
     res: Response,
     accessToken: string,
     refreshToken: string,
+    client?: string,
   ): void {
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
@@ -334,7 +332,14 @@ export class AuthController {
       path: this.refreshTokenPath,
     });
 
-    const redirectUrl = new URL(`${this.hostUrl}/home`);
+    let redirectUrl = new URL(`${this.hostUrl}/home`);
+    const activeClient =
+      client ?? (typeof req.query.client === 'string' ? req.query.client : '');
+
+    if (activeClient === 'Android') {
+      redirectUrl = new URL(`${this.hostUrl}/cross-callback`);
+    }
+
     redirectUrl.searchParams.set('accessToken', accessToken);
     redirectUrl.searchParams.set('refreshToken', refreshToken);
 
@@ -342,9 +347,13 @@ export class AuthController {
   }
 
   googleRedirect = (req: Request, res: Response, next: NextFunction): void => {
+    const client =
+      typeof req.query.client === 'string' ? req.query.client : undefined;
+
     passport.authenticate('google', {
       scope: ['profile', 'email'],
       session: false,
+      state: client,
     })(req, res, next);
   };
 
@@ -378,6 +387,7 @@ export class AuthController {
             res,
             tokens.accessToken,
             tokens.refreshToken,
+            payload.client,
           );
         }
 
@@ -393,6 +403,9 @@ export class AuthController {
           redirectUrl.searchParams.set('incompleteToken', incompleteToken);
           redirectUrl.searchParams.set('email', 'No');
           redirectUrl.searchParams.set('displayName', 'No');
+          if (payload.client) {
+            redirectUrl.searchParams.set('client', payload.client);
+          }
 
           return res.redirect(redirectUrl.toString());
         }
@@ -408,6 +421,9 @@ export class AuthController {
 
         const redirectUrl = new URL(`${this.hostUrl}/verify-code`);
         redirectUrl.searchParams.set('pendingToken', pendingToken);
+        if (payload.client) {
+          redirectUrl.searchParams.set('client', payload.client);
+        }
 
         return res.redirect(redirectUrl.toString());
       },
@@ -520,7 +536,14 @@ export class AuthController {
     status = 200,
   ) {
     if (this.isCross(req)) {
-      return this.sendGoogleTokenResponse(req, res, accessToken, refreshToken);
+      return res.status(status).json({
+        message: 'Authenticated successfully',
+        data: {
+          user: userCreditianls,
+          accessToken,
+          refreshToken,
+        },
+      });
     }
 
     res.cookie('accessToken', accessToken, {
