@@ -66,7 +66,7 @@ jobs:
           USE_REDIS: ${{ secrets.USE_REDIS }}
           LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
           REDIRECT_PARAM_SECRET: ${{ secrets.REDIRECT_PARAM_SECRET }}
-          REDIRECT_PARAM_SALt: ${{ secrets.REDIRECT_PARAM_SALT }}
+          REDIRECT_PARAM_SALT: ${{ secrets.REDIRECT_PARAM_SALT }}
         with:
           host: ${{ secrets.VM_IP }}
           username: azureuser
