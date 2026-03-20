@@ -1,6 +1,7 @@
 import { Schema, Types, model } from 'mongoose';
 import { imgSchema } from './schemas.shared';
 import Settings from './models.settings';
+import logger from '../logger/logger';
 
 export type IUser = {
   _id: Types.ObjectId;
@@ -208,9 +209,19 @@ const userSchema = new Schema(
     },
     profileImg: {
       type: imgSchema,
+      default: () => ({
+        imgLink:
+          'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg',
+        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi',
+      }),
     },
     bannerImg: {
       type: imgSchema,
+      default: () => ({
+        imgLink:
+          'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg',
+        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi',
+      }),
     },
     socialMediaLinks: {
       type: [socialLinkSchema],
@@ -298,10 +309,12 @@ userSchema.post('save', async function (doc) {
         account: { dateOfBirth: doc.dateOfBirth },
         content: { rssFeedLink: 'https://example.com/rss' },
       });
-      console.log(`Settings created for user ${doc._id}`);
+      logger.debug(`Settings created for user ${doc._id}`);
     }
-  } catch (err) {
-    console.error(`Failed to create settings for user ${doc._id}:`, err);
+  } catch (err: Error | any) {
+    logger.error(
+      `Failed to create settings for user ${doc._id}: ${err.message}`,
+    );
   }
 });
 

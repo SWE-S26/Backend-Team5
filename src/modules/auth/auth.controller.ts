@@ -89,12 +89,16 @@ export class AuthController {
     );
 
     // ! 7aseb mn v1 de
-    const verifyLink = `${this.hostUrl}/verify-email?token=${token}`;
+    const verifyLink = new URL(`${this.hostUrl}/verify-email`);
+
+    const encryptedToken = SecureParams.encrypt(token);
+
+    verifyLink.searchParams.set('token', encryptedToken);
     try {
       await emailService.sendVerifyAccountLink(
         userParams.displayName,
         userParams.email,
-        verifyLink,
+        verifyLink.toString(),
       );
     } catch (error) {
       logger.error(`Error sending verification email: ${error}`);
@@ -122,7 +126,8 @@ export class AuthController {
 
     const verifyLink = new URL(`${this.hostUrl}/verify-email`);
 
-    verifyLink.searchParams.set('token', token);
+    const encryptedToken = SecureParams.encrypt(token);
+    verifyLink.searchParams.set('token', encryptedToken);
 
     emailService.sendVerifyAccountLink(
       user.displayName,
