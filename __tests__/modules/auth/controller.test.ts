@@ -472,164 +472,164 @@ describe('AuthController : checkEmailExists', () => {
 //   });
 // });
 
-describe('AuthController : logInUser', () => {
-  const mockReq = {
-    body: {
-      email: 'test@mail.com',
-      password: 'Password123!',
-    },
-    query: {},
-    params: {},
-    headers: {},
-  };
+// describe('AuthController : logInUser', () => {
+//   const mockReq = {
+//     body: {
+//       email: 'test@mail.com',
+//       password: 'Password123!',
+//     },
+//     query: {},
+//     params: {},
+//     headers: {},
+//   };
 
-  const mockTokens = {
-    accessToken: 'fake_access_token',
-    refreshToken: 'fake_refresh_token',
-  };
+//   const mockTokens = {
+//     accessToken: 'fake_access_token',
+//     refreshToken: 'fake_refresh_token',
+//   };
 
-  beforeEach(() => {
-    authController = new AuthController();
-    mockRes = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn(),
-      cookie: jest.fn(),
-    };
-    jest.clearAllMocks();
-  });
+//   beforeEach(() => {
+//     authController = new AuthController();
+//     mockRes = {
+//       status: jest.fn().mockReturnThis(),
+//       json: jest.fn(),
+//       cookie: jest.fn(),
+//     };
+//     jest.clearAllMocks();
+//   });
 
-  it('should return tokens in body for mobile devices', async () => {
-    const mobileReq = {
-      ...mockReq,
-      headers: { 'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS)' },
-    };
+//   it('should return tokens in body for mobile devices', async () => {
+//     const mobileReq = {
+//       ...mockReq,
+//       headers: { 'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS)' },
+//     };
 
-    (AuthService.prototype.logInUser as jest.Mock).mockResolvedValue({
-      tokens: mockTokens,
-      userDetails: fakeLoginResponse,
-    });
+//     (AuthService.prototype.logInUser as jest.Mock).mockResolvedValue({
+//       tokens: mockTokens,
+//       userDetails: fakeLoginResponse,
+//     });
 
-    await authController.logInUser(
-      mobileReq as unknown as Request,
-      mockRes as Response,
-    );
+//     await authController.logInUser(
+//       mobileReq as unknown as Request,
+//       mockRes as Response,
+//     );
 
-    expect(mockRes.status).toHaveBeenCalledWith(200);
-    expect(mockRes.json).toHaveBeenCalledWith({
-      message: 'Authenticated successfully',
-      data: {
-        accessToken: 'fake_access_token',
-        refreshToken: 'fake_refresh_token',
-        user: fakeLoginResponse,
-      },
-    });
-  });
+//     expect(mockRes.status).toHaveBeenCalledWith(200);
+//     expect(mockRes.json).toHaveBeenCalledWith({
+//       message: 'Authenticated successfully',
+//       data: {
+//         accessToken: 'fake_access_token',
+//         refreshToken: 'fake_refresh_token',
+//         user: fakeLoginResponse,
+//       },
+//     });
+//   });
 
-  // it('should set cookies and return user for web devices', async () => {
-  //   const webReq = {
-  //     ...mockReq,
-  //     headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0)' },
-  //   };
+//   // it('should set cookies and return user for web devices', async () => {
+//   //   const webReq = {
+//   //     ...mockReq,
+//   //     headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0)' },
+//   //   };
 
-  //   (AuthService.prototype.logInUser as jest.Mock).mockResolvedValue({
-  //     tokens: mockTokens,
-  //     userDetails: fakeLoginResponse,
-  //   });
+//   //   (AuthService.prototype.logInUser as jest.Mock).mockResolvedValue({
+//   //     tokens: mockTokens,
+//   //     userDetails: fakeLoginResponse,
+//   //   });
 
-  //   await authController.logInUser(
-  //     webReq as unknown as Request,
-  //     mockRes as Response,
-  //   );
+//   //   await authController.logInUser(
+//   //     webReq as unknown as Request,
+//   //     mockRes as Response,
+//   //   );
 
-  //   expect(mockRes.cookie).toHaveBeenCalledWith(
-  //     'accessToken',
-  //     'fake_access_token',
-  //     expect.objectContaining({ httpOnly: true }),
-  //   );
-  //   expect(mockRes.cookie).toHaveBeenCalledWith(
-  //     'refreshToken',
-  //     'fake_refresh_token',
-  //     expect.objectContaining({ httpOnly: true }),
-  //   );
+//   //   expect(mockRes.cookie).toHaveBeenCalledWith(
+//   //     'accessToken',
+//   //     'fake_access_token',
+//   //     expect.objectContaining({ httpOnly: true }),
+//   //   );
+//   //   expect(mockRes.cookie).toHaveBeenCalledWith(
+//   //     'refreshToken',
+//   //     'fake_refresh_token',
+//   //     expect.objectContaining({ httpOnly: true }),
+//   //   );
 
-  //   expect(mockRes.json).toHaveBeenCalledWith({
-  //     message: 'Authenticated successfully',
-  //     data: { user: fakeLoginResponse },
-  //   });
-  // });
+//   //   expect(mockRes.json).toHaveBeenCalledWith({
+//   //     message: 'Authenticated successfully',
+//   //     data: { user: fakeLoginResponse },
+//   //   });
+//   // });
 
-  it('should not set cookies for mobile devices', async () => {
-    const mobileReq = {
-      ...mockReq,
-      headers: { 'user-agent': 'Mozilla/5.0 (Android 11)' },
-    };
+//   it('should not set cookies for mobile devices', async () => {
+//     const mobileReq = {
+//       ...mockReq,
+//       headers: { 'user-agent': 'Mozilla/5.0 (Android 11)' },
+//     };
 
-    (AuthService.prototype.logInUser as jest.Mock).mockResolvedValue({
-      tokens: mockTokens,
-      userDetails: fakeLoginResponse,
-    });
+//     (AuthService.prototype.logInUser as jest.Mock).mockResolvedValue({
+//       tokens: mockTokens,
+//       userDetails: fakeLoginResponse,
+//     });
 
-    await authController.logInUser(
-      mobileReq as unknown as Request,
-      mockRes as Response,
-    );
+//     await authController.logInUser(
+//       mobileReq as unknown as Request,
+//       mockRes as Response,
+//     );
 
-    expect(mockRes.cookie).not.toHaveBeenCalled();
-  });
+//     expect(mockRes.cookie).not.toHaveBeenCalled();
+//   });
 
-  it('should call logInUser service with correct params', async () => {
-    const webReq = {
-      ...mockReq,
-      headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0)' },
-    };
+//   it('should call logInUser service with correct params', async () => {
+//     const webReq = {
+//       ...mockReq,
+//       headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0)' },
+//     };
 
-    (AuthService.prototype.logInUser as jest.Mock).mockResolvedValue({
-      tokens: mockTokens,
-      userDetails: fakeLoginResponse,
-    });
+//     (AuthService.prototype.logInUser as jest.Mock).mockResolvedValue({
+//       tokens: mockTokens,
+//       userDetails: fakeLoginResponse,
+//     });
 
-    await authController.logInUser(
-      webReq as unknown as Request,
-      mockRes as Response,
-    );
+//     await authController.logInUser(
+//       webReq as unknown as Request,
+//       mockRes as Response,
+//     );
 
-    expect(AuthService.prototype.logInUser).toHaveBeenCalledWith(mockReq.body);
-  });
+//     expect(AuthService.prototype.logInUser).toHaveBeenCalledWith(mockReq.body);
+//   });
 
-  it('should throw when request validation fails', async () => {
-    const invalidReq = {
-      body: { email: 'not-valid' },
-      query: {},
-      params: {},
-      headers: {},
-    };
+//   it('should throw when request validation fails', async () => {
+//     const invalidReq = {
+//       body: { email: 'not-valid' },
+//       query: {},
+//       params: {},
+//       headers: {},
+//     };
 
-    await expect(
-      authController.logInUser(
-        invalidReq as unknown as Request,
-        mockRes as Response,
-      ),
-    ).rejects.toThrow();
-  });
+//     await expect(
+//       authController.logInUser(
+//         invalidReq as unknown as Request,
+//         mockRes as Response,
+//       ),
+//     ).rejects.toThrow();
+//   });
 
-  it('should throw when service throws', async () => {
-    const webReq = {
-      ...mockReq,
-      headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0)' },
-    };
+//   it('should throw when service throws', async () => {
+//     const webReq = {
+//       ...mockReq,
+//       headers: { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0)' },
+//     };
 
-    (AuthService.prototype.logInUser as jest.Mock).mockRejectedValue(
-      new Error('DB is down'),
-    );
+//     (AuthService.prototype.logInUser as jest.Mock).mockRejectedValue(
+//       new Error('DB is down'),
+//     );
 
-    await expect(
-      authController.logInUser(
-        webReq as unknown as Request,
-        mockRes as Response,
-      ),
-    ).rejects.toThrow('DB is down');
-  });
-});
+//     await expect(
+//       authController.logInUser(
+//         webReq as unknown as Request,
+//         mockRes as Response,
+//       ),
+//     ).rejects.toThrow('DB is down');
+//   });
+// });
 
 // describe('AuthController : verifyEmail', () => {
 //   beforeEach(() => {

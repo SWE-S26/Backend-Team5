@@ -23,3 +23,7 @@ export const VerifyEmailQueryDto = extendedZod.object({
 export const GoogleCallbackQueryDto = extendedZod.object({
   code: extendedZod.string(),
 });
+
+export const loginCrossQueryDto = extendedZod.object({
+  client: extendedZod.string().optional(),
+});

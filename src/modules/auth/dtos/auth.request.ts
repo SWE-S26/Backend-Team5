@@ -3,6 +3,7 @@ import { AuthIdParamDTO } from './auth.request.params';
 import {
   GoogleCallbackQueryDto,
   ListAuthsQueryDto,
+  loginCrossQueryDto,
   VerifyEmailQueryDto,
 } from './auth.request.query';
 import {
@@ -28,6 +29,7 @@ export const SignUpRequestDTO = extendedZod.object({
 });
 
 export const LogInRequestDTO = extendedZod.object({
+  query: loginCrossQueryDto,
   body: LoginInRequestBodyDTO,
 });
 

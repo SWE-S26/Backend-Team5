@@ -151,6 +151,15 @@ export class AuthController {
 
     const { tokens, userDetails } = await this.service.logInUser(logInParams);
 
+    if (validatedRequest.data.query.client === 'Android') {
+      return this.sendGoogleTokenResponse(
+        req,
+        res,
+        tokens.accessToken,
+        tokens.refreshToken,
+      );
+    }
+
     this.sendTokenResponse(
       req,
       res,
@@ -511,14 +520,7 @@ export class AuthController {
     status = 200,
   ) {
     if (this.isCross(req)) {
-      return res.status(status).json({
-        message: 'Authenticated successfully',
-        data: {
-          accessToken,
-          refreshToken,
-          user: userCreditianls,
-        },
-      });
+      return this.sendGoogleTokenResponse(req, res, accessToken, refreshToken);
     }
 
     res.cookie('accessToken', accessToken, {
