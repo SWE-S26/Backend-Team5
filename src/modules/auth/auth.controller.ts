@@ -369,7 +369,7 @@ export class AuthController {
             SecureParams.encrypt(incompleteToken),
           );
           redirectUrl.searchParams.set('email', 'No');
-          redirectUrl.searchParams.set('displayName', 'No');
+          redirectUrl.searchParams.set('displayName', payload.displayName);
           if (payload.client) {
             redirectUrl.searchParams.set('client', payload.client);
           }
