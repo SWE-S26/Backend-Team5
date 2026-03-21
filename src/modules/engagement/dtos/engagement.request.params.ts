@@ -10,3 +10,12 @@ export const TrackIdParamDTO = extendedZod.object({
 export const PlaylistIdParamDTO = extendedZod.object({
   playlistId: extendedZod.mongoId(),
 });
+
+export const CommentIdParamDTO = extendedZod.object({
+  commentId: extendedZod.mongoId(),
+});
+
+export const TrackCommentIdParamDTO = extendedZod.object({
+  trackId: extendedZod.mongoId(),
+  commentId: extendedZod.mongoId(),
+});

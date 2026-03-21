@@ -1,6 +1,7 @@
 import { IPlaylist } from '../../../shared/models/models.playlist';
 import { ITrack } from '../../../shared/models/models.track';
 import { IUser } from '../../../shared/models/models.user';
+import { IComment } from '../../../shared/models/models.comment';
 import {
   TrackLikersResponse,
   TrackLikersResponseDTO,
@@ -18,6 +19,17 @@ import {
   PlaylistRepostStatusResponseDTO,
   UpdateRepostCaptionResponse,
   UpdateRepostCaptionResponseDTO,
+  PostCommentResponse,
+  PostCommentResponseDTO,
+  ToggleCommentLikeResponse,
+  ToggleCommentLikeResponseDTO,
+  GetTrackCommentsResponse,
+  GetTrackCommentsResponseDTO,
+  GetCommentRepliesResponse,
+  GetCommentRepliesResponseDTO,
+  DeleteCommentResponse,
+  DeleteCommentResponseDTO,
+  CommentEntryResponse,
 } from './engagement.response';
 
 export class EngagementMapper {
@@ -119,6 +131,91 @@ export class EngagementMapper {
       reposted: true,
       caption: repost.caption || undefined,
       repostedAt: repost.timestamp?.toISOString(),
+    });
+  }
+
+  static toPostCommentResponse(comment: IComment): PostCommentResponse {
+    return PostCommentResponseDTO.parse({
+      commentId: comment._id.toString(),
+      content: comment.content,
+      timestampSeconds: comment.timestampSeconds,
+      createdAt: comment.createdAt.toISOString(),
+    });
+  }
+
+  static toCommentLikeResponse(
+    comment: IComment,
+    liked: boolean,
+  ): ToggleCommentLikeResponse {
+    return ToggleCommentLikeResponseDTO.parse({
+      liked,
+      numLikes: comment.numLikes,
+    });
+  }
+
+  static toCommentEntryResponse(
+    comment: IComment & {
+      user: Pick<IUser, '_id' | 'displayName' | 'profileImg'>;
+    },
+  ): CommentEntryResponse {
+    return {
+      commentId: comment._id.toString(),
+      userId: comment.user._id.toString(),
+      displayName: comment.user.displayName,
+      avatarUrl: comment.user.profileImg?.imgLink || undefined,
+      content: comment.content,
+      timestamp: comment.timestampSeconds,
+      numLikes: comment.numLikes,
+      replyCount: comment.replyList.length,
+      isLikedByUser: false,
+      isOwnComment: false,
+      createdAt: comment.createdAt.toISOString(),
+    };
+  }
+
+  static toTrackCommentsResponse(
+    comments: Array<
+      IComment & {
+        user: Pick<IUser, '_id' | 'displayName' | 'profileImg'>;
+      }
+    >,
+    total: number,
+    offset: number,
+    limit: number,
+  ): GetTrackCommentsResponse {
+    return GetTrackCommentsResponseDTO.parse({
+      total,
+      offset,
+      limit,
+      comments: comments.map((comment) =>
+        EngagementMapper.toCommentEntryResponse(comment),
+      ),
+    });
+  }
+
+  static toCommentRepliesResponse(
+    replies: Array<
+      IComment & {
+        user: Pick<IUser, '_id' | 'displayName' | 'profileImg'>;
+      }
+    >,
+    total: number,
+    offset: number,
+    limit: number,
+  ): GetCommentRepliesResponse {
+    return GetCommentRepliesResponseDTO.parse({
+      total,
+      offset,
+      limit,
+      replies: replies.map((reply) =>
+        EngagementMapper.toCommentEntryResponse(reply),
+      ),
+    });
+  }
+
+  static toDeleteCommentResponse(): DeleteCommentResponse {
+    return DeleteCommentResponseDTO.parse({
+      message: 'Comment deleted successfully.',
     });
   }
 }

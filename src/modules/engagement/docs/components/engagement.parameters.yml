@@ -47,3 +47,17 @@ EngagementLimitParam:
     maximum: 50
     default: 20
     example: 20
+
+CommentSortByParam:
+  name: sortBy
+  in: query
+  required: false
+  description: Sort order for comments. Use 'newest' to sort by creation time (newest first), 'oldest' for creation time (oldest first), or 'trackTime' to sort by timestamp position in the track.
+  schema:
+    type: string
+    enum:
+      - newest
+      - oldest
+      - trackTime
+    default: newest
+    example: newest

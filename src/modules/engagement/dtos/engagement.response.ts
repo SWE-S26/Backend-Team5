@@ -115,8 +115,99 @@ export const PlaylistRepostStatusResponseDTO = extendedZod
     },
   });
 
+export const PostCommentResponseDTO = extendedZod
+  .object({
+    commentId: extendedZod.string(),
+    content: extendedZod.string(),
+    timestampSeconds: extendedZod.number().int().min(0),
+    createdAt: extendedZod.string(),
+  })
+  .openapi('PostCommentResponse', {
+    example: {
+      commentId: '507f1f77bcf86cd799439011',
+      content: 'Great track!',
+      timestampSeconds: 42,
+      createdAt: '2025-01-15T12:00:00Z',
+    },
+  });
+
+export const CommentEntryResponseDTO = extendedZod
+  .object({
+    commentId: extendedZod.string(),
+    userId: extendedZod.string(),
+    displayName: extendedZod.string(),
+    avatarUrl: extendedZod.string().optional(),
+    content: extendedZod.string(),
+    timestamp: extendedZod.number().min(0),
+    numLikes: extendedZod.number().int().min(0),
+    replyCount: extendedZod.number().int().min(0),
+    isLikedByUser: extendedZod.boolean(),
+    isOwnComment: extendedZod.boolean(),
+    createdAt: extendedZod.string(),
+  })
+  .openapi('CommentEntry', {
+    example: {
+      commentId: '507f1f77bcf86cd799439011',
+      userId: '507f1f77bcf86cd799439012',
+      displayName: 'Jane Smith',
+      avatarUrl: 'https://cdn.example.com/avatars/user.jpg',
+      content: 'Amazing track!',
+      timestamp: 30,
+      numLikes: 5,
+      replyCount: 2,
+      isLikedByUser: false,
+      isOwnComment: false,
+      createdAt: '2025-01-15T12:00:00Z',
+    },
+  });
+
+export const GetTrackCommentsResponseDTO = extendedZod
+  .object({
+    total: extendedZod.number().int().min(0),
+    offset: extendedZod.number().int().min(1),
+    limit: extendedZod.number().int().min(1),
+    comments: extendedZod.array(CommentEntryResponseDTO),
+  })
+  .openapi('CommentListResponse', {
+    example: {
+      total: 50,
+      offset: 1,
+      limit: 20,
+      comments: [],
+    },
+  });
+
+export const GetCommentRepliesResponseDTO = extendedZod
+  .object({
+    total: extendedZod.number().int().min(0),
+    offset: extendedZod.number().int().min(1),
+    limit: extendedZod.number().int().min(1),
+    replies: extendedZod.array(CommentEntryResponseDTO),
+  })
+  .openapi('ReplyListResponse', {
+    example: {
+      total: 10,
+      offset: 1,
+      limit: 20,
+      replies: [],
+    },
+  });
+
+export const DeleteCommentResponseDTO = extendedZod
+  .object({
+    message: extendedZod.string(),
+  })
+  .openapi('DeleteCommentResponse', {
+    example: {
+      message: 'Comment deleted successfully.',
+    },
+  });
+
 export type ToggleLikeResponse = z.infer<typeof ToggleLikeResponseDTO>;
 export type ToggleRepostResponse = z.infer<typeof ToggleRepostResponseDTO>;
+export type ToggleCommentLikeResponse = z.infer<
+  typeof ToggleCommentLikeResponseDTO
+>;
 export type TogglePlaylistLikeResponse = z.infer<
   typeof TogglePlaylistLikeResponseDTO
 >;
@@ -133,3 +224,12 @@ export type PlaylistRepostStatusResponse = z.infer<
 export type UpdateRepostCaptionResponse = z.infer<
   typeof UpdateRepostCaptionResponseDTO
 >;
+export type PostCommentResponse = z.infer<typeof PostCommentResponseDTO>;
+export type CommentEntryResponse = z.infer<typeof CommentEntryResponseDTO>;
+export type GetTrackCommentsResponse = z.infer<
+  typeof GetTrackCommentsResponseDTO
+>;
+export type GetCommentRepliesResponse = z.infer<
+  typeof GetCommentRepliesResponseDTO
+>;
+export type DeleteCommentResponse = z.infer<typeof DeleteCommentResponseDTO>;

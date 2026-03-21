@@ -1,6 +1,7 @@
 import { Schema, Types, model } from 'mongoose';
 
 export type IComment = {
+  _id: Types.ObjectId;
   userId: Types.ObjectId;
   trackId: Types.ObjectId;
   content: string;
@@ -8,6 +9,8 @@ export type IComment = {
   replyList: Types.ObjectId[];
   timestampSeconds: number;
   likedList: Types.ObjectId[];
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 const commentSchema = new Schema(

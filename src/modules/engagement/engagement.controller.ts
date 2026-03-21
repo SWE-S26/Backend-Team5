@@ -14,8 +14,12 @@ import {
   UpdatePlaylistRepostRequestDTO,
   GetTrackRepostersRequestDTO,
   GetPlaylistRepostersRequestDTO,
+  PostTrackCommentRequestDTO,
+  ToggleCommentLikeRequestDTO,
+  GetTrackCommentsRequestDTO,
+  GetCommentRepliesRequestDTO,
+  DeleteTrackCommentRequestDTO,
 } from './dtos/engagement.request';
-import { BadRequestError } from '../../shared/errors/responseErrors';
 
 export class EngagementController {
   constructor(private readonly service: EngagementService) {}
@@ -211,6 +215,87 @@ export class EngagementController {
       offset,
       limit,
     );
+    res.json(result);
+  }
+
+  async postTrackComment(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(PostTrackCommentRequestDTO, req);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { trackId } = parsed.data!.params;
+    const { content, timestamp, parentCommentId } = parsed.data!.body;
+    const userId = req.userInfo!._id;
+
+    const result = await this.service.postTrackComment(
+      trackId,
+      userId,
+      content,
+      timestamp,
+      parentCommentId,
+    );
+    res.status(201).json(result);
+  }
+
+  async toggleCommentLike(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(ToggleCommentLikeRequestDTO, req);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { commentId } = parsed.data!.params;
+    const userId = req.userInfo!._id;
+
+    const result = await this.service.toggleCommentLike(commentId, userId);
+    res.json(result);
+  }
+
+  async getTrackComments(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetTrackCommentsRequestDTO, req);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { trackId } = parsed.data!.params;
+    const { offset, limit, sortBy } = parsed.data!.query;
+
+    const result = await this.service.getTrackComments(
+      trackId,
+      offset,
+      limit,
+      sortBy,
+    );
+    res.json(result);
+  }
+
+  async getCommentReplies(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetCommentRepliesRequestDTO, req);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { commentId } = parsed.data!.params;
+    const { offset, limit } = parsed.data!.query;
+
+    const result = await this.service.getCommentReplies(
+      commentId,
+      offset,
+      limit,
+    );
+    res.json(result);
+  }
+
+  async deleteTrackComment(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(DeleteTrackCommentRequestDTO, req);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { commentId } = parsed.data!.params;
+    const userId = req.userInfo!._id;
+
+    const result = await this.service.deleteTrackComment(commentId, userId);
     res.json(result);
   }
 }
