@@ -6,20 +6,33 @@ import {
 } from './dtos/profile.request.body';
 
 export class ProfileRepository {
-  async findById(id: string): Promise<IUser | null> {
+  async getProfile(id: string): Promise<IUser | null> {
     return await User.findById(id).lean();
   }
 
-  async update(
+  async updateProfile(
     id: string,
     data: Partial<UpdateProfileRequestBodyDTOType>,
   ): Promise<IUser | null> {
-    const { links, bannerLinks, ...otherFields } = data;
+    const {
+      links,
+      bannerLinks,
+      profileImgLink,
+      bannerImgLink,
+      ...otherFields
+    } = data;
     const updateData: any = { ...otherFields };
 
-    if (links) updateData.links = links;
-    if (bannerLinks) updateData.bannerLinks = bannerLinks;
+    if (links !== undefined) updateData.links = links;
+    if (bannerLinks !== undefined) updateData.bannerLinks = bannerLinks;
 
+    if (profileImgLink !== undefined) {
+      updateData['profileImg.imgLink'] = profileImgLink;
+    }
+
+    if (bannerImgLink !== undefined) {
+      updateData['bannerImg.imgLink'] = bannerImgLink;
+    }
     return await User.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
