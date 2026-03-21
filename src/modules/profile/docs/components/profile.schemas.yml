@@ -183,7 +183,7 @@ ContentSettingsUpdate:
 PrivacySettings:
   type: object
   properties:
-    accountIsprivate:
+    accountIsPrivate:
       type: boolean
     allowMessagesAnyone:
       type: boolean

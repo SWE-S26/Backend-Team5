@@ -15,6 +15,7 @@ export type ISettings = {
     customAuthorName: string;
   };
   privacy: {
+    accountIsPrivate: boolean;
     allowMessagesAnyone: boolean;
     showActivityDiscovery: boolean;
     showFirstTopFan: boolean;
@@ -91,7 +92,7 @@ const contentSettingsSchema = new Schema(
 
 const privacySettingsSchema = new Schema(
   {
-    accountIsprivate: {
+    accountIsPrivate: {
       type: Boolean,
       default: false,
     },
