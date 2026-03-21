@@ -10,7 +10,7 @@ import {
 export class ProfileController {
   constructor(private readonly service: ProfileService) {}
 
-  async findOne(req: Request, res: Response): Promise<void> {
+  async getProfile(req: Request, res: Response): Promise<void> {
     try {
       const validatedRequest = parseRequest(ProfileIdParamDTO, req);
       if (!validatedRequest.success) {
@@ -18,7 +18,7 @@ export class ProfileController {
       }
 
       const userId = validatedRequest.data!.params.id;
-      const profile = await this.service.findById(userId);
+      const profile = await this.service.getProfile(userId);
 
       if (!profile) {
         res.status(404).json({ message: 'User not found' });
@@ -31,7 +31,7 @@ export class ProfileController {
     }
   }
 
-  async update(req: Request, res: Response): Promise<void> {
+  async updateProfile(req: Request, res: Response): Promise<void> {
     try {
       const userId = req.userInfo!._id;
       const validatedRequest = parseRequest(UpdateProfileRequestDTO, req);
@@ -40,7 +40,7 @@ export class ProfileController {
         throw validatedRequest.error;
       }
 
-      const updated = await this.service.update(
+      const updated = await this.service.updateProfile(
         userId,
         validatedRequest.data.body,
       );

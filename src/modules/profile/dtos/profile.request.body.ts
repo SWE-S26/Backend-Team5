@@ -2,7 +2,6 @@ import extendedZod from '../../../shared/docs/dtoDocumenter';
 import z from 'zod';
 
 export const LinkDTO = extendedZod.object({
-  linkId: extendedZod.mongoId().optional(),
   name: extendedZod.string().nullable().optional(),
   link: extendedZod.string().url(),
 });
