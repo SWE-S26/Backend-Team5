@@ -104,10 +104,6 @@ export class AuthController {
       logger.error(`Error sending verification email: ${error}`);
       throw new Error('Failed to send verification email');
     }
-
-    res.json({
-      message: 'Email Resent successfully',
-    });
   }
 
   async resendVerificationEmail(req: Request, res: Response): Promise<void> {
