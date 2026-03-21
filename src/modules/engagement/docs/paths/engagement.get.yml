@@ -72,6 +72,30 @@
         $ref: '#/components/responses/ServerError'
     security: []
 
+/api/public/engagement/playlists/v1/{playlistId}/reposts:
+  get:
+    tags:
+      - Reposts
+    summary: Get users who reposted a playlist.
+    description: Returns a paginated list of users who reposted the given playlist. Public endpoint — no authentication required.
+    operationId: getPlaylistReposters
+    parameters:
+      - $ref: '#/components/parameters/PlaylistIdParam'
+      - $ref: '#/components/parameters/EngagementOffsetParam'
+      - $ref: '#/components/parameters/EngagementLimitParam'
+    responses:
+      200:
+        description: Paginated list of users who reposted the playlist.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserEngagementListResponse'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
+    security: []
+
 /api/public/engagement/tracks/v1/{trackId}/comments:
   get:
     tags:

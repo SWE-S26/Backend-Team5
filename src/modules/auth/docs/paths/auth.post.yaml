@@ -4,7 +4,11 @@
     tags:
       - Authentication
     summary: Authenticate user and return access token
-    description: Authenticates user credentials and, upon success, generates a JWT access token stored in a secure, HTTP-only cookie. The cookie is sent automatically with each HTTPS request, preventing access from client-side scripts and enhancing protection against XSS attacks.
+    description: |
+      Authenticates user credentials and, upon success, generates a JWT access token stored in a secure, HTTP-only cookie. The cookie is sent automatically with each HTTPS request, preventing access from client-side scripts and enhancing protection against XSS attacks.
+      For Android clients, pass `?client=Android` as a query parameter.
+      Instead of cookies, the server redirects to:
+      `{HOST_URL}/cross-callback?accessToken=...&refreshToken=...`
     requestBody:
       required: true
       content:
@@ -55,6 +59,8 @@
                         quota:
                           unlimited: false
                           usedSeconds: 0
+                      accessToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.access123'
+                      refreshToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.refresh456'
               mobile_client:
                 summary: Mobile — tokens delivered in body
                 value:
@@ -82,7 +88,7 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/auth/v1/signup:
+/api/auth/v1/sign-up:
   post:
     tags:
       - Authentication
@@ -138,19 +144,11 @@
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
                 message:
                   type: string
-                  example: 'Signup Successful'
-                data:
-                  type: object
-                  nullable: true
+                  example: 'User Signed Up Sucessfully'
             example:
-              success: true
-              message: 'Signup Successful'
-              data: null
+              message: 'User Signed Up Sucessfully'
       401:
         $ref: '#/components/responses/Unauthorized'
       404:
@@ -158,7 +156,7 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/auth/v1/forget-password:
+/api/auth/v1/forgot-password:
   post:
     tags:
       - Authentication
@@ -188,19 +186,11 @@
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
                 message:
                   type: string
                   example: 'Password reset email sent successfully'
-                data:
-                  type: object
-                  nullable: true
             example:
-              success: true
               message: 'Password reset email sent successfully'
-              data: null
       401:
         $ref: '#/components/responses/Unauthorized'
       404:
@@ -256,6 +246,12 @@
               success: true
               message: 'Password reset successfully'
               data: null
+      400:
+        description: Token valid but password reset failed
+        content:
+          application/json:
+            example:
+              message: 'Failed to reset password'
       401:
         $ref: '#/components/responses/Unauthorized'
       404:
@@ -296,9 +292,6 @@
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
                 message:
                   type: string
                   example: 'Email existence check completed successfully'
@@ -310,10 +303,50 @@
                       description: Indicates whether the email exists in the database
                       example: true
             example:
-              success: true
-              message: 'Email existence check completed successfully'
+              message: 'Email Checked Successfully'
               data:
                 exists: true
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
+
+/api/auth/v1/resend-verification-email:
+  post:
+    tags:
+      - Authentication
+    summary: Resend email verification link
+    description: |
+      Resends the email verification link to the user's registered email address.
+      Use this when the original verification email was lost or expired.
+
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - email
+            properties:
+              email:
+                type: string
+                format: email
+                description: Email address to check in the system
+                example: user@example.com
+
+    responses:
+      200:
+        description: Email existence check completed successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  example: 'Email Resent successfully!'
+            example:
+              message: 'Email existence check completed successfully'
       404:
         $ref: '#/components/responses/NotFound'
       500:
@@ -325,16 +358,19 @@
       - Authentication
     summary: Verify Google sign-in code and authenticate user
     description: |
-      Completes sign-in for an existing user who authenticated via Google.
+      Completes sign-in for an existing user who authenticated via Google for the first time.
 
-      After the Google callback step, a 6-digit verification code is sent to the user's email.
-      The client must send the `pendingToken` along with the code.
+      After the Google callback redirects to `/verify-code`, a 6-digit code is sent to the user's email.
+      Read `pendingToken` from the redirect URL's query string, collect the code from the user,
+      then POST both here.
 
-      The code is one-time use and expires in 5 minutes.
+      The code is one-time use and expires in **5 minutes**.
 
-      On success:
-      - Web clients receive tokens via HTTP-only cookies
-      - Mobile clients receive tokens in the response body
+      On success, the response differs by client type:
+      - **Web clients** — tokens are set as HTTP-only cookies. The response body contains only user details.
+      - **Mobile clients (web-view)** — tokens are included in the response body in addition to being set
+        as cookies, since web-views cannot access HTTP-only cookies directly. Read them from the body
+        and store them in your secure store.
 
     requestBody:
       required: true
@@ -371,7 +407,7 @@
           application/json:
             examples:
               web_client:
-                summary: Web — tokens via cookies
+                summary: Web — tokens via cookies ignore tokens in body
                 value:
                   message: 'Authenticated successfully'
                   data:
@@ -388,6 +424,8 @@
                         quota:
                           unlimited: false
                           usedSeconds: 0
+                      accessToken: 'eyJhbGciOi...'
+                      refreshToken: 'eyJhbGciOi...'
 
               mobile_client:
                 summary: Mobile — tokens in body
@@ -478,7 +516,7 @@
           application/json:
             examples:
               web_client:
-                summary: Web — tokens via cookies
+                summary: Web — tokens via cookies Ignore tokens in body
                 value:
                   message: 'Authenticated successfully'
                   data:
@@ -495,6 +533,8 @@
                         quota:
                           unlimited: false
                           usedSeconds: 0
+                      accessToken: 'eyJhbGciOi...'
+                      refreshToken: 'eyJhbGciOi...'
 
               mobile_client:
                 summary: Mobile — tokens in body

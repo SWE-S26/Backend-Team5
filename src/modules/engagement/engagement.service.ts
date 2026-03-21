@@ -367,7 +367,7 @@ export class EngagementService {
       userId,
       trackId,
       content,
-      parentCommentId ? 0 : timestampSeconds ?? 0,
+      parentCommentId ? 0 : (timestampSeconds ?? 0),
     );
 
     await this.repository.addCommentToTrack(trackId, comment._id.toString());
@@ -504,7 +504,9 @@ export class EngagementService {
     return EngagementMapper.toDeleteCommentResponse();
   }
 
-  private async collectCommentTreeIds(rootCommentId: string): Promise<string[]> {
+  private async collectCommentTreeIds(
+    rootCommentId: string,
+  ): Promise<string[]> {
     const visited = new Set<string>();
     const queue: string[] = [rootCommentId];
 

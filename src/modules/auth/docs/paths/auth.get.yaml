@@ -26,7 +26,7 @@
                   type: string
                   example: 'User Verified successfully'
             example:
-              message: 'User Verified successfully'
+              message: 'Email Verified Successfully'
       401:
         $ref: '#/components/responses/Unauthorized'
       404:
@@ -61,19 +61,11 @@
               properties:
                 message:
                   type: string
-                  example: 'QR code generated successfully'
-                data:
-                  type: object
-                  properties:
-                    qrCode:
-                      type: string
-                      description: Encoded QR code value used for cross-device authentication
-                      example: 'qr_abc123xyz'
-                    expiresIn:
-                      type: integer
-                      description: Expiration time of the QR code in seconds
-                      example: 120
-
+                  example: 'QR Code generated successfully'
+                pendingToken:
+                  type: string
+                  description: Encoded QR code value used for cross-device authentication
+                  example: 'qr_abc123xyz'
       '500':
         $ref: '#/components/responses/ServerError'
 /api/auth/v1/logout:
@@ -90,18 +82,18 @@
         description: Logged out successfully
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                message:
-                  type: string
-                  example: 'Logged out successfully'
-                data:
-                  type: object
-                  nullable: true
-            example:
-              message: 'Logged out successfully'
-              data: null
+            examples:
+              web_client:
+                summary: Web — cookies cleared
+                value:
+                  message: 'User Logged Out Successfully'
+              mobile_client:
+                summary: Mobile — null tokens returned in body
+                value:
+                  message: 'User Logged Out Sucessfully'
+                  data:
+                    acessToken: null
+                    refreshToken: null
       401:
         $ref: '#/components/responses/Unauthorized'
       500:
@@ -140,6 +132,8 @@
                         quota:
                           unlimited: false
                           usedSeconds: 0
+                      accessToken: 'eyJhbGci...'
+                      refreshToken: 'eyJhbGci...'
               mobile_client:
                 summary: Mobile — tokens delivered in body
                 value:
@@ -192,141 +186,129 @@
       - Authentication
     summary: Google OAuth callback
     description: |
-      This endpoint is called automatically by Google after the user grants consent.
-      Do not call this endpoint directly.
+      Called automatically by Google after the user grants consent.
+      **Do not call this endpoint directly — Google calls it internally as part of the OAuth flow.**
 
-      Returns one of two shapes depending on whether the user exists in the system:
+      This endpoint always responds with an **HTTP redirect** (302). There is no JSON response body.
+      The redirect destination and its query parameters differ based on the user's state:
 
-      - **new user** — returns `status: incomplete` with an `incompleteToken`. 
-        Frontend must collect `dateOfBirth` and `gender`, then POST to `/google/complete`.
+      ---
 
-      - **existing user** — returns `status: verify` with a `pendingToken`.
-        A 6-digit verification code is sent to the user's email.
-        Frontend must POST that code to `/google/verify-code`.
+      ### Case 1 — New User (`/oauth-continue-details`)
+      The user has never signed in before and has no account.
 
-      - **user who used sign with google before** -returns 'status:returning_google' 
-        with an access token and refresh token, and the frontend should log them in directly without asking for verification code or profile completion.
+      **Redirects to:** `{HOST_URL}/oauth-continue-details`
+
+      **Query parameters appended to the redirect URL:**
+      | Parameter | Description |
+      |---|---|
+      | `incompleteToken` | Short-lived JWT (15 min) carrying `googleId`, `email`, `displayName`. Must be sent back to `/google/complete`. |
+      | `email` | The user's Google email — provided for UI pre-fill convenience. |
+      | `displayName` | The user's Google display name — provided for UI pre-fill convenience. |
+
+      **Example redirect URL:**
+      https://beatza.me/oauth-continue-details?incompleteToken=eyJhbGci...&email=user@example.com&displayName=John%20Doe
+
+      **What to do:** Collect `dateOfBirth` and `gender` from the user, then POST all three fields
+      (including the `incompleteToken`) to `/api/auth/v1/google/complete`.
+
+      ---
+
+      ### Case 2 — Existing User, First Google Sign-In (`/verify-code`)
+      The user has an account created via email/password and is signing in with Google for the first time.
+      A 6-digit verification code is sent to their email.
+
+      **Redirects to:** `{HOST_URL}/verify-code`
+
+      **Query parameters appended to the redirect URL:**
+      | Parameter | Description |
+      |---|---|
+      | `pendingToken` | Short-lived JWT (5 min) carrying `userId`, `role`, `subscription`. Must be sent back to `/google/verify-code` alongside the emailed code. |
+
+      **Example redirect URL:**
+      https://beatza.me/verify-code?pendingToken=eyJhbGci...
+
+      **What to do:** Ask the user for the 6-digit code from their email, then POST `{ pendingToken, code }`
+      to `/api/auth/v1/google/verify-code`.
+
+      ---
+
+      ### Case 3 — Returning Google User (`/home`)
+      The user has previously signed in with Google and their account is already linked.
+      No additional steps are needed.
+
+      In case of anriods
+      Redirects to `{HOST_URL}/cross-callback`.
+
+      For **Android clients** the redirect URL also includes:
+      | Parameter | Description |
+      |---|---|
+      | `accessToken` | Short-lived access JWT for mobile web-view use |
+      | `refreshToken` | Long-lived refresh JWT for mobile web-view use |
+
+      **Redirects to:** `{HOST_URL}/home`
+
+      **Query parameters appended to the redirect URL:**
+      | Parameter | Description |
+      |---|---|
+      | `accessToken` | Short-lived access JWT. Intended for **mobile clients using a web-view** that cannot read HTTP-only cookies. Web clients should ignore this and rely on the cookies instead. |
+      | `refreshToken` | Long-lived refresh JWT. Same note as above — for mobile web-view use only. |
+
+      **Example redirect URL:**
+      https://beatza.me/home?accessToken=eyJhbGci...&refreshToken=eyJhbGci...
+
+      In addition to the query parameters, two **HTTP-only cookies** are set on the response:
+      | Cookie | Max-Age |
+      |---|---|
+      | `accessToken` | 1 hour |
+      | `refreshToken` | 7 days |
+
+      **What to do:**
+      - **Web clients** — read tokens from the HTTP-only cookies (browser handles this automatically). Ignore the query parameters.
+      - **Mobile clients (web-view)** — read `accessToken` and `refreshToken` from the redirect URL's query string and store them in your secure store. Discard them from the URL immediately after reading.
+
+      > **Note:** The redirect does not carry user details beyond the tokens. If you need full user details
+      > on first load (e.g. display name, profile image, subscription), call
+      > `GET /api/auth/v1/refresh-token` after authentication — it acts as a cold-start endpoint
+      > that returns both fresh tokens and the user's profile details.
+
     parameters:
       - in: query
         name: code
         required: true
         schema:
           type: string
-        description: Authorization code issued by Google — sent automatically, not by the client
+        description: Authorization code issued by Google — appended automatically by Google, not by the client.
       - in: query
         name: scope
         required: false
         schema:
           type: string
-        description: Scopes granted by the user — sent automatically by Google
+        description: Scopes granted by the user — appended automatically by Google.
+
     responses:
-      200:
-        description: Google authentication successful
-        content:
-          application/json:
+      302:
+        description: |
+          Redirect issued. Destination depends on the user's state — see endpoint description above.
+        headers:
+          Location:
             schema:
-              oneOf:
-                - title: New User
-                  type: object
-                  properties:
-                    status:
-                      type: string
-                      enum: [incomplete]
-                    incompleteToken:
-                      type: string
-                      description: Short-lived JWT (15min) carrying googleId, email, displayName. Send back in /google/complete.
-                    email:
-                      type: string
-                    displayName:
-                      type: string
-                  required: [status, incompleteToken, email, displayName]
-                - title: Existing User
-                  type: object
-                  properties:
-                    status:
-                      type: string
-                      enum: [verify]
-                    pendingToken:
-                      type: string
-                      description: Short-lived JWT (5min) carrying userId, role, subscription. Send back in /google/verify-code alongside the emailed code.
-                  required: [status, pendingToken]
-                - type: object
-                  properties:
-                    status:
-                      type: string
-                      enum: [returning_google]
-                    message:
-                      type: string
-                    data:
-                      type: object
-                      properties:
-                        user:
-                          $ref: '#/components/schemas/UserCredientialsResponseDto'
-                        accessToken:
-                          type: string
-                        refreshToken:
-                          type: string
-                  required: [status, message, data]
-
-            examples:
-              new_user:
-                summary: New user — needs profile completion
-                value:
-                  status: incomplete
-                  incompleteToken: 'eyJhbGciOi...'
-                  email: 'user@example.com'
-                  displayName: 'John Doe'
-
-              existing_user:
-                summary: Existing user — verification required
-                value:
-                  status: verify
-                  pendingToken: 'eyJhbGciOi...'
-
-              returning_google_web:
-                summary: Returning Google user (web)
-                value:
-                  status: returning_google
-                  message: 'Authenticated successfully'
-                  data:
-                    user:
-                      id: '69b801097eabbb6c286e6455'
-                      displayName: 'Naaauuuh This is too much'
-                      role: 'Listener/Artist'
-                      profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
-                      profileImg:
-                        imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
-                        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi'
-                      subscription:
-                        subscriptionType: 'free'
-                        quota:
-                          unlimited: false
-                          usedSeconds: 0
-
-              returning_google_mobile:
-                summary: Returning Google user (mobile)
-                value:
-                  status: returning_google
-                  message: 'Authenticated successfully'
-                  data:
-                    user:
-                      id: '69b801097eabbb6c286e6455'
-                      displayName: 'Naaauuuh This is too much'
-                      role: 'Listener/Artist'
-                      profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
-                      profileImg:
-                        imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
-                        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi'
-                      subscription:
-                        subscriptionType: 'free'
-                        quota:
-                          unlimited: false
-                          usedSeconds: 0
-                    accessToken: 'eyJhbGciOi...'
-                    refreshToken: 'eyJhbGciOi...'
+              type: string
+            description: |
+              One of:
+              - `{HOST_URL}/oauth-continue-details?incompleteToken=...&email=...&displayName=...`
+              - `{HOST_URL}/verify-code?pendingToken=...`
+              - `{HOST_URL}/home?accessToken=...&refreshToken=...`
+          Set-Cookie:
+            schema:
+              type: string
+            description: |
+              Only set in Case 3 (returning Google user):
+              - `accessToken` — HTTP-only, Secure, SameSite=Strict, Max-Age=3600
+              - `refreshToken` — HTTP-only, Secure, SameSite=Strict, Max-Age=604800
       400:
         $ref: '#/components/responses/BadRequest'
-      401:
-        $ref: '#/components/responses/Unauthorized'
+      403:
+        $ref: '#/components/responses/Forbidden'
       500:
         $ref: '#/components/responses/ServerError'

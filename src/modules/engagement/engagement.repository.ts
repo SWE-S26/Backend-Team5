@@ -408,10 +408,7 @@ export class EngagementRepository {
     return Comment.findById(commentId).select('likedList numLikes');
   }
 
-  async addLikeToComment(
-    commentId: string,
-    userId: string,
-  ): Promise<IComment> {
+  async addLikeToComment(commentId: string, userId: string): Promise<IComment> {
     const userObjectId = new Types.ObjectId(userId);
     return Comment.findByIdAndUpdate(
       commentId,
@@ -471,9 +468,7 @@ export class EngagementRepository {
     });
   }
 
-  async findParentCommentByReplyId(
-    replyId: string,
-  ): Promise<IComment | null> {
+  async findParentCommentByReplyId(replyId: string): Promise<IComment | null> {
     const replyObjectId = new Types.ObjectId(replyId);
     return Comment.findOne({ replyList: replyObjectId });
   }

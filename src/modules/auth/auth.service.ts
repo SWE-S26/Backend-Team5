@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import {
+  ForbiddenError,
   GoneError,
   NotFoundError,
   ResourceAlreadyExists,
@@ -85,6 +86,14 @@ export class AuthService {
     } else {
       return true;
     }
+  }
+
+  async findByEmail(email: string) {
+    const user = await this.authRepository.findByEmail(email);
+    if (!user) {
+      throw NotFoundError('User not found');
+    }
+    return AuthMapper.toUserCredientialsResponse(user);
   }
 
   async registerNewUser(newUserDTO: newUserDTO): Promise<Boolean> {
@@ -203,7 +212,7 @@ export class AuthService {
     }
 
     if (searchUser.ban) {
-      throw UnauthorizedError(
+      throw ForbiddenError(
         `Your account has been banned. Due to ${searchUser.banReason} Please contact support.`,
       );
     }
@@ -252,9 +261,7 @@ export class AuthService {
     }
   }
 
-  async initiateGoogleSignIn(
-    data: InitiateGoogleSignInDTO,
-  ): Promise<{ pendingToken: string }> {
+  async initiateGoogleSignIn(data: InitiateGoogleSignInDTO): Promise<string> {
     const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits
     const TTL_SECONDS = 300; // 5 minutes
 
@@ -273,13 +280,13 @@ export class AuthService {
       googleId: data.googleId,
     });
 
-    return { pendingToken };
+    return pendingToken;
   }
 
   async verifyGoogleSignInCode(
     pendingToken: string,
     code: string,
-  ): Promise<LoginSession> {
+  ): Promise<AuthTokens> {
     const payload = this.jwtService.verifyPending(pendingToken);
 
     const storedCode = await redisCacher.get<string>(
@@ -300,10 +307,7 @@ export class AuthService {
       payload.subscription,
     );
 
-    const user = await this.authRepository.findById(payload.userId);
-
-    const userDetails = AuthMapper.toUserCredientialsResponse(user!);
-    return { tokens, userDetails };
+    return tokens;
   }
 
   issueTokenPair(
@@ -327,7 +331,7 @@ export class AuthService {
 
   async completeGoogleSignUp(
     body: GoogleCompleteSignUpBody,
-  ): Promise<{ tokens: AuthTokens; userDetails: LoginResponse }> {
+  ): Promise<AuthTokens> {
     const payload = this.jwtService.verifyIncomplete(body.incompleteToken);
 
     // ! Race condition guard: user registered between the two steps
@@ -352,10 +356,7 @@ export class AuthService {
       newUser.subscription,
     );
 
-    return {
-      tokens,
-      userDetails: AuthMapper.toUserCredientialsResponse(newUser),
-    };
+    return tokens;
   }
 
   createQRCodeForDesktopLogin = async (): Promise<{
@@ -388,10 +389,9 @@ export class AuthService {
     }
 
     if (session.status === 'pending') {
-      return null; // not verified yet, keep polling
+      return null;
     }
 
-    // Verified — consume the session and issue tokens
     await redisCacher.delete(`${QR_PREFIX}${qrCode}`);
 
     const tokens = this.issueTokenPair(
@@ -425,7 +425,7 @@ export class AuthService {
     }
 
     if (session.status === 'verified') {
-      return; // idempotent — already approved, do nothing
+      return;
     }
 
     const updatedSession: QRSession = {
@@ -435,7 +435,6 @@ export class AuthService {
       subscription,
     };
 
-    // Extend TTL to give the desktop time to poll and collect the token
     await redisCacher.set<QRSession>(
       `${QR_PREFIX}${qrCode}`,
       updatedSession,
