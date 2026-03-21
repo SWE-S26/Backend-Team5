@@ -133,7 +133,7 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/engagement/tracks/v1/{trackId}/comments/{commentId}/like:
+/api/engagement/comments/v1/{commentId}/like:
   post:
     tags:
       - Comments
@@ -141,7 +141,6 @@
     description: Likes a comment if the user has not liked it yet. If the user already liked it, the like is removed (unlike). Updates the numLikes count on the comment atomically.
     operationId: toggleCommentLike
     parameters:
-      - $ref: '#/components/parameters/TrackIdParam'
       - $ref: '#/components/parameters/CommentIdParam'
     responses:
       200:

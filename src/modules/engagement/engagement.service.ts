@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import {
   BadRequestError,
   NotFoundError,
+  ForbiddenError,
 } from '../../shared/errors/responseErrors';
 import { EngagementRepository } from './engagement.repository';
 import { EngagementMapper } from './dtos/engagement.mapper';
@@ -14,6 +15,11 @@ import {
   TrackRepostStatusResponse,
   PlaylistRepostStatusResponse,
   UpdateRepostCaptionResponse,
+  PostCommentResponse,
+  ToggleCommentLikeResponse,
+  GetTrackCommentsResponse,
+  GetCommentRepliesResponse,
+  DeleteCommentResponse,
 } from './dtos/engagement.response';
 
 // TODO: notifications will be added later after the notification module is made
@@ -333,5 +339,198 @@ export class EngagementService {
       parsedPage,
       parsedLimit,
     );
+  }
+
+  async postTrackComment(
+    trackId: string,
+    userId: string,
+    content: string,
+    timestampSeconds?: number,
+    parentCommentId?: string,
+  ): Promise<PostCommentResponse> {
+    const track = await this.repository.findTrackById(trackId);
+
+    if (!track) NotFoundError('Track not found');
+
+    if (parentCommentId) {
+      const parentComment =
+        await this.repository.findCommentById(parentCommentId);
+      if (!parentComment) {
+        BadRequestError('Parent comment not found');
+      }
+      if (parentComment!.trackId.toString() !== trackId) {
+        BadRequestError('Parent comment does not belong to this track');
+      }
+    }
+
+    const comment = await this.repository.createComment(
+      userId,
+      trackId,
+      content,
+      parentCommentId ? 0 : (timestampSeconds ?? 0),
+    );
+
+    await this.repository.addCommentToTrack(trackId, comment._id.toString());
+
+    if (parentCommentId) {
+      await this.repository.addReplyToComment(
+        parentCommentId,
+        comment._id.toString(),
+      );
+    }
+
+    return EngagementMapper.toPostCommentResponse(comment);
+  }
+
+  async toggleCommentLike(
+    commentId: string,
+    userId: string,
+  ): Promise<ToggleCommentLikeResponse> {
+    const comment = await this.repository.findCommentByIdWithLikes(commentId);
+
+    if (!comment) NotFoundError('Comment not found');
+
+    const userObjectId = new Types.ObjectId(userId);
+    const alreadyLiked = comment!.likedList.some((id) =>
+      id.equals(userObjectId),
+    );
+
+    if (alreadyLiked) {
+      const updated = await this.repository.removeLikeFromComment(
+        commentId,
+        userId,
+      );
+      return EngagementMapper.toCommentLikeResponse(updated, false);
+    }
+
+    const updated = await this.repository.addLikeToComment(commentId, userId);
+    return EngagementMapper.toCommentLikeResponse(updated, true);
+  }
+
+  async getTrackComments(
+    trackId: string,
+    page = '1',
+    limit = '20',
+    sortBy: 'newest' | 'oldest' | 'trackTime' = 'newest',
+  ): Promise<GetTrackCommentsResponse> {
+    const track = await this.repository.findTrackById(trackId);
+
+    if (!track) NotFoundError('Track not found');
+
+    const parsedPage = Math.max(1, Number.parseInt(page, 10) || 1);
+    const parsedLimit = Math.max(1, Number.parseInt(limit, 10) || 20);
+
+    const { comments, total } = await this.repository.getTrackComments(
+      trackId,
+      parsedPage,
+      parsedLimit,
+      sortBy,
+    );
+
+    return EngagementMapper.toTrackCommentsResponse(
+      comments,
+      total,
+      parsedPage,
+      parsedLimit,
+    );
+  }
+
+  async getCommentReplies(
+    commentId: string,
+    page = '1',
+    limit = '20',
+  ): Promise<GetCommentRepliesResponse> {
+    const comment = await this.repository.findCommentById(commentId);
+
+    if (!comment) NotFoundError('Comment not found');
+
+    const parsedPage = Math.max(1, Number.parseInt(page, 10) || 1);
+    const parsedLimit = Math.max(1, Number.parseInt(limit, 10) || 20);
+
+    const { replies, total } = await this.repository.getCommentReplies(
+      commentId,
+      parsedPage,
+      parsedLimit,
+    );
+
+    return EngagementMapper.toCommentRepliesResponse(
+      replies,
+      total,
+      parsedPage,
+      parsedLimit,
+    );
+  }
+
+  async deleteTrackComment(
+    commentId: string,
+    userId: string,
+  ): Promise<DeleteCommentResponse> {
+    const comment = await this.repository.findCommentById(commentId);
+
+    if (!comment) NotFoundError('Comment not found');
+
+    const existingComment = comment as NonNullable<typeof comment>;
+    const trackId = existingComment.trackId.toString();
+
+    const track = await this.repository.findTrackByIdForComments(trackId);
+
+    if (!track) NotFoundError('Track not found');
+
+    const existingTrack = track as NonNullable<typeof track>;
+
+    const isCommentAuthor = existingComment.userId.toString() === userId;
+    const isTrackOwner = existingTrack.posterId.toString() === userId;
+
+    if (!isCommentAuthor && !isTrackOwner) {
+      ForbiddenError('You are not allowed to delete this comment');
+    }
+
+    const [parentComment, commentTreeIds] = await Promise.all([
+      this.repository.findParentCommentByReplyId(commentId),
+      this.collectCommentTreeIds(commentId),
+    ]);
+
+    await Promise.all([
+      this.repository.removeCommentsFromTrack(trackId, commentTreeIds),
+      this.repository.deleteComments(commentTreeIds),
+      parentComment
+        ? this.repository.removeCommentFromParent(
+            parentComment._id.toString(),
+            commentId,
+          )
+        : Promise.resolve(),
+    ]);
+
+    return EngagementMapper.toDeleteCommentResponse();
+  }
+
+  private async collectCommentTreeIds(
+    rootCommentId: string,
+  ): Promise<string[]> {
+    const visited = new Set<string>();
+    const queue: string[] = [rootCommentId];
+
+    while (queue.length > 0) {
+      const currentBatch = queue.splice(0, 100);
+      const comments = await this.repository.findCommentsByIds(currentBatch);
+
+      for (const comment of comments) {
+        const commentId = comment._id.toString();
+        if (visited.has(commentId)) {
+          continue;
+        }
+
+        visited.add(commentId);
+
+        for (const replyId of comment.replyList) {
+          const replyIdAsString = replyId.toString();
+          if (!visited.has(replyIdAsString)) {
+            queue.push(replyIdAsString);
+          }
+        }
+      }
+    }
+
+    return Array.from(visited);
   }
 }

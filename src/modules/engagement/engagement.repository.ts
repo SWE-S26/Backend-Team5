@@ -3,10 +3,15 @@ import Track, { ITrack } from '../../shared/models/models.track';
 import Playlist, { IPlaylist } from '../../shared/models/models.playlist';
 import User, { IUser } from '../../shared/models/models.user';
 import Following from '../../shared/models/models.following';
+import Comment, { IComment } from '../../shared/models/models.comment';
 
 export class EngagementRepository {
   async findTrackById(trackId: string): Promise<ITrack | null> {
     return Track.findById(trackId).select('likedBy numOfLikes');
+  }
+
+  async findTrackByIdForComments(trackId: string): Promise<ITrack | null> {
+    return Track.findById(trackId).select('posterId');
   }
 
   async addLikeToTrack(trackId: string, userId: string): Promise<ITrack> {
@@ -349,5 +354,241 @@ export class EngagementRepository {
       users: users as Pick<IUser, '_id' | 'displayName' | 'profileImg'>[],
       total: countResult,
     };
+  }
+
+  async createComment(
+    userId: string,
+    trackId: string,
+    content: string,
+    timestampSeconds?: number,
+  ): Promise<IComment> {
+    const userObjectId = new Types.ObjectId(userId);
+    const trackObjectId = new Types.ObjectId(trackId);
+
+    const comment = await Comment.create({
+      userId: userObjectId,
+      trackId: trackObjectId,
+      content,
+      timestampSeconds: timestampSeconds || 0,
+      numLikes: 0,
+      likedList: [],
+      replyList: [],
+    });
+
+    return comment;
+  }
+
+  async findCommentById(commentId: string): Promise<IComment | null> {
+    try {
+      return await Comment.findById(commentId);
+    } catch (error) {
+      // Return null for invalid ObjectId format instead of throwing
+      return null;
+    }
+  }
+
+  async addCommentToTrack(trackId: string, commentId: string): Promise<void> {
+    const commentObjectId = new Types.ObjectId(commentId);
+    await Track.findByIdAndUpdate(trackId, {
+      $push: { comments: commentObjectId },
+    });
+  }
+
+  async addReplyToComment(
+    parentCommentId: string,
+    replyCommentId: string,
+  ): Promise<void> {
+    const replyObjectId = new Types.ObjectId(replyCommentId);
+    await Comment.findByIdAndUpdate(parentCommentId, {
+      $push: { replyList: replyObjectId },
+    });
+  }
+
+  async findCommentByIdWithLikes(commentId: string): Promise<IComment | null> {
+    return Comment.findById(commentId).select('likedList numLikes');
+  }
+
+  async addLikeToComment(commentId: string, userId: string): Promise<IComment> {
+    const userObjectId = new Types.ObjectId(userId);
+    return Comment.findByIdAndUpdate(
+      commentId,
+      { $addToSet: { likedList: userObjectId }, $inc: { numLikes: 1 } },
+      { new: true },
+    ).select('numLikes') as Promise<IComment>;
+  }
+
+  async removeLikeFromComment(
+    commentId: string,
+    userId: string,
+  ): Promise<IComment> {
+    const userObjectId = new Types.ObjectId(userId);
+    return Comment.findByIdAndUpdate(
+      commentId,
+      { $pull: { likedList: userObjectId }, $inc: { numLikes: -1 } },
+      { new: true },
+    ).select('numLikes') as Promise<IComment>;
+  }
+
+  async deleteComment(commentId: string): Promise<void> {
+    await Comment.findByIdAndDelete(commentId);
+  }
+
+  async deleteComments(commentIds: string[]): Promise<void> {
+    const objectIds = commentIds.map((id) => new Types.ObjectId(id));
+    await Comment.deleteMany({ _id: { $in: objectIds } });
+  }
+
+  async removeCommentFromTrack(
+    trackId: string,
+    commentId: string,
+  ): Promise<void> {
+    const commentObjectId = new Types.ObjectId(commentId);
+    await Track.findByIdAndUpdate(trackId, {
+      $pull: { comments: commentObjectId },
+    });
+  }
+
+  async removeCommentsFromTrack(
+    trackId: string,
+    commentIds: string[],
+  ): Promise<void> {
+    const objectIds = commentIds.map((id) => new Types.ObjectId(id));
+    await Track.findByIdAndUpdate(trackId, {
+      $pull: { comments: { $in: objectIds } },
+    });
+  }
+
+  async removeCommentFromParent(
+    parentCommentId: string,
+    commentId: string,
+  ): Promise<void> {
+    const commentObjectId = new Types.ObjectId(commentId);
+    await Comment.findByIdAndUpdate(parentCommentId, {
+      $pull: { replyList: commentObjectId },
+    });
+  }
+
+  async findParentCommentByReplyId(replyId: string): Promise<IComment | null> {
+    const replyObjectId = new Types.ObjectId(replyId);
+    return Comment.findOne({ replyList: replyObjectId });
+  }
+
+  async findCommentsByIds(commentIds: string[]): Promise<IComment[]> {
+    const objectIds = commentIds.map((id) => new Types.ObjectId(id));
+    return Comment.find({ _id: { $in: objectIds } }).select('_id replyList');
+  }
+
+  async getTrackComments(
+    trackId: string,
+    page: number,
+    limit: number,
+    sortBy: 'newest' | 'oldest' | 'trackTime' = 'newest',
+  ): Promise<{
+    comments: Array<
+      IComment & {
+        user: Pick<IUser, '_id' | 'displayName' | 'profileImg'>;
+      }
+    >;
+    total: number;
+  }> {
+    const trackObjectId = new Types.ObjectId(trackId);
+    const skip = (page - 1) * limit;
+
+    const replyIds = (await Comment.distinct('replyList', {
+      trackId: trackObjectId,
+    })) as Types.ObjectId[];
+
+    const filter = {
+      trackId: trackObjectId,
+      _id: { $nin: replyIds },
+    };
+
+    // Determine sort order based on sortBy parameter
+    let sortOrder: Record<string, 1 | -1> = { createdAt: -1 }; // default: newest
+    if (sortBy === 'oldest') {
+      sortOrder = { createdAt: 1 };
+    } else if (sortBy === 'trackTime') {
+      sortOrder = { timestampSeconds: 1 };
+    }
+
+    const [comments, total] = await Promise.all([
+      Comment.find(filter)
+        .sort(sortOrder)
+        .skip(skip)
+        .limit(limit)
+        .populate<{
+          user: Pick<IUser, '_id' | 'displayName' | 'profileImg'>;
+        }>({
+          path: 'userId',
+          select: '_id displayName profileImg',
+          model: 'User',
+        })
+        .lean(),
+      Comment.countDocuments(filter),
+    ]);
+
+    return {
+      comments: comments
+        .filter((c) => c.userId != null) // Filter out comments with deleted users
+        .map((c) => ({
+          ...c,
+          user: c.userId as any,
+        })),
+      total,
+    };
+  }
+
+  async getCommentReplies(
+    commentId: string,
+    page: number,
+    limit: number,
+  ): Promise<{
+    replies: Array<
+      IComment & {
+        user: Pick<IUser, '_id' | 'displayName' | 'profileImg'>;
+      }
+    >;
+    total: number;
+  }> {
+    try {
+      const comment = await Comment.findById(commentId).select('replyList');
+      if (!comment) {
+        return { replies: [], total: 0 };
+      }
+
+      const skip = (page - 1) * limit;
+      const total = comment.replyList.length;
+      const pagedReplyIds = comment.replyList.slice(skip, skip + limit);
+
+      const replies = await Comment.find({ _id: { $in: pagedReplyIds } })
+        .populate<{
+          user: Pick<IUser, '_id' | 'displayName' | 'profileImg'>;
+        }>({
+          path: 'userId',
+          select: '_id displayName profileImg',
+          model: 'User',
+        })
+        .lean();
+
+      const repliesById = new Map(
+        replies.map((reply) => [reply._id.toString(), reply]),
+      );
+      const orderedReplies = pagedReplyIds
+        .map((id) => repliesById.get(id.toString()))
+        .filter((reply): reply is (typeof replies)[number] => Boolean(reply))
+        .filter((reply) => reply.userId != null) // Filter out replies with deleted users
+        .map((reply) => ({
+          ...reply,
+          user: reply.userId as any,
+        }));
+
+      return {
+        replies: orderedReplies,
+        total,
+      };
+    } catch (error) {
+      // Return empty result for invalid ObjectId format
+      return { replies: [], total: 0 };
+    }
   }
 }
