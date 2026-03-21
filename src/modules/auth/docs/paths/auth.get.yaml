@@ -26,7 +26,7 @@
                   type: string
                   example: 'User Verified successfully'
             example:
-              message: 'User Verified successfully'
+              message: 'Email Verified Successfully'
       401:
         $ref: '#/components/responses/Unauthorized'
       404:
@@ -61,19 +61,11 @@
               properties:
                 message:
                   type: string
-                  example: 'QR code generated successfully'
-                data:
-                  type: object
-                  properties:
-                    qrCode:
-                      type: string
-                      description: Encoded QR code value used for cross-device authentication
-                      example: 'qr_abc123xyz'
-                    expiresIn:
-                      type: integer
-                      description: Expiration time of the QR code in seconds
-                      example: 120
-
+                  example: 'QR Code generated successfully'
+                pendingToken:
+                  type: string
+                  description: Encoded QR code value used for cross-device authentication
+                  example: 'qr_abc123xyz'
       '500':
         $ref: '#/components/responses/ServerError'
 /api/auth/v1/logout:
@@ -90,18 +82,18 @@
         description: Logged out successfully
         content:
           application/json:
-            schema:
-              type: object
-              properties:
-                message:
-                  type: string
-                  example: 'Logged out successfully'
-                data:
-                  type: object
-                  nullable: true
-            example:
-              message: 'Logged out successfully'
-              data: null
+            examples:
+              web_client:
+                summary: Web — cookies cleared
+                value:
+                  message: 'User Logged Out Successfully'
+              mobile_client:
+                summary: Mobile — null tokens returned in body
+                value:
+                  message: 'User Logged Out Sucessfully'
+                  data:
+                    acessToken: null
+                    refreshToken: null
       401:
         $ref: '#/components/responses/Unauthorized'
       500:
@@ -140,6 +132,8 @@
                         quota:
                           unlimited: false
                           usedSeconds: 0
+                      accessToken: 'eyJhbGci...'
+                      refreshToken: 'eyJhbGci...'
               mobile_client:
                 summary: Mobile — tokens delivered in body
                 value:
@@ -242,6 +236,15 @@
       ### Case 3 — Returning Google User (`/home`)
       The user has previously signed in with Google and their account is already linked.
       No additional steps are needed.
+
+      In case of anriods
+      Redirects to `{HOST_URL}/cross-callback`.
+
+      For **Android clients** the redirect URL also includes:
+      | Parameter | Description |
+      |---|---|
+      | `accessToken` | Short-lived access JWT for mobile web-view use |
+      | `refreshToken` | Long-lived refresh JWT for mobile web-view use |
 
       **Redirects to:** `{HOST_URL}/home`
 

@@ -310,42 +310,6 @@ export class AuthController {
     }
   }
 
-  private sendGoogleTokenResponse(
-    req: Request,
-    res: Response,
-    accessToken: string,
-    refreshToken: string,
-    client?: string,
-  ): void {
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: this.isProduction,
-      sameSite: 'strict',
-      maxAge: 1000 * 60 * 60 * 1,
-    });
-
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: this.isProduction,
-      sameSite: 'strict',
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-      path: this.refreshTokenPath,
-    });
-
-    let redirectUrl = new URL(`${this.hostUrl}/home`);
-    const activeClient =
-      client ?? (typeof req.query.client === 'string' ? req.query.client : '');
-
-    if (activeClient === 'Android') {
-      redirectUrl = new URL(`${this.hostUrl}/cross-callback`);
-    }
-
-    redirectUrl.searchParams.set('accessToken', accessToken);
-    redirectUrl.searchParams.set('refreshToken', refreshToken);
-
-    return res.redirect(redirectUrl.toString());
-  }
-
   googleRedirect = (req: Request, res: Response, next: NextFunction): void => {
     const client =
       typeof req.query.client === 'string' ? req.query.client : undefined;
@@ -400,7 +364,10 @@ export class AuthController {
 
           const redirectUrl = new URL(`${this.hostUrl}/oauth-continue-details`);
 
-          redirectUrl.searchParams.set('incompleteToken', incompleteToken);
+          redirectUrl.searchParams.set(
+            'incompleteToken',
+            SecureParams.encrypt(incompleteToken),
+          );
           redirectUrl.searchParams.set('email', 'No');
           redirectUrl.searchParams.set('displayName', 'No');
           if (payload.client) {
@@ -410,7 +377,7 @@ export class AuthController {
           return res.redirect(redirectUrl.toString());
         }
 
-        const { pendingToken } = await this.service.initiateGoogleSignIn({
+        const pendingToken = await this.service.initiateGoogleSignIn({
           userId: payload.userId,
           role: payload.role,
           subscription: payload.subscription,
@@ -420,7 +387,11 @@ export class AuthController {
         });
 
         const redirectUrl = new URL(`${this.hostUrl}/verify-code`);
-        redirectUrl.searchParams.set('pendingToken', pendingToken);
+        redirectUrl.searchParams.set(
+          'pendingToken',
+          SecureParams.encrypt(pendingToken),
+        );
+
         if (payload.client) {
           redirectUrl.searchParams.set('client', payload.client);
         }
@@ -442,8 +413,10 @@ export class AuthController {
 
     try {
       const { pendingToken, code } = validatedRequest.data.body;
+
+      const decryptedPendingToken = SecureParams.decrypt(pendingToken);
       const { accessToken, refreshToken } =
-        await this.service.verifyGoogleSignInCode(pendingToken, code);
+        await this.service.verifyGoogleSignInCode(decryptedPendingToken, code);
       this.sendGoogleTokenResponse(req, res, accessToken, refreshToken);
     } catch (err) {
       next(err);
@@ -462,9 +435,17 @@ export class AuthController {
     }
 
     try {
-      const body = req.body as GoogleCompleteSignUpBody;
+      const { incompleteToken, dateOfBirth, gender } =
+        req.body as GoogleCompleteSignUpBody;
+
+      const decryptedIncompleteToken = SecureParams.decrypt(incompleteToken);
+
       const { accessToken, refreshToken } =
-        await this.service.completeGoogleSignUp(body);
+        await this.service.completeGoogleSignUp({
+          incompleteToken: decryptedIncompleteToken,
+          dateOfBirth,
+          gender,
+        });
       this.sendGoogleTokenResponse(req, res, accessToken, refreshToken);
     } catch (err) {
       next(err);
@@ -526,6 +507,41 @@ export class AuthController {
       message: 'Login approved successfully',
     });
   };
+
+  private sendGoogleTokenResponse(
+    req: Request,
+    res: Response,
+    accessToken: string,
+    refreshToken: string,
+    client?: string,
+  ): void {
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: this.isProduction,
+      sameSite: 'strict',
+      maxAge: 1000 * 60 * 60 * 1,
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: this.isProduction,
+      sameSite: 'strict',
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+      path: this.refreshTokenPath,
+    });
+
+    let redirectUrl = new URL(`${this.hostUrl}/home`);
+    const activeClient =
+      client ?? (typeof req.query.client === 'string' ? req.query.client : '');
+
+    if (activeClient === 'Android') {
+      redirectUrl = new URL(`${this.hostUrl}/cross-callback`);
+      redirectUrl.searchParams.set('accessToken', accessToken);
+      redirectUrl.searchParams.set('refreshToken', refreshToken);
+    }
+
+    return res.redirect(redirectUrl.toString());
+  }
 
   private sendTokenResponse(
     req: Request,

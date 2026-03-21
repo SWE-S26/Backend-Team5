@@ -4,7 +4,11 @@
     tags:
       - Authentication
     summary: Authenticate user and return access token
-    description: Authenticates user credentials and, upon success, generates a JWT access token stored in a secure, HTTP-only cookie. The cookie is sent automatically with each HTTPS request, preventing access from client-side scripts and enhancing protection against XSS attacks.
+    description: |
+      Authenticates user credentials and, upon success, generates a JWT access token stored in a secure, HTTP-only cookie. The cookie is sent automatically with each HTTPS request, preventing access from client-side scripts and enhancing protection against XSS attacks.
+      For Android clients, pass `?client=Android` as a query parameter.
+      Instead of cookies, the server redirects to:
+      `{HOST_URL}/cross-callback?accessToken=...&refreshToken=...`
     requestBody:
       required: true
       content:
@@ -55,6 +59,8 @@
                         quota:
                           unlimited: false
                           usedSeconds: 0
+                      accessToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.access123'
+                      refreshToken: 'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.refresh456'
               mobile_client:
                 summary: Mobile — tokens delivered in body
                 value:
@@ -138,19 +144,11 @@
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
                 message:
                   type: string
-                  example: 'Signup Successful'
-                data:
-                  type: object
-                  nullable: true
+                  example: 'User Signed Up Sucessfully'
             example:
-              success: true
-              message: 'Signup Successful'
-              data: null
+              message: 'User Signed Up Sucessfully'
       401:
         $ref: '#/components/responses/Unauthorized'
       404:
@@ -188,19 +186,11 @@
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
                 message:
                   type: string
                   example: 'Password reset email sent successfully'
-                data:
-                  type: object
-                  nullable: true
             example:
-              success: true
               message: 'Password reset email sent successfully'
-              data: null
       401:
         $ref: '#/components/responses/Unauthorized'
       404:
@@ -256,6 +246,12 @@
               success: true
               message: 'Password reset successfully'
               data: null
+      400:
+        description: Token valid but password reset failed
+        content:
+          application/json:
+            example:
+              message: 'Failed to reset password'
       401:
         $ref: '#/components/responses/Unauthorized'
       404:
@@ -296,9 +292,6 @@
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
                 message:
                   type: string
                   example: 'Email existence check completed successfully'
@@ -310,8 +303,7 @@
                       description: Indicates whether the email exists in the database
                       example: true
             example:
-              success: true
-              message: 'Email existence check completed successfully'
+              message: 'Email Checked Successfully'
               data:
                 exists: true
       404:
@@ -325,10 +317,8 @@
       - Authentication
     summary: Resend email verification link
     description: |
-      Resends the email verification link to the user's email address.
-      Verifies whether the provided email address exists in the database.
-      This endpoint is typically used before password reset or registration
-      to confirm if the email is already associated with an account.
+      Resends the email verification link to the user's registered email address.
+      Use this when the original verification email was lost or expired.
 
     requestBody:
       required: true
@@ -354,13 +344,9 @@
               type: object
               properties:
                 message:
-                  type: string
                   example: 'Email Resent successfully!'
             example:
-              success: true
               message: 'Email existence check completed successfully'
-              data:
-                exists: true
       404:
         $ref: '#/components/responses/NotFound'
       500:

@@ -1,6 +1,7 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { AuthRepository } from './auth.repository';
+import { ForbiddenError } from '../../shared/errors/responseErrors';
 
 type GoogleAuthPayloadBase = {
   client?: string;
@@ -54,6 +55,15 @@ passport.use(
         const existingUser = await authRepository.findByEmail(email);
 
         if (existingUser) {
+          if (existingUser.ban) {
+            return done(
+              ForbiddenError(
+                `Your account has been banned. Due to ${existingUser.banReason} Please contact support.`,
+              ),
+              false,
+            );
+          }
+
           if (existingUser.googleId) {
             const payload: GoogleAuthPayload = {
               status: 'returning_google',
