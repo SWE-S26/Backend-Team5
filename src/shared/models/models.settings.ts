@@ -91,6 +91,10 @@ const contentSettingsSchema = new Schema(
 
 const privacySettingsSchema = new Schema(
   {
+    accountIsprivate: {
+      type: Boolean,
+      default: false,
+    },
     allowMessagesAnyone: {
       type: Boolean,
       default: true,

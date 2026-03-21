@@ -11,6 +11,7 @@ import {
 import Settings, { ISettings } from '../../shared/models/models.settings';
 
 const defaultPrivacySettings: UpdatePrivacySettingsDTOType = {
+  accountIsprivate: false,
   allowMessagesAnyone: true,
   showActivityDiscovery: true,
   showFirstTopFan: true,
