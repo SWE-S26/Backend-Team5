@@ -18,3 +18,12 @@ export const GetTrackLikersQueryDto = extendedZod.object({
   offset: extendedZod.string().default('0'),
   limit: extendedZod.string().default('20'),
 });
+
+export const GetTrackCommentsQueryDto = extendedZod.object({
+  offset: extendedZod.string().default('0'),
+  limit: extendedZod.string().default('20'),
+  sortBy: extendedZod
+    .enum(['newest', 'oldest', 'trackTime'])
+    .optional()
+    .default('newest'),
+});

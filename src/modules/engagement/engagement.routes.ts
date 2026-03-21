@@ -27,6 +27,16 @@ engagementPublicRouter.get(
 );
 
 engagementPublicRouter.get(
+  '/tracks' + apiVersions.v1 + '/:trackId/comments',
+  (req, res) => engagementController.getTrackComments(req, res),
+);
+
+engagementPublicRouter.get(
+  '/comments' + apiVersions.v1 + '/:commentId/replies',
+  (req, res) => engagementController.getCommentReplies(req, res),
+);
+
+engagementPublicRouter.get(
   '/playlists' + apiVersions.v1 + '/:playlistId/reposts',
   (req, res) => engagementController.getPlaylistReposters(req, res),
 );
@@ -69,6 +79,21 @@ engagementProtectedRouter.get(
 engagementProtectedRouter.patch(
   '/playlists' + apiVersions.v1 + '/:playlistId/repost',
   (req, res) => engagementController.updatePlaylistRepostCaption(req, res),
+);
+
+engagementProtectedRouter.post(
+  '/tracks' + apiVersions.v1 + '/:trackId/comments',
+  (req, res) => engagementController.postTrackComment(req, res),
+);
+
+engagementProtectedRouter.post(
+  '/comments' + apiVersions.v1 + '/:commentId/like',
+  (req, res) => engagementController.toggleCommentLike(req, res),
+);
+
+engagementProtectedRouter.delete(
+  '/comments' + apiVersions.v1 + '/:commentId',
+  (req, res) => engagementController.deleteTrackComment(req, res),
 );
 
 export { engagementPublicRouter };

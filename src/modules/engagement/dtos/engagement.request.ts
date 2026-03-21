@@ -3,14 +3,17 @@ import {
   EngagementIdParamDTO,
   PlaylistIdParamDTO,
   TrackIdParamDTO,
+  CommentIdParamDTO,
 } from './engagement.request.params';
 import {
   GetTrackLikersQueryDto,
   ListEngagementsQueryDto,
+  GetTrackCommentsQueryDto,
 } from './engagement.request.query';
 import {
   RepostRequestBodyDTO,
   UpdateRepostCaptionBodyDTO,
+  CreateCommentRequestBodyDTO,
 } from './engagement.request.body';
 
 export const CreateEngagementRequestDTO = extendedZod.object({
@@ -72,4 +75,27 @@ export const GetPlaylistRepostStatusRequestDTO = extendedZod.object({
 export const UpdatePlaylistRepostRequestDTO = extendedZod.object({
   params: PlaylistIdParamDTO,
   body: UpdateRepostCaptionBodyDTO,
+});
+
+export const PostTrackCommentRequestDTO = extendedZod.object({
+  params: TrackIdParamDTO,
+  body: CreateCommentRequestBodyDTO,
+});
+
+export const ToggleCommentLikeRequestDTO = extendedZod.object({
+  params: CommentIdParamDTO,
+});
+
+export const DeleteTrackCommentRequestDTO = extendedZod.object({
+  params: CommentIdParamDTO,
+});
+
+export const GetTrackCommentsRequestDTO = extendedZod.object({
+  params: TrackIdParamDTO,
+  query: GetTrackCommentsQueryDto,
+});
+
+export const GetCommentRepliesRequestDTO = extendedZod.object({
+  params: CommentIdParamDTO,
+  query: GetTrackLikersQueryDto,
 });
