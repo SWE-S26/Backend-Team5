@@ -12,11 +12,11 @@ const profileController = new ProfileController(profileService);
 
 profileRouter.get(
   apiVersions.v1 + '/:id',
-  profileController.findOne.bind(profileController),
+  profileController.getProfile.bind(profileController),
 );
 profileRouter.patch(
   apiVersions.v1 + '/',
-  profileController.update.bind(profileController),
+  profileController.updateProfile.bind(profileController),
 );
 
 profileRouter.get(

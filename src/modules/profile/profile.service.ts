@@ -20,8 +20,8 @@ const defaultPrivacySettings: UpdatePrivacySettingsDTOType = {
 export class ProfileService {
   constructor(private readonly repository: ProfileRepository) {}
 
-  async findById(id: string): Promise<ProfileResponseDTOType | null> {
-    const user: IUser | null = await this.repository.findById(id);
+  async getProfile(id: string): Promise<ProfileResponseDTOType | null> {
+    const user: IUser | null = await this.repository.getProfile(id);
     if (!user) return null;
 
     const followDoc = await Following.findOne({ userId: id }).lean();
@@ -39,11 +39,11 @@ export class ProfileService {
     return ProfileMapper.toResponse(combined);
   }
 
-  async update(
+  async updateProfile(
     id: string,
     data: Partial<UpdateProfileRequestBodyDTOType>,
   ): Promise<ProfileResponseDTOType | null> {
-    const updatedUser = await this.repository.update(id, data);
+    const updatedUser = await this.repository.updateProfile(id, data);
     if (!updatedUser) return null;
 
     const followDoc = await Following.findOne({ userId: id }).lean();
