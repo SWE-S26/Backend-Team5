@@ -27,7 +27,7 @@ export class AuthRepository {
       displayName,
       dateOfBirth,
       gender,
-      role: 'Listener/Artist',
+      role: 'Listener',
       profileLink:
         displayName.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(),
     });
@@ -68,7 +68,7 @@ export class AuthRepository {
   }): Promise<IUser> {
     const user = await User.create({
       ...data,
-      role: 'Listener/Artist',
+      role: 'Listener',
       isVerified: true,
       profileLink:
         data.displayName.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(),

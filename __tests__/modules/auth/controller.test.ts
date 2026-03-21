@@ -32,7 +32,7 @@ let mockRes: Partial<Response>;
 const fakeLoginResponse: LoginResponse = {
   id: '507f1f77bcf86cd799439011',
   displayName: 'John Doe',
-  role: 'Listener/Artist',
+  role: 'Listener',
   profileLink: 'https://example.com/johndoe',
   profileImg: {
     imgLink: 'https://example.com/profile.jpg',
@@ -1563,7 +1563,7 @@ describe('AuthController : googleCallback', () => {
     const returningPayload = {
       status: 'returning_google',
       userId: '507f1f77bcf86cd799439011',
-      role: 'Listener/Artist',
+      role: 'Listener',
       subscription: { subscriptionType: 'free' },
       client: undefined,
     };
@@ -1593,7 +1593,7 @@ describe('AuthController : googleCallback', () => {
     const returningPayload = {
       status: 'returning_google',
       userId: '507f1f77bcf86cd799439011',
-      role: 'Listener/Artist',
+      role: 'Listener',
       subscription: { subscriptionType: 'free' },
       client: undefined,
     };
@@ -1706,7 +1706,7 @@ describe('AuthController : googleCallback', () => {
     const existingPayload = {
       status: 'existing_google',
       userId: '507f1f77bcf86cd799439011',
-      role: 'Listener/Artist',
+      role: 'Listener',
       subscription: { subscriptionType: 'free' },
       email: 'existing@mail.com',
       displayName: 'Existing User',
@@ -1740,7 +1740,7 @@ describe('AuthController : googleCallback', () => {
     const existingPayload = {
       status: 'existing_google',
       userId: '507f1f77bcf86cd799439011',
-      role: 'Listener/Artist',
+      role: 'Listener',
       subscription: { subscriptionType: 'free' },
       email: 'existing@mail.com',
       displayName: 'Existing User',
@@ -1770,7 +1770,7 @@ describe('AuthController : googleCallback', () => {
     const existingPayload = {
       status: 'existing_google',
       userId: '507f1f77bcf86cd799439011',
-      role: 'Listener/Artist',
+      role: 'Listener',
       subscription: { subscriptionType: 'free' },
       email: 'existing@mail.com',
       displayName: 'Existing User',
@@ -2264,7 +2264,7 @@ describe('AuthController : pollQRCode', () => {
 describe('AuthController : approveLoginFromMobile', () => {
   const fakeUserInfo: Partial<JwtPayload> = {
     _id: '507f1f77bcf86cd799439011',
-    role: 'Listener/Artist',
+    role: 'Listener',
     paymentInfo: {
       subscriptionType: 'free',
       quota: { unlimited: false, usedSeconds: 0 },
