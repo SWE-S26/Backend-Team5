@@ -106,6 +106,17 @@ export class TracksController {
     }
   }
 
+  async getUserLikedTracks(req: Request, res: Response): Promise<void> {
+    // no validator required except auth middleware
+    const userInfo = this.getUserInfo(req);
+    const likedTracks = this.service.getLikedTracks(userInfo.userId);
+    res.json({
+      success: true,
+      message: 'User Liked Tracks Received Successfully',
+      data: likedTracks,
+    });
+  }
+
   async replace(req: Request, res: Response): Promise<void> {
     //TODO: parse query params if needed
     res.json({});

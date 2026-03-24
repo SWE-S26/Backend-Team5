@@ -6,6 +6,7 @@ import { TracksRepository } from './tracks.repository';
 import { Types } from 'mongoose';
 import { TracksMapper } from './dtos/tracks.mapper';
 import { TrackResponseDTO } from './dtos/tracks.response';
+import { ITrack } from '../../shared/models/models.track';
 
 export class TracksService {
   private readonly tracksRepository: TracksRepository;
@@ -69,6 +70,24 @@ export class TracksService {
 
     const newNumPlays = searchTrack.numOfPlays + 1;
     return await this.tracksRepository.incrementNumPlays(trackId, newNumPlays);
+  }
+
+  async getLikedTracks(userId: string): Promise<TrackResponseDTO[] | null> {
+    const likedTracksList = await this.tracksRepository.getLikedTracks(userId);
+
+    // no liked tracks for this user
+    if (!likedTracksList) {
+      return null;
+    }
+
+    const trackResponseList: TrackResponseDTO[] = [];
+
+    likedTracksList.forEach((track) => {
+      const trackResponse = TracksMapper.toTrackResponse(track as ITrack);
+      trackResponseList.push(trackResponse);
+    });
+
+    return trackResponseList;
   }
 
   async update(id: string, data: any): Promise<any | null> {
