@@ -17,22 +17,17 @@ export class ProfileRepository {
     const {
       links,
       bannerLinks,
-      profileImgLink,
-      bannerImgLink,
+      removeProfileImg,
+      removeBannerImg,
       ...otherFields
+   
     } = data;
     const updateData: any = { ...otherFields };
 
     if (links !== undefined) updateData.links = links;
     if (bannerLinks !== undefined) updateData.bannerLinks = bannerLinks;
 
-    if (profileImgLink !== undefined) {
-      updateData['profileImg.imgLink'] = profileImgLink;
-    }
 
-    if (bannerImgLink !== undefined) {
-      updateData['bannerImg.imgLink'] = bannerImgLink;
-    }
     return await User.findByIdAndUpdate(id, updateData, {
       new: true,
       runValidators: true,
