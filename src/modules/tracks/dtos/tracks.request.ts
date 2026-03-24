@@ -12,3 +12,7 @@ export const CreateTracksRequestDTO = extendedZod.object({
 export const DeleteTrackRequestDTO = extendedZod.object({
   params: TracksIdParamDTO,
 });
+
+export const GetTrackByIdRequestDTO = extendedZod.object({
+  params: TracksIdParamDTO,
+});

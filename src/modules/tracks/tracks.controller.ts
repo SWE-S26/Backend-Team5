@@ -1,15 +1,34 @@
 import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { TracksService } from './tracks.service';
-import { DeleteTrackRequestDTO } from './dtos/tracks.request';
+import {
+  DeleteTrackRequestDTO,
+  GetTrackByIdRequestDTO,
+} from './dtos/tracks.request';
 
 import { JWTPayload } from '../../shared/abstractions/jwt';
+import { success } from 'zod';
+
+type userInfo = {
+  userId: string;
+  userRole: string;
+  paymentInfo: unknown;
+};
 
 export class TracksController {
   private readonly service: TracksService;
+
   constructor() {
-    2;
     this.service = new TracksService();
+  }
+
+  private getUserInfo(req: Request): userInfo {
+    const { _id, role, paymentInfo } = req.userInfo! as JWTPayload;
+    return {
+      userId: _id,
+      userRole: role,
+      paymentInfo: paymentInfo,
+    };
   }
 
   async deleteTrackById(req: Request, res: Response): Promise<void> {
@@ -19,14 +38,12 @@ export class TracksController {
       throw validatedRequest.error;
     }
 
-    const { _id, role, paymentInfo } = req.userInfo! as JWTPayload;
-    const userId = _id;
-    const userRole = role;
+    const userInfo = this.getUserInfo(req);
     const trackId = validatedRequest.data.params.id;
     const isDeleted = await this.service.deleteTrackById(
-      userId,
+      userInfo.userId,
       trackId,
-      userRole,
+      userInfo.userRole,
     );
     if (isDeleted) {
       res.statusCode = 204;
@@ -43,9 +60,22 @@ export class TracksController {
     }
   }
 
-  async findOne(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
+  async getTrackById(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(GetTrackByIdRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const userInfo = this.getUserInfo(req);
+    const trackId = validatedRequest.data.params.id;
+
+    const trackInfo = this.service.getTrackById(trackId, userInfo.userId);
+    res.json({
+      success: true,
+      message: 'Track Info Retrieved Successfully',
+      data: trackInfo,
+    });
   }
 
   async create(req: Request, res: Response): Promise<void> {

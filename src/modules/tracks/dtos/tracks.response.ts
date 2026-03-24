@@ -1,17 +1,23 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
+import { z } from 'zod';
 
-export const TracksResponseDto = extendedZod
-  .object({
-    id: extendedZod.string(),
-    email: extendedZod.string(),
-    name: extendedZod.string(),
-    role: extendedZod.enum(['user', 'admin']),
-  })
-  .openapi('TracksResponse', {
-    example: {
-      id: '697b7c75001e8cb1d4c0bb67',
-      email: 'user@example.com',
-      name: 'cow',
-      role: 'user',
-    },
-  });
+export const TrackResponse = extendedZod.object({
+  _id: extendedZod.string(),
+  basicInfo: extendedZod.object({
+    title: extendedZod.string(),
+    permalink: extendedZod.string(),
+    mainArtists: extendedZod.array(extendedZod.string()),
+    genre: extendedZod.string(),
+    tags: extendedZod.array(extendedZod.string()),
+    description: extendedZod.string(),
+    isPrivate: extendedZod.boolean(),
+  }),
+  audioUrl: extendedZod.string(),
+  imageUrl: extendedZod.string(),
+  numLikes: extendedZod.number(),
+  numPlays: extendedZod.number(),
+  numReposts: extendedZod.number(),
+  releaseDate: extendedZod.date(),
+});
+
+export type TrackResponseDTO = z.infer<typeof TrackResponse>;

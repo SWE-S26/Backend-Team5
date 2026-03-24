@@ -1,13 +1,18 @@
 import { Router } from 'express';
 import { TracksController } from './tracks.controller';
-import { TracksService } from './tracks.service';
+import apiVersions from '../../shared/middleware/apiVersions';
 
 const tracksRouter = Router();
 const tracksController = new TracksController();
 
-tracksRouter.delete('/{:id}', (req, res) =>
-  tracksController.deleteTrackById(req, res),
+tracksRouter.delete(apiVersions.v1 + '/{:id}', (req, res) =>
+  tracksController.deleteTrackById.bind(tracksController),
 );
+
+tracksRouter.get(apiVersions.v1 + '/{:id}', (req, res) =>
+  tracksController.getTrackById.bind(tracksController),
+);
+
 // tracksRouter.get('/:id',   (req, res) => tracksController.findOne(req, res));
 // tracksRouter.post('/',     (req, res) => tracksController.create(req, res));
 // tracksRouter.put('/:id',   (req, res) => tracksController.replace(req, res));
