@@ -5,6 +5,7 @@ import {
 import { TracksRepository } from './tracks.repository';
 import { Types } from 'mongoose';
 import { TracksMapper } from './dtos/tracks.mapper';
+import { TrackResponseDTO } from './dtos/tracks.response';
 
 export class TracksService {
   private readonly tracksRepository: TracksRepository;
@@ -18,7 +19,7 @@ export class TracksService {
     trackId: string,
     userRole: string,
   ): Promise<Boolean> {
-    const searchTrack = await this.tracksRepository.findById(trackId, false);
+    const searchTrack = await this.tracksRepository.findById(trackId);
 
     if (!searchTrack) {
       throw NotFoundError('Track Not Found');
@@ -38,8 +39,11 @@ export class TracksService {
     return isDeleted;
   }
 
-  async getTrackById(trackId: string, userId: string): Promise<any | null> {
-    const searchTrack = await this.tracksRepository.findById(trackId, true);
+  async getTrackById(
+    trackId: string,
+    userId: string,
+  ): Promise<TrackResponseDTO | null> {
+    const searchTrack = await this.tracksRepository.findById(trackId);
 
     // if not found
     if (!searchTrack) {
@@ -56,8 +60,15 @@ export class TracksService {
     return TracksMapper.toTrackResponse(searchTrack);
   }
 
-  async create(data: any): Promise<any> {
-    return this.tracksRepository.create(data);
+  async incrementTrackNumPlays(trackId: string): Promise<Boolean> {
+    const searchTrack = await this.tracksRepository.findById(trackId);
+
+    if (!searchTrack) {
+      throw NotFoundError("Track Doesn't Exists");
+    }
+
+    const newNumPlays = searchTrack.numOfPlays + 1;
+    return await this.tracksRepository.incrementNumPlays(trackId, newNumPlays);
   }
 
   async update(id: string, data: any): Promise<any | null> {

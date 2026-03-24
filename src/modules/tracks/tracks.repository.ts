@@ -1,7 +1,5 @@
 import Track, { ITrack } from '../../shared/models/models.track';
-import User, { IUser } from '../../shared/models/models.user';
-import Following, { IFollowing } from '../../shared/models/models.following';
-import Comment, { IComment } from '../../shared/models/models.comment';
+import { NotFoundError } from '../../shared/errors/responseErrors';
 
 export class TracksRepository {
   async findAll(): Promise<any[]> {
@@ -9,42 +7,30 @@ export class TracksRepository {
     return [];
   }
 
-  async findById(id: string, populate: boolean): Promise<ITrack | null> {
-    let query = Track.findById<ITrack>(id);
-    if (populate) {
-      query = query.populate('posterId') as any;
-    }
-    const track = await query;
+  async findById(trackId: string): Promise<ITrack | null> {
+    let track = await Track.findById<ITrack>(trackId);
     return track;
   }
 
-  async deleteById(id: string): Promise<boolean> {
+  async deleteById(trackId: string): Promise<boolean> {
     const deletedTrack = await Track.findOneAndDelete({
-      _id: id,
+      _id: trackId,
     });
 
-    if (deletedTrack) {
-      throw new Error('Track not found');
-    }
+    if (!deletedTrack) throw NotFoundError('Track Not found');
     return true;
   }
 
-  async getNumberOfPostedTracks(posterId: string): Promise<number> {
-    const tracksCount = await Track.countDocuments({ posterId: posterId });
-    return tracksCount;
-  }
+  async incrementNumPlays(
+    trackId: string,
+    newNumPlays: number,
+  ): Promise<Boolean> {
+    const updatedTrack = await Track.findByIdAndUpdate(trackId, {
+      $set: { numOfPlays: newNumPlays },
+    });
 
-  async getNumberOfFollowers(posterId: string): Promise<number> {
-    const userFollowing = await Following.findById<IFollowing>(posterId);
-    const numFollowers = userFollowing?.followers.length ?? 0;
-    return numFollowers;
-  }
-
-  async getTrackComments(trackId: string): Promise<IComment[]> {
-    const trackComments = await Comment.find<IComment>({ trackId: trackId })
-      .populate('replyList')
-      .populate('userId');
-    return trackComments;
+    if (!updatedTrack) return false;
+    return true;
   }
   async create(data: any): Promise<any> {
     // TODO: insert into your data source

@@ -4,6 +4,7 @@ import { TracksService } from './tracks.service';
 import {
   DeleteTrackRequestDTO,
   GetTrackByIdRequestDTO,
+  IncrementTrackListenCountRequestDTO,
 } from './dtos/tracks.request';
 
 import { JWTPayload } from '../../shared/abstractions/jwt';
@@ -70,7 +71,7 @@ export class TracksController {
     const userInfo = this.getUserInfo(req);
     const trackId = validatedRequest.data.params.id;
 
-    const trackInfo = this.service.getTrackById(trackId, userInfo.userId);
+    const trackInfo = await this.service.getTrackById(trackId, userInfo.userId);
     res.json({
       success: true,
       message: 'Track Info Retrieved Successfully',
@@ -78,9 +79,31 @@ export class TracksController {
     });
   }
 
-  async create(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
+  async incrementTrackNumPlays(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(
+      IncrementTrackListenCountRequestDTO,
+      req,
+    );
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const userInfo = this.getUserInfo(req);
+    const trackId = validatedRequest.data.params.id;
+    const isUpdatedNumPlays =
+      await this.service.incrementTrackNumPlays(trackId);
+    if (isUpdatedNumPlays) {
+      res.json({
+        success: true,
+        message: 'Number of Plays Updated Successfully',
+      });
+    } else {
+      res.json({
+        success: false,
+        message: 'Error Occured While Updating Number of Plays',
+      });
+    }
   }
 
   async replace(req: Request, res: Response): Promise<void> {
