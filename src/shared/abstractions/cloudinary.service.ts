@@ -16,20 +16,36 @@ interface CloudinaryUploadResult {
 
 export class CloudinaryService {
   static async uploadImage(
-    filePath: string,
+    buffer: Buffer,
     folder: ImageFolder,
   ): Promise<CloudinaryUploadResult> {
-    const options = {
-      folder,
-      use_filename: true,
-      unique_filename: true,
-      overwrite: false,
-    };
-    const result = await cloudinary.uploader.upload(filePath, options);
-    return {
-      url: result.secure_url,
-      publicId: result.public_id,
-    };
+    return new Promise((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          {
+            folder,
+            use_filename: true,
+            unique_filename: true,
+            overwrite: false,
+          },
+          (
+            error: UploadApiErrorResponse | undefined,
+            result: UploadApiResponse | undefined,
+          ) => {
+            if (error) return reject(error);
+            if (!result) {
+              return reject(
+                new Error('Cloudinary upload failed: no result returned'),
+              );
+            }
+            return resolve({
+              url: result.secure_url,
+              publicId: result.public_id,
+            });
+          },
+        )
+        .end(buffer);
+    });
   }
 
   static async uploadBuffer(
