@@ -17,11 +17,17 @@ profileRouter.get(
 );
 profileRouter.patch(
   apiVersions.v1 + '/',
+  profileController.updateProfile.bind(profileController),
+);
+
+profileRouter.patch(
+  apiVersions.v1 + '/images',
+  requireAuth,
   upload.fields([
     { name: 'profileImg', maxCount: 1 },
     { name: 'bannerImg', maxCount: 1 },
   ]),
-  profileController.updateProfile.bind(profileController),
+  profileController.updateImages.bind(profileController),
 );
 
 profileRouter.get(

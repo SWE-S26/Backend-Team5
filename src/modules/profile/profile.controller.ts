@@ -40,16 +40,35 @@ export class ProfileController {
         throw validatedRequest.error;
       }
 
+      const updated = await this.service.updateProfile(
+        userId,
+        validatedRequest.data.body,
+      );
+
+      if (!updated) {
+        res.status(404).json({ message: 'User not found' });
+        return;
+      }
+
+      res.json(updated);
+    } catch (err) {
+      res.status(500).json({ message: 'Server error', error: err });
+    }
+  }
+
+  async updateImages(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.userInfo!._id;
+
       const files = req.files as {
         profileImg?: Express.Multer.File[];
         bannerImg?: Express.Multer.File[];
       };
-
-      const updated = await this.service.updateProfile(
-        userId,
-        validatedRequest.data.body,
-        files,
-      );
+      const body = {
+        removeProfileImg: req.body.removeProfileImg === 'true',
+        removeBannerImg: req.body.removeBannerImg === 'true',
+      };
+      const updated = await this.service.updateImages(userId, body, files);
 
       if (!updated) {
         res.status(404).json({ message: 'User not found' });
