@@ -3,6 +3,8 @@ import {
   UnauthorizedError,
 } from '../../shared/errors/responseErrors';
 import { TracksRepository } from './tracks.repository';
+import { Types } from 'mongoose';
+import { TracksMapper } from './dtos/tracks.mapper';
 
 export class TracksService {
   private readonly tracksRepository: TracksRepository;
@@ -16,7 +18,7 @@ export class TracksService {
     trackId: string,
     userRole: string,
   ): Promise<Boolean> {
-    const searchTrack = await this.tracksRepository.findById(trackId);
+    const searchTrack = await this.tracksRepository.findById(trackId, false);
 
     if (!searchTrack) {
       throw NotFoundError('Track Not Found');
@@ -36,8 +38,22 @@ export class TracksService {
     return isDeleted;
   }
 
-  async findById(id: string): Promise<any | null> {
-    return this.tracksRepository.findById(id);
+  async getTrackById(trackId: string, userId: string): Promise<any | null> {
+    const searchTrack = await this.tracksRepository.findById(trackId, true);
+
+    // if not found
+    if (!searchTrack) {
+      throw NotFoundError("Track Doesn't Exists");
+    }
+
+    const posterId = (searchTrack.posterId._id as Types.ObjectId).toString();
+
+    // track is private and the user searching for him isnt the owner
+    if (searchTrack.basicInfo.isPrivate && posterId != userId) {
+      throw NotFoundError("Track Doesn't Exists");
+    }
+
+    return TracksMapper.toTrackResponse(searchTrack);
   }
 
   async create(data: any): Promise<any> {
