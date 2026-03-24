@@ -40,9 +40,15 @@ export class ProfileController {
         throw validatedRequest.error;
       }
 
+      const files = req.files as {
+        profileImg?: Express.Multer.File[];
+        bannerImg?: Express.Multer.File[];
+      };
+
       const updated = await this.service.updateProfile(
         userId,
         validatedRequest.data.body,
+        files,
       );
 
       if (!updated) {

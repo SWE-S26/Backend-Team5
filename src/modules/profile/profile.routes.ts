@@ -17,6 +17,10 @@ profileRouter.get(
 );
 profileRouter.patch(
   apiVersions.v1 + '/',
+  upload.fields([
+    { name: 'profileImg', maxCount: 1 },
+    { name: 'bannerImg', maxCount: 1 },
+  ]),
   profileController.updateProfile.bind(profileController),
 );
 
