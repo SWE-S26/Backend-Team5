@@ -46,50 +46,7 @@ export class ProfileService {
   async updateProfile(
     id: string,
     data: Partial<UpdateProfileRequestBodyDTOType>,
-    files: {
-      profileImg?: Express.Multer.File[];
-      bannerImg?: Express.Multer.File[];
-    },
   ): Promise<ProfileResponseDTOType | null> {
-    const existingUser = await this.repository.getProfile(id);
-    if (!existingUser) return null;
-
-    if (data.removeProfileImg && existingUser.profileImg?.publicId) {
-      await CloudinaryService.deleteImage(existingUser.profileImg.publicId);
-    }
-
-    if (files?.profileImg?.[0]?.buffer) {
-      if (existingUser.profileImg?.publicId) {
-        await CloudinaryService.deleteImage(existingUser.profileImg.publicId);
-      }
-      const result = await CloudinaryService.uploadImage(
-        files.profileImg[0].buffer,
-        ImageFolder.PROFILE,
-      );
-      data.profileImg = {
-        imgLink: result.url,
-        publicId: result.publicId,
-      };
-    }
-
-    if (data.removeBannerImg && existingUser.bannerImg?.publicId) {
-      await CloudinaryService.deleteImage(existingUser.bannerImg.publicId);
-    }
-
-    if (files?.bannerImg?.[0]?.buffer) {
-      if (existingUser.bannerImg?.publicId) {
-        await CloudinaryService.deleteImage(existingUser.bannerImg.publicId);
-      }
-      const result = await CloudinaryService.uploadImage(
-        files.bannerImg[0].buffer,
-        ImageFolder.PROFILE,
-      );
-      data.bannerImg = {
-        imgLink: result.url,
-        publicId: result.publicId,
-      };
-    }
-
     const updatedUser = await this.repository.updateProfile(id, data);
     if (!updatedUser) return null;
 
@@ -108,6 +65,58 @@ export class ProfileService {
     return ProfileMapper.toResponse(combined);
   }
 
+  async updateImages(
+    id: string,
+    flags: { removeProfileImg?: boolean; removeBannerImg?: boolean },
+    files: {
+      profileImg?: Express.Multer.File[];
+      bannerImg?: Express.Multer.File[];
+    },
+  ): Promise<ProfileResponseDTOType | null> {
+    const existingUser = await this.repository.getProfile(id);
+    if (!existingUser) return null;
+
+    if (flags.removeProfileImg && existingUser.profileImg?.publicId) {
+      await CloudinaryService.deleteImage(existingUser.profileImg.publicId);
+    }
+
+    if (files?.profileImg?.[0]?.buffer) {
+      if (existingUser.profileImg?.publicId) {
+        await CloudinaryService.deleteImage(existingUser.profileImg.publicId);
+      }
+      const result = await CloudinaryService.uploadImage(
+        files.profileImg[0].buffer,
+        ImageFolder.PROFILE,
+      );
+      existingUser.profileImg = {
+        imgLink: result.url,
+        publicId: result.publicId,
+      };
+    }
+
+    if (flags.removeBannerImg && existingUser.bannerImg?.publicId) {
+      await CloudinaryService.deleteImage(existingUser.bannerImg.publicId);
+    }
+
+    if (files?.bannerImg?.[0]?.buffer) {
+      if (existingUser.bannerImg?.publicId) {
+        await CloudinaryService.deleteImage(existingUser.bannerImg.publicId);
+      }
+      const result = await CloudinaryService.uploadImage(
+        files.bannerImg[0].buffer,
+        ImageFolder.PROFILE,
+      );
+      existingUser.bannerImg = {
+        imgLink: result.url,
+        publicId: result.publicId,
+      };
+    }
+
+    const updatedUser = await this.repository.updateProfile(id, existingUser);
+    if (!updatedUser) return null;
+
+    return ProfileMapper.toResponse(updatedUser);
+  }
   async getPrivacySettings(
     id: string,
   ): Promise<UpdatePrivacySettingsDTOType | null> {
