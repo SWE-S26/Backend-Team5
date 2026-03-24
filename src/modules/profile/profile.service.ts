@@ -9,6 +9,10 @@ import {
   UpdatePrivacySettingsDTOType,
 } from './dtos/profile.request.body';
 import Settings, { ISettings } from '../../shared/models/models.settings';
+import {
+  CloudinaryService,
+  ImageFolder,
+} from '../../shared/abstractions/cloudinary.service';
 
 const defaultPrivacySettings: UpdatePrivacySettingsDTOType = {
   accountIsPrivate: false,
@@ -43,7 +47,42 @@ export class ProfileService {
   async updateProfile(
     id: string,
     data: Partial<UpdateProfileRequestBodyDTOType>,
+    files: {
+      profileImg?: Express.Multer.File[];
+      bannerImg?: Express.Multer.File[];
+    },
   ): Promise<ProfileResponseDTOType | null> {
+    const existingUser = await this.repository.getProfile(id);
+    if (!existingUser) return null;
+
+    if (files?.profileImg?.[0]?.buffer) {
+      if (existingUser.profileImg?.publicId) {
+        await CloudinaryService.deleteImage(existingUser.profileImg.publicId);
+      }
+      const result = await CloudinaryService.uploadImage(
+        files.profileImg[0].buffer,
+        ImageFolder.PROFILE,
+      );
+      data.profileImg = {
+        imgLink: result.url,
+        publicId: result.publicId,
+      };
+    }
+
+    if (files?.bannerImg?.[0]?.buffer) {
+      if (existingUser.bannerImg?.publicId) {
+        await CloudinaryService.deleteImage(existingUser.bannerImg.publicId);
+      }
+      const result = await CloudinaryService.uploadImage(
+        files.bannerImg[0].buffer,
+        ImageFolder.PROFILE,
+      );
+      data.bannerImg = {
+        imgLink: result.url,
+        publicId: result.publicId,
+      };
+    }
+
     const updatedUser = await this.repository.updateProfile(id, data);
     if (!updatedUser) return null;
 

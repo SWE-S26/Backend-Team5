@@ -14,8 +14,6 @@ export const UpdateProfileRequestBodyDTO = extendedZod.object({
   bio: extendedZod.string().nullable().optional(),
   city: extendedZod.string().nullable().optional(),
   country: extendedZod.string().nullable().optional(),
-  profileImgLink: extendedZod.string().url().nullable().optional(),
-  bannerImgLink: extendedZod.string().url().nullable().optional(),
   links: extendedZod.array(LinkDTO).optional(),
   bannerLinks: extendedZod.array(LinkDTO).optional(),
   supportLink: extendedZod.string().url().nullable().optional(),
@@ -24,7 +22,16 @@ export const UpdateProfileRequestBodyDTO = extendedZod.object({
 
 export type UpdateProfileRequestBodyDTOType = z.infer<
   typeof UpdateProfileRequestBodyDTO
->;
+> & {
+  profileImg?: {
+    imgLink: string;
+    publicId: string;
+  };
+  bannerImg?: {
+    imgLink: string;
+    publicId: string;
+  };
+};
 
 export const UpdateAccountSettingsDTO = extendedZod.object({
   theme: extendedZod.enum(['Light', 'Dark', 'Automatic']).optional(),
