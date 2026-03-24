@@ -21,7 +21,7 @@ export type ITrack = {
     mainArtists: [string];
     genre: string;
     tags: [string];
-    description: [string];
+    description: string;
     isPrivate: boolean;
   };
   audio: {
