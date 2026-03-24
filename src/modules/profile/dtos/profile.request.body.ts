@@ -15,6 +15,8 @@ export const UpdateProfileRequestBodyDTO = extendedZod.object({
   city: extendedZod.string().nullable().optional(),
   country: extendedZod.string().nullable().optional(),
   links: extendedZod.array(LinkDTO).optional(),
+  removeProfileImg: extendedZod.boolean().optional(),
+  removeBannerImg: extendedZod.boolean().optional(),
   bannerLinks: extendedZod.array(LinkDTO).optional(),
   supportLink: extendedZod.string().url().nullable().optional(),
   favoriteGenres: extendedZod.array(extendedZod.string()).optional(),

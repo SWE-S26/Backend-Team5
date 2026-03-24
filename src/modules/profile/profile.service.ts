@@ -55,6 +55,10 @@ export class ProfileService {
     const existingUser = await this.repository.getProfile(id);
     if (!existingUser) return null;
 
+    if (data.removeProfileImg && existingUser.profileImg?.publicId) {
+      await CloudinaryService.deleteImage(existingUser.profileImg.publicId);
+    }
+
     if (files?.profileImg?.[0]?.buffer) {
       if (existingUser.profileImg?.publicId) {
         await CloudinaryService.deleteImage(existingUser.profileImg.publicId);
@@ -67,6 +71,10 @@ export class ProfileService {
         imgLink: result.url,
         publicId: result.publicId,
       };
+    }
+
+    if (data.removeBannerImg && existingUser.bannerImg?.publicId) {
+      await CloudinaryService.deleteImage(existingUser.bannerImg.publicId);
     }
 
     if (files?.bannerImg?.[0]?.buffer) {
