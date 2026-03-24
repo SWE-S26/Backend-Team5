@@ -4,6 +4,7 @@ import { ProfileRepository } from './profile.repository';
 import { ProfileService } from './profile.service';
 import { requireAuth } from '../../shared/middleware/requireAuth';
 import apiVersions from '../../shared/middleware/apiVersions';
+import { upload } from '../../shared/middleware/multer.middleware';
 
 const profileRouter = Router();
 const profileRepository = new ProfileRepository();
