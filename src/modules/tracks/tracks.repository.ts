@@ -1,5 +1,6 @@
 import Track, { ITrack } from '../../shared/models/models.track';
 import { NotFoundError } from '../../shared/errors/responseErrors';
+import User, { IUser } from '../../shared/models/models.user';
 
 export class TracksRepository {
   async findAll(): Promise<any[]> {
@@ -32,6 +33,24 @@ export class TracksRepository {
     if (!updatedTrack) return false;
     return true;
   }
+
+  async getLikedTracks(userId: string): Promise<(ITrack | null)[]> {
+    const searchUser = await User.findById<IUser>(userId);
+    if (!searchUser) {
+      throw new Error('Internal Server Error');
+    }
+
+    const tracksIdList = searchUser.likedTracks;
+
+    // run queries in paralled insteaad of a for loop
+    const tracksList = await Promise.all(
+      tracksIdList.map((trackId) => this.findById(trackId.toString())),
+    );
+
+    // returns null if user doesnt have any liked tracks
+    return tracksList;
+  }
+
   async create(data: any): Promise<any> {
     // TODO: insert into your data source
     return data;
