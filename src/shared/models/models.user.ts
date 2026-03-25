@@ -1,4 +1,4 @@
-import { Schema, Types, model } from 'mongoose';
+import { Schema, Types, model, Document } from 'mongoose';
 import { imgSchema } from './schemas.shared';
 import Settings from './models.settings';
 import logger from '../logger/logger';
@@ -237,6 +237,8 @@ const userSchema = new Schema(
     profileLink: {
       type: String,
       required: true,
+      unique: true,
+      trim: true,
     },
     links: {
       type: [socialLinkSchema],
@@ -321,6 +323,22 @@ userSchema.post('save', async function (doc) {
       `Failed to create settings for user ${doc._id}: ${err.message}`,
     );
   }
+});
+
+function sanitizeName(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+interface IUserDoc extends IUser, Document {}
+
+userSchema.pre<IUserDoc>('save', async function () {
+  if (!this.isNew) return;
+
+  const namePart = sanitizeName(this.displayName || 'user');
+  const idPart = this._id.toString().slice(-4);
+  const timePart = Date.now().toString().slice(-5);
+
+  this.profileLink = `${namePart}-${idPart}${timePart}`;
 });
 
 const User = model<IUser>('User', userSchema);
