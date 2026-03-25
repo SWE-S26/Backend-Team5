@@ -10,7 +10,7 @@ export const initializeConfig = async (): Promise<void> => {
     await initializeRedis();
     logger.info('[Config] Redis initialized');
   } else {
-    logger.info('[Config] Redis skipped');
+    logger.warn('[Config] Redis skipped');
   }
 
   logger.info('[Config] All services initialized');
