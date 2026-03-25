@@ -23,10 +23,8 @@ describe('CloudinaryService', () => {
         public_id: 'profile/test-image',
       };
 
-      // Mock the upload_stream method
       (cloudinary.uploader.upload_stream as jest.Mock).mockImplementation(
         (options: any, callback: Function) => {
-          // Return an object with .end(buffer) method
           return {
             end: (buffer: Buffer) => {
               callback(null, mockCloudinaryResponse);
@@ -42,7 +40,6 @@ describe('CloudinaryService', () => {
         ImageFolder.PROFILE,
       );
 
-      // Check that upload_stream was called with correct options
       expect(cloudinary.uploader.upload_stream).toHaveBeenCalledWith(
         {
           folder: ImageFolder.PROFILE,
@@ -53,7 +50,6 @@ describe('CloudinaryService', () => {
         expect.any(Function),
       );
 
-      // Check that the service returns the mapped result
       expect(result).toEqual({
         url: mockCloudinaryResponse.secure_url,
         publicId: mockCloudinaryResponse.public_id,

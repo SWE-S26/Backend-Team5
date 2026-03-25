@@ -38,4 +38,13 @@ profileRouter.patch(
   profileController.updatePrivacySettings.bind(profileController),
 );
 
+profileRouter.get(
+  apiVersions.v1 + '/settings/notifications',
+  profileController.getNotificationsSettings.bind(profileController),
+);
+profileRouter.patch(
+  apiVersions.v1 + '/settings/notifications',
+  profileController.updateNotificationsSettings.bind(profileController),
+);
+
 export default profileRouter;

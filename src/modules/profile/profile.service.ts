@@ -7,19 +7,13 @@ import { ProfileResponseDTOType } from './dtos/profile.response';
 import {
   UpdateProfileRequestBodyDTOType,
   UpdatePrivacySettingsDTOType,
+  UpdateNotificationsSettingsDTOType,
 } from './dtos/profile.request.body';
 import Settings, { ISettings } from '../../shared/models/models.settings';
 import {
   CloudinaryService,
   ImageFolder,
 } from '../../shared/abstractions/cloudinary.service';
-
-const defaultPrivacySettings: UpdatePrivacySettingsDTOType = {
-  allowMessagesAnyone: true,
-  showActivityDiscovery: true,
-  showFirstTopFan: true,
-  showTrackTopFans: true,
-};
 
 export class ProfileService {
   constructor(private readonly repository: ProfileRepository) {}
@@ -129,7 +123,7 @@ export class ProfileService {
     const settings: ISettings['privacy'] | null =
       await this.repository.getPrivacySettings(id);
     if (!settings) return null;
-    return { ...defaultPrivacySettings, ...settings };
+    return settings;
   }
 
   async updatePrivacySettings(
@@ -137,6 +131,24 @@ export class ProfileService {
     data: Partial<UpdatePrivacySettingsDTOType>,
   ): Promise<UpdatePrivacySettingsDTOType | null> {
     const updated = await this.repository.updatePrivacySettings(id, data);
+    if (!updated) return null;
+    return updated;
+  }
+
+  async getNotificationsSettings(
+    id: string,
+  ): Promise<UpdateNotificationsSettingsDTOType | null> {
+    const settings: ISettings['notifications'] | null =
+      await this.repository.getNotificationsSettings(id);
+    if (!settings) return null;
+    return settings;
+  }
+
+  async updateNotificationsSettings(
+    id: string,
+    data: Partial<UpdateNotificationsSettingsDTOType>,
+  ): Promise<UpdateNotificationsSettingsDTOType | null> {
+    const updated = await this.repository.updateNotificationsSettings(id, data);
     if (!updated) return null;
     return updated;
   }

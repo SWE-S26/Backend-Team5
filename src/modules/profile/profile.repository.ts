@@ -3,6 +3,7 @@ import Settings, { ISettings } from '../../shared/models/models.settings';
 import {
   UpdateProfileRequestBodyDTOType,
   UpdatePrivacySettingsDTOType,
+  UpdateNotificationsSettingsDTOType,
 } from './dtos/profile.request.body';
 
 export class ProfileRepository {
@@ -76,5 +77,27 @@ export class ProfileRepository {
       { new: true, runValidators: true, projection: { privacy: 1 } },
     ).lean();
     return updated?.privacy ?? null;
+  }
+
+  async getNotificationsSettings(
+    id: string,
+  ): Promise<ISettings['notifications'] | null> {
+    const doc = await Settings.findOne(
+      { userId: id },
+      { notifications: 1 },
+    ).lean();
+    return doc?.notifications ?? null;
+  }
+
+  async updateNotificationsSettings(
+    id: string,
+    data: Partial<UpdateNotificationsSettingsDTOType>,
+  ): Promise<ISettings['notifications'] | null> {
+    const updated = await Settings.findOneAndUpdate(
+      { userId: id },
+      { notifications: data },
+      { new: true, runValidators: true, projection: { notifications: 1 } },
+    ).lean();
+    return updated?.notifications ?? null;
   }
 }
