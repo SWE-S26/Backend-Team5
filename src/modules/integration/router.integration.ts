@@ -8,11 +8,15 @@ router.use(devSwagger);
 import authRoutes from '../auth/auth.routes';
 router.use('/auth', authRoutes);
 
+import { cacheMiddleware } from '../../shared/middleware/cacheMiddleware';
+
 import publicIntegrationRouter from './router.public.integration';
-router.use('/public', publicIntegrationRouter);
+router.use('/public', cacheMiddleware, publicIntegrationRouter);
 
 import { requireAuth } from '../../shared/middleware/requireAuth';
 router.use(requireAuth);
+
+router.use(cacheMiddleware);
 
 import adminRoutes from '../admin/admin.routes';
 router.use('/admin', adminRoutes);
