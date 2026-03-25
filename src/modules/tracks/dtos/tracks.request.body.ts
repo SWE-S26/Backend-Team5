@@ -1,19 +1,6 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
-export const CreateTracksRequestBodyDTO = extendedZod
-  .object({
-    email: extendedZod.string().email(),
-    password: extendedZod.string().min(6),
-    name: extendedZod.string().min(2),
-  })
-  .openapi('CreateTracksRequest', {
-    example: {
-      email: 'john.doe@example.com',
-      password: 'secret123',
-      name: 'John Doe',
-    },
-  });
 
-export const CreateTrackDTO = extendedZod.object({
+export const CreateTrackRequestBodyDTO = extendedZod.object({
   trackTitle: extendedZod.string(),
   permaLink: extendedZod
     .string()
@@ -67,11 +54,9 @@ export const CreateTrackDTO = extendedZod.object({
     .optional(),
   buyLink: extendedZod.string().optional(),
   recordLabel: extendedZod.string().optional(),
-  releaseDate: extendedZod
-    .string()
-    .refine((val) => !isNaN(Date.parse(val)), {
-      message: 'Invalid date format, must be ISO 8601',
-    }),
+  releaseDate: extendedZod.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: 'Invalid date format, must be ISO 8601',
+  }),
   publisher: extendedZod.string().optional(),
   ISRC: extendedZod
     .string()
