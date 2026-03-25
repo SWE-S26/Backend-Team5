@@ -15,8 +15,6 @@ export const UpdateProfileRequestBodyDTO = extendedZod.object({
   city: extendedZod.string().nullable().optional(),
   country: extendedZod.string().nullable().optional(),
   links: extendedZod.array(LinkDTO).optional(),
-  removeProfileImg: extendedZod.boolean().optional(),
-  removeBannerImg: extendedZod.boolean().optional(),
   bannerLinks: extendedZod.array(LinkDTO).optional(),
   supportLink: extendedZod.string().url().nullable().optional(),
   favoriteGenres: extendedZod.array(extendedZod.string()).optional(),
@@ -34,6 +32,15 @@ export type UpdateProfileRequestBodyDTOType = z.infer<
     publicId: string;
   };
 };
+
+export const UpdateProfileImagesRequestBodyDTO = extendedZod.object({
+  removeProfileImg: extendedZod.coerce.boolean().optional(),
+  removeBannerImg: extendedZod.coerce.boolean().optional(),
+});
+
+export type UpdateProfileImagesRequestBodyDTOType = z.infer<
+  typeof UpdateProfileImagesRequestBodyDTO
+>;
 
 export const UpdateAccountSettingsDTO = extendedZod.object({
   theme: extendedZod.enum(['Light', 'Dark', 'Automatic']).optional(),

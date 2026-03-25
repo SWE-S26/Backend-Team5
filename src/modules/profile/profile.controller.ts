@@ -5,6 +5,7 @@ import { ProfileIdParamDTO } from './dtos/profile.request.params';
 import {
   UpdateProfileRequestDTO,
   UpdatePrivacySettingsRequestDTO,
+  UpdateProfileImagesRequestDTO,
 } from './dtos/profile.request';
 
 export class ProfileController {
@@ -56,7 +57,7 @@ export class ProfileController {
     }
   }
 
-  async updateImages(req: Request, res: Response): Promise<void> {
+  async updateProfileImages(req: Request, res: Response): Promise<void> {
     try {
       const userId = req.userInfo!._id;
 
@@ -64,11 +65,19 @@ export class ProfileController {
         profileImg?: Express.Multer.File[];
         bannerImg?: Express.Multer.File[];
       };
-      const body = {
-        removeProfileImg: req.body.removeProfileImg === 'true',
-        removeBannerImg: req.body.removeBannerImg === 'true',
-      };
-      const updated = await this.service.updateImages(userId, body, files);
+
+      const validatedRequest = parseRequest(UpdateProfileImagesRequestDTO, req);
+
+      if (!validatedRequest.success) {
+        throw validatedRequest.error;
+      }
+      const flags = validatedRequest.data.body;
+
+      const updated = await this.service.updateProfileImages(
+        userId,
+        flags,
+        files,
+      );
 
       if (!updated) {
         res.status(404).json({ message: 'User not found' });

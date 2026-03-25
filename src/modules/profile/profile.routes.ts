@@ -22,12 +22,11 @@ profileRouter.patch(
 
 profileRouter.patch(
   apiVersions.v1 + '/images',
-  requireAuth,
   upload.fields([
     { name: 'profileImg', maxCount: 1 },
     { name: 'bannerImg', maxCount: 1 },
   ]),
-  profileController.updateImages.bind(profileController),
+  profileController.updateProfileImages.bind(profileController),
 );
 
 profileRouter.get(
