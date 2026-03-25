@@ -55,52 +55,44 @@
         trackCount:
           type: integer
 
-ProfileUpdate:
-  type: object
-  additionalProperties: false
-  properties:
-    displayName:
-      type: string
-    firstName:
-      type: string
-      nullable: true
-    lastName:
-      type: string
-      nullable: true
-    profileUrl:
-      type: string
-    bio:
-      type: string
-      nullable: true
-    city:
-      type: string
-      nullable: true
-    country:
-      type: string
-      nullable: true
-    profileImgLink:
-      type: string
-      format: uri
-      nullable: true
-    bannerImgLink:
-      type: string
-      format: uri
-      nullable: true
-    links:
-      type: array
-      items:
-        $ref: '#/components/schemas/Link'
-    bannerLinks:
-      type: array
-      items:
-        $ref: '#/components/schemas/Link'
-    supportLink:
-      type: string
-      format: uri
-    favoriteGenres:
-      type: array
-      items:
-        type: string
+    ProfileUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        displayName:
+          type: string
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        profileLink:
+          type: string
+        bio:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        country:
+          type: string
+          nullable: true
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        bannerLinks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        supportLink:
+          type: string
+          format: uri
+        favoriteGenres:
+          type: array
+          items:
+            type: string
 
 Link:
   type: object
