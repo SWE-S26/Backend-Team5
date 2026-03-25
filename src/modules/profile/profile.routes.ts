@@ -12,6 +12,16 @@ const profileService = new ProfileService(profileRepository);
 const profileController = new ProfileController(profileService);
 
 profileRouter.get(
+  apiVersions.v1 + '/check-profile-link',
+  profileController.isProfileLinkTaken.bind(profileController),
+);
+
+profileRouter.get(
+  apiVersions.v1 + '/profile-link/:profileLink',
+  profileController.getProfileByProfileLink.bind(profileController),
+);
+
+profileRouter.get(
   apiVersions.v1 + '/:id',
   profileController.getProfileById.bind(profileController),
 );
@@ -63,16 +73,6 @@ profileRouter.get(
 profileRouter.patch(
   apiVersions.v1 + '/settings/content',
   profileController.updateContentSettings.bind(profileController),
-);
-
-profileRouter.get(
-  apiVersions.v1 + '/profile-link/:profileLink',
-  profileController.getProfileByProfileLink.bind(profileController),
-);
-
-profileRouter.get(
-  apiVersions.v1 + '/check-profile-link',
-  profileController.isProfileLinkTaken.bind(profileController),
 );
 
 export default profileRouter;

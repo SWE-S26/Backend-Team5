@@ -210,19 +210,9 @@ const userSchema = new Schema(
     },
     profileImg: {
       type: imgSchema,
-      default: () => ({
-        imgLink:
-          'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg',
-        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi',
-      }),
     },
     bannerImg: {
       type: imgSchema,
-      default: () => ({
-        imgLink:
-          'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg',
-        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi',
-      }),
     },
     socialMediaLinks: {
       type: [socialLinkSchema],
