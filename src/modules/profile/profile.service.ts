@@ -65,7 +65,7 @@ export class ProfileService {
     return ProfileMapper.toResponse(combined);
   }
 
-  async updateImages(
+  async updateProfileImages(
     id: string,
     flags: { removeProfileImg?: boolean; removeBannerImg?: boolean },
     files: {
@@ -75,6 +75,8 @@ export class ProfileService {
   ): Promise<ProfileResponseDTOType | null> {
     const existingUser = await this.repository.getProfile(id);
     if (!existingUser) return null;
+
+    const updateData: Partial<UpdateProfileRequestBodyDTOType> = {};
 
     if (flags.removeProfileImg && existingUser.profileImg?.publicId) {
       await CloudinaryService.deleteImage(existingUser.profileImg.publicId);
@@ -88,7 +90,7 @@ export class ProfileService {
         files.profileImg[0].buffer,
         ImageFolder.PROFILE,
       );
-      existingUser.profileImg = {
+      updateData.profileImg = {
         imgLink: result.url,
         publicId: result.publicId,
       };
@@ -106,13 +108,17 @@ export class ProfileService {
         files.bannerImg[0].buffer,
         ImageFolder.PROFILE,
       );
-      existingUser.bannerImg = {
+      updateData.bannerImg = {
         imgLink: result.url,
         publicId: result.publicId,
       };
     }
 
-    const updatedUser = await this.repository.updateProfile(id, existingUser);
+    const updatedUser = await this.repository.updateProfileImages(id, {
+      ...updateData,
+      removeProfileImg: flags.removeProfileImg && !updateData.profileImg,
+      removeBannerImg: flags.removeBannerImg && !updateData.bannerImg,
+    });
     if (!updatedUser) return null;
 
     return ProfileMapper.toResponse(updatedUser);

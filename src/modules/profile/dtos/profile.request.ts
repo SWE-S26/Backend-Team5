@@ -6,6 +6,7 @@ import {
   UpdateContentSettingsDTO,
   UpdatePrivacySettingsDTO,
   UpdateNotificationsSettingsDTO,
+  UpdateProfileImagesRequestBodyDTO,
 } from './profile.request.body';
 
 export const CreateProfileRequestDTO = extendedZod.object({
@@ -14,6 +15,10 @@ export const CreateProfileRequestDTO = extendedZod.object({
 
 export const UpdateProfileRequestDTO = extendedZod.object({
   body: UpdateProfileRequestBodyDTO,
+});
+
+export const UpdateProfileImagesRequestDTO = extendedZod.object({
+  body: UpdateProfileImagesRequestBodyDTO,
 });
 
 export const UpdateAccountSettingsRequestDTO = extendedZod.object({
