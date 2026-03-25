@@ -54,6 +54,7 @@ export type IUser = {
     },
   ];
   isPaid: boolean;
+  isPrivate: boolean;
   ban: boolean;
   banReason: string;
   subscription: {
@@ -274,6 +275,10 @@ const userSchema = new Schema(
       default: [],
     },
     isPaid: {
+      type: Boolean,
+      default: false,
+    },
+    isPrivate: {
       type: Boolean,
       default: false,
     },

@@ -24,6 +24,8 @@ export class ProfileMapper {
         name: link.name || null,
         link: link.link,
       })),
+      isPaid: user.isPaid,
+      isPrivate: user.isPrivate,
       supportLink: user.supportLink || null,
       favoriteGenres: user.favoriteGenres || [],
       followersCount: user.followersCount || 0,

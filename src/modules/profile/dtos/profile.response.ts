@@ -17,6 +17,8 @@ export const ProfileResponseDTO = extendedZod.object({
   bannerLinks: extendedZod.array(LinkDTO).optional(),
   supportLink: extendedZod.string().url().nullable().optional(),
   favoriteGenres: extendedZod.array(extendedZod.string()).optional(),
+  isPaid: extendedZod.boolean(),
+  isPrivate: extendedZod.boolean(),
   followersCount: extendedZod.number().optional(),
   followedCount: extendedZod.number().optional(),
   trackCount: extendedZod.number().optional(),
