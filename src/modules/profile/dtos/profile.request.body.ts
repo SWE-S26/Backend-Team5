@@ -48,6 +48,10 @@ export const UpdateAccountSettingsDTO = extendedZod.object({
   gender: extendedZod.enum(['Male', 'Female']).optional(),
 });
 
+export type UpdateAccountSettingsDTOType = z.infer<
+  typeof UpdateAccountSettingsDTO
+>;
+
 export const UpdateContentSettingsDTO = extendedZod.object({
   rssFeedLink: extendedZod.string().optional(),
   rssEmailDisplayed: extendedZod.string().optional(),
@@ -61,6 +65,10 @@ export const UpdateContentSettingsDTO = extendedZod.object({
   includeInRssFeed: extendedZod.boolean().optional(),
   creativeCommonsLicense: extendedZod.boolean().optional(),
 });
+
+export type UpdateContentSettingsDTOType = z.infer<
+  typeof UpdateContentSettingsDTO
+>;
 
 export const UpdatePrivacySettingsDTO = extendedZod.object({
   accountIsPrivate: extendedZod.boolean().optional(),
@@ -113,3 +121,7 @@ export const UpdateNotificationsSettingsDTO = extendedZod.object({
     .enum(['email', 'devices', 'both', 'off'])
     .optional(),
 });
+
+export type UpdateNotificationsSettingsDTOType = z.infer<
+  typeof UpdateNotificationsSettingsDTO
+>;
