@@ -1,57 +1,59 @@
 # OpenAPI parameter definitions for the profile module, starting writing normally like paths
 
-Profile:
-  type: object
-  properties:
-    userId:
-      type: string
-    displayName:
-      type: string
-    firstName:
-      type: string
-    lastName:
-      type: string
-    profileLink:
-      type: string
-    profileImgLink:
-      type: string
-      format: uri
-    bannerImgLink:
-      type: string
-      format: uri
-    bio:
-      type: string
-    city:
-      type: string
-    country:
-      type: string
-    links:
-      type: array
-      items:
-        $ref: '#/components/schemas/Link'
-    bannerLinks:
-      type: array
-      items:
-        $ref: '#/components/schemas/Link'
-    supportLink:
-      type: string
-      format: uri
-    role:
-      type: string
-      enum: [Listener, Admin]
-    isPaid:
-      type: boolean
-      description: Indicates if the user is a paid/pro user
-    favoriteGenres:
-      type: array
-      items:
-        type: string
-    followersCount:
-      type: integer
-    followingsCount:
-      type: integer
-    trackCount:
-      type: integer
+    Profile:
+      type: object
+      properties:
+        userId:
+          type: string
+        displayName:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        profileLink:
+          type: string
+        profileImgLink:
+          type: string
+          format: uri
+        bannerImgLink:
+          type: string
+          format: uri
+        bio:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        bannerLinks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        supportLink:
+          type: string
+          format: uri
+        role:
+          type: string
+          enum: [Listener/Artist, Admin]
+        isPaid:
+          type: boolean
+          description: Indicates if the user is a paid/pro user
+        isPrivate:
+          type: boolean          
+        favoriteGenres:
+          type: array
+          items:
+            type: string
+        followersCount:
+          type: integer
+        followingsCount:
+          type: integer
+        trackCount:
+          type: integer
 
 ProfileUpdate:
   type: object

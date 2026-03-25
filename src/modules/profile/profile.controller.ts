@@ -29,7 +29,7 @@ export class ProfileController {
     const userId = validatedRequest.data!.params.id;
     const profile = await this.service.getProfileById(userId);
 
-    if (!profile) NotFoundError('User not found');
+    if (!profile) throw NotFoundError('User not found');
 
     res.json(profile);
   }
@@ -47,7 +47,7 @@ export class ProfileController {
       validatedRequest.data.body,
     );
 
-    if (!updated) NotFoundError('User not found');
+    if (!updated) throw NotFoundError('User not found');
 
     res.json(updated);
   }
@@ -73,7 +73,7 @@ export class ProfileController {
     );
 
     if (!updated) {
-      NotFoundError('User not found');
+      throw NotFoundError('User not found');
     }
 
     res.json(updated);
@@ -83,7 +83,7 @@ export class ProfileController {
     const userId = req.userInfo!._id;
 
     const settings = await this.service.getPrivacySettings(userId);
-    if (!settings) NotFoundError('User settings not found');
+    if (!settings) throw NotFoundError('User settings not found');
 
     res.json(settings);
   }
@@ -100,7 +100,7 @@ export class ProfileController {
       userId,
       validatedRequest.data.body,
     );
-    if (!updated) NotFoundError('User settings not found');
+    if (!updated) throw NotFoundError('User settings not found');
 
     res.json(updated);
   }
@@ -108,7 +108,7 @@ export class ProfileController {
     const userId = req.userInfo!._id;
 
     const settings = await this.service.getNotificationsSettings(userId);
-    if (!settings) NotFoundError('User settings not found');
+    if (!settings) throw NotFoundError('User settings not found');
 
     res.json(settings);
   }
@@ -131,7 +131,7 @@ export class ProfileController {
       userId,
       validatedRequest.data.body,
     );
-    if (!updated) NotFoundError('User settings not found');
+    if (!updated) throw NotFoundError('User settings not found');
 
     res.json(updated);
   }
@@ -140,7 +140,7 @@ export class ProfileController {
     const userId = req.userInfo!._id;
 
     const settings = await this.service.getAccountSettings(userId);
-    if (!settings) NotFoundError('User settings not found');
+    if (!settings) throw NotFoundError('User settings not found');
 
     res.json(settings);
   }
@@ -157,7 +157,7 @@ export class ProfileController {
       userId,
       validatedRequest.data.body,
     );
-    if (!updated) NotFoundError('User settings not found');
+    if (!updated) throw NotFoundError('User settings not found');
 
     res.json(updated);
   }
@@ -166,7 +166,7 @@ export class ProfileController {
     const userId = req.userInfo!._id;
 
     const settings = await this.service.getContentSettings(userId);
-    if (!settings) NotFoundError('User settings not found');
+    if (!settings) throw NotFoundError('User settings not found');
 
     res.json(settings);
   }
@@ -183,7 +183,7 @@ export class ProfileController {
       userId,
       validatedRequest.data.body,
     );
-    if (!updated) NotFoundError('User settings not found');
+    if (!updated) throw NotFoundError('User settings not found');
 
     res.json(updated);
   }
@@ -195,10 +195,10 @@ export class ProfileController {
       throw validatedRequest.error;
     }
 
-    const username = validatedRequest.data!.params.username;
-    const profile = await this.service.getProfileByProfileLink(username);
+    const profileLink = validatedRequest.data!.params.profileLink;
+    const profile = await this.service.getProfileByProfileLink(profileLink);
 
-    if (!profile) NotFoundError('User not found');
+    if (!profile) throw NotFoundError('User not found');
 
     res.json(profile);
   }
@@ -207,8 +207,8 @@ export class ProfileController {
     const validated = parseRequest(CheckProfileLinkParamDTO, req);
     if (!validated.success) throw validated.error;
 
-    const { username } = validated.data.query;
-    const result = await this.service.isProfileLinkTaken(username);
+    const { profileLink } = validated.data.query;
+    const result = await this.service.isProfileLinkTaken(profileLink);
 
     res.json(result);
   }
