@@ -20,8 +20,8 @@ import {
 export class ProfileService {
   constructor(private readonly repository: ProfileRepository) {}
 
-  async getProfile(id: string): Promise<ProfileResponseDTOType | null> {
-    const user: IUser | null = await this.repository.getProfile(id);
+  async getProfileById(id: string): Promise<ProfileResponseDTOType | null> {
+    const user: IUser | null = await this.repository.getProfileById(id);
     if (!user) return null;
 
     const followDoc = await Following.findOne({ userId: id }).lean();
@@ -69,7 +69,7 @@ export class ProfileService {
       bannerImg?: Express.Multer.File[];
     },
   ): Promise<ProfileResponseDTOType | null> {
-    const existingUser = await this.repository.getProfile(id);
+    const existingUser = await this.repository.getProfileById(id);
     if (!existingUser) return null;
 
     const updateData: Partial<UpdateProfileRequestBodyDTOType> = {};
@@ -189,5 +189,26 @@ export class ProfileService {
     const updated = await this.repository.updateContentSettings(id, data);
     if (!updated) return null;
     return updated;
+  }
+
+  async getProfileByProfileLink(
+    username: string,
+  ): Promise<ProfileResponseDTOType | null> {
+    const user = await this.repository.getProfileByProfileLink(username);
+    if (!user) return null;
+
+    const followDoc = await Following.findOne({ userId: user._id }).lean();
+    const followersCount = followDoc?.followers.length ?? 0;
+    const followedCount = followDoc?.followed.length ?? 0;
+    const trackCount = await Track.countDocuments({ posterId: user._id });
+
+    const combined = {
+      ...user,
+      followersCount,
+      followedCount,
+      trackCount,
+    };
+
+    return ProfileMapper.toResponse(combined);
   }
 }

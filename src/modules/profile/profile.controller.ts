@@ -2,7 +2,10 @@ import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { NotFoundError } from '../../shared/errors/responseErrors';
 import { ProfileService } from './profile.service';
-import { ProfileIdParamDTO } from './dtos/profile.request.params';
+import {
+  ProfileIdParamDTO,
+  ProfileUserNameParamDTO,
+} from './dtos/profile.request.params';
 import {
   UpdateProfileRequestDTO,
   UpdatePrivacySettingsRequestDTO,
@@ -15,14 +18,14 @@ import {
 export class ProfileController {
   constructor(private readonly service: ProfileService) {}
 
-  async getProfile(req: Request, res: Response): Promise<void> {
+  async getProfileById(req: Request, res: Response): Promise<void> {
     const validatedRequest = parseRequest(ProfileIdParamDTO, req);
     if (!validatedRequest.success) {
       throw validatedRequest.error;
     }
 
     const userId = validatedRequest.data!.params.id;
-    const profile = await this.service.getProfile(userId);
+    const profile = await this.service.getProfileById(userId);
 
     if (!profile) NotFoundError('User not found');
 
@@ -181,5 +184,20 @@ export class ProfileController {
     if (!updated) NotFoundError('User settings not found');
 
     res.json(updated);
+  }
+
+  async getProfileByProfileLink(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(ProfileUserNameParamDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const username = validatedRequest.data!.params.username;
+    const profile = await this.service.getProfileByProfileLink(username);
+
+    if (!profile) NotFoundError('User not found');
+
+    res.json(profile);
   }
 }
