@@ -67,7 +67,7 @@
         lastName:
           type: string
           nullable: true
-        profileUrl:
+        profileLink:
           type: string
         bio:
           type: string
@@ -77,14 +77,6 @@
           nullable: true
         country:
           type: string
-          nullable: true
-        profileImgLink:
-          type: string
-          format: uri
-          nullable: true
-        bannerImgLink:
-          type: string
-          format: uri
           nullable: true
         links:
           type: array

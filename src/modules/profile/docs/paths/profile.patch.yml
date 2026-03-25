@@ -56,6 +56,80 @@
                     message: "Validation error"
                     code: 422
 
+  /api/profile/v1/images:
+    patch:
+      tags:
+        - Profile-Management
+      summary: Update user profile and banner images
+      description: >
+        Updates the user's profile and banner images. You can upload new images, 
+        or remove existing ones using the boolean flags `removeProfileImg` and `removeBannerImg`.
+      operationId: updateProfileImages
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                profileImg:
+                  type: string
+                  format: binary
+                  description: Optional. New profile image file.
+                bannerImg:
+                  type: string
+                  format: binary
+                  description: Optional. New banner image file.
+                removeProfileImg:
+                  type: boolean
+                  description: Optional. Set to true to remove the existing profile image.
+                removeBannerImg:
+                  type: boolean
+                  description: Optional. Set to true to remove the existing banner image.
+      responses:
+        '200':
+          description: Images updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidRequest:
+                  value:
+                    success: false
+                    message: "Invalid request data"
+                    code: 400
+        '401':
+          description: Unauthorized — missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  value:
+                    success: false
+                    message: "Unauthorized"
+                    code: 401
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    success: false
+                    message: "User not found"
+                    code: 404
+
   /api/profile/v1/settings/account:
     patch:
       tags:
