@@ -90,6 +90,8 @@ export class TracksService {
     return trackResponseList;
   }
 
+  async uploadAudioTrack() {}
+
   async update(id: string, data: any): Promise<any | null> {
     return this.tracksRepository.update(id, data);
   }

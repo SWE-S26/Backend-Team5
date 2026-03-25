@@ -5,10 +5,11 @@ import {
   DeleteTrackRequestDTO,
   GetTrackByIdRequestDTO,
   IncrementTrackListenCountRequestDTO,
+  uploadAudioTrackRequestDTO,
 } from './dtos/tracks.request';
 
 import { JWTPayload } from '../../shared/abstractions/jwt';
-import { success } from 'zod';
+import { BadRequestError } from '../../shared/errors/responseErrors';
 
 type userInfo = {
   userId: string;
@@ -30,6 +31,18 @@ export class TracksController {
       userRole: role,
       paymentInfo: paymentInfo,
     };
+  }
+
+  private validateTrackFiles(req: Request) {
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
+    if (!files?.audio?.[0]) {
+      throw BadRequestError('Audio File Required');
+    }
+
+    // check if has img file
+    if (files?.image?.[0]) return true;
+    else return false;
   }
 
   async deleteTrackById(req: Request, res: Response): Promise<void> {
@@ -115,6 +128,18 @@ export class TracksController {
       message: 'User Liked Tracks Received Successfully',
       data: likedTracks,
     });
+  }
+
+  async uploadAudioTrack(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(uploadAudioTrackRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const hasImgfile = this.validateTrackFiles(req);
+    const trackInfo = validatedRequest.data.body;
+    const isUploaded = this.service.uploadAudioTrack();
   }
 
   async replace(req: Request, res: Response): Promise<void> {
