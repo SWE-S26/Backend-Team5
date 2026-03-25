@@ -211,4 +211,9 @@ export class ProfileService {
 
     return ProfileMapper.toResponse(combined);
   }
+
+  async isProfileLinkTaken(username: string): Promise<{ taken: boolean }> {
+    const taken = await this.repository.isProfileLinkTaken(username);
+    return { taken };
+  }
 }

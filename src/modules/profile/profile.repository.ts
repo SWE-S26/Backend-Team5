@@ -150,4 +150,9 @@ export class ProfileRepository {
   async getProfileByProfileLink(username: string): Promise<IUser | null> {
     return await User.findOne({ profileLink: username }).lean();
   }
+
+  async isProfileLinkTaken(username: string): Promise<boolean> {
+    const user = await User.findOne({ profileLink: username }).lean();
+    return !!user;
+  }
 }
