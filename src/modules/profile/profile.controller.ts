@@ -8,6 +8,7 @@ import {
   UpdatePrivacySettingsRequestDTO,
   UpdateProfileImagesRequestDTO,
   UpdateNotificationsSettingsRequestDTO,
+  UpdateAccountSettingsRequestDTO,
 } from './dtos/profile.request';
 
 export class ProfileController {
@@ -121,6 +122,32 @@ export class ProfileController {
     }
 
     const updated = await this.service.updateNotificationsSettings(
+      userId,
+      validatedRequest.data.body,
+    );
+    if (!updated) NotFoundError('User settings not found');
+
+    res.json(updated);
+  }
+
+  async getAccountSettings(req: Request, res: Response): Promise<void> {
+    const userId = req.userInfo!._id;
+
+    const settings = await this.service.getAccountSettings(userId);
+    if (!settings) NotFoundError('User settings not found');
+
+    res.json(settings);
+  }
+
+  async updateAccountSettings(req: Request, res: Response): Promise<void> {
+    const userId = req.userInfo!._id;
+    const validatedRequest = parseRequest(UpdateAccountSettingsRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const updated = await this.service.updateAccountSettings(
       userId,
       validatedRequest.data.body,
     );

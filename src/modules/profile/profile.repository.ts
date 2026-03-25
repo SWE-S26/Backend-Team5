@@ -4,6 +4,7 @@ import {
   UpdateProfileRequestBodyDTOType,
   UpdatePrivacySettingsDTOType,
   UpdateNotificationsSettingsDTOType,
+  UpdateAccountSettingsDTOType,
 } from './dtos/profile.request.body';
 
 export class ProfileRepository {
@@ -99,5 +100,32 @@ export class ProfileRepository {
       { new: true, runValidators: true, projection: { notifications: 1 } },
     ).lean();
     return updated?.notifications ?? null;
+  }
+
+  async getAccountSettings(id: string): Promise<ISettings['account'] | null> {
+    const doc = await Settings.findOne({ userId: id }, { account: 1 }).lean();
+    return doc?.account ?? null;
+  }
+
+  async updateAccountSettings(
+    id: string,
+    data: Partial<UpdateAccountSettingsDTOType>,
+  ): Promise<ISettings['account'] | null> {
+    const updated = await Settings.findOneAndUpdate(
+      { userId: id },
+      { account: data },
+      { new: true, runValidators: true, projection: { account: 1 } },
+    ).lean();
+
+    const userUpdate: any = {};
+    if (data.gender !== undefined) userUpdate.gender = data.gender;
+    if (data.dateOfBirth !== undefined)
+      userUpdate.dateOfBirth = data.dateOfBirth;
+    await User.findByIdAndUpdate(id, userUpdate, {
+      new: true,
+      runValidators: true,
+    });
+
+    return updated?.account ?? null;
   }
 }

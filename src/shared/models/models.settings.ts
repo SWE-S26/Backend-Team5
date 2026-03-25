@@ -5,6 +5,7 @@ export type ISettings = {
   account: {
     dateOfBirth: Date;
     theme: 'Light' | 'Dark' | 'Automatic';
+    gender: 'Male' | 'Female';
   };
   content: {
     rssFeedLink: string;
@@ -202,6 +203,11 @@ const accountSettingsSchema = new Schema(
       type: String,
       enum: ['Light', 'Dark', 'Automatic'],
       default: 'Automatic',
+    },
+    gender: {
+      type: String,
+      enum: ['Male', 'Female'],
+      required: true,
     },
   },
   { _id: false },

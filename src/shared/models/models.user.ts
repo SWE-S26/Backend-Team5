@@ -306,7 +306,7 @@ userSchema.post('save', async function (doc) {
     if (!existingSettings) {
       await Settings.create({
         userId: doc._id,
-        account: { dateOfBirth: doc.dateOfBirth },
+        account: { dateOfBirth: doc.dateOfBirth, gender: doc.gender },
         content: { rssFeedLink: 'https://example.com/rss' },
       });
       logger.debug(`Settings created for user ${doc._id}`);
