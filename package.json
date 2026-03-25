@@ -11,7 +11,8 @@
     "dev": "tsx watch --clear-screen=false src/server.ts",
     "test": "jest",
     "postinstall": "node scripts/install-hooks.js",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "migrate": "tsx scripts/migrations/migrate.ts"
   },
   "author": "",
   "license": "ISC",

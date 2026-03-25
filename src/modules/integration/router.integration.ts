@@ -1,10 +1,6 @@
 import { Router } from 'express';
 const router = Router();
 
-router.use('/get-health', (req, res) => {
-  res.json({ status: 'I am working!' });
-});
-
 import devSwagger from './documentationIntegrator/swagger.dev';
 
 router.use(devSwagger);

@@ -26,7 +26,7 @@ describe('MongoDB Initialization', () => {
     const mongoose = require('mongoose');
     mongoose.connect.mockResolvedValueOnce({});
 
-    const { intializeDbConnection } = require('../../src/config/db');
+    const { intializeDbConnection } = require('../../src/config/db/connect');
     const logger = require('../../src/shared/logger/logger');
 
     await intializeDbConnection();
@@ -41,7 +41,7 @@ describe('MongoDB Initialization', () => {
       .mockRejectedValueOnce(new Error('fail'))
       .mockResolvedValueOnce({});
 
-    const { intializeDbConnection } = require('../../src/config/db');
+    const { intializeDbConnection } = require('../../src/config/db/connect');
     const logger = require('../../src/shared/logger/logger');
 
     await intializeDbConnection();
@@ -66,7 +66,7 @@ describe('MongoDB Initialization', () => {
       },
     );
 
-    require('../../src/config/db');
+    require('../../src/config/db/connect');
     const logger = require('../../src/shared/logger/logger');
 
     listeners['disconnected']();
@@ -91,7 +91,7 @@ describe('MongoDB Initialization', () => {
       },
     );
 
-    require('../../src/config/db'); // triggers connection.on('disconnected', ...) etc.
+    require('../../src/config/db/connect'); // triggers connection.on('disconnected', ...) etc.
     const logger = require('../../src/shared/logger/logger');
 
     listeners['disconnected']();
@@ -114,7 +114,7 @@ describe('MongoDB Initialization', () => {
       },
     );
 
-    require('../../src/config/db'); // triggers connection.on('disconnected', ...) etc.
+    require('../../src/config/db/connect'); // triggers connection.on('disconnected', ...) etc.
     const logger = require('../../src/shared/logger/logger');
 
     listeners['error'](new Error('runtime failure'));
