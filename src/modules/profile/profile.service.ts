@@ -16,6 +16,7 @@ import {
   CloudinaryService,
   ImageFolder,
 } from '../../shared/abstractions/cloudinary.service';
+import { ResourceAlreadyExists } from '../../shared/errors/responseErrors';
 
 export class ProfileService {
   constructor(private readonly repository: ProfileRepository) {}
@@ -43,7 +44,15 @@ export class ProfileService {
     id: string,
     data: Partial<UpdateProfileRequestBodyDTOType>,
   ): Promise<ProfileResponseDTOType | null> {
-    const updatedUser = await this.repository.updateProfile(id, data);
+    let updatedUser;
+    try {
+      updatedUser = await this.repository.updateProfile(id, data);
+    } catch (err: any) {
+      if (err.code === 11000 && err.keyPattern?.profileLink) {
+        throw ResourceAlreadyExists('Profile link already taken');
+      }
+      throw err;
+    }
     if (!updatedUser) return null;
 
     const followDoc = await Following.findOne({ userId: id }).lean();

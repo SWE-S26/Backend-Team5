@@ -3,7 +3,7 @@
       tags:
         - Profile-Management
       summary: Get user profile
-      description: Returns profile information of a specific user. If the profile is private, limited information may be returned.
+      description: Returns profile information of a specific user. 
       operationId: getUserProfile
       parameters:
         - name: userId
@@ -67,7 +67,128 @@
                     success: false
                     message: "User not found"
                     code: 404
+  /api/profile/v1/profile-link/{profilelink}:
+    get:
+      tags:
+        - Profile-Management
+      summary: Get user profile by profile link
+      description: Returns profile information for a user based on their unique `profilelink`. If the profile is private, limited information may be returned.
+      operationId: getProfileByProfileLink
+      parameters:
+        - name: profilelink
+          in: path
+          required: true
+          description: Unique profile link of the user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: Invalid profile link supplied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidProfileLink:
+                  value:
+                    success: false
+                    message: "Invalid profile link"
+                    code: 400
+        '401':
+          description: Unauthorized — missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  value:
+                    success: false
+                    message: "Unauthorized"
+                    code: 401
+        '403':
+          description: Profile is private
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                private:
+                  value:
+                    success: false
+                    message: "Profile is private"
+                    code: 403
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  value:
+                    success: false
+                    message: "User not found"
+                    code: 404
 
+
+  /api/profile/v1/check-profile-link:
+    get:
+      tags:
+        - Profile-Management
+      summary: Check if profile link is taken
+      description: Returns whether a specific `profilelink` is already used by another user.
+      operationId: isProfileLinkTaken
+      parameters:
+        - name: profileLink
+          in: query
+          required: true
+          description: Profile link to check for availability
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Profile link availability status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  taken:
+                    type: boolean
+                    description: Indicates if the profile link is already taken
+                example:
+                  taken: true
+        '400':
+          description: Invalid or missing profile link
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidQuery:
+                  value:
+                    success: false
+                    message: "Profile link is required"
+                    code: 400
+        '401':
+          description: Unauthorized — missing or invalid JWT
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  value:
+                    success: false
+                    message: "Unauthorized"
+                    code: 401
 
   /api/profile/v1/settings/account:
     get:

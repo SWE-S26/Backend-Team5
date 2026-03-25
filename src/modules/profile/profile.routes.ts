@@ -66,7 +66,7 @@ profileRouter.patch(
 );
 
 profileRouter.get(
-  apiVersions.v1 + '/username/:username',
+  apiVersions.v1 + '/profile-link/:profileLink',
   profileController.getProfileByProfileLink.bind(profileController),
 );
 

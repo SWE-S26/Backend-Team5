@@ -42,6 +42,8 @@
         isPaid:
           type: boolean
           description: Indicates if the user is a paid/pro user
+        isPrivate:
+          type: boolean          
         favoriteGenres:
           type: array
           items:
