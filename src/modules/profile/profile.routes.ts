@@ -47,4 +47,22 @@ profileRouter.patch(
   profileController.updateNotificationsSettings.bind(profileController),
 );
 
+profileRouter.get(
+  apiVersions.v1 + '/settings/account',
+  profileController.getAccountSettings.bind(profileController),
+);
+profileRouter.patch(
+  apiVersions.v1 + '/settings/account',
+  profileController.updateAccountSettings.bind(profileController),
+);
+
+profileRouter.get(
+  apiVersions.v1 + '/settings/content',
+  profileController.getContentSettings.bind(profileController),
+);
+profileRouter.patch(
+  apiVersions.v1 + '/settings/content',
+  profileController.updateContentSettings.bind(profileController),
+);
+
 export default profileRouter;
