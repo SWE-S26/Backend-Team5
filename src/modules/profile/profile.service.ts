@@ -8,6 +8,7 @@ import {
   UpdateProfileRequestBodyDTOType,
   UpdatePrivacySettingsDTOType,
   UpdateNotificationsSettingsDTOType,
+  UpdateAccountSettingsDTOType,
 } from './dtos/profile.request.body';
 import Settings, { ISettings } from '../../shared/models/models.settings';
 import {
@@ -149,6 +150,24 @@ export class ProfileService {
     data: Partial<UpdateNotificationsSettingsDTOType>,
   ): Promise<UpdateNotificationsSettingsDTOType | null> {
     const updated = await this.repository.updateNotificationsSettings(id, data);
+    if (!updated) return null;
+    return updated;
+  }
+
+  async getAccountSettings(
+    id: string,
+  ): Promise<UpdateAccountSettingsDTOType | null> {
+    const settings: ISettings['account'] | null =
+      await this.repository.getAccountSettings(id);
+    if (!settings) return null;
+    return settings;
+  }
+
+  async updateAccountSettings(
+    id: string,
+    data: Partial<UpdateAccountSettingsDTOType>,
+  ): Promise<UpdateAccountSettingsDTOType | null> {
+    const updated = await this.repository.updateAccountSettings(id, data);
     if (!updated) return null;
     return updated;
   }
