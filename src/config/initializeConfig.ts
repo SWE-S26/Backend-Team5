@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { intializeDbConnection } from './db';
+import { intializeDbConnection } from './db/connect';
 import { initializeRedis } from './redis';
 import logger from '../shared/logger/logger';
 
