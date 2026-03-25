@@ -5,6 +5,7 @@ import {
   UpdatePrivacySettingsDTOType,
   UpdateNotificationsSettingsDTOType,
   UpdateAccountSettingsDTOType,
+  UpdateContentSettingsDTOType,
 } from './dtos/profile.request.body';
 
 export class ProfileRepository {
@@ -127,5 +128,22 @@ export class ProfileRepository {
     });
 
     return updated?.account ?? null;
+  }
+
+  async getContentSettings(id: string): Promise<ISettings['content'] | null> {
+    const doc = await Settings.findOne({ userId: id }, { content: 1 }).lean();
+    return doc?.content ?? null;
+  }
+
+  async updateContentSettings(
+    id: string,
+    data: Partial<UpdateContentSettingsDTOType>,
+  ): Promise<ISettings['content'] | null> {
+    const updated = await Settings.findOneAndUpdate(
+      { userId: id },
+      { content: data },
+      { new: true, runValidators: true, projection: { content: 1 } },
+    ).lean();
+    return updated?.content ?? null;
   }
 }
