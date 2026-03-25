@@ -207,7 +207,7 @@ export class ProfileController {
     const validated = parseRequest(CheckProfileLinkParamDTO, req);
     if (!validated.success) throw validated.error;
 
-    const { profileLink } = validated.data.query;
+    const profileLink = validated.data.query.profileLink;
     const result = await this.service.isProfileLinkTaken(profileLink);
 
     res.json(result);

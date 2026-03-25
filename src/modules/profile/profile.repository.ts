@@ -73,9 +73,16 @@ export class ProfileRepository {
     id: string,
     data: Partial<UpdatePrivacySettingsDTOType>,
   ): Promise<ISettings['privacy'] | null> {
+    const existing = await Settings.findOne(
+      { userId: id },
+      { privacy: 1 },
+    ).lean();
+    if (!existing) return null;
+    const merged = { ...existing.privacy, ...data };
+
     const updated = await Settings.findOneAndUpdate(
       { userId: id },
-      { privacy: data },
+      { privacy: merged },
       { new: true, runValidators: true, projection: { privacy: 1 } },
     ).lean();
     return updated?.privacy ?? null;
@@ -95,9 +102,16 @@ export class ProfileRepository {
     id: string,
     data: Partial<UpdateNotificationsSettingsDTOType>,
   ): Promise<ISettings['notifications'] | null> {
+    const existing = await Settings.findOne(
+      { userId: id },
+      { notifications: 1 },
+    ).lean();
+    if (!existing) return null;
+    const merged = { ...existing.notifications, ...data };
+
     const updated = await Settings.findOneAndUpdate(
       { userId: id },
-      { notifications: data },
+      { notifications: merged },
       { new: true, runValidators: true, projection: { notifications: 1 } },
     ).lean();
     return updated?.notifications ?? null;
@@ -112,9 +126,16 @@ export class ProfileRepository {
     id: string,
     data: Partial<UpdateAccountSettingsDTOType>,
   ): Promise<ISettings['account'] | null> {
+    const existing = await Settings.findOne(
+      { userId: id },
+      { account: 1 },
+    ).lean();
+    if (!existing) return null;
+    const merged = { ...existing.account, ...data };
+
     const updated = await Settings.findOneAndUpdate(
       { userId: id },
-      { account: data },
+      { account: merged },
       { new: true, runValidators: true, projection: { account: 1 } },
     ).lean();
 
@@ -139,9 +160,16 @@ export class ProfileRepository {
     id: string,
     data: Partial<UpdateContentSettingsDTOType>,
   ): Promise<ISettings['content'] | null> {
+    const existing = await Settings.findOne(
+      { userId: id },
+      { content: 1 },
+    ).lean();
+    if (!existing) return null;
+    const merged = { ...existing.content, ...data };
+
     const updated = await Settings.findOneAndUpdate(
       { userId: id },
-      { content: data },
+      { content: merged },
       { new: true, runValidators: true, projection: { content: 1 } },
     ).lean();
     return updated?.content ?? null;
