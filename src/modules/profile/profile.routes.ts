@@ -13,7 +13,7 @@ const profileController = new ProfileController(profileService);
 
 profileRouter.get(
   apiVersions.v1 + '/:id',
-  profileController.getProfile.bind(profileController),
+  profileController.getProfileById.bind(profileController),
 );
 profileRouter.patch(
   apiVersions.v1 + '/',
@@ -63,6 +63,11 @@ profileRouter.get(
 profileRouter.patch(
   apiVersions.v1 + '/settings/content',
   profileController.updateContentSettings.bind(profileController),
+);
+
+profileRouter.get(
+  apiVersions.v1 + '/username/:username',
+  profileController.getProfileByProfileLink.bind(profileController),
 );
 
 export default profileRouter;

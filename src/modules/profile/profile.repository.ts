@@ -9,7 +9,7 @@ import {
 } from './dtos/profile.request.body';
 
 export class ProfileRepository {
-  async getProfile(id: string): Promise<IUser | null> {
+  async getProfileById(id: string): Promise<IUser | null> {
     return await User.findById(id).lean();
   }
 
@@ -145,5 +145,9 @@ export class ProfileRepository {
       { new: true, runValidators: true, projection: { content: 1 } },
     ).lean();
     return updated?.content ?? null;
+  }
+
+  async getProfileByProfileLink(username: string): Promise<IUser | null> {
+    return await User.findOne({ profileLink: username }).lean();
   }
 }
