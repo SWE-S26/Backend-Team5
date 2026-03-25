@@ -4,8 +4,10 @@ import { NotFoundError } from '../../shared/errors/responseErrors';
 import { ProfileService } from './profile.service';
 import {
   ProfileIdParamDTO,
-  ProfileUserNameParamDTO,
+  ProfileLinkParamDTO,
 } from './dtos/profile.request.params';
+
+import { CheckProfileLinkParamDTO } from './dtos/profile.request.query';
 import {
   UpdateProfileRequestDTO,
   UpdatePrivacySettingsRequestDTO,
@@ -187,7 +189,7 @@ export class ProfileController {
   }
 
   async getProfileByProfileLink(req: Request, res: Response): Promise<void> {
-    const validatedRequest = parseRequest(ProfileUserNameParamDTO, req);
+    const validatedRequest = parseRequest(ProfileLinkParamDTO, req);
 
     if (!validatedRequest.success) {
       throw validatedRequest.error;
@@ -199,5 +201,15 @@ export class ProfileController {
     if (!profile) NotFoundError('User not found');
 
     res.json(profile);
+  }
+
+  async isProfileLinkTaken(req: Request, res: Response): Promise<void> {
+    const validated = parseRequest(CheckProfileLinkParamDTO, req);
+    if (!validated.success) throw validated.error;
+
+    const { username } = validated.data.query;
+    const result = await this.service.isProfileLinkTaken(username);
+
+    res.json(result);
   }
 }

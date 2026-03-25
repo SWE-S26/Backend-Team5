@@ -70,4 +70,9 @@ profileRouter.get(
   profileController.getProfileByProfileLink.bind(profileController),
 );
 
+profileRouter.get(
+  apiVersions.v1 + '/check-profile-link',
+  profileController.isProfileLinkTaken.bind(profileController),
+);
+
 export default profileRouter;
