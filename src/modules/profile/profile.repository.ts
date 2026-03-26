@@ -34,21 +34,9 @@ export class ProfileRepository {
     data: {
       profileImg?: { imgLink: string; publicId: string };
       bannerImg?: { imgLink: string; publicId: string };
-      removeProfileImg?: boolean;
-      removeBannerImg?: boolean;
     },
   ): Promise<IUser | null> {
     const updateData: any = {};
-
-    if (data.removeProfileImg) {
-      updateData.$unset = updateData.$unset || {};
-      updateData.$unset.profileImg = '';
-    }
-
-    if (data.removeBannerImg) {
-      updateData.$unset = updateData.$unset || {};
-      updateData.$unset.bannerImg = '';
-    }
 
     if (data.profileImg) {
       updateData.profileImg = data.profileImg;

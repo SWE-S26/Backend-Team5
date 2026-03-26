@@ -82,10 +82,10 @@
                   description: Optional. New banner image file.
                 removeProfileImg:
                   type: boolean
-                  description: Optional. Set to true to remove the existing profile image.
+                  description: Set to true to remove the existing profile image and false otherwise.
                 removeBannerImg:
                   type: boolean
-                  description: Optional. Set to true to remove the existing banner image.
+                  description: Set to true to remove the existing banner image and false otherwise.
       responses:
         '200':
           description: Images updated successfully

@@ -38,7 +38,7 @@
           format: uri
         role:
           type: string
-          enum: [Listener/Artist, Admin]
+          enum: ['Listener', 'Artist', 'Pro', 'Admin']
         isPaid:
           type: boolean
           description: Indicates if the user is a paid/pro user

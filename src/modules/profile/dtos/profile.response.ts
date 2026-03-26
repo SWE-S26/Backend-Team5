@@ -8,6 +8,7 @@ export const ProfileResponseDTO = extendedZod.object({
   firstName: extendedZod.string().nullable(),
   lastName: extendedZod.string().nullable(),
   profileLink: extendedZod.string(),
+  role: extendedZod.enum(['Listener', 'Artist', 'Pro', 'Admin']),
   profileImgLink: extendedZod.string().url().nullable(),
   bannerImgLink: extendedZod.string().url().nullable(),
   bio: extendedZod.string().nullable(),

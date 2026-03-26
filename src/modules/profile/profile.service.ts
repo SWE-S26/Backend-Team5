@@ -16,14 +16,22 @@ import {
   CloudinaryService,
   ImageFolder,
 } from '../../shared/abstractions/cloudinary.service';
-import { ResourceAlreadyExists } from '../../shared/errors/responseErrors';
+import {
+  ResourceAlreadyExists,
+  NotFoundError,
+} from '../../shared/errors/responseErrors';
+import { DEFAULT_IMAGE } from '../../config/constants';
+
+const isDefaultImage = (publicId: string) => {
+  return publicId === DEFAULT_IMAGE.publicId;
+};
 
 export class ProfileService {
   constructor(private readonly repository: ProfileRepository) {}
 
   async getProfileById(id: string): Promise<ProfileResponseDTOType | null> {
     const user: IUser | null = await this.repository.getProfileById(id);
-    if (!user) return null;
+    if (!user) throw NotFoundError('User not found');
 
     const followDoc = await Following.findOne({ userId: id }).lean();
     const followersCount = followDoc?.followers.length ?? 0;
@@ -53,7 +61,7 @@ export class ProfileService {
       }
       throw err;
     }
-    if (!updatedUser) return null;
+    if (!updatedUser) throw NotFoundError('User not found');
 
     const followDoc = await Following.findOne({ userId: id }).lean();
     const followersCount = followDoc?.followers.length ?? 0;
@@ -79,16 +87,27 @@ export class ProfileService {
     },
   ): Promise<ProfileResponseDTOType | null> {
     const existingUser = await this.repository.getProfileById(id);
-    if (!existingUser) return null;
+    if (!existingUser) {
+      throw NotFoundError('User not found');
+    }
 
     const updateData: Partial<UpdateProfileRequestBodyDTOType> = {};
 
-    if (flags.removeProfileImg && existingUser.profileImg?.publicId) {
-      await CloudinaryService.deleteImage(existingUser.profileImg.publicId);
+    if (flags.removeProfileImg) {
+      if (
+        existingUser.profileImg?.publicId &&
+        !isDefaultImage(existingUser.profileImg.publicId)
+      ) {
+        await CloudinaryService.deleteImage(existingUser.profileImg.publicId);
+      }
+      updateData.profileImg = DEFAULT_IMAGE;
     }
 
     if (files?.profileImg?.[0]?.buffer) {
-      if (existingUser.profileImg?.publicId) {
+      if (
+        existingUser.profileImg?.publicId &&
+        !isDefaultImage(existingUser.profileImg.publicId)
+      ) {
         await CloudinaryService.deleteImage(existingUser.profileImg.publicId);
       }
       const result = await CloudinaryService.uploadImage(
@@ -101,12 +120,21 @@ export class ProfileService {
       };
     }
 
-    if (flags.removeBannerImg && existingUser.bannerImg?.publicId) {
-      await CloudinaryService.deleteImage(existingUser.bannerImg.publicId);
+    if (flags.removeBannerImg) {
+      if (
+        existingUser.bannerImg?.publicId &&
+        !isDefaultImage(existingUser.bannerImg.publicId)
+      ) {
+        await CloudinaryService.deleteImage(existingUser.bannerImg.publicId);
+      }
+      updateData.bannerImg = DEFAULT_IMAGE;
     }
 
     if (files?.bannerImg?.[0]?.buffer) {
-      if (existingUser.bannerImg?.publicId) {
+      if (
+        existingUser.bannerImg?.publicId &&
+        !isDefaultImage(existingUser.bannerImg.publicId)
+      ) {
         await CloudinaryService.deleteImage(existingUser.bannerImg.publicId);
       }
       const result = await CloudinaryService.uploadImage(
@@ -119,12 +147,13 @@ export class ProfileService {
       };
     }
 
-    const updatedUser = await this.repository.updateProfileImages(id, {
-      ...updateData,
-      removeProfileImg: flags.removeProfileImg && !updateData.profileImg,
-      removeBannerImg: flags.removeBannerImg && !updateData.bannerImg,
-    });
-    if (!updatedUser) return null;
+    const updatedUser = await this.repository.updateProfileImages(
+      id,
+      updateData,
+    );
+    if (!updatedUser) {
+      throw NotFoundError('User not found');
+    }
 
     return ProfileMapper.toResponse(updatedUser);
   }
@@ -133,7 +162,7 @@ export class ProfileService {
   ): Promise<UpdatePrivacySettingsDTOType | null> {
     const settings: ISettings['privacy'] | null =
       await this.repository.getPrivacySettings(id);
-    if (!settings) return null;
+    if (!settings) throw NotFoundError('User settings not found');
     return settings;
   }
 
@@ -142,7 +171,7 @@ export class ProfileService {
     data: Partial<UpdatePrivacySettingsDTOType>,
   ): Promise<UpdatePrivacySettingsDTOType | null> {
     const updated = await this.repository.updatePrivacySettings(id, data);
-    if (!updated) return null;
+    if (!updated) throw NotFoundError('User settings not found');
     return updated;
   }
 
@@ -151,7 +180,7 @@ export class ProfileService {
   ): Promise<UpdateNotificationsSettingsDTOType | null> {
     const settings: ISettings['notifications'] | null =
       await this.repository.getNotificationsSettings(id);
-    if (!settings) return null;
+    if (!settings) throw NotFoundError('User settings not found');
     return settings;
   }
 
@@ -160,7 +189,7 @@ export class ProfileService {
     data: Partial<UpdateNotificationsSettingsDTOType>,
   ): Promise<UpdateNotificationsSettingsDTOType | null> {
     const updated = await this.repository.updateNotificationsSettings(id, data);
-    if (!updated) return null;
+    if (!updated) throw NotFoundError('User settings not found');
     return updated;
   }
 
@@ -169,7 +198,7 @@ export class ProfileService {
   ): Promise<UpdateAccountSettingsDTOType | null> {
     const settings: ISettings['account'] | null =
       await this.repository.getAccountSettings(id);
-    if (!settings) return null;
+    if (!settings) throw NotFoundError('User settings not found');
     return settings;
   }
 
@@ -178,7 +207,7 @@ export class ProfileService {
     data: Partial<UpdateAccountSettingsDTOType>,
   ): Promise<UpdateAccountSettingsDTOType | null> {
     const updated = await this.repository.updateAccountSettings(id, data);
-    if (!updated) return null;
+    if (!updated) throw NotFoundError('User settings not found');
     return updated;
   }
 
@@ -187,7 +216,7 @@ export class ProfileService {
   ): Promise<UpdateContentSettingsDTOType | null> {
     const settings: ISettings['content'] | null =
       await this.repository.getContentSettings(id);
-    if (!settings) return null;
+    if (!settings) throw NotFoundError('User settings not found');
     return settings;
   }
 
@@ -196,7 +225,7 @@ export class ProfileService {
     data: Partial<UpdateContentSettingsDTOType>,
   ): Promise<UpdateContentSettingsDTOType | null> {
     const updated = await this.repository.updateContentSettings(id, data);
-    if (!updated) return null;
+    if (!updated) throw NotFoundError('User settings not found');
     return updated;
   }
 
@@ -204,7 +233,7 @@ export class ProfileService {
     username: string,
   ): Promise<ProfileResponseDTOType | null> {
     const user = await this.repository.getProfileByProfileLink(username);
-    if (!user) return null;
+    if (!user) throw NotFoundError('User not found');
 
     const followDoc = await Following.findOne({ userId: user._id }).lean();
     const followersCount = followDoc?.followers.length ?? 0;

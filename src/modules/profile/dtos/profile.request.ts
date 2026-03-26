@@ -1,5 +1,6 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 import { ProfileIdParamDTO } from './profile.request.params';
+import { CheckProfileLinkParamDTO } from './profile.request.query';
 import {
   UpdateProfileRequestBodyDTO,
   UpdateAccountSettingsDTO,
@@ -11,6 +12,10 @@ import {
 
 export const CreateProfileRequestDTO = extendedZod.object({
   params: ProfileIdParamDTO,
+});
+
+export const CheckProfileLinkRequestDTO = extendedZod.object({
+  query: CheckProfileLinkParamDTO,
 });
 
 export const UpdateProfileRequestDTO = extendedZod.object({

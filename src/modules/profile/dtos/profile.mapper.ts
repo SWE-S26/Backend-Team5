@@ -8,6 +8,7 @@ export class ProfileMapper {
       displayName: user.displayName,
       firstName: user.firstName || null,
       lastName: user.lastName || null,
+      role: user.role,
       profileLink: user.profileLink,
       profileImgLink: user.profileImg?.imgLink || null,
       bannerImgLink: user.bannerImg?.imgLink || null,

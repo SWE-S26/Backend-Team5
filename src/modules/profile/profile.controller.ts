@@ -7,7 +7,6 @@ import {
   ProfileLinkParamDTO,
 } from './dtos/profile.request.params';
 
-import { CheckProfileLinkParamDTO } from './dtos/profile.request.query';
 import {
   UpdateProfileRequestDTO,
   UpdatePrivacySettingsRequestDTO,
@@ -15,6 +14,7 @@ import {
   UpdateNotificationsSettingsRequestDTO,
   UpdateAccountSettingsRequestDTO,
   UpdateContentSettingsRequestDTO,
+  CheckProfileLinkRequestDTO,
 } from './dtos/profile.request';
 
 export class ProfileController {
@@ -28,8 +28,6 @@ export class ProfileController {
 
     const userId = validatedRequest.data!.params.id;
     const profile = await this.service.getProfileById(userId);
-
-    if (!profile) throw NotFoundError('User not found');
 
     res.json(profile);
   }
@@ -46,8 +44,6 @@ export class ProfileController {
       userId,
       validatedRequest.data.body,
     );
-
-    if (!updated) throw NotFoundError('User not found');
 
     res.json(updated);
   }
@@ -83,7 +79,6 @@ export class ProfileController {
     const userId = req.userInfo!._id;
 
     const settings = await this.service.getPrivacySettings(userId);
-    if (!settings) throw NotFoundError('User settings not found');
 
     res.json(settings);
   }
@@ -100,7 +95,6 @@ export class ProfileController {
       userId,
       validatedRequest.data.body,
     );
-    if (!updated) throw NotFoundError('User settings not found');
 
     res.json(updated);
   }
@@ -108,7 +102,6 @@ export class ProfileController {
     const userId = req.userInfo!._id;
 
     const settings = await this.service.getNotificationsSettings(userId);
-    if (!settings) throw NotFoundError('User settings not found');
 
     res.json(settings);
   }
@@ -131,7 +124,6 @@ export class ProfileController {
       userId,
       validatedRequest.data.body,
     );
-    if (!updated) throw NotFoundError('User settings not found');
 
     res.json(updated);
   }
@@ -140,7 +132,6 @@ export class ProfileController {
     const userId = req.userInfo!._id;
 
     const settings = await this.service.getAccountSettings(userId);
-    if (!settings) throw NotFoundError('User settings not found');
 
     res.json(settings);
   }
@@ -157,7 +148,6 @@ export class ProfileController {
       userId,
       validatedRequest.data.body,
     );
-    if (!updated) throw NotFoundError('User settings not found');
 
     res.json(updated);
   }
@@ -166,7 +156,6 @@ export class ProfileController {
     const userId = req.userInfo!._id;
 
     const settings = await this.service.getContentSettings(userId);
-    if (!settings) throw NotFoundError('User settings not found');
 
     res.json(settings);
   }
@@ -183,7 +172,6 @@ export class ProfileController {
       userId,
       validatedRequest.data.body,
     );
-    if (!updated) throw NotFoundError('User settings not found');
 
     res.json(updated);
   }
@@ -198,13 +186,11 @@ export class ProfileController {
     const profileLink = validatedRequest.data!.params.profileLink;
     const profile = await this.service.getProfileByProfileLink(profileLink);
 
-    if (!profile) throw NotFoundError('User not found');
-
     res.json(profile);
   }
 
   async isProfileLinkTaken(req: Request, res: Response): Promise<void> {
-    const validated = parseRequest(CheckProfileLinkParamDTO, req);
+    const validated = parseRequest(CheckProfileLinkRequestDTO, req);
     if (!validated.success) throw validated.error;
 
     const profileLink = validated.data.query.profileLink;

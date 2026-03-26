@@ -7,17 +7,19 @@ export const LinkDTO = extendedZod.object({
 });
 
 export const UpdateProfileRequestBodyDTO = extendedZod.object({
-  displayName: extendedZod.string().optional(),
-  firstName: extendedZod.string().nullable().optional(),
-  lastName: extendedZod.string().nullable().optional(),
-  profileLink: extendedZod.string().optional(),
-  bio: extendedZod.string().nullable().optional(),
-  city: extendedZod.string().nullable().optional(),
-  country: extendedZod.string().nullable().optional(),
+  displayName: extendedZod.string().trim().min(1).optional(),
+  firstName: extendedZod.string().trim().min(1).nullable().optional(),
+  lastName: extendedZod.string().trim().min(1).nullable().optional(),
+  profileLink: extendedZod.string().trim().min(1).optional(),
+  bio: extendedZod.string().trim().min(1).nullable().optional(),
+  city: extendedZod.string().trim().min(1).nullable().optional(),
+  country: extendedZod.string().trim().min(1).nullable().optional(),
   links: extendedZod.array(LinkDTO).optional(),
   bannerLinks: extendedZod.array(LinkDTO).optional(),
   supportLink: extendedZod.string().url().nullable().optional(),
-  favoriteGenres: extendedZod.array(extendedZod.string()).optional(),
+  favoriteGenres: extendedZod
+    .array(extendedZod.string().trim().min(1))
+    .optional(),
   isPrivate: extendedZod.boolean().optional(),
 });
 
@@ -35,8 +37,8 @@ export type UpdateProfileRequestBodyDTOType = z.infer<
 };
 
 export const UpdateProfileImagesRequestBodyDTO = extendedZod.object({
-  removeProfileImg: extendedZod.coerce.boolean().optional(),
-  removeBannerImg: extendedZod.coerce.boolean().optional(),
+  removeProfileImg: extendedZod.coerce.boolean(),
+  removeBannerImg: extendedZod.coerce.boolean(),
 });
 
 export type UpdateProfileImagesRequestBodyDTOType = z.infer<
@@ -70,14 +72,14 @@ export type UpdateAccountSettingsDTOType = z.infer<
 >;
 
 export const UpdateContentSettingsDTO = extendedZod.object({
-  rssFeedLink: extendedZod.string().optional(),
-  rssEmailDisplayed: extendedZod.string().optional(),
-  customFieldTitle: extendedZod.string().optional(),
-  category: extendedZod.string().optional(),
-  statsServiceUrlPrefix: extendedZod.string().optional(),
-  customAuthorName: extendedZod.string().optional(),
-  language: extendedZod.string().optional(),
-  subscriberRedirect: extendedZod.string().optional(),
+  rssFeedLink: extendedZod.string().url().optional(),
+  rssEmailDisplayed: extendedZod.string().trim().min(1).optional(),
+  customFieldTitle: extendedZod.string().trim().min(1).optional(),
+  category: extendedZod.string().trim().min(1).optional(),
+  statsServiceUrlPrefix: extendedZod.string().url().optional(),
+  customAuthorName: extendedZod.string().trim().min(1).optional(),
+  language: extendedZod.string().trim().min(1).optional(),
+  subscriberRedirect: extendedZod.string().url().optional(),
   containsExplicitContent: extendedZod.boolean().optional(),
   includeInRssFeed: extendedZod.boolean().optional(),
   creativeCommonsLicense: extendedZod.boolean().optional(),

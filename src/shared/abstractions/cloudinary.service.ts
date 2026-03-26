@@ -9,7 +9,7 @@ export enum ImageFolder {
   PLAYLIST = 'playlist',
 }
 
-interface CloudinaryUploadResult {
+export interface CloudinaryUploadResult {
   url: string;
   publicId: string;
 }
