@@ -5,7 +5,8 @@ import {
   DeleteTrackRequestDTO,
   GetTrackByIdRequestDTO,
   IncrementTrackListenCountRequestDTO,
-  uploadAudioTrackRequestDTO,
+  UploadAudioTrackRequestDTO,
+  PermalinkRequestDTO,
 } from './dtos/tracks.request';
 
 import { JWTPayload } from '../../shared/abstractions/jwt';
@@ -126,7 +127,7 @@ export class TracksController {
   }
 
   async uploadAudioTrack(req: Request, res: Response): Promise<void> {
-    const validatedRequest = parseRequest(uploadAudioTrackRequestDTO, req);
+    const validatedRequest = parseRequest(UploadAudioTrackRequestDTO, req);
 
     if (!validatedRequest.success) {
       throw validatedRequest.error;
@@ -148,6 +149,22 @@ export class TracksController {
     } else {
       throw new Error('Internal Server Error');
     }
+  }
+
+  async getTrackByPermalink(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(PermalinkRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const permaLink = validatedRequest.data.params.permalink;
+
+    const trackInfo = await this.service.getTrackByPermalink(permaLink);
+    res.json({
+      message: 'Track Info Retrieved Successfully',
+      data: trackInfo,
+    });
   }
 
   async replace(req: Request, res: Response): Promise<void> {
