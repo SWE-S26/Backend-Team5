@@ -92,6 +92,7 @@ export const UpdatePrivacySettingsDTO = extendedZod.object({
   showActivityDiscovery: extendedZod.boolean().optional(),
   showFirstTopFan: extendedZod.boolean().optional(),
   showTrackTopFans: extendedZod.boolean().optional(),
+  isPrivate: extendedZod.boolean().optional(),
 });
 
 export type UpdatePrivacySettingsDTOType = z.infer<

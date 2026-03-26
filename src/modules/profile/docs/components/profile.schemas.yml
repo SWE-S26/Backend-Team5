@@ -174,19 +174,19 @@ ContentSettingsUpdate:
   allOf:
     - $ref: '#/components/schemas/ContentSettings'
 
-PrivacySettings:
-  type: object
-  properties:
-    accountIsPrivate:
-      type: boolean
-    allowMessagesAnyone:
-      type: boolean
-    showActivityDiscovery:
-      type: boolean
-    showFirstTopFan:
-      type: boolean
-    showTrackTopFans:
-      type: boolean
+    PrivacySettings:
+      type: object
+      properties:
+        allowMessagesAnyone:
+          type: boolean
+        showActivityDiscovery:
+          type: boolean
+        showFirstTopFan:
+          type: boolean
+        showTrackTopFans:
+          type: boolean
+        isPrivate:
+          type: boolean          
 
 PrivacySettingsUpdate:
   allOf:
