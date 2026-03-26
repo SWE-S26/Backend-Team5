@@ -27,3 +27,15 @@ export const TrackResponse = extendedZod.object({
 });
 
 export type TrackResponseDTO = z.infer<typeof TrackResponse>;
+
+export const PaginationResponse = extendedZod.object({
+  tracks: extendedZod.array(TrackResponse),
+  paginationInfo: extendedZod.object({
+    totalNumTracks: extendedZod.number(),
+    page: extendedZod.number(),
+    totalPages: extendedZod.number(),
+    hasNext: extendedZod.boolean(),
+  }),
+});
+
+export type PaginationResponseDTO = z.infer<typeof PaginationResponse>;

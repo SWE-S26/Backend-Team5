@@ -25,6 +25,10 @@ tracksRouter.get(apiVersions.v1 + '/permalink/{:permalink}', (req, res) =>
   tracksController.getTrackByPermalink.bind(tracksController),
 );
 
+tracksRouter.delete(apiVersions.v1, (req, res) =>
+  tracksController.deleteTrackById.bind(tracksController),
+);
+
 // tracksRouter.get('/:id',   (req, res) => tracksController.findOne(req, res));
 // tracksRouter.post('/',     (req, res) => tracksController.create(req, res));
 // tracksRouter.put('/:id',   (req, res) => tracksController.replace(req, res));

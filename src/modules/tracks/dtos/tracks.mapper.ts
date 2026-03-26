@@ -23,4 +23,13 @@ export class TracksMapper {
       releaseDate: track.createdAt,
     };
   }
+
+  static toTrackResponseList(tracks: ITrack[]): TrackResponseDTO[] {
+    const tracksMapped: TrackResponseDTO[] = [];
+    tracks.forEach((track) => {
+      const trackMapped = this.toTrackResponse(track);
+      tracksMapped.push(trackMapped);
+    });
+    return tracksMapped;
+  }
 }

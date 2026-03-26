@@ -8,8 +8,6 @@ export const TracksRoleQueryDto = extendedZod.object({
 export const ListTrackssQueryDto = PaginationQueryDto.extend(
   TracksRoleQueryDto.shape,
 ).extend({
-  // I have added the defualt because, I think every API would need it's default
-  // for example you may fetch 8 comments easily, but not 8 posts, I am giving an example
-  page: extendedZod.string().default('1'),
-  limit: extendedZod.string().default('20'),
+  page: extendedZod.number().default(1),
+  limit: extendedZod.number().default(20),
 });

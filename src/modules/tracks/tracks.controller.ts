@@ -7,6 +7,7 @@ import {
   IncrementTrackListenCountRequestDTO,
   UploadAudioTrackRequestDTO,
   PermalinkRequestDTO,
+  PaginationRequestDTO,
 } from './dtos/tracks.request';
 
 import { JWTPayload } from '../../shared/abstractions/jwt';
@@ -165,6 +166,28 @@ export class TracksController {
       message: 'Track Info Retrieved Successfully',
       data: trackInfo,
     });
+  }
+
+  async getPaginatedListOfTracks(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(PaginationRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const page = validatedRequest.data.query.page;
+    const limit = validatedRequest.data.query.limit;
+
+    const paginationList = await this.service.getPaginatedList(page, limit);
+    if (paginationList) {
+      res.status(200);
+      res.json({
+        message: 'Tracks Retrieved Successfully',
+        data: paginationList,
+      });
+    } else {
+      throw new Error('Internal Server Error');
+    }
   }
 
   async replace(req: Request, res: Response): Promise<void> {
