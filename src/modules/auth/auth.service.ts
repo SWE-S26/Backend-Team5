@@ -441,4 +441,8 @@ export class AuthService {
       QR_EXTEND_SECONDS,
     );
   };
+
+  deleteAcount = async (userId: string): Promise<void> => {
+    await this.authRepository.deleteUser(userId);
+  };
 }

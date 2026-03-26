@@ -95,14 +95,6 @@ export class AuthRepository {
   }
 
   async deleteUser(id: string): Promise<void> {
-    Promise.all([
-      Comment.deleteMany({ userId: id }),
-      Track.deleteMany({ posterId: id }),
-      Playlist.deleteMany({ ownerId: id }),
-      SearchHistory.deleteMany({ userId: id }),
-      Following.deleteMany({ userId: id }),
-      Notification.deleteMany({ userId: id }),
-      Report.deleteMany({ userId: id }),
-    ]);
+    await User.findOneAndDelete({ _id: id });
   }
 }
