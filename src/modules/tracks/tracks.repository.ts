@@ -71,6 +71,10 @@ export class TracksRepository {
     else return false;
   }
 
+  async getTrackByPermalink(permalink: string): Promise<ITrack | null> {
+    return await Track.findOne<ITrack>({ 'basicInfo.permalink': permalink });
+  }
+
   async create(data: any): Promise<any> {
     // TODO: insert into your data source
     return data;

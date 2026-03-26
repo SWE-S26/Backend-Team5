@@ -21,6 +21,10 @@ tracksRouter.get(apiVersions.v1 + '/liked', (req, res) =>
   tracksController.incrementTrackNumPlays.bind(tracksController),
 );
 
+tracksRouter.get(apiVersions.v1 + '/permalink/{:permalink}', (req, res) =>
+  tracksController.getTrackByPermalink.bind(tracksController),
+);
+
 // tracksRouter.get('/:id',   (req, res) => tracksController.findOne(req, res));
 // tracksRouter.post('/',     (req, res) => tracksController.create(req, res));
 // tracksRouter.put('/:id',   (req, res) => tracksController.replace(req, res));

@@ -115,6 +115,15 @@ export class TracksService {
     );
   }
 
+  async getTrackByPermalink(permalink: string) {
+    const searchTrack =
+      await this.tracksRepository.getTrackByPermalink(permalink);
+    if (!searchTrack) {
+      throw NotFoundError('Track Not Found');
+    }
+    return TracksMapper.toTrackResponse(searchTrack);
+  }
+
   async update(id: string, data: any): Promise<any | null> {
     return this.tracksRepository.update(id, data);
   }
