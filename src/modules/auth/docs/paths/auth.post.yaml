@@ -49,7 +49,7 @@
                     user:
                       id: '69b801097eabbb6c286e6455'
                       displayName: 'Naaauuuh This is too much'
-                      role: 'Listener/Artist'
+                      role: 'Listener'
                       profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
                       profileImg:
                         imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
@@ -69,7 +69,7 @@
                     user:
                       id: '69b801097eabbb6c286e6455'
                       displayName: 'Naaauuuh This is too much'
-                      role: 'Listener/Artist'
+                      role: 'Listener'
                       profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
                       profileImg:
                         imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
@@ -414,7 +414,7 @@
                     user:
                       id: '69b801097eabbb6c286e6455'
                       displayName: 'Naaauuuh This is too much'
-                      role: 'Listener/Artist'
+                      role: 'Listener'
                       profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
                       profileImg:
                         imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
@@ -435,7 +435,7 @@
                     user:
                       id: '69b801097eabbb6c286e6455'
                       displayName: 'Naaauuuh This is too much'
-                      role: 'Listener/Artist'
+                      role: 'Listener'
                       profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
                       profileImg:
                         imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
@@ -523,7 +523,7 @@
                     user:
                       id: '69b801097eabbb6c286e6455'
                       displayName: 'Naaauuuh This is too much'
-                      role: 'Listener/Artist'
+                      role: 'Listener'
                       profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
                       profileImg:
                         imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
@@ -544,7 +544,7 @@
                     user:
                       id: '69b801097eabbb6c286e6455'
                       displayName: 'Naaauuuh This is too much'
-                      role: 'Listener/Artist'
+                      role: 'Listener'
                       profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
                       profileImg:
                         imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'
@@ -677,7 +677,7 @@
                     user:
                       id: '69b801097eabbb6c286e6455'
                       displayName: 'Naaauuuh This is too much'
-                      role: 'Listener/Artist'
+                      role: 'Listener'
                       profileLink: 'https://example.com/profiles/69b801097eabbb6c286e6455'
                       profileImg:
                         imgLink: 'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg'

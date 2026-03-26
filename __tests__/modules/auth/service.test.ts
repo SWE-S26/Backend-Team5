@@ -38,7 +38,7 @@ const fakeUser: IUser = {
   email: 'test@mail.com',
   password: 'hashed_password',
   googleId: 'google_123456',
-  role: 'Listener/Artist',
+  role: 'Listener',
   displayName: 'John Doe',
   firstName: 'John',
   lastName: 'Doe',
@@ -99,7 +99,7 @@ const fakeUser: IUser = {
 const fakeLoginResponse: LoginResponse = {
   id: '507f1f77bcf86cd799439011',
   displayName: 'John Doe',
-  role: 'Listener/Artist',
+  role: 'Listener',
   profileLink: 'https://example.com/johndoe',
   profileImg: {
     imgLink: 'https://example.com/profile.jpg',
@@ -947,7 +947,7 @@ describe('AuthService : issueTokenPair', () => {
 
     const result = authService.issueTokenPair(
       '507f1f77bcf86cd799439011',
-      'Listener/Artist',
+      'Listener',
       fakeUser.subscription,
     );
 
@@ -967,13 +967,13 @@ describe('AuthService : issueTokenPair', () => {
 
     authService.issueTokenPair(
       '507f1f77bcf86cd799439011',
-      'Listener/Artist',
+      'Listener',
       fakeUser.subscription,
     );
 
     expect(jwtSpy).toHaveBeenCalledWith(
       '507f1f77bcf86cd799439011',
-      'Listener/Artist',
+      'Listener',
       fakeUser.subscription,
     );
   });
@@ -988,7 +988,7 @@ describe('AuthService : issueTokenPair', () => {
 
     authService.issueTokenPair(
       '507f1f77bcf86cd799439011',
-      'Listener/Artist',
+      'Listener',
       fakeUser.subscription,
     );
 
@@ -1005,7 +1005,7 @@ describe('AuthService : issueTokenPair', () => {
 
     const result = authService.issueTokenPair(
       '507f1f77bcf86cd799439011',
-      'Listener/Artist',
+      'Listener',
       fakeUser.subscription,
     );
 
@@ -1022,7 +1022,7 @@ describe('AuthService : issueTokenPair', () => {
 
     const result = authService.issueTokenPair(
       '507f1f77bcf86cd799439011',
-      'Listener/Artist',
+      'Listener',
       fakeUser.subscription,
     );
 

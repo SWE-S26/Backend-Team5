@@ -8,7 +8,7 @@ export type IUser = {
   email: string;
   password: string;
   googleId?: string;
-  role: 'Listener/Artist' | 'Admin';
+  role: 'Listener' | 'Admin';
   displayName: string;
   firstName: string;
   lastName: string;
@@ -150,9 +150,9 @@ const userSchema = new Schema(
     },
     role: {
       type: String,
-      enum: ['Listener/Artist', 'Admin'],
+      enum: ['Listener', 'Artist', 'Pro', 'Admin'],
       required: true,
-      default: 'Listener/Artist',
+      default: 'Listener',
     },
     displayName: {
       type: String,
