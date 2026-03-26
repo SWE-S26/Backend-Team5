@@ -1,7 +1,9 @@
 import { Schema, Types, model, Document } from 'mongoose';
 import { imgSchema } from './schemas.shared';
 import Settings from './models.settings';
+import Notification from './models.notification';
 import logger from '../logger/logger';
+import Following from './models.following';
 
 export type IUser = {
   _id: Types.ObjectId;
@@ -339,6 +341,27 @@ userSchema.pre<IUserDoc>('save', async function () {
   const timePart = Date.now().toString().slice(-5);
 
   this.profileLink = `${namePart}-${idPart}${timePart}`;
+});
+userSchema.post('findOneAndDelete', async function (doc) {
+  if (!doc) {
+    return;
+  }
+
+  try {
+    Promise.all([
+      Settings.findOneAndDelete({
+        userId: doc._id,
+      }),
+      Following.deleteOne({ userId: doc._id }),
+      Notification.deleteMany({
+        $or: [{ 'type.referenceId': doc._id }, { to: doc._id }],
+      }),
+    ]);
+
+    logger.debug(`Settings deleted for user ${doc._id}`);
+  } catch (err: Error | any) {
+    logger.error(`Failed to find settings for user ${doc._id}: ${err.message}`);
+  }
 });
 
 const User = model<IUser>('User', userSchema);

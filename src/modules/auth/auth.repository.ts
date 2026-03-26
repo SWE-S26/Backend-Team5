@@ -1,4 +1,11 @@
 import User, { IUser } from '../../shared/models/models.user';
+import Comment from '../../shared/models/models.comment';
+import Track from '../../shared/models/models.track';
+import Playlist from '../../shared/models/models.playlist';
+import SearchHistory from '../../shared/models/models.search-history';
+import Following from '../../shared/models/models.following';
+import Notification from '../../shared/models/models.notification';
+import Report from '../../shared/models/models.report';
 
 export class AuthRepository {
   async findByEmail(email: string): Promise<IUser | null> {
@@ -85,5 +92,17 @@ export class AuthRepository {
     gender: 'Male' | 'Female';
   }): Promise<IUser> {
     return User.create(data);
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    Promise.all([
+      Comment.deleteMany({ userId: id }),
+      Track.deleteMany({ posterId: id }),
+      Playlist.deleteMany({ ownerId: id }),
+      SearchHistory.deleteMany({ userId: id }),
+      Following.deleteMany({ userId: id }),
+      Notification.deleteMany({ userId: id }),
+      Report.deleteMany({ userId: id }),
+    ]);
   }
 }
