@@ -12,8 +12,14 @@ export const TrackResponse = extendedZod.object({
     description: extendedZod.string(),
     isPrivate: extendedZod.boolean(),
   }),
-  audioUrl: extendedZod.string(),
-  imageUrl: extendedZod.string(),
+  audio: extendedZod.object({
+    id: extendedZod.string(),
+    url: extendedZod.string(),
+  }),
+  image: {
+    url: extendedZod.string(),
+    publicId: extendedZod.string(),
+  },
   numLikes: extendedZod.number(),
   numPlays: extendedZod.number(),
   numReposts: extendedZod.number(),
