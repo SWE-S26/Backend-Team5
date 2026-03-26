@@ -4,6 +4,16 @@ import User, { IUser } from '../../shared/models/models.user';
 import { PublitioUploadResult } from '../../shared/abstractions/publitio';
 import { CreateTrackDTO } from './dtos/tracks.request.body';
 
+type PaginationList = {
+  tracks: ITrack[];
+  info: {
+    totalNumTracks: number;
+    page: number;
+    totalPages: number;
+    hasNext: boolean;
+  };
+};
+
 export class TracksRepository {
   async findAll(): Promise<any[]> {
     // TODO: query your data source
@@ -73,6 +83,32 @@ export class TracksRepository {
 
   async getTrackByPermalink(permalink: string): Promise<ITrack | null> {
     return await Track.findOne<ITrack>({ 'basicInfo.permalink': permalink });
+  }
+
+  async getPaginatedList(page: number, limit: number): Promise<PaginationList> {
+    // skip to the number of page to start with
+    const skip = (page - 1) * limit;
+
+    // get limited tracks + total count of tracks
+    const [tracks, totalNumTracks] = await Promise.all([
+      Track.find().skip(skip).limit(limit),
+      Track.countDocuments(),
+    ]);
+
+    // calc total pages
+    const totalPages = Math.ceil(totalNumTracks / limit);
+
+    // see if we reached the end or not
+    const hasNext = page < totalPages;
+    return {
+      tracks,
+      info: {
+        totalNumTracks,
+        page,
+        totalPages,
+        hasNext,
+      },
+    };
   }
 
   async create(data: any): Promise<any> {

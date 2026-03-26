@@ -22,3 +22,7 @@ export const UploadAudioTrackRequestDTO = extendedZod.object({
 export const PermalinkRequestDTO = extendedZod.object({
   params: PermaLinkParamDTO,
 });
+
+export const PaginationRequestDTO = extendedZod.object({
+  query: ListTrackssQueryDto,
+});

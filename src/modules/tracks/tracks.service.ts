@@ -5,7 +5,10 @@ import {
 import { TracksRepository } from './tracks.repository';
 import { Types } from 'mongoose';
 import { TracksMapper } from './dtos/tracks.mapper';
-import { TrackResponseDTO } from './dtos/tracks.response';
+import {
+  TrackResponseDTO,
+  PaginationResponseDTO,
+} from './dtos/tracks.response';
 import { ITrack } from '../../shared/models/models.track';
 import { CreateTrackDTO } from './dtos/tracks.request.body';
 import publitioMediaStorage from '../../shared/abstractions/publitio';
@@ -122,6 +125,23 @@ export class TracksService {
       throw NotFoundError('Track Not Found');
     }
     return TracksMapper.toTrackResponse(searchTrack);
+  }
+
+  async getPaginatedList(
+    page: number,
+    limit: number,
+  ): Promise<PaginationResponseDTO> {
+    const { tracks, info } = await this.tracksRepository.getPaginatedList(
+      page,
+      limit,
+    );
+    const tracksMapped = TracksMapper.toTrackResponseList(tracks);
+    return {
+      tracks: tracksMapped,
+      paginationInfo: {
+        ...info,
+      },
+    };
   }
 
   async update(id: string, data: any): Promise<any | null> {
