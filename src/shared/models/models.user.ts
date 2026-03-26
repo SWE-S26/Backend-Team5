@@ -1,9 +1,18 @@
 import { Schema, Types, model, Document } from 'mongoose';
+import logger from '../logger/logger';
 import { imgSchema } from './schemas.shared';
 import Settings from './models.settings';
 import Notification from './models.notification';
-import logger from '../logger/logger';
+import Playlist from './models.playlist';
 import Following from './models.following';
+import History from './models.history';
+import Track from './models.track';
+import BlockedList from './models.blocked-list';
+import Comment from './models.comment';
+import SearchHistory from './models.search-history';
+import PlaysTrackHandling from './models.plays-track-handling';
+import Message from './models.message';
+import Report from './models.report';
 
 export type IUser = {
   _id: Types.ObjectId;
@@ -342,25 +351,136 @@ userSchema.pre<IUserDoc>('save', async function () {
 
   this.profileLink = `${namePart}-${idPart}${timePart}`;
 });
-userSchema.post('findOneAndDelete', async function (doc) {
-  if (!doc) {
-    return;
-  }
+
+userSchema.post('findOneAndDelete', async function (doc: IUser | null) {
+  if (!doc) return;
 
   try {
-    Promise.all([
-      Settings.findOneAndDelete({
-        userId: doc._id,
+    // ── Classify reposts by type up front ──────────────────────────────────
+    const trackReposts = doc.reposts
+      .filter((r) => r.type === 'track')
+      .map((r) => new Types.ObjectId(r.id));
+
+    const playlistReposts = doc.reposts
+      .filter((r) => r.type === 'playlist')
+      .map((r) => new Types.ObjectId(r.id));
+
+    // ── Fetch docs that require document-level cascade ──────────────────────
+    // (document-level deleteOne / findOneAndDelete triggers their own hooks)
+    const [userTracks, userPlaylists, userComments, followingDoc] =
+      await Promise.all([
+        Track.find({ posterId: doc._id }),
+        Playlist.find({ artistId: doc._id }),
+        Comment.find({ userId: doc._id }),
+        Following.findOne({ userId: doc._id }),
+      ]);
+
+    // Track cascade will already delete comments on the user's own tracks.
+    // Only cascade-delete comments the user left on *other* users' tracks
+    // to avoid redundant work and double-firing hooks.
+    const ownTrackIds = new Set(userTracks.map((t) => t._id.toString()));
+    const commentsOnExternalTracks = userComments.filter(
+      (c) => !ownTrackIds.has(c.trackId.toString()),
+    );
+
+    // Tracks the user liked that are NOT their own (own tracks are being deleted)
+    const externalLikedTracks = doc.likedTracks.filter(
+      (id) => !ownTrackIds.has(id.toString()),
+    );
+
+    // Track reposts that reference tracks the user doesn't own
+    const externalTrackReposts = trackReposts.filter(
+      (id) => !ownTrackIds.has(id.toString()),
+    );
+
+    await Promise.all([
+      // ── Owned records ─────────────────────────────────────────────────────
+      Settings.findOneAndDelete({ userId: doc._id }),
+      History.findOneAndDelete({ userId: doc._id }),
+      SearchHistory.findOneAndDelete({ userId: doc._id }),
+      PlaysTrackHandling.deleteMany({ userId: doc._id }),
+
+      // ── Remove user from other users' search histories ────────────────────
+      SearchHistory.updateMany(
+        { historyList: { $elemMatch: { type: 'User', id: doc._id } } },
+        { $pull: { historyList: { type: 'User', id: doc._id } } },
+      ),
+
+      // ── Messages ──────────────────────────────────────────────────────────
+      Message.deleteMany({
+        $or: [{ senderId: doc._id }, { receiverId: doc._id }],
       }),
-      Following.deleteOne({ userId: doc._id }),
+
+      // ── Following: use document deleteOne so its cascade hook fires ───────
+      followingDoc ? followingDoc.deleteOne() : Promise.resolve(),
+
+      // ── Blocked lists ─────────────────────────────────────────────────────
+      BlockedList.findOneAndDelete({ blockerId: doc._id }),
+      BlockedList.updateMany(
+        { blockedIds: doc._id },
+        { $pull: { blockedIds: doc._id } },
+      ),
+
+      // ── Remove user from other comments' liked lists ──────────────────────
+      Comment.updateMany(
+        { likedList: doc._id },
+        { $pull: { likedList: doc._id }, $inc: { numLikes: -1 } },
+      ),
+
+      // ── Cascade-delete user's tracks (each fires track's deleteOne hook) ──
+      ...userTracks.map((track) => track.deleteOne()),
+
+      // ── Cascade-delete user's playlists (fires playlist's cascade) ────────
+      ...userPlaylists.map((playlist) =>
+        Playlist.findOneAndDelete({ _id: playlist._id }),
+      ),
+
+      // ── Cascade-delete comments on external tracks ────────────────────────
+      ...commentsOnExternalTracks.map((comment) => comment.deleteOne()),
+
+      // ── Fix like counts on external tracks this user had liked ────────────
+      ...externalLikedTracks.map((trackId) =>
+        Track.updateOne(
+          { _id: trackId },
+          { $pull: { likedBy: doc._id }, $inc: { numOfLikes: -1 } },
+        ),
+      ),
+
+      // ── Fix repost counts on external tracks this user had reposted ───────
+      ...externalTrackReposts.map((trackId) =>
+        Track.updateOne({ _id: trackId }, { $inc: { numberOfReposts: -1 } }),
+      ),
+
+      // ── Fix like counts on playlists this user had liked ──────────────────
+      ...doc.likedPlaylists.map((playlistId) =>
+        Playlist.updateOne(
+          { _id: playlistId },
+          { $pull: { likedUser: doc._id }, $inc: { numOfLikes: -1 } },
+        ),
+      ),
+
+      // ── Fix repost counts on playlists this user had reposted ─────────────
+      ...playlistReposts.map((playlistId) =>
+        Playlist.updateOne({ _id: playlistId }, { $inc: { numOfReposts: -1 } }),
+      ),
+
+      // ── Reports: remove reports filed by or against the user ──────────────
+      Report.deleteMany({
+        $or: [
+          { reporterId: doc._id },
+          { reportedId: doc._id, violatorType: 'User' },
+        ],
+      }),
+
+      // ── Notifications: remove notifications sent to or triggered by user ──
       Notification.deleteMany({
-        $or: [{ 'type.referenceId': doc._id }, { to: doc._id }],
+        $or: [{ to: doc._id }, { 'type.referenceId': doc._id }],
       }),
     ]);
 
-    logger.debug(`Settings deleted for user ${doc._id}`);
+    logger.debug(`Cascade deleted user ${doc._id}`);
   } catch (err: Error | any) {
-    logger.error(`Failed to find settings for user ${doc._id}: ${err.message}`);
+    logger.error(`Failed to cascade delete user ${doc._id}: ${err.message}`);
   }
 });
 

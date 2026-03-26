@@ -11,12 +11,12 @@ router.use('/auth', authRoutes);
 import { cacheMiddleware } from '../../shared/middleware/cacheMiddleware';
 
 import publicIntegrationRouter from './router.public.integration';
-router.use('/public', cacheMiddleware, publicIntegrationRouter);
+router.use('/public', publicIntegrationRouter);
 
 import { requireAuth } from '../../shared/middleware/requireAuth';
 router.use(requireAuth);
 
-router.use(cacheMiddleware);
+// router.use(cacheMiddleware);
 
 import adminRoutes from '../admin/admin.routes';
 router.use('/admin', adminRoutes);

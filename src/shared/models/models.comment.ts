@@ -1,4 +1,8 @@
 import { Schema, Types, model } from 'mongoose';
+import logger from '../logger/logger';
+import Report from './models.report';
+import Notification from './models.notification';
+import Track from './models.track';
 
 export type IComment = {
   _id: Types.ObjectId;
@@ -55,6 +59,34 @@ const commentSchema = new Schema(
     ],
   },
   { timestamps: true },
+);
+
+commentSchema.post(
+  'deleteOne',
+  { document: true, query: false },
+  async function (doc) {
+    try {
+      const replies = await Comment.find({ _id: { $in: doc.replyList } });
+
+      await Promise.all([
+        // Remove this comment from its parent track's comments array
+        Track.updateOne({ _id: doc.trackId }, { $pull: { comments: doc._id } }),
+
+        // Cascade-delete each reply (each fires this same hook recursively)
+        ...replies.map((reply) => reply.deleteOne()),
+
+        // Delete admin reports filed against this comment
+        Report.deleteMany({ reportedId: doc._id, violatorType: 'Comment' }),
+
+        // Delete notifications that reference this comment
+        Notification.deleteMany({ 'type.referenceId': doc._id }),
+      ]);
+
+      logger.debug(`Cascade deleted comment ${doc._id}`);
+    } catch (error) {
+      logger.error(`Error cascading delete for comment ${doc._id}: ${error}`);
+    }
+  },
 );
 
 const Comment = model<IComment>('Comment', commentSchema);

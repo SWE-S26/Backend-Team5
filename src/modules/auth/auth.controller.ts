@@ -581,4 +581,25 @@ export class AuthController {
       },
     });
   }
+
+  async deleteAccount(req: Request, res: Response): Promise<void> {
+    const userId = req.userInfo!._id;
+    await this.service.deleteAcount(userId);
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: this.isProduction,
+      sameSite: 'strict',
+    });
+
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: this.isProduction,
+      sameSite: 'strict',
+      path: this.refreshTokenPath,
+    });
+
+    res.json({
+      message: 'Account deleted successfully',
+    });
+  }
 }

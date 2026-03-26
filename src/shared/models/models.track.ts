@@ -2,6 +2,14 @@ import { Types, Schema, model } from 'mongoose';
 import { imgSchema } from './schemas.shared';
 import logger from '../logger/logger';
 import AdvancedAudioDetails from './models.advanced-audio-details';
+import Playlist from './models.playlist';
+import User from './models.user';
+import Comment from './models.comment';
+import Plays from './models.plays';
+import PlaysTrackHandling from './models.plays-track-handling';
+import Report from './models.report';
+import Notification from './models.notification';
+import SearchHistory from './models.search-history';
 
 export type ITrack = {
   _id: Types.ObjectId;
@@ -211,12 +219,66 @@ trackSchema.post(
   { document: true, query: false },
   async function (doc) {
     try {
-      await AdvancedAudioDetails.deleteOne({ trackId: doc._id });
-      logger.debug(`Deleted advanced audio details for track ${doc._id}`);
+      // Fetch comment documents so each triggers its own cascade via deleteOne
+      const comments = await Comment.find({ trackId: doc._id });
+
+      await Promise.all([
+        // Remove audio analysis record
+        AdvancedAudioDetails.deleteOne({ trackId: doc._id }),
+
+        // Cascade-delete every comment on this track (each fires comment hook)
+        ...comments.map((comment) => comment.deleteOne()),
+
+        // Remove track from all user array references
+        User.updateMany(
+          {
+            $or: [
+              { likedTracks: doc._id },
+              { uploads: doc._id },
+              { tracks: doc._id },
+            ],
+          },
+          {
+            $pull: {
+              likedTracks: doc._id,
+              uploads: doc._id,
+              tracks: doc._id,
+            },
+          },
+        ),
+
+        // Remove track from user reposts (reposts.id is stored as string)
+        User.updateMany(
+          { 'reposts.id': doc._id.toString(), 'reposts.type': 'track' },
+          { $pull: { reposts: { id: doc._id.toString(), type: 'track' } } },
+        ),
+
+        // Remove track from any playlist that contains it
+        Playlist.updateMany(
+          { listOfTracks: doc._id },
+          { $pull: { listOfTracks: doc._id } },
+        ),
+
+        // Delete all play-count records for this track
+        Plays.deleteMany({ trackId: doc._id }),
+        PlaysTrackHandling.deleteMany({ trackId: doc._id }),
+
+        // Delete admin reports filed against this track
+        Report.deleteMany({ reportedId: doc._id, violatorType: 'Track' }),
+
+        // Delete notifications that reference this track
+        Notification.deleteMany({ 'type.referenceId': doc._id }),
+
+        // Remove track from search histories
+        SearchHistory.updateMany(
+          { historyList: { $elemMatch: { type: 'Track', id: doc._id } } },
+          { $pull: { historyList: { type: 'Track', id: doc._id } } },
+        ),
+      ]);
+
+      logger.debug(`Cascade deleted track ${doc._id}`);
     } catch (error) {
-      logger.error(
-        `Error deleting associated data for track ${doc._id}: ${error}`,
-      );
+      logger.error(`Error cascading delete for track ${doc._id}: ${error}`);
     }
   },
 );

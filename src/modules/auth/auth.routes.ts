@@ -84,4 +84,10 @@ authRouter.post(
   authController.pollQRCode.bind(authController),
 );
 
+authRouter.delete(
+  apiVersions.v1 + '/delete-account',
+  requireAuth,
+  authController.deleteAccount.bind(authController),
+);
+
 export default authRouter;
