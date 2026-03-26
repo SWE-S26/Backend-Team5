@@ -21,7 +21,6 @@ export type ISettings = {
     showActivityDiscovery: boolean;
     showFirstTopFan: boolean;
     showTrackTopFans: boolean;
-    isPrivate: boolean;
   };
   notifications: {
     newFollower: 'email' | 'devices' | 'both' | 'off';
@@ -113,10 +112,6 @@ const privacySettingsSchema = new Schema(
     showTrackTopFans: {
       type: Boolean,
       default: true,
-    },
-    isPrivate: {
-      type: Boolean,
-      default: false,
     },
   },
   { _id: false },
