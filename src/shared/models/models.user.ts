@@ -8,7 +8,7 @@ export type IUser = {
   email: string;
   password: string;
   googleId?: string;
-  role: 'Listener' | 'Artist' | 'Pro' | 'Admin';
+  role: 'Listener' | 'Admin';
   displayName: string;
   firstName: string;
   lastName: string;
