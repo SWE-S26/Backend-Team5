@@ -33,16 +33,17 @@ export class TracksController {
     };
   }
 
-  private validateTrackFiles(req: Request) {
+  private extractRequestFiles(req: Request) {
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    const audio = files?.audio?.[0];
+    const image = files?.image?.[0];
 
-    if (!files?.audio?.[0]) {
+    // No Uploaded Track
+    if (!audio) {
       throw BadRequestError('Audio File Required');
     }
 
-    // check if has img file
-    if (files?.image?.[0]) return true;
-    else return false;
+    return { audio, image };
   }
 
   async deleteTrackById(req: Request, res: Response): Promise<void> {
@@ -62,13 +63,11 @@ export class TracksController {
     if (isDeleted) {
       res.statusCode = 204;
       res.json({
-        success: true,
         message: 'Track Deleted Sucessfully',
       });
     } else {
       res.statusCode = 500;
       res.json({
-        success: false,
         message: 'Internal Server Error',
       });
     }
@@ -86,7 +85,6 @@ export class TracksController {
 
     const trackInfo = await this.service.getTrackById(trackId, userInfo.userId);
     res.json({
-      success: true,
       message: 'Track Info Retrieved Successfully',
       data: trackInfo,
     });
@@ -108,12 +106,10 @@ export class TracksController {
       await this.service.incrementTrackNumPlays(trackId);
     if (isUpdatedNumPlays) {
       res.json({
-        success: true,
         message: 'Number of Plays Updated Successfully',
       });
     } else {
       res.json({
-        success: false,
         message: 'Error Occured While Updating Number of Plays',
       });
     }
@@ -124,7 +120,6 @@ export class TracksController {
     const userInfo = this.getUserInfo(req);
     const likedTracks = this.service.getLikedTracks(userInfo.userId);
     res.json({
-      success: true,
       message: 'User Liked Tracks Received Successfully',
       data: likedTracks,
     });
@@ -137,9 +132,22 @@ export class TracksController {
       throw validatedRequest.error;
     }
 
-    const hasImgfile = this.validateTrackFiles(req);
+    const { audio, image } = this.extractRequestFiles(req);
     const trackInfo = validatedRequest.data.body;
-    const isUploaded = this.service.uploadAudioTrack();
+    const isUploaded = await this.service.uploadAudioTrack(
+      trackInfo,
+      audio,
+      image,
+    );
+
+    if (isUploaded) {
+      res.statusCode = 201;
+      res.json({
+        message: 'Track Uploaded Successfully',
+      });
+    } else {
+      throw new Error('Internal Server Error');
+    }
   }
 
   async replace(req: Request, res: Response): Promise<void> {

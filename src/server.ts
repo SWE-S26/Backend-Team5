@@ -34,7 +34,6 @@ const start = async () => {
     });
 
     socketService = initSocket(io);
-
     httpServer.listen(port, () => {
       logger.info(`Server running on port ${port}`);
     });
