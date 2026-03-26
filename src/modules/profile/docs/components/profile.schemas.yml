@@ -185,6 +185,8 @@
           type: boolean
         showTrackTopFans:
           type: boolean
+        isPrivate:
+          type: boolean          
 
     PrivacySettingsUpdate:
       allOf:

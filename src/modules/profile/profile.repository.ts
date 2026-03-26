@@ -85,6 +85,13 @@ export class ProfileRepository {
       { privacy: merged },
       { new: true, runValidators: true, projection: { privacy: 1 } },
     ).lean();
+
+    const userUpdate: any = {};
+    if (data.isPrivate !== undefined) userUpdate.isPrivate = data.isPrivate;
+    await User.findByIdAndUpdate(id, userUpdate, {
+      new: true,
+      runValidators: true,
+    });
     return updated?.privacy ?? null;
   }
 
