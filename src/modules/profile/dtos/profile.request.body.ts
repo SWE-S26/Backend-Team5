@@ -18,6 +18,7 @@ export const UpdateProfileRequestBodyDTO = extendedZod.object({
   bannerLinks: extendedZod.array(LinkDTO).optional(),
   supportLink: extendedZod.string().url().nullable().optional(),
   favoriteGenres: extendedZod.array(extendedZod.string()).optional(),
+  isPrivate: extendedZod.boolean().optional(),
 });
 
 export type UpdateProfileRequestBodyDTOType = z.infer<
@@ -91,7 +92,6 @@ export const UpdatePrivacySettingsDTO = extendedZod.object({
   showActivityDiscovery: extendedZod.boolean().optional(),
   showFirstTopFan: extendedZod.boolean().optional(),
   showTrackTopFans: extendedZod.boolean().optional(),
-  isPrivate: extendedZod.boolean().optional(),
 });
 
 export type UpdatePrivacySettingsDTOType = z.infer<

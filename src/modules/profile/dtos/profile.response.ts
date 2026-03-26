@@ -51,7 +51,6 @@ export const PrivacySettingsResponseDTO = extendedZod.object({
   showActivityDiscovery: extendedZod.boolean(),
   showFirstTopFan: extendedZod.boolean(),
   showTrackTopFans: extendedZod.boolean(),
-  isPrivate: extendedZod.boolean(),
 });
 
 export const NotificationsSettingsResponseDTO = extendedZod.object({

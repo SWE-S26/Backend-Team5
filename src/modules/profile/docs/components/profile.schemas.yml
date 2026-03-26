@@ -93,6 +93,8 @@
           type: array
           items:
             type: string
+        isPrivate:
+          type: boolean               
 
     Link:
       type: object
@@ -184,9 +186,7 @@
         showFirstTopFan:
           type: boolean
         showTrackTopFans:
-          type: boolean
-        isPrivate:
-          type: boolean          
+          type: boolean       
 
     PrivacySettingsUpdate:
       allOf:
