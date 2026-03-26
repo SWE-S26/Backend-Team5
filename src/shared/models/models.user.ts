@@ -1,4 +1,4 @@
-import { Schema, Types, model } from 'mongoose';
+import { Schema, Types, model, Document } from 'mongoose';
 import { imgSchema } from './schemas.shared';
 import Settings from './models.settings';
 import logger from '../logger/logger';
@@ -54,6 +54,7 @@ export type IUser = {
     },
   ];
   isPaid: boolean;
+  isPrivate: boolean;
   ban: boolean;
   banReason: string;
   subscription: {
@@ -236,6 +237,8 @@ const userSchema = new Schema(
     profileLink: {
       type: String,
       required: true,
+      unique: true,
+      trim: true,
     },
     links: {
       type: [socialLinkSchema],
@@ -277,6 +280,10 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    isPrivate: {
+      type: Boolean,
+      default: false,
+    },
     ban: {
       type: Boolean,
       default: false,
@@ -306,7 +313,7 @@ userSchema.post('save', async function (doc) {
     if (!existingSettings) {
       await Settings.create({
         userId: doc._id,
-        account: { dateOfBirth: doc.dateOfBirth },
+        account: { dateOfBirth: doc.dateOfBirth, gender: doc.gender },
         content: { rssFeedLink: 'https://example.com/rss' },
       });
       logger.debug(`Settings created for user ${doc._id}`);
@@ -316,6 +323,22 @@ userSchema.post('save', async function (doc) {
       `Failed to create settings for user ${doc._id}: ${err.message}`,
     );
   }
+});
+
+function sanitizeName(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+interface IUserDoc extends IUser, Document {}
+
+userSchema.pre<IUserDoc>('save', async function () {
+  if (!this.isNew) return;
+
+  const namePart = sanitizeName(this.displayName || 'user');
+  const idPart = this._id.toString().slice(-4);
+  const timePart = Date.now().toString().slice(-5);
+
+  this.profileLink = `${namePart}-${idPart}${timePart}`;
 });
 
 const User = model<IUser>('User', userSchema);

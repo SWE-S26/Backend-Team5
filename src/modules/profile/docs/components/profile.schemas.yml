@@ -1,104 +1,100 @@
 # OpenAPI parameter definitions for the profile module, starting writing normally like paths
 
-Profile:
-  type: object
-  properties:
-    userId:
-      type: string
-    displayName:
-      type: string
-    firstName:
-      type: string
-    lastName:
-      type: string
-    profileLink:
-      type: string
-    profileImgLink:
-      type: string
-      format: uri
-    bannerImgLink:
-      type: string
-      format: uri
-    bio:
-      type: string
-    city:
-      type: string
-    country:
-      type: string
-    links:
-      type: array
-      items:
-        $ref: '#/components/schemas/Link'
-    bannerLinks:
-      type: array
-      items:
-        $ref: '#/components/schemas/Link'
-    supportLink:
-      type: string
-      format: uri
-    role:
-      type: string
-      enum: [Listener, Admin]
-    isPaid:
-      type: boolean
-      description: Indicates if the user is a paid/pro user
-    favoriteGenres:
-      type: array
-      items:
-        type: string
-    followersCount:
-      type: integer
-    followingsCount:
-      type: integer
-    trackCount:
-      type: integer
+    Profile:
+      type: object
+      properties:
+        userId:
+          type: string
+        displayName:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        profileLink:
+          type: string
+        profileImgLink:
+          type: string
+          format: uri
+        bannerImgLink:
+          type: string
+          format: uri
+        bio:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        bannerLinks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        supportLink:
+          type: string
+          format: uri
+        role:
+          type: string
+          enum: ['Listener', 'Artist', 'Pro', 'Admin']
+        isPaid:
+          type: boolean
+          description: Indicates if the user is a paid/pro user
+        isPrivate:
+          type: boolean          
+        favoriteGenres:
+          type: array
+          items:
+            type: string
+        followersCount:
+          type: integer
+        followingsCount:
+          type: integer
+        trackCount:
+          type: integer
 
-ProfileUpdate:
-  type: object
-  additionalProperties: false
-  properties:
-    displayName:
-      type: string
-    firstName:
-      type: string
-      nullable: true
-    lastName:
-      type: string
-      nullable: true
-    profileUrl:
-      type: string
-    bio:
-      type: string
-      nullable: true
-    city:
-      type: string
-      nullable: true
-    country:
-      type: string
-      nullable: true
-    profileImgLink:
-      type: string
-      format: uri
-      nullable: true
-    bannerImgLink:
-      type: string
-      format: uri
-      nullable: true
-    links:
-      type: array
-      items:
-        $ref: '#/components/schemas/Link'
-    bannerLinks:
-      type: array
-      items:
-        $ref: '#/components/schemas/Link'
-    supportLink:
-      type: string
-      format: uri
-    favoriteGenres:
-      type: array
-      items:
-        type: string
+    ProfileUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        displayName:
+          type: string
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        profileLink:
+          type: string
+        bio:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        country:
+          type: string
+          nullable: true
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        bannerLinks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        supportLink:
+          type: string
+          format: uri
+        favoriteGenres:
+          type: array
+          items:
+            type: string
+        isPrivate:
+          type: boolean               
 
 Link:
   type: object
@@ -180,19 +176,17 @@ ContentSettingsUpdate:
   allOf:
     - $ref: '#/components/schemas/ContentSettings'
 
-PrivacySettings:
-  type: object
-  properties:
-    accountIsPrivate:
-      type: boolean
-    allowMessagesAnyone:
-      type: boolean
-    showActivityDiscovery:
-      type: boolean
-    showFirstTopFan:
-      type: boolean
-    showTrackTopFans:
-      type: boolean
+    PrivacySettings:
+      type: object
+      properties:
+        allowMessagesAnyone:
+          type: boolean
+        showActivityDiscovery:
+          type: boolean
+        showFirstTopFan:
+          type: boolean
+        showTrackTopFans:
+          type: boolean       
 
 PrivacySettingsUpdate:
   allOf:

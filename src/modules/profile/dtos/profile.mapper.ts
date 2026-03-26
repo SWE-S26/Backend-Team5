@@ -8,22 +8,25 @@ export class ProfileMapper {
       displayName: user.displayName,
       firstName: user.firstName || null,
       lastName: user.lastName || null,
+      role: user.role,
       profileLink: user.profileLink,
       profileImgLink: user.profileImg?.imgLink || null,
       bannerImgLink: user.bannerImg?.imgLink || null,
       bio: user.bio || null,
       city: user.city || null,
       country: user.country || null,
-      links: user.links?.map((link: any) => ({
+      links: user.socialMediaLinks?.map((link: any) => ({
         linkId: link._id || new Types.ObjectId(),
         name: link.name || null,
         link: link.link,
       })),
-      bannerLinks: user.bannerLinks?.map((link: any) => ({
+      bannerLinks: user.links?.map((link: any) => ({
         linkId: link._id || new Types.ObjectId(),
         name: link.name || null,
         link: link.link,
       })),
+      isPaid: user.isPaid,
+      isPrivate: user.isPrivate,
       supportLink: user.supportLink || null,
       favoriteGenres: user.favoriteGenres || [],
       followersCount: user.followersCount || 0,

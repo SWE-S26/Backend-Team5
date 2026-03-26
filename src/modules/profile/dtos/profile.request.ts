@@ -1,19 +1,29 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 import { ProfileIdParamDTO } from './profile.request.params';
+import { CheckProfileLinkParamDTO } from './profile.request.query';
 import {
   UpdateProfileRequestBodyDTO,
   UpdateAccountSettingsDTO,
   UpdateContentSettingsDTO,
   UpdatePrivacySettingsDTO,
   UpdateNotificationsSettingsDTO,
+  UpdateProfileImagesRequestBodyDTO,
 } from './profile.request.body';
 
 export const CreateProfileRequestDTO = extendedZod.object({
   params: ProfileIdParamDTO,
 });
 
+export const CheckProfileLinkRequestDTO = extendedZod.object({
+  query: CheckProfileLinkParamDTO,
+});
+
 export const UpdateProfileRequestDTO = extendedZod.object({
   body: UpdateProfileRequestBodyDTO,
+});
+
+export const UpdateProfileImagesRequestDTO = extendedZod.object({
+  body: UpdateProfileImagesRequestBodyDTO,
 });
 
 export const UpdateAccountSettingsRequestDTO = extendedZod.object({
