@@ -5,6 +5,11 @@ import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 
+export type PublitioUploadResult = {
+  url: string;
+  id: string;
+};
+
 class PublitioMediaStorage {
   private readonly PUBLITO_KEY = process.env.PUBLITO_KEY;
   private readonly PUBLITO_SECRET = process.env.PUBLITO_SECRET;
@@ -57,7 +62,14 @@ class PublitioMediaStorage {
       },
     );
 
-    return res.data;
+    const { id, url_preview } = res.data as { id: string; url_preview: string };
+
+    const audioInfo: PublitioUploadResult = {
+      id: id,
+      url: url_preview,
+    };
+
+    return audioInfo;
   }
 
   async deleteAudioTrack(audioId: string) {
@@ -89,7 +101,7 @@ class PublitioMediaStorage {
         fieldname: 'file',
         encoding: '7bit',
       } as Express.Multer.File;
-
+      console.log('Upload');
       // Upload to Publitio
       const result =
         await publitioMediaStorage.uploadAudioTrack(fakeMulterFile);

@@ -7,12 +7,19 @@ import { Types } from 'mongoose';
 import { TracksMapper } from './dtos/tracks.mapper';
 import { TrackResponseDTO } from './dtos/tracks.response';
 import { ITrack } from '../../shared/models/models.track';
+import { CreateTrackDTO } from './dtos/tracks.request.body';
+import publitioMediaStorage from '../../shared/abstractions/publitio';
+import { CloudinaryService } from '../../shared/abstractions/cloudinary.service';
 
 export class TracksService {
   private readonly tracksRepository: TracksRepository;
+  private readonly trackUploader;
+  private readonly imgUploader;
 
   constructor() {
     this.tracksRepository = new TracksRepository();
+    this.trackUploader = publitioMediaStorage;
+    this.imgUploader = CloudinaryService;
   }
 
   async deleteTrackById(
@@ -90,7 +97,23 @@ export class TracksService {
     return trackResponseList;
   }
 
-  async uploadAudioTrack() {}
+  async uploadAudioTrack(
+    trackInfo: CreateTrackDTO,
+    audio: Express.Multer.File,
+    image: Express.Multer.File | null,
+  ): Promise<Boolean> {
+    const audioInfo = await this.trackUploader.uploadAudioTrack(audio);
+    const imgInfo = null;
+    if (image) {
+      // this.imgUploader.uploadImage(image)
+    }
+
+    return await this.tracksRepository.createNewTrack(
+      trackInfo,
+      audioInfo,
+      imgInfo,
+    );
+  }
 
   async update(id: string, data: any): Promise<any | null> {
     return this.tracksRepository.update(id, data);

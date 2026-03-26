@@ -139,7 +139,7 @@ const trackSchema = new Schema(
         default: [],
       },
       description: {
-        type: [String],
+        type: String,
         default: [],
       },
       isPrivate: {

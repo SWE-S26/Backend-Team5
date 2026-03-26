@@ -1,37 +1,42 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
+import { z } from 'zod';
 
 export const CreateTrackRequestBodyDTO = extendedZod.object({
-  trackTitle: extendedZod.string(),
-  permaLink: extendedZod
-    .string()
-    .regex(
-      /^[a-z0-9_-]+$/,
-      'Use only lowercase letters, numbers, underscores, or hyphens.',
-    )
-    .regex(/[a-z0-9_-]/, 'Permalink cannot be only digits.'),
-  mainArtists: extendedZod
-    .array(extendedZod.string().min(1, 'Cannot Be Empty'))
-    .min(1, 'At least one artist is required'),
-  genre: extendedZod
-    .string()
-    .optional()
-    .transform((value) => value?.trim()),
-  tags: extendedZod
-    .array(extendedZod.string().min(1, 'Cannot Be Empty'))
-    .min(1, 'At least tag  is required')
-    .optional(),
-  description: extendedZod
-    .string()
-    .min(1, 'Cannot Be Empty')
-    .transform((value) => value?.trim())
-    .optional(),
-  isPrivate: extendedZod.boolean().default(false),
-  enableDirectDownload: extendedZod.boolean().default(false),
-  offlineListening: extendedZod.boolean().default(true),
-  includeInRssFeed: extendedZod.boolean().default(true),
-  displayedEmbedCode: extendedZod.boolean().default(true),
-  enableAppPlayback: extendedZod.boolean().default(true),
-  licensingType: extendedZod.object({
+  basicInfo: extendedZod.object({
+    title: extendedZod.string(),
+    permaLink: extendedZod
+      .string()
+      .regex(
+        /^[a-z0-9_-]+$/,
+        'Use only lowercase letters, numbers, underscores, or hyphens.',
+      )
+      .regex(/[a-z0-9_-]/, 'Permalink cannot be only digits.'),
+    mainArtists: extendedZod
+      .array(extendedZod.string().min(1, 'Cannot Be Empty'))
+      .min(1, 'At least one artist is required'),
+    genre: extendedZod
+      .string()
+      .optional()
+      .transform((value) => value?.trim()),
+    tags: extendedZod
+      .array(extendedZod.string().min(1, 'Cannot Be Empty'))
+      .min(1, 'At least tag  is required')
+      .optional(),
+    description: extendedZod
+      .string()
+      .min(1, 'Cannot Be Empty')
+      .transform((value) => value?.trim())
+      .optional(),
+    isPrivate: extendedZod.boolean().default(false),
+  }),
+  permissions: extendedZod.object({
+    enableDirectDownload: extendedZod.boolean().default(false),
+    offlineListening: extendedZod.boolean().default(true),
+    includeInRssFeed: extendedZod.boolean().default(true),
+    displayedEmbedCode: extendedZod.boolean().default(true),
+    enableAppPlayback: extendedZod.boolean().default(true),
+  }),
+  license: extendedZod.object({
     type: extendedZod
       .enum(['allRightsReserved', 'creativeCommons'])
       .default('allRightsReserved'),
@@ -40,36 +45,33 @@ export const CreateTrackRequestBodyDTO = extendedZod.object({
     noDerivativeWorks: extendedZod.boolean().default(false),
     shareAlike: extendedZod.boolean().default(false),
   }),
-  attribution: extendedZod.boolean().default(false),
-  nonCommercial: extendedZod.boolean().default(false),
-  noDerivativeWorks: extendedZod.boolean().default(false),
-  shareAlike: extendedZod.boolean().default(false),
-  audioClipStart: extendedZod
-    .string()
-    .regex(/^\d{1,2}:\d{2}$/, 'Start timestamp must be in mm:ss format')
-    .optional(),
-  audioClipEnd: extendedZod
-    .string()
-    .regex(/^\d{1,2}:\d{2}$/, 'Start timestamp must be in mm:ss format')
-    .optional(),
-  buyLink: extendedZod.string().optional(),
-  recordLabel: extendedZod.string().optional(),
-  releaseDate: extendedZod.string().refine((val) => !isNaN(Date.parse(val)), {
-    message: 'Invalid date format, must be ISO 8601',
+  advanced: extendedZod.object({
+    buyLink: extendedZod.string().optional(),
+    recordLabel: extendedZod.string().optional(),
+    releaseDate: extendedZod
+      .string()
+      .optional()
+      .refine((val) => !val || !isNaN(Date.parse(val)), {
+        message: 'Invalid date format, must be ISO 8601',
+      }),
+    publisher: extendedZod.string().optional(),
+    ISRC: extendedZod
+      .string()
+      // CC-XXX-YY-NNNNN
+      // CC - Country code
+      // XXX - Registrant code
+      // YY - Year of reference
+      // NNNNN - Designation code
+      .regex(
+        /^[A-Z]{2}[A-Z0-9]{3}\d{2}\d{5}/,
+        'An ISRC (International Standard Recording Code) is a unique identifier that is assigned to a track. Use the same ISRC for a given track wherever you distribute it.',
+      )
+      .optional(),
+    explicitContent: extendedZod.boolean().default(false),
+    pLine: extendedZod.string().optional(),
+    audioClipStart: extendedZod.number().optional(),
+    audioClipEnd: extendedZod.number().optional(),
   }),
-  publisher: extendedZod.string().optional(),
-  ISRC: extendedZod
-    .string()
-    // CC-XXX-YY-NNNNN
-    // CC - Country code
-    // XXX - Registrant code
-    // YY - Year of reference
-    // NNNNN - Designation code
-    .regex(
-      /^[A-Z]{2}[A-Z0-9]{3}\d{2}\d{5}/,
-      'An ISRC (International Standard Recording Code) is a unique identifier that is assigned to a track. Use the same ISRC for a given track wherever you distribute it.',
-    )
-    .optional(),
-  hasExplictContent: extendedZod.boolean().default(false),
-  pLine: extendedZod.string().optional(),
 });
+
+export type CreateTrackDTO = z.infer<typeof CreateTrackRequestBodyDTO>;

@@ -1,6 +1,8 @@
 import Track, { ITrack } from '../../shared/models/models.track';
 import { NotFoundError } from '../../shared/errors/responseErrors';
 import User, { IUser } from '../../shared/models/models.user';
+import { PublitioUploadResult } from '../../shared/abstractions/publitio';
+import { CreateTrackDTO } from './dtos/tracks.request.body';
 
 export class TracksRepository {
   async findAll(): Promise<any[]> {
@@ -49,6 +51,24 @@ export class TracksRepository {
 
     // returns null if user doesnt have any liked tracks
     return tracksList;
+  }
+
+  async createNewTrack(
+    trackInfo: CreateTrackDTO,
+    audioInfo: PublitioUploadResult,
+    imgInfo: any,
+  ): Promise<Boolean> {
+    const trackCreate = await Track.create({
+      ...trackInfo,
+      audio: {
+        ...audioInfo,
+      },
+      image: {
+        ...imgInfo,
+      },
+    });
+    if (trackCreate) return true;
+    else return false;
   }
 
   async create(data: any): Promise<any> {
