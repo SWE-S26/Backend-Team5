@@ -69,7 +69,7 @@ export const removeSecurityFromAuthEndpoints = (
     if (!methods || typeof methods !== 'object') continue;
 
     if (route === '/api/auth/v1/cross/mobile') {
-      logger.info(`Checking route: ${route} for authentication tags...`);
+      logger.info(`Skipping route: ${route} for authentication tags...`);
       continue;
     }
 

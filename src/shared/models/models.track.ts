@@ -1,5 +1,7 @@
 import { Types, Schema, model } from 'mongoose';
 import { imgSchema } from './schemas.shared';
+import logger from '../logger/logger';
+import AdvancedAudioDetails from './models.advanced-audio-details';
 
 export type ITrack = {
   _id: Types.ObjectId;
@@ -203,4 +205,20 @@ const trackSchema = new Schema(
 );
 
 const Track = model<ITrack>('Track', trackSchema);
+
+trackSchema.post(
+  'deleteOne',
+  { document: true, query: false },
+  async function (doc) {
+    try {
+      await AdvancedAudioDetails.deleteOne({ trackId: doc._id });
+      logger.debug(`Deleted advanced audio details for track ${doc._id}`);
+    } catch (error) {
+      logger.error(
+        `Error deleting associated data for track ${doc._id}: ${error}`,
+      );
+    }
+  },
+);
+
 export default Track;
