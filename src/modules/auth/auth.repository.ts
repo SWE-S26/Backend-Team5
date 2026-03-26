@@ -6,6 +6,7 @@ import SearchHistory from '../../shared/models/models.search-history';
 import Following from '../../shared/models/models.following';
 import Notification from '../../shared/models/models.notification';
 import Report from '../../shared/models/models.report';
+import { NotFoundError } from '../../shared/errors/responseErrors';
 
 export class AuthRepository {
   async findByEmail(email: string): Promise<IUser | null> {
@@ -95,6 +96,9 @@ export class AuthRepository {
   }
 
   async deleteUser(id: string): Promise<void> {
-    await User.findOneAndDelete({ _id: id });
+    const user = await User.findOneAndDelete({ _id: id });
+    if (!user) {
+      throw NotFoundError('User not found');
+    }
   }
 }

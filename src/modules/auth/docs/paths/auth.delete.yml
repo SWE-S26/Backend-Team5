@@ -1,23 +1,43 @@
-# DELETE
-# /api/auth/example:
-#   delete:
-#     tags:
-#       - auth
-#     summary: Get agent profile by ID.
-#     description: Returns the agent profile associated with the provided ID.
-#     parameters:
-#       - $ref: '#/components/parameters/IdPathParam'
-#     responses:
-#       204:
-#         description: Successfully retrieved agent profile.
-#         content:
-#           application/json:
-#             schema:
-#               $ref: '#/components/schemas/GetUserByIdResponseDTO'
+/api/auth/v1/delete-account:
+  delete:
+    tags:
+      - Authentication
+    summary: Delete authenticated user account
+    description: |
+      Permanently deletes the authenticated user's account.
 
-#       401:
-#         $ref: '#/components/responses/Unauthorized'
-#       404:
-#         $ref: '#/components/responses/NotFound'
-#       500:
-#         $ref: '#/components/responses/ServerError'
+      **Warning: This operation is irreversible.**
+      This endpoint performs a **hard delete** of the user and **all related data**, which may include:
+      - User profile
+      - Settings
+      - Playlists
+      - Tracks
+      - Likes / follows
+      - Any other associated records
+
+      Use this endpoint with extreme caution.
+
+      After successful deletion:
+      - Authentication cookies (`accessToken`, `refreshToken`) are cleared
+      - The user is effectively logged out
+
+    responses:
+      200:
+        description: Account deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Account deleted successfully
+
+      401:
+        $ref: '#/components/responses/Unauthorized'
+
+      404:
+        $ref: '#/components/responses/NotFound'
+
+      500:
+        $ref: '#/components/responses/ServerError'
