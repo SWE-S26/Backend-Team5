@@ -4,6 +4,8 @@ import User from './models.user';
 import logger from '../logger/logger';
 import SearchHistory from './models.search-history';
 import Notification from './models.notification';
+import { CloudinaryService } from '../abstractions/cloudinary.service';
+import { DEFAULT_PLAYLIST_IMAGE } from '../../config/constants';
 
 export type IPlaylist = {
   _id: Types.ObjectId;
@@ -39,7 +41,10 @@ const playlistSchema = new Schema(
     },
     image: {
       type: imgSchema,
-      default: () => ({}),
+      default: () => ({
+        imgLink: DEFAULT_PLAYLIST_IMAGE.imgLink,
+        publicId: DEFAULT_PLAYLIST_IMAGE.publicId,
+      }),
     },
     listOfTracks: [
       {
@@ -82,6 +87,23 @@ const playlistSchema = new Schema(
 
 async function cascadeDeletePlaylist(doc: IPlaylist): Promise<void> {
   try {
+    if (
+      doc.image.publicId &&
+      doc.image.publicId !== DEFAULT_PLAYLIST_IMAGE.publicId
+    ) {
+      CloudinaryService.deleteImage(doc.image.publicId)
+        .then(() => {
+          logger.debug(
+            `Successfully deleted playlist image from Cloudinary for playlist ${doc._id}`,
+          );
+        })
+        .catch((error) => {
+          logger.error(
+            `Failed to delete playlist image from Cloudinary for playlist ${doc._id}: ${error}`,
+          );
+        });
+    }
+
     await Promise.all([
       User.updateMany(
         { $or: [{ likedPlaylists: doc._id }, { playlists: doc._id }] },

@@ -20,10 +20,10 @@ import {
   ResourceAlreadyExists,
   NotFoundError,
 } from '../../shared/errors/responseErrors';
-import { DEFAULT_IMAGE } from '../../config/constants';
+import { DEFAULT_PROFILE_IMAGE } from '../../config/constants';
 
 const isDefaultImage = (publicId: string) => {
-  return publicId === DEFAULT_IMAGE.publicId;
+  return publicId === DEFAULT_PROFILE_IMAGE.publicId;
 };
 
 export class ProfileService {
@@ -100,7 +100,7 @@ export class ProfileService {
       ) {
         await CloudinaryService.deleteImage(existingUser.profileImg.publicId);
       }
-      updateData.profileImg = DEFAULT_IMAGE;
+      updateData.profileImg = DEFAULT_PROFILE_IMAGE;
     }
 
     if (files?.profileImg?.[0]?.buffer) {
@@ -127,7 +127,7 @@ export class ProfileService {
       ) {
         await CloudinaryService.deleteImage(existingUser.bannerImg.publicId);
       }
-      updateData.bannerImg = DEFAULT_IMAGE;
+      updateData.bannerImg = DEFAULT_PROFILE_IMAGE;
     }
 
     if (files?.bannerImg?.[0]?.buffer) {
