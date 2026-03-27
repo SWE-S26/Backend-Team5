@@ -411,18 +411,22 @@ userSchema.post('findOneAndDelete', async function (doc: IUser | null) {
     const ownTrackIds = new Set(userTracks.map((t) => t._id.toString()));
 
     // delete tracks from publitio
-    try {
-      userTracks.forEach((track) => {
-        publitioMediaStorage.deleteAudioTrack(track.audio.id);
-        logger.debug(
-          `Successfully deleted audio track from Publitio for user ${doc._id}`,
-        );
-      });
-    } catch (error) {
-      logger.error(
-        `Failed to audio track from Publitio for user ${doc._id}: ${error}`,
-      );
-    }
+    await Promise.allSettled(
+      userTracks.map((track) => {
+        publitioMediaStorage
+          .deleteAudioTrack(track.audio.id)
+          .then(() => {
+            logger.debug(
+              `Successfully deleted audio track from Publitio for user ${doc._id}`,
+            );
+          })
+          .catch((error) => {
+            logger.error(
+              `Failed to audio track from Publitio for user ${doc._id}: ${error}`,
+            );
+          });
+      }),
+    );
 
     const commentsOnExternalTracks = userComments.filter(
       (c) => !ownTrackIds.has(c.trackId.toString()),
