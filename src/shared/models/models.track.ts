@@ -1,5 +1,5 @@
 import { Types, Schema, model } from 'mongoose';
-import { imgSchema } from './schemas.shared';
+import { imgSchema, audioSchema } from './schemas.shared';
 import { DEFAULT_AUDIO_IMAGE } from '../../config/constants';
 import { CloudinaryService } from '../abstractions/cloudinary.service';
 import logger from '../logger/logger';
@@ -24,7 +24,10 @@ export type ITrack = {
     description: [string];
     isPrivate: boolean;
   };
-  audioUrl: string;
+  audio: {
+    url: string;
+    id: string;
+  };
   posterId: Types.ObjectId;
   image: {
     url: string;
@@ -144,8 +147,8 @@ const trackSchema = new Schema(
         default: false,
       },
     },
-    audioUrl: {
-      type: String,
+    audio: {
+      type: audioSchema,
       required: true,
     },
     posterId: {
