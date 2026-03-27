@@ -1,11 +1,4 @@
 import User, { IUser } from '../../shared/models/models.user';
-import Comment from '../../shared/models/models.comment';
-import Track from '../../shared/models/models.track';
-import Playlist from '../../shared/models/models.playlist';
-import SearchHistory from '../../shared/models/models.search-history';
-import Following from '../../shared/models/models.following';
-import Notification from '../../shared/models/models.notification';
-import Report from '../../shared/models/models.report';
 import { NotFoundError } from '../../shared/errors/responseErrors';
 
 export class AuthRepository {
@@ -19,6 +12,11 @@ export class AuthRepository {
 
   async findById(id: string): Promise<IUser | null> {
     const user = await User.findById<IUser>(id);
+    return user;
+  }
+
+  async findByIdForPasswordComparing(id: string): Promise<IUser | null> {
+    const user = await User.findById<IUser>(id).select('+password');
     return user;
   }
 
