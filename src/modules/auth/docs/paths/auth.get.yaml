@@ -307,7 +307,7 @@
               - `accessToken` — HTTP-only, Secure, SameSite=Strict, Max-Age=3600
               - `refreshToken` — HTTP-only, Secure, SameSite=Strict, Max-Age=604800
       400:
-        $ref: '#/components/responses/BadRequest'
+        $ref: '#/components/responses/InvalidParameters'
       403:
         $ref: '#/components/responses/Forbidden'
       500:

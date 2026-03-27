@@ -40,15 +40,10 @@ Unauthorized:
       schema:
         type: object
         properties:
-          success:
-            type: boolean
-            example: false
           message:
             type: string
             example: 'Authorization failed'
-          data:
-            nullable: true
-            type: object
+
 
 # 403 Forbidden
 Forbidden:
@@ -58,15 +53,10 @@ Forbidden:
       schema:
         type: object
         properties:
-          success:
-            type: boolean
-            example: false
           message:
             type: string
             example: 'Not enough permissions to access this resource'
-          data:
-            nullable: true
-            type: object
+
 
 # 404 Not Found
 NotFound:
@@ -76,15 +66,10 @@ NotFound:
       schema:
         type: object
         properties:
-          success:
-            type: boolean
-            example: false
           message:
             type: string
             example: 'Property not found or not updated'
-          data:
-            nullable: true
-            type: object
+
 
 # 410 Gone
 Gone:
@@ -94,9 +79,6 @@ Gone:
       schema:
         type: object
         properties:
-          success:
-            type: boolean
-            example: false
           message:
             type: string
             example: 'Link is expired'
@@ -109,15 +91,9 @@ ServerError:
       schema:
         type: object
         properties:
-          success:
-            type: boolean
-            example: false
           message:
             type: string
             example: 'Internal server error'
-          data:
-            nullable: true
-            type: object
 
 # 503 Service Unavailable
 ServiceUnavailable:
@@ -127,12 +103,6 @@ ServiceUnavailable:
       schema:
         type: object
         properties:
-          success:
-            type: boolean
-            example: false
           message:
             type: string
             example: 'Service unavailable'
-          data:
-            nullable: true
-            type: object

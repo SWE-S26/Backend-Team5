@@ -613,9 +613,6 @@
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
                 message:
                   type: string
                   example: 'Login approved successfully'
@@ -623,7 +620,6 @@
                   type: object
                   nullable: true
             example:
-              success: true
               message: 'Login approved successfully'
               data: null
       401:
@@ -668,7 +664,7 @@
               web_client_waiting:
                 summary: Web — waiting for approval
                 value:
-                  message: 'QR code not scanned, waiting for approval.'
+                  message: 'QR Code not yet scanned.'
               web_client_success:
                 summary: Web — tokens delivered via cookies
                 value:
@@ -687,14 +683,12 @@
                         quota:
                           unlimited: false
                           usedSeconds: 0
+                    accessToken: 'eyJhbGciOi...'
+                    refreshToken: 'eyJhbGciOi...'
+
       400:
-        $ref: '#/components/responses/BadRequest'
-      401:
-        description: Incomplete token is invalid or expired
-        content:
-          application/json:
-            example:
-              success: false
-              message: 'Signup session expired, please try again'
+        $ref: '#/components/responses/InvalidParameters'
+      410:
+        $ref: '#/components/responses/Gone'
       500:
         $ref: '#/components/responses/ServerError'

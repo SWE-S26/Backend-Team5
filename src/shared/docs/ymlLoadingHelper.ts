@@ -68,8 +68,11 @@ export const removeSecurityFromAuthEndpoints = (
   for (const [route, methods] of Object.entries(paths)) {
     if (!methods || typeof methods !== 'object') continue;
 
-    if (route === '/api/auth/v1/cross/mobile') {
-      logger.info(`Skipping route: ${route} for authentication tags...`);
+    if (
+      route === '/api/auth/v1/cross/mobile' ||
+      route === '/api/auth/v1/delete-account'
+    ) {
+      logger.debug(`Skipping route: ${route} for authentication tags...`);
       continue;
     }
 

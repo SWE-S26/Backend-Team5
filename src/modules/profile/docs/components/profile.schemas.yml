@@ -175,7 +175,6 @@ ContentSettings:
 ContentSettingsUpdate:
   allOf:
     - $ref: '#/components/schemas/ContentSettings'
-    - $ref: '#/components/schemas/PrivacySettings'
 
 PrivacySettings:
   type: object

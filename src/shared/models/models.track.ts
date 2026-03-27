@@ -1,5 +1,7 @@
 import { Types, Schema, model } from 'mongoose';
 import { imgSchema } from './schemas.shared';
+import { DEFAULT_AUDIO_IMAGE } from '../../config/constants';
+import { CloudinaryService } from '../abstractions/cloudinary.service';
 import logger from '../logger/logger';
 import AdvancedAudioDetails from './models.advanced-audio-details';
 import Playlist from './models.playlist';
@@ -153,7 +155,10 @@ const trackSchema = new Schema(
     },
     image: {
       type: imgSchema,
-      default: () => ({}),
+      default: () => ({
+        imgLink: DEFAULT_AUDIO_IMAGE.imgLink,
+        publicId: DEFAULT_AUDIO_IMAGE.publicId,
+      }),
     },
     numOfPlays: {
       type: Number,
@@ -219,6 +224,23 @@ trackSchema.post(
   { document: true, query: false },
   async function (doc) {
     try {
+      if (
+        doc.image.publicId &&
+        doc.image.publicId !== DEFAULT_AUDIO_IMAGE.publicId
+      ) {
+        CloudinaryService.deleteImage(doc.image.publicId)
+          .then(() => {
+            logger.debug(
+              `Successfully deleted track image from Cloudinary for track ${doc._id}`,
+            );
+          })
+          .catch((error) => {
+            logger.error(
+              `Failed to delete track image from Cloudinary for track ${doc._id}: ${error}`,
+            );
+          });
+      }
+
       // Fetch comment documents so each triggers its own cascade via deleteOne
       const comments = await Comment.find({ trackId: doc._id });
 

@@ -13,6 +13,8 @@ import SearchHistory from './models.search-history';
 import PlaysTrackHandling from './models.plays-track-handling';
 import Message from './models.message';
 import Report from './models.report';
+import { DEFAULT_PROFILE_IMAGE } from '../../config/constants';
+import { CloudinaryService } from '../abstractions/cloudinary.service';
 
 export type IUser = {
   _id: Types.ObjectId;
@@ -222,17 +224,15 @@ const userSchema = new Schema(
     profileImg: {
       type: imgSchema,
       default: () => ({
-        imgLink:
-          'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg',
-        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi',
+        imgLink: DEFAULT_PROFILE_IMAGE.imgLink,
+        publicId: DEFAULT_PROFILE_IMAGE.publicId,
       }),
     },
     bannerImg: {
       type: imgSchema,
       default: () => ({
-        imgLink:
-          'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg',
-        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi',
+        imgLink: DEFAULT_PROFILE_IMAGE.imgLink,
+        publicId: DEFAULT_PROFILE_IMAGE.publicId,
       }),
     },
     socialMediaLinks: {
@@ -356,6 +356,34 @@ userSchema.post('findOneAndDelete', async function (doc: IUser | null) {
   if (!doc) return;
 
   try {
+    if (doc.profileImg.publicId !== DEFAULT_PROFILE_IMAGE.publicId) {
+      CloudinaryService.deleteImage(doc.profileImg.publicId)
+        .then(() => {
+          logger.debug(
+            `Successfully deleted playlist image from Cloudinary for playlist ${doc._id}`,
+          );
+        })
+        .catch((error) => {
+          logger.error(
+            `Failed to delete profile image from Cloudinary for user ${doc._id}: ${error}`,
+          );
+        });
+    }
+
+    if (doc.bannerImg.publicId !== DEFAULT_PROFILE_IMAGE.publicId) {
+      CloudinaryService.deleteImage(doc.bannerImg.publicId)
+        .then(() => {
+          logger.debug(
+            `Successfully deleted banner image from Cloudinary for user ${doc._id}`,
+          );
+        })
+        .catch((error) => {
+          logger.error(
+            `Failed to delete banner image from Cloudinary for user ${doc._id}: ${error}`,
+          );
+        });
+    }
+
     // ── Classify reposts by type up front ──────────────────────────────────
     const trackReposts = doc.reposts
       .filter((r) => r.type === 'track')
