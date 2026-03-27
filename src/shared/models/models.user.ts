@@ -15,6 +15,8 @@ import Message from './models.message';
 import Report from './models.report';
 import { DEFAULT_PROFILE_IMAGE } from '../../config/constants';
 import { CloudinaryService } from '../abstractions/cloudinary.service';
+import publitioMediaStorage from '../abstractions/publitio';
+import { tr } from 'zod/v4/locales';
 
 export type IUser = {
   _id: Types.ObjectId;
@@ -407,6 +409,21 @@ userSchema.post('findOneAndDelete', async function (doc: IUser | null) {
     // Only cascade-delete comments the user left on *other* users' tracks
     // to avoid redundant work and double-firing hooks.
     const ownTrackIds = new Set(userTracks.map((t) => t._id.toString()));
+
+    // delete tracks from publitio
+    try {
+      userTracks.forEach((track) => {
+        publitioMediaStorage.deleteAudioTrack(track.audio.id);
+        logger.debug(
+          `Successfully deleted audio track from Publitio for user ${doc._id}`,
+        );
+      });
+    } catch (error) {
+      logger.error(
+        `Failed to audio track from Publitio for user ${doc._id}: ${error}`,
+      );
+    }
+
     const commentsOnExternalTracks = userComments.filter(
       (c) => !ownTrackIds.has(c.trackId.toString()),
     );

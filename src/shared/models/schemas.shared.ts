@@ -13,3 +13,17 @@ export const imgSchema = new Schema(
   },
   { _id: false },
 );
+
+export const audioSchema = new Schema(
+  {
+    audioLink: {
+      type: String,
+      required: true,
+    },
+    id: {
+      type: String,
+      required: true,
+    },
+  },
+  { _id: false },
+);
