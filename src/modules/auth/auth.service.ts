@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import {
+  BadRequestError,
   ForbiddenError,
   GoneError,
   NotFoundError,
@@ -163,13 +164,23 @@ export class AuthService {
   ): Promise<Boolean> {
     const payload = this.jwtService.verifyJWTForEmails(token);
     try {
-      const user = await this.authRepository.findById(payload!._id);
+      const user = await this.authRepository.findByIdForPasswordComparing(
+        payload!._id,
+      );
 
       if (!user) {
         throw NotFoundError('User not found');
       }
-
       const hashedPass = await this.hashPassowrd(newPassword);
+
+      const same = await bcrypt.compare(newPassword, user.password as string);
+
+      if (same) {
+        throw BadRequestError(
+          'New password cannot be the same as the old password',
+        );
+      }
+
       await this.authRepository.changePassword(user._id.toString(), hashedPass);
 
       return true;
@@ -188,6 +199,12 @@ export class AuthService {
     const user = await this.authRepository.findById(payload._id);
     if (!user)
       throw NotFoundError('How did you even get this token? User not found');
+
+    if (user.ban) {
+      throw ForbiddenError(
+        `Your account has been banned. Due to ${user.banReason} Please contact support.`,
+      );
+    }
 
     const tokens = this.issueTokenPair(
       user._id.toString(),
@@ -401,8 +418,13 @@ export class AuthService {
     );
 
     const user = await this.authRepository.findById(session.userId!);
-    if (user?.ban) {
-      throw UnauthorizedError(
+
+    if (!user) {
+      throw NotFoundError('How did you even get this token? User not found');
+    }
+
+    if (user.ban) {
+      throw ForbiddenError(
         `Your account has been banned. Due to ${user.banReason} Please contact support.`,
       );
     }
