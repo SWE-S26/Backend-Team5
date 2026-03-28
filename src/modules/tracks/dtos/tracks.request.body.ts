@@ -74,4 +74,14 @@ export const CreateTrackRequestBodyDTO = extendedZod.object({
   }),
 });
 
+// a copy for the patch request but all are optional
+export const UpdateTrackRequestBodyDTO = extendedZod.object({
+  id: extendedZod.string(),
+  basicInfo: CreateTrackRequestBodyDTO.shape.basicInfo.partial(),
+  permissions: CreateTrackRequestBodyDTO.shape.permissions.partial(),
+  license: CreateTrackRequestBodyDTO.shape.license.partial(),
+  advanced: CreateTrackRequestBodyDTO.shape.advanced.partial(),
+});
+
 export type CreateTrackDTO = z.infer<typeof CreateTrackRequestBodyDTO>;
+export type UpdateTrackDTO = z.infer<typeof UpdateTrackRequestBodyDTO>;

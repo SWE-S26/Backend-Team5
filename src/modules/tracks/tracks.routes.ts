@@ -29,6 +29,12 @@ tracksRouter.delete(apiVersions.v1, (req, res) =>
   tracksController.deleteTrackById.bind(tracksController),
 );
 
+tracksRouter.patch(apiVersions.v1, (req, res) =>
+  tracksController.updateTrackInfo.bind(tracksController),
+);
+
+// TODO : NEED AN ENDPOINT FOR FETCHING ALL DETAILS for track
+
 // tracksRouter.get('/:id',   (req, res) => tracksController.findOne(req, res));
 // tracksRouter.post('/',     (req, res) => tracksController.create(req, res));
 // tracksRouter.put('/:id',   (req, res) => tracksController.replace(req, res));

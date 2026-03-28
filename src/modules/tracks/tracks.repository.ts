@@ -2,7 +2,8 @@ import Track, { ITrack } from '../../shared/models/models.track';
 import { NotFoundError } from '../../shared/errors/responseErrors';
 import User, { IUser } from '../../shared/models/models.user';
 import { PublitioUploadResult } from '../../shared/abstractions/publitio';
-import { CreateTrackDTO } from './dtos/tracks.request.body';
+import { CreateTrackDTO, UpdateTrackDTO } from './dtos/tracks.request.body';
+import AdvancedAudioDetails from '../../shared/models/models.advanced-audio-details';
 
 type PaginationList = {
   tracks: ITrack[];
@@ -104,6 +105,22 @@ export class TracksRepository {
         hasNext,
       },
     };
+  }
+
+  async updateTrackInfo(trackInfo: UpdateTrackDTO): Promise<ITrack> {
+    const { id, advanced, ...mainInfo } = trackInfo;
+
+    const [updatedTrack] = await Promise.all([
+      Track.findByIdAndUpdate(id, { $set: mainInfo }, { new: true }),
+      await AdvancedAudioDetails.findByIdAndUpdate(
+        id,
+        { $set: advanced },
+        { new: true },
+      ),
+    ]).catch((error) => {
+      throw new Error('Unexpected Error Happened During Track Update');
+    });
+    return updatedTrack as ITrack;
   }
 
   async create(data: any): Promise<any> {

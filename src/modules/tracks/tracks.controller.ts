@@ -8,6 +8,7 @@ import {
   UploadAudioTrackRequestDTO,
   PermalinkRequestDTO,
   PaginationRequestDTO,
+  UpdateTrackRequestDTO,
 } from './dtos/tracks.request';
 
 import { JWTPayload } from '../../shared/abstractions/jwt';
@@ -174,10 +175,10 @@ export class TracksController {
     if (!validatedRequest.success) {
       throw validatedRequest.error;
     }
-
     const page = validatedRequest.data.query.page;
     const limit = validatedRequest.data.query.limit;
 
+    // TODO : Make sure you are not fetching private trakcs
     const paginationList = await this.service.getPaginatedList(page, limit);
     if (paginationList) {
       res.status(200);
@@ -188,6 +189,27 @@ export class TracksController {
     } else {
       throw new Error('Internal Server Error');
     }
+  }
+
+  async updateTrackInfo(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(UpdateTrackRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+    const userInfo = this.getUserInfo(req);
+    const trackInfo = validatedRequest.data.body;
+    const updatedTrack = await this.service.updateTrackInfo(
+      trackInfo,
+      userInfo.userId,
+      userInfo.userRole,
+    );
+
+    res.status(200);
+    res.json({
+      message: 'Track Info Updated Successfully',
+      data: updatedTrack,
+    });
   }
 
   async replace(req: Request, res: Response): Promise<void> {
