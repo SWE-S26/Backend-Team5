@@ -15,11 +15,6 @@ type PaginationList = {
 };
 
 export class TracksRepository {
-  async findAll(): Promise<any[]> {
-    // TODO: query your data source
-    return [];
-  }
-
   async findById(trackId: string): Promise<ITrack | null> {
     let track = await Track.findById<ITrack>(trackId);
     return track;

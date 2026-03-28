@@ -12,6 +12,15 @@ import PlaysTrackHandling from './models.plays-track-handling';
 import Report from './models.report';
 import Notification from './models.notification';
 import SearchHistory from './models.search-history';
+import AdvancedAudioDetails, {
+  IAdvancedAudioDetails,
+} from './models.advanced-audio-details';
+import Comment from './models.comment';
+import User from './models.user';
+import History from './models.history';
+import Playlist from './models.playlist';
+import Plays from './models.plays';
+import PlaysTrackHandling from './models.plays-track-handling';
 
 export type ITrack = {
   _id: Types.ObjectId;
@@ -218,6 +227,40 @@ const trackSchema = new Schema(
     },
   },
   { timestamps: true },
+);
+
+trackSchema.pre<ITrack>(
+  'deleteOne',
+  { document: true, query: false },
+  async function () {
+    const trackToDelete = this;
+
+    // Get all comments of the track
+    const comments = await Comment.find({ trackId: trackToDelete._id }).select(
+      '_id replyList',
+    );
+    const commentIds = comments.map((c) => c._id);
+    const replyIds = comments.flatMap((c) => c.replyList);
+
+    await Promise.all([
+      AdvancedAudioDetails.deleteOne({ trackId: trackToDelete._id }),
+      Comment.deleteMany({ _id: { $in: [...commentIds, ...replyIds] } }),
+      User.updateMany(
+        { likedTracks: trackToDelete._id },
+        { $pull: { likedTracks: trackToDelete._id } },
+      ),
+      History.updateMany(
+        { 'historyTracks.trackId': trackToDelete._id },
+        { $pull: { historyTracks: { trackId: trackToDelete._id } } },
+      ),
+      Playlist.updateMany(
+        { listOfTracks: trackToDelete._id },
+        { $pull: { listOfTracks: trackToDelete._id } },
+      ),
+      Plays.deleteMany({ trackId: trackToDelete._id }),
+      PlaysTrackHandling.deleteOne({ trackId: trackToDelete._id }),
+    ]);
+  },
 );
 
 const Track = model<ITrack>('Track', trackSchema);
