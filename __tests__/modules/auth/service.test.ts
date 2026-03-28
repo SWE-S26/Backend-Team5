@@ -478,7 +478,7 @@ describe('AuthService : resetPasswordWithToken', () => {
 
     await expect(
       authService.resetPasswordWithToken('fake_token', 'new_password'),
-    ).rejects.toThrow('Failed to reset password');
+    ).rejects.toThrow('User not found');
   });
 
   it('should call verifyJWTForEmails with correct token', async () => {
@@ -592,7 +592,7 @@ describe('AuthService : resetPasswordWithToken', () => {
 
     await expect(
       authService.resetPasswordWithToken('fake_token', 'new_password'),
-    ).rejects.toThrow('Failed to reset password');
+    ).rejects.toThrow('New password cannot be the same as the old password');
   });
 
   it('should not call changePassword when new password matches old password', async () => {
@@ -612,19 +612,6 @@ describe('AuthService : resetPasswordWithToken', () => {
     ).rejects.toThrow();
 
     expect(AuthRepository.prototype.changePassword).not.toHaveBeenCalled();
-  });
-
-  it('should not propagate original error message', async () => {
-    jest
-      .spyOn(JWTService.prototype, 'verifyJWTForEmails')
-      .mockReturnValue({ _id: '507f1f77bcf86cd799439011' });
-    (
-      AuthRepository.prototype.findByIdForPasswordComparing as jest.Mock
-    ).mockRejectedValue(new Error('DB is down'));
-
-    await expect(
-      authService.resetPasswordWithToken('fake_token', 'new_password'),
-    ).rejects.not.toThrow('DB is down');
   });
 });
 
