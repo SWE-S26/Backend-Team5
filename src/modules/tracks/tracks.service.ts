@@ -10,7 +10,7 @@ import {
   PaginationResponseDTO,
 } from './dtos/tracks.response';
 import { ITrack } from '../../shared/models/models.track';
-import { CreateTrackDTO } from './dtos/tracks.request.body';
+import { CreateTrackDTO, UpdateTrackDTO } from './dtos/tracks.request.body';
 import publitioMediaStorage from '../../shared/abstractions/publitio';
 import { CloudinaryService } from '../../shared/abstractions/cloudinary.service';
 
@@ -146,6 +146,31 @@ export class TracksService {
         ...info,
       },
     };
+  }
+
+  async updateTrackInfo(
+    trackInfo: UpdateTrackDTO,
+    userId: string,
+    userRole: string,
+  ) {
+    const searchTrack = await this.tracksRepository.findById(trackInfo.id);
+
+    // TODO: REFACTOR THIS PART : MAKE IT DRY
+    if (!searchTrack) {
+      throw NotFoundError('Track Not Found');
+    }
+
+    const posterId = searchTrack.posterId.toString();
+
+    // if the user trying to delete is not
+    if (userRole !== 'Admin') {
+      if (userId !== posterId) {
+        // means user is trying to delete a track he has not posted
+        throw UnauthorizedError('Unauthorized Action');
+      }
+    }
+    const updatedTrack = await this.tracksRepository.updateTrackInfo(trackInfo);
+    return TracksMapper.toTrackResponse(updatedTrack);
   }
 
   async update(id: string, data: any): Promise<any | null> {
