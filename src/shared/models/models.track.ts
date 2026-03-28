@@ -249,6 +249,10 @@ trackSchema.pre<ITrack>(
         { likedTracks: trackToDelete._id },
         { $pull: { likedTracks: trackToDelete._id } },
       ),
+      User.deleteMany(
+        { reposts: { $elemMatch: { id: trackToDelete._id, type: 'track' } } },
+        { $pull: { reposts: { id: trackToDelete._id, type: 'track' } } },
+      ),
       History.updateMany(
         { 'historyTracks.trackId': trackToDelete._id },
         { $pull: { historyTracks: { trackId: trackToDelete._id } } },
