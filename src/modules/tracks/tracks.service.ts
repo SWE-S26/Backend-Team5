@@ -46,6 +46,10 @@ export class TracksService {
       }
     }
 
+    // delete audio from cloud storage first
+    publitioMediaStorage.deleteAudioTrack(searchTrack.audio.id);
+
+    // delete track info from database
     const isDeleted = await this.tracksRepository.deleteById(trackId);
     return isDeleted;
   }
