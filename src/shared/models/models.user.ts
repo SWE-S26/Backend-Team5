@@ -21,7 +21,7 @@ import { tr } from 'zod/v4/locales';
 export type IUser = {
   _id: Types.ObjectId;
   email: string;
-  password: string;
+  password?: string;
   googleId?: string;
   role: 'Listener' | 'Admin';
   displayName: string;

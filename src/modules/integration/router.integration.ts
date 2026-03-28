@@ -14,8 +14,6 @@ router.use('/public', publicIntegrationRouter);
 import { requireAuth } from '../../shared/middleware/requireAuth';
 router.use(requireAuth);
 
-// router.use(cacheMiddleware);
-
 import adminRoutes from '../admin/admin.routes';
 router.use('/admin', adminRoutes);
 
