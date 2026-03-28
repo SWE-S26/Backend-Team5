@@ -190,6 +190,11 @@ export class AuthService {
     }
     const hashedPass = await this.hashPassowrd(newPassword);
 
+    if (!user.password) {
+      await this.authRepository.changePassword(user._id.toString(), hashedPass);
+      return true;
+    }
+
     const same = await bcrypt.compare(newPassword, user.password as string);
 
     if (same) {
