@@ -144,6 +144,24 @@ export class AuthService {
     return AuthMapper.toUserCredientialsResponse(user);
   }
 
+  async createPasswordResetTokenForLoggedInUser(
+    userId: string,
+  ): Promise<{ token: string; userName: string; email: string }> {
+    const user = await this.authRepository.findById(userId);
+
+    if (!user) {
+      throw NotFoundError('User not found');
+    }
+
+    const token = this.jwtService.createJWTForEmails(user._id.toString());
+
+    return {
+      token,
+      userName: user.displayName as string,
+      email: user.email as string,
+    };
+  }
+
   async createPasswordResetToken(
     email: string,
   ): Promise<{ token: string; userName: string }> {
@@ -163,31 +181,24 @@ export class AuthService {
     newPassword: string,
   ): Promise<Boolean> {
     const payload = this.jwtService.verifyJWTForEmails(token);
-    try {
-      const user = await this.authRepository.findByIdForPasswordComparing(
-        payload!._id,
-      );
+    const user = await this.authRepository.findByIdForPasswordComparing(
+      payload!._id,
+    );
 
-      if (!user) {
-        throw NotFoundError('User not found');
-      }
-      const hashedPass = await this.hashPassowrd(newPassword);
-
-      const same = await bcrypt.compare(newPassword, user.password as string);
-
-      if (same) {
-        throw BadRequestError(
-          'New password cannot be the same as the old password',
-        );
-      }
-
-      await this.authRepository.changePassword(user._id.toString(), hashedPass);
-
-      return true;
-    } catch (error) {
-      logger.error(`Failed to reset password with token: ${error}`);
-      throw new Error('Failed to reset password');
+    if (!user) {
+      throw NotFoundError('User not found');
     }
+    const hashedPass = await this.hashPassowrd(newPassword);
+
+    const same = await bcrypt.compare(newPassword, user.password as string);
+
+    if (same) {
+      BadRequestError('New password cannot be the same as the old password');
+    }
+
+    await this.authRepository.changePassword(user._id.toString(), hashedPass);
+
+    return true;
   }
 
   async refreshAccessToken(

@@ -312,3 +312,32 @@
         $ref: '#/components/responses/Forbidden'
       500:
         $ref: '#/components/responses/ServerError'
+
+/api/auth/v1/forgot-password/logged-in:
+  get:
+    tags:
+      - Authentication
+    summary: Request a password reset link for logged in users
+    description: |
+      Sends a password reset email to the user. The user must provide their registered email address.
+      If the email exists in the system, a secure, time-limited password reset link is sent to that email.
+      This allows the user to securely reset their password without exposing credentials.
+    responses:
+      200:
+        description: Password reset email sent successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: 'Password reset email sent successfully'
+            example:
+              message: 'Password reset email sent successfully'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
