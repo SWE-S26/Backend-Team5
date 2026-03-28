@@ -405,6 +405,12 @@ userSchema.post('findOneAndDelete', async function (doc: IUser | null) {
         Following.findOne({ userId: doc._id }),
       ]);
 
+    // removes user id found in replies before deletion of user comments
+    Comment.updateMany(
+      { replyList: { $in: userComments.map((c) => c._id) } },
+      { $pull: { replyList: { $in: userComments.map((c) => c._id) } } },
+    );
+
     // Track cascade will already delete comments on the user's own tracks.
     // Only cascade-delete comments the user left on *other* users' tracks
     // to avoid redundant work and double-firing hooks.
