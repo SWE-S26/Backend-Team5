@@ -8,8 +8,6 @@ router.use(devSwagger);
 import authRoutes from '../auth/auth.routes';
 router.use('/auth', authRoutes);
 
-import { cacheMiddleware } from '../../shared/middleware/cacheMiddleware';
-
 import publicIntegrationRouter from './router.public.integration';
 router.use('/public', publicIntegrationRouter);
 
