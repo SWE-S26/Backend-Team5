@@ -2,7 +2,7 @@
   post:
     tags:
       - Payment
-    summary: Add a new paying user
+    summary: Add a credit card info of the user to Stripe (THIS IS DONE ONLY ONCE ON SUCCESS!)
     description: |
       Creates a new paying user in Stripe for the authenticated user.
       The backend retrieves the user ID from the secure HTTP-only cookie.
@@ -108,6 +108,8 @@
       The server attaches the provided payment method and subscribes the user
       to the selected pricing plan in Stripe.
 
+      Please call refresh token after this API to get the updated subscription status in the access token claims.
+
     security:
       - bearerAuth: []
 
@@ -124,9 +126,6 @@
               priceId:
                 type: string
                 example: price_123456789
-              paymentMethodId:
-                type: string
-                example: pm_123456789
 
     responses:
       '201':

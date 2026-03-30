@@ -32,8 +32,16 @@ export class PaymentRepository {
     unset?: Record<string, 1>,
   ): Promise<IUser | null> {
     const update: Record<string, any> = {};
-    if (Object.keys(set).length) update.$set = set;
-    if (unset && Object.keys(unset).length) update.$unset = unset;
+    if (Object.keys(set).length) {
+      update.$set = set;
+    }
+
+    if (unset && Object.keys(unset).length) {
+      update.$unset = unset;
+    }
+
+    redisRepoCacher.invalidateCache(RedisObjectType.USER, userId);
+
     return User.findByIdAndUpdate(userId, update, { new: true }).lean();
   }
 }

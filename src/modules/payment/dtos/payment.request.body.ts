@@ -7,7 +7,6 @@ export const CreatePayingUserRequestBodyDTO = extendedZod.object({
 
 export const CreateSubscriptionRequestBodyDTO = extendedZod.object({
   priceId: extendedZod.string().min(1),
-  paymentMethodId: extendedZod.string().min(1),
 });
 
 export const UpdateSubscriptionRequestBodyDTO = extendedZod.object({

@@ -6,21 +6,22 @@ import {
   NotFoundError,
 } from '../../shared/errors/responseErrors';
 import logger from '../../shared/logger/logger';
+import { IUser } from '../../shared/models/models.user';
 
 const PRICE_TO_PLAN: Record<
   string,
   { role: string; subscriptionType: string; unlimited: boolean }
 > = {
-  prod_UEtrBxZh2Hig5q: {
+  price_1TGQ4EKiCVlMQgBUJwZCK3um: {
     role: 'Pro',
     subscriptionType: 'pro_monthly',
     unlimited: true,
   },
-  // 'prod_UEtrBxZh2Hig5q': {
-  //   role: 'Pro',
-  //   subscriptionType: 'pro_yearly',
-  //   unlimited: true,
-  // },
+  price_1TGj1nKiCVlMQgBU9j8T38Fr: {
+    role: 'Pro',
+    subscriptionType: 'pro_yearly',
+    unlimited: true,
+  },
 };
 
 export class PaymentService {
@@ -34,6 +35,28 @@ export class PaymentService {
       apiVersion: '2026-02-25.clover',
     });
     this.webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
+  }
+
+  private validateUser(user: IUser | null): asserts user is IUser {
+    if (!user) {
+      throw NotFoundError('User not found');
+    }
+
+    if (user.role === 'Admin') {
+      throw ForbiddenError('Admin users cannot have subscriptions');
+    }
+  }
+
+  private validateCustomerId(customerId: string): void {
+    if (!customerId) {
+      throw BadRequestError('Stripe customer ID is required');
+    }
+  }
+
+  private validatePriceId(priceId: string): void {
+    if (!PRICE_TO_PLAN[priceId]) {
+      throw BadRequestError('Invalid price ID');
+    }
   }
 
   async getPlanPrices(): Promise<
@@ -56,7 +79,7 @@ export class PaymentService {
       const productName = (price.product as Stripe.Product).name;
       const amount = Number(((price.unit_amount ?? 0) / 100).toFixed(2));
       // There is test product that I can't delete, carefully not to spill it
-      // on the response
+      // on the response, so I must apply the filtering
 
       if (productName.includes('Monthly')) {
         planPrices.pro_monthly = {
@@ -81,63 +104,64 @@ export class PaymentService {
     paymentMethodId: string,
   ): Promise<string> {
     const user = await this.repository.findUserById(userId);
-    if (!user) {
-      throw NotFoundError('User not found');
-    }
+    this.validateUser(user);
+
     if (user.stripeCustomerId) {
       throw BadRequestError('User already has a Stripe customer ID');
     }
 
-    const customer = await this.stripe.customers.create({
-      email: user.email,
-      name: `${user.firstName} ${user.lastName}`,
-      payment_method: paymentMethodId,
-      invoice_settings: { default_payment_method: paymentMethodId },
-    });
-    // customer;
+    let customer: Stripe.Customer;
+    try {
+      customer = await this.stripe.customers.create({
+        email: user.email,
+        name: `${user.firstName} ${user.lastName}`,
+        payment_method: paymentMethodId,
+        invoice_settings: { default_payment_method: paymentMethodId },
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error(`Stripe customer creation failed ${error.message}`);
+        throw BadRequestError(
+          'Failed to create Stripe customer: ' + error.message,
+        );
+      }
+
+      throw BadRequestError('Failed to create Stripe customer');
+    }
 
     await this.repository.updateUser(userId, { stripeCustomerId: customer.id });
 
     return customer.id;
   }
 
-  async createSubscription(
-    userId: string,
-    priceId: string,
-    paymentMethodId: string,
-  ): Promise<string> {
+  async createSubscription(userId: string, priceId: string): Promise<string> {
     const user = await this.repository.findUserById(userId);
 
-    if (!user) {
-      throw NotFoundError('User not found');
+    this.validateUser(user);
+    this.validateCustomerId(user.stripeCustomerId!);
+    this.validatePriceId(priceId);
+
+    if (user.stripeSubscriptionId) {
+      throw BadRequestError('User already has an active subscription');
     }
 
-    if (!user.stripeCustomerId) {
-      throw BadRequestError(
-        "No Stripe customer found. make sure you're a paying user.",
-      );
-    }
-
-    if (user.role === 'Admin') {
-      throw ForbiddenError('Admin users cannot have subscriptions');
-    }
-
-    const attachedMethod = await this.stripe.paymentMethods.attach(
-      paymentMethodId,
-      {
+    let subscription: Stripe.Subscription;
+    try {
+      subscription = await this.stripe.subscriptions.create({
         customer: user.stripeCustomerId,
-      },
-    );
-    await this.stripe.customers.update(user.stripeCustomerId, {
-      invoice_settings: { default_payment_method: attachedMethod.id },
-    });
+        items: [{ price: priceId }],
+        expand: ['latest_invoice.payment_intent'],
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error(`Stripe subscription creation failed ${error.message}`);
+        throw BadRequestError(
+          'Failed to create Stripe subscription: ' + error.message,
+        );
+      }
 
-    const subscription = await this.stripe.subscriptions.create({
-      customer: user.stripeCustomerId,
-      items: [{ price: priceId }],
-      default_payment_method: paymentMethodId,
-      expand: ['latest_invoice.payment_intent'],
-    });
+      throw BadRequestError('Failed to create Stripe subscription');
+    }
 
     const plan = PRICE_TO_PLAN[priceId];
 
@@ -158,12 +182,11 @@ export class PaymentService {
     plan: string;
     status: string;
     currentPeriodEnd: string;
+    isStripePayingCustomer: boolean;
   }> {
     const user = await this.repository.findUserById(userId);
 
-    if (!user) {
-      throw NotFoundError('User not found');
-    }
+    this.validateUser(user);
 
     if (!user.stripeSubscriptionId) {
       throw NotFoundError('Subscription not found');
@@ -181,14 +204,21 @@ export class PaymentService {
       currentPeriodEnd: currentPeriodEnd
         ? new Date(currentPeriodEnd * 1000).toISOString()
         : 'unknown',
+      isStripePayingCustomer: user.stripeCustomerId ? true : false,
     };
   }
 
   async updateSubscription(userId: string, priceId: string): Promise<void> {
     const user = await this.repository.findUserById(userId);
 
-    if (!user) {
-      throw NotFoundError('User not found');
+    this.validateUser(user);
+    this.validatePriceId(priceId);
+    this.validateCustomerId(user.stripeCustomerId!);
+
+    if (!user.stripeCustomerId) {
+      throw BadRequestError(
+        "No Stripe customer found. make sure you're a paying user.",
+      );
     }
 
     if (!user.stripeSubscriptionId) {
@@ -200,10 +230,21 @@ export class PaymentService {
     );
     const currentItemId = subscription.items.data[0]?.id;
 
-    await this.stripe.subscriptions.update(user.stripeSubscriptionId, {
-      items: [{ id: currentItemId, price: priceId }],
-      proration_behavior: 'create_prorations', // or 'none' based on your billing policy
-    });
+    try {
+      await this.stripe.subscriptions.update(user.stripeSubscriptionId, {
+        items: [{ id: currentItemId, price: priceId }],
+        proration_behavior: 'create_prorations',
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error(`Stripe subscription update failed ${error.message}`);
+        throw BadRequestError(
+          'Failed to update Stripe subscription: ' + error.message,
+        );
+      }
+
+      throw BadRequestError('Failed to update Stripe subscription');
+    }
 
     const plan = PRICE_TO_PLAN[priceId];
     if (plan) {
@@ -221,18 +262,14 @@ export class PaymentService {
   ): Promise<void> {
     const user = await this.repository.findUserById(userId);
 
-    if (!user) {
-      throw NotFoundError('User not found');
-    }
+    this.validateUser(user);
+    this.validateCustomerId(user.stripeCustomerId!);
 
     if (!user.stripeSubscriptionId) {
       throw NotFoundError('Subscription not found');
     }
 
-    if (user.role === 'Admin') {
-      throw ForbiddenError('Admin users cannot have subscriptions');
-    }
-
+    // If there are forms of quota, I will edit it later.
     if (user.tracks.length > 3) {
       throw ForbiddenError(
         `
@@ -244,37 +281,37 @@ export class PaymentService {
     }
 
     if (cancelAtPeriodEnd) {
-      // Schedule cancellation — user keeps access until period ends
       await this.stripe.subscriptions.update(user.stripeSubscriptionId, {
         cancel_at_period_end: true,
       });
-      // Actual cleanup happens in the webhook (customer.subscription.deleted)
-    } else {
-      // Cancel immediately
-      await this.stripe.subscriptions.cancel(user.stripeSubscriptionId);
-
-      let role = 'Listener';
-      if (user.tracks.length > 0) {
-        role = 'Artist';
-      }
-      await this.repository.updateUser(
-        userId,
-        { isPaid: false, role: role },
-        { stripeSubscriptionId: 1 },
-      );
+      return;
     }
+
+    await this.stripe.subscriptions.cancel(user.stripeSubscriptionId);
+
+    let role = 'Listener';
+    if (user.tracks.length > 0) {
+      role = 'Artist';
+    }
+
+    await this.repository.updateUser(
+      userId,
+      { isPaid: false, role: role },
+      { stripeSubscriptionId: 1 },
+    );
   }
 
   async handleWebhook(rawBody: Buffer, signature: string): Promise<void> {
     let event: Stripe.Event;
-
     try {
       event = this.stripe.webhooks.constructEvent(
         rawBody,
         signature,
         this.webhookSecret,
       );
-    } catch {
+
+      logger.info(`Received Stripe webhook: ${event.type}`);
+    } catch (error) {
       throw BadRequestError('Invalid Stripe webhook signature');
     }
 
@@ -285,6 +322,7 @@ export class PaymentService {
         const user = await this.repository.findUserByStripeCustomerId(
           invoice.customer as string,
         );
+
         if (user) {
           await this.repository.updateUser(user._id.toString(), {
             isPaid: true,
@@ -299,8 +337,8 @@ export class PaymentService {
         const user = await this.repository.findUserByStripeCustomerId(
           invoice.customer as string,
         );
+
         if (user) {
-          // Optionally mark as unpaid, send email, etc.
           await this.repository.updateUser(user._id.toString(), {
             isPaid: false,
           });
@@ -314,6 +352,7 @@ export class PaymentService {
         const user = await this.repository.findUserByStripeCustomerId(
           subscription.customer as string,
         );
+
         if (user) {
           let role = 'Listener';
           if (user.tracks.length > 0) {
@@ -330,12 +369,12 @@ export class PaymentService {
       }
 
       case 'customer.subscription.updated': {
-        // Plan changed, trial ended, etc.
         const subscription = event.data.object as Stripe.Subscription;
         const priceId = subscription.items.data[0]?.price.id;
         const user = await this.repository.findUserByStripeCustomerId(
           subscription.customer as string,
         );
+
         if (user && priceId) {
           const plan = PRICE_TO_PLAN[priceId];
           if (plan) {

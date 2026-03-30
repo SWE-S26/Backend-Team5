@@ -55,17 +55,17 @@ export class PaymentController {
     }
 
     const userId = req.userInfo!._id;
-    const { priceId, paymentMethodId } = validatedRequest.data.body;
+    const { priceId } = validatedRequest.data.body;
 
-    const data = await this.service.createSubscription(
+    const subscriptionId = await this.service.createSubscription(
       userId,
       priceId,
-      paymentMethodId,
     );
+
     res.status(201).json({
       success: true,
       message: 'Subscription created successfully',
-      data,
+      data: { subscriptionId },
     });
   }
 
@@ -122,11 +122,11 @@ export class PaymentController {
       throw BadRequestError('Missing or invalid Stripe signature header');
     }
 
-    if (!Buffer.isBuffer(req.body)) {
+    if (!Buffer.isBuffer(req.rawBody)) {
       throw BadRequestError('Invalid request body — raw body required');
     }
 
-    await this.service.handleWebhook(req.body, signature);
+    await this.service.handleWebhook(req.rawBody, signature);
 
     res.status(200).json({
       success: true,

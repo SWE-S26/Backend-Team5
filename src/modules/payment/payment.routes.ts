@@ -8,7 +8,6 @@ const paymentController = new PaymentController();
 
 paymentPublicRouter.post(
   apiVersions.v1 + '/webhook/stripe',
-  raw({ type: 'application/json' }),
   paymentController.handleWebhook.bind(paymentController),
 );
 
