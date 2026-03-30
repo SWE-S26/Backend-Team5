@@ -182,11 +182,11 @@
       '500':
         $ref: '#/components/responses/ServerError'
 
-/api/payment/webhook/stripe:
+/api/public/payment/webhook/stripe:
   post:
     tags:
       - Payment
-    summary: Stripe webhook listener
+    summary: Stripe webhook listener (DON'T CALL THIS API, STRIPE CALLS IT)
     description: Endpoint used by Stripe to send webhook events related to payments and subscriptions.
 
     requestBody:

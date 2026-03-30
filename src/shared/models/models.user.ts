@@ -16,14 +16,22 @@ import Report from './models.report';
 import { DEFAULT_PROFILE_IMAGE } from '../../config/constants';
 import { CloudinaryService } from '../abstractions/cloudinary.service';
 import publitioMediaStorage from '../abstractions/publitio';
-import { tr } from 'zod/v4/locales';
+
+export type PaymentInfo = {
+  subscriptionType: string;
+  quota: {
+    unlimited: boolean;
+    usedSeconds: number;
+    leftSeconds: number;
+  };
+};
 
 export type IUser = {
   _id: Types.ObjectId;
   email: string;
   password?: string;
   googleId?: string;
-  role: 'Listener' | 'Admin';
+  role: 'Listener' | 'Artist' | 'Pro' | 'Admin';
   displayName: string;
   firstName: string;
   lastName: string;
@@ -68,10 +76,10 @@ export type IUser = {
       timestamp: Date;
     },
   ];
-  isPaid: boolean;
   isPrivate: boolean;
   ban: boolean;
   banReason: string;
+  isPaid: boolean;
   subscription: {
     subscriptionType: string;
     quota: {
@@ -80,6 +88,8 @@ export type IUser = {
       leftSeconds: number;
     };
   };
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
 };
 
 const socialLinkSchema = new Schema(
@@ -289,10 +299,6 @@ const userSchema = new Schema(
       type: [repostSchema],
       default: [],
     },
-    isPaid: {
-      type: Boolean,
-      default: false,
-    },
     isPrivate: {
       type: Boolean,
       default: false,
@@ -306,6 +312,10 @@ const userSchema = new Schema(
       default: '',
       maxlength: 500,
     },
+    isPaid: {
+      type: Boolean,
+      default: false,
+    },
     subscription: {
       subscriptionType: {
         type: String,
@@ -315,6 +325,14 @@ const userSchema = new Schema(
         type: quotaSchema,
         default: () => ({}),
       },
+    },
+    stripeCustomerId: {
+      type: String,
+      default: null,
+    },
+    stripeSubscriptionId: {
+      type: String,
+      default: null,
     },
   },
   { timestamps: true },

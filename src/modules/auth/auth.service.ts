@@ -10,11 +10,12 @@ import {
 } from '../../shared/errors/responseErrors';
 import { LoginResponse } from './dtos/auth.response';
 import { AuthRepository } from './auth.repository';
-import JWTService from '../../shared/abstractions/jwt';
+import JWTService from '../../shared/abstractions/jwt.service';
 import logger from '../../shared/logger/logger';
 import { redisCacher } from '../../shared/abstractions/redis/redisCacher';
 import emailService from '../../shared/abstractions/email/EmailService';
 import { AuthMapper } from './dtos/auth.mapper';
+import { PaymentInfo } from '../../shared/models/models.user';
 
 type newUserDTO = {
   email: string;
@@ -480,7 +481,20 @@ export class AuthService {
     );
   };
 
-  deleteAcount = async (userId: string): Promise<void> => {
-    await this.authRepository.deleteUser(userId);
+  deleteAcount = async (
+    userId: string,
+    paymentInfo: PaymentInfo,
+  ): Promise<void> => {
+    if (paymentInfo.subscriptionType !== 'free') {
+      throw ForbiddenError(`
+        You cannot delete your account without canceling your subscription first. 
+        Please cancel your subscription first.
+      `);
+    }
+
+    const user = await this.authRepository.deleteUser(userId);
+    if (!user) {
+      throw NotFoundError('User not found');
+    }
   };
 }

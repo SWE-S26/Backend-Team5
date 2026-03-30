@@ -74,19 +74,22 @@ export const removeSecurityFromAuthEndpoints = (
   for (const [route, methods] of Object.entries(paths)) {
     if (!methods || typeof methods !== 'object') continue;
 
-    if (endpointsToSkip.includes(route) || route.includes('/public')) {
-      logger.debug(`Skipping route: ${route} for authentication tags...`);
+    if (endpointsToSkip.includes(route)) {
       continue;
     }
 
     for (const [method, operationRaw] of Object.entries(methods)) {
       const operation = operationRaw as any;
+
       if (
-        operation &&
-        typeof operation === 'object' &&
-        'tags' in operation &&
-        Array.isArray(operation.tags) &&
-        operation.tags.some((tag: string) => tag.includes('Authentication'))
+        (operation &&
+          typeof operation === 'object' &&
+          'tags' in operation &&
+          Array.isArray(operation.tags) &&
+          operation.tags.some((tag: string) =>
+            tag.includes('Authentication'),
+          )) ||
+        route.includes('/public')
       ) {
         operation.security = [];
       }
