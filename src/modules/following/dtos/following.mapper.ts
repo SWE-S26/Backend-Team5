@@ -1,11 +1,13 @@
-export class FollowingMapper {
-  static toResponse(entity: any): any {
-    // TODO: map entity fields to response DTO
-    return {} as any;
-  }
+import { UserSummaryDTOType } from './following.response';
 
-  static toEntity(dto: any): any {
-    // TODO: map request DTO fields to entity
-    return {};
+export class FollowingMapper {
+  static toUserSummary(user: any): UserSummaryDTOType {
+    return {
+      userId: user._id.toString(),
+      displayName: user.displayName,
+      profileImgLink: user.profileImg?.imgLink || null,
+      trackCount: user.trackCount || 0,
+      followersCount: user.followersCount || 0,
+    };
   }
 }

@@ -1,10 +1,28 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
-import { FollowingIdParamDTO } from './following.request.params';
-import { ListFollowingsQueryDto } from './following.request.query';
-import { CreateFollowingRequestBodyDTO } from './following.request.body';
+import { UserIdParamDTO } from './following.request.params';
+import { PaginationQueryDTO } from './following.request.query';
 
-export const CreateFollowingRequestDTO = extendedZod.object({
-  params: FollowingIdParamDTO,
-  query: ListFollowingsQueryDto,
-  body: CreateFollowingRequestBodyDTO,
+export const GetFollowersRequestDTO = extendedZod.object({
+  params: UserIdParamDTO,
+  query: PaginationQueryDTO,
 });
+
+export const GetFollowingRequestDTO = extendedZod.object({
+  params: UserIdParamDTO,
+  query: PaginationQueryDTO,
+});
+
+export const GetSuggestedRequestDTO = extendedZod.object({
+  query: PaginationQueryDTO,
+});
+
+export const GetBlockedRequestDTO = extendedZod.object({
+  query: PaginationQueryDTO,
+});
+
+export const FollowUserRequestDTO = extendedZod.object({
+  params: UserIdParamDTO,
+});
+export const UnfollowUserRequestDTO = FollowUserRequestDTO;
+export const BlockUserRequestDTO = FollowUserRequestDTO;
+export const UnblockUserRequestDTO = FollowUserRequestDTO;

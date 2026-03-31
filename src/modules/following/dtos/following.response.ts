@@ -1,17 +1,12 @@
+import z from 'zod';
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 
-export const FollowingResponseDto = extendedZod
-  .object({
-    id: extendedZod.string(),
-    email: extendedZod.string(),
-    name: extendedZod.string(),
-    role: extendedZod.enum(['user', 'admin']),
-  })
-  .openapi('FollowingResponse', {
-    example: {
-      id: '697b7c75001e8cb1d4c0bb67',
-      email: 'user@example.com',
-      name: 'cow',
-      role: 'user',
-    },
-  });
+export const UserSummaryDTO = extendedZod.object({
+  userId: extendedZod.mongoId(),
+  displayName: extendedZod.string(),
+  profileImgLink: extendedZod.string().url().nullable(),
+  trackCount: extendedZod.number(),
+  followersCount: extendedZod.number(),
+});
+
+export type UserSummaryDTOType = z.infer<typeof UserSummaryDTO>;
