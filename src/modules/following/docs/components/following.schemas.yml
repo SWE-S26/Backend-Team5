@@ -3,14 +3,16 @@
     UserSummary:
       type: object
       properties:
-        user_id:
+        userId:
           type: string
-        display_name:
+        displayName:
           type: string
-        profile_img_link:
+        profileImgLink:
           type: string
           format: uri
-        track_count:
+        tracksCount:
+          type: integer
+        followersCount:
           type: integer
           description: Number of tracks uploaded by the user
     ActionResponse:
