@@ -37,8 +37,14 @@ export type UpdateProfileRequestBodyDTOType = z.infer<
 };
 
 export const UpdateProfileImagesRequestBodyDTO = extendedZod.object({
-  removeProfileImg: extendedZod.coerce.boolean(),
-  removeBannerImg: extendedZod.coerce.boolean(),
+  removeProfileImg: extendedZod.preprocess(
+    (val) => val === 'true',
+    extendedZod.boolean(),
+  ),
+  removeBannerImg: extendedZod.preprocess(
+    (val) => val === 'true',
+    extendedZod.boolean(),
+  ),
 });
 
 export type UpdateProfileImagesRequestBodyDTOType = z.infer<
