@@ -1,37 +1,25 @@
 import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { FollowingService } from './following.service';
+import { UserSummaryDTOType } from './dtos/following.response';
+import { UserIdParamDTO } from './dtos/following.request.params';
 
 export class FollowingController {
   constructor(private readonly service: FollowingService) {}
 
-  async findAll(_req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
+  async addFollower(req: Request, res: Response): Promise<void> {
+    const userId = req.userInfo!._id;
+    const validatedRequest = parseRequest(UserIdParamDTO, req);
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+    const followedId = validatedRequest.data.params.id;
 
-  async findOne(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
+    const userSummary: UserSummaryDTOType = await this.service.addFollower(
+      userId,
+      followedId,
+    );
 
-  async create(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
-
-  async replace(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
-
-  async update(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
-
-  async remove(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
+    res.json(userSummary);
   }
 }

@@ -1,25 +1,27 @@
-import { FollowingRepository } from './following.repository';
+import { FollowingRepository, UserStats } from './following.repository';
+import User, { IUser } from '../../shared/models/models.user';
+import Following from '../../shared/models/models.following';
+import Track from '../../shared/models/models.track';
+import { UserSummaryDTOType } from './dtos/following.response';
+import { NotFoundError } from '../../shared/errors/responseErrors';
+import { FollowingMapper } from './dtos/following.mapper';
 
 export class FollowingService {
   constructor(private readonly repository: FollowingRepository) {}
 
-  async findAll(): Promise<any[]> {
-    return this.repository.findAll();
-  }
+  async addFollower(
+    userId: string,
+    followedId: string,
+  ): Promise<UserSummaryDTOType> {
+    const followedUser: IUser | null =
+      await this.repository.getUserById(followedId);
+    if (!followedUser)
+      throw NotFoundError('User you want to follow is not found');
 
-  async findById(id: string): Promise<any | null> {
-    return this.repository.findById(id);
-  }
+    await this.repository.addFollower(userId, followedId);
 
-  async create(data: any): Promise<any> {
-    return this.repository.create(data);
-  }
+    const userStats: UserStats = await this.repository.getUserStats(followedId);
 
-  async update(id: string, data: any): Promise<any | null> {
-    return this.repository.update(id, data);
-  }
-
-  async delete(id: string): Promise<boolean> {
-    return this.repository.delete(id);
+    return FollowingMapper.toUserSummary({ ...followedUser, ...userStats });
   }
 }

@@ -23,8 +23,8 @@ router.use('/engagement', engagementRouter);
 import feedRoutes from '../feed/feed.routes';
 router.use('/feed', feedRoutes);
 
-import followingRoutes from '../following/following.routes';
-router.use('/following', followingRoutes);
+import followingRouter from '../following/following.routes';
+router.use('/social', followingRouter);
 
 import messagingRoutes from '../messaging/messaging.routes';
 router.use('/messages', messagingRoutes);
