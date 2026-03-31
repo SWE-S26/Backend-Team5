@@ -1,26 +1,39 @@
+import User, { IUser } from '../../shared/models/models.user';
+import Following from '../../shared/models/models.following';
+import Track from '../../shared/models/models.track';
+
+export interface UserStats {
+  trackCount: number;
+  followersCount: number;
+}
+
 export class FollowingRepository {
-  async findAll(): Promise<any[]> {
-    // TODO: query your data source
-    return [];
+  async getUserById(id: string): Promise<IUser | null> {
+    return await User.findById(id).lean();
   }
 
-  async findById(id: string): Promise<any | null> {
-    // TODO: query your data source
-    return null;
+  async getUserStats(id: string): Promise<UserStats> {
+    const followDoc = await Following.findOne({ userId: id }).lean();
+    const followersCount = followDoc?.followers.length ?? 0;
+    const trackCount = await Track.countDocuments({ posterId: id });
+
+    return {
+      followersCount,
+      trackCount,
+    };
   }
 
-  async create(data: any): Promise<any> {
-    // TODO: insert into your data source
-    return data;
-  }
+  async addFollower(id: string, followedId: string): Promise<void> {
+    await Following.findOneAndUpdate(
+      { userId: id },
+      { $addToSet: { followed: followedId } },
+      { upsert: true },
+    );
 
-  async update(id: string, data: any): Promise<any | null> {
-    // TODO: update in your data source
-    return null;
-  }
-
-  async delete(id: string): Promise<boolean> {
-    // TODO: delete from your data source
-    return false;
+    await Following.findOneAndUpdate(
+      { userId: followedId },
+      { $addToSet: { followers: id } },
+      { upsert: true },
+    );
   }
 }

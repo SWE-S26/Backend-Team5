@@ -1,14 +1,18 @@
 import { Router } from 'express';
 import { FollowingController } from './following.controller';
+import { FollowingRepository } from './following.repository';
+import { FollowingService } from './following.service';
+import apiVersions from '../../shared/middleware/apiVersions';
 
-const router = Router();
-//TODO: const followingController = new FollowingController(/* TODO: inject service */);
+const followingRouter = Router();
 
-// followingRouter.get('/',      (req, res) => followingController.findAll(req, res));
-// followingRouter.get('/:id',   (req, res) => followingController.findOne(req, res));
-// followingRouter.post('/',     (req, res) => followingController.create(req, res));
-// followingRouter.put('/:id',   (req, res) => followingController.replace(req, res));
-// followingRouter.patch('/:id', (req, res) => followingController.update(req, res));
-// followingRouter.delete('/:id',(req, res) => followingController.remove(req, res));
+const followingRepository = new FollowingRepository();
+const followingService = new FollowingService(followingRepository);
+const followingController = new FollowingController(followingService);
 
-export default router;
+followingRouter.post(
+  apiVersions.v1 + '/follow/:id',
+  followingController.addFollower.bind(followingController),
+);
+
+export default followingRouter;
