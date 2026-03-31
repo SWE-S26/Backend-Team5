@@ -1,2 +1,5 @@
 import { idParamDto } from '../../../shared/dtos/commonDTO';
-export const FollowingIdParamDTO = idParamDto.extend({});
+import extendedZod from '../../../shared/docs/dtoDocumenter';
+export const UserIdParamDTO = extendedZod.object({
+  params: idParamDto,
+});

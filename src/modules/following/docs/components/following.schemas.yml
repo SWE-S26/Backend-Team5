@@ -10,7 +10,7 @@
         profileImgLink:
           type: string
           format: uri
-        tracksCount:
+        trackCount:
           type: integer
         followersCount:
           type: integer
