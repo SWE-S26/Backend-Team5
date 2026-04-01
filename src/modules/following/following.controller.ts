@@ -3,6 +3,10 @@ import { parseRequest } from '../../shared/dtos/requestParser';
 import { FollowingService } from './following.service';
 import { UserSummaryDTOType } from './dtos/following.response';
 import { UserIdParamDTO } from './dtos/following.request.params';
+import {
+  GetFollowersRequestDTO,
+  GetFollowingRequestDTO,
+} from './dtos/following.request';
 
 export class FollowingController {
   constructor(private readonly service: FollowingService) {}
@@ -37,5 +41,41 @@ export class FollowingController {
     );
 
     res.json(userSummary);
+  }
+
+  async getFollowers(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(GetFollowersRequestDTO, req);
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+    const userId = validatedRequest.data.params.id;
+    const offset = validatedRequest.data.query?.offset ?? 0;
+    const limit = validatedRequest.data.query?.limit ?? 20;
+
+    const followers: UserSummaryDTOType[] = await this.service.getFollowers(
+      userId,
+      offset,
+      limit,
+    );
+
+    res.json(followers);
+  }
+
+  async getFollowed(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(GetFollowingRequestDTO, req);
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+    const userId = validatedRequest.data.params.id;
+    const offset = validatedRequest.data.query?.offset ?? 0;
+    const limit = validatedRequest.data.query?.limit ?? 20;
+
+    const followed: UserSummaryDTOType[] = await this.service.getFollowed(
+      userId,
+      offset,
+      limit,
+    );
+
+    res.json(followed);
   }
 }

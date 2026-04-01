@@ -5,6 +5,7 @@ import Track from '../../shared/models/models.track';
 import { UserSummaryDTOType } from './dtos/following.response';
 import { NotFoundError } from '../../shared/errors/responseErrors';
 import { FollowingMapper } from './dtos/following.mapper';
+import { Types } from 'mongoose';
 
 export class FollowingService {
   constructor(private readonly repository: FollowingRepository) {}
@@ -39,5 +40,65 @@ export class FollowingService {
     const userStats: UserStats = await this.repository.getUserStats(followedId);
 
     return FollowingMapper.toUserSummary({ ...followedUser, ...userStats });
+  }
+
+  async getFollowers(
+    id: string,
+    offset = 0,
+    limit = 20,
+  ): Promise<UserSummaryDTOType[]> {
+    const existingUser = await this.repository.getUserById(id);
+    if (!existingUser) throw NotFoundError('User not found');
+
+    const userIds: Types.ObjectId[] = await this.repository.getUsersIds(
+      id,
+      'followers',
+      offset,
+      limit,
+    );
+    const users: IUser[] = await this.repository.getUsersWithIds(userIds);
+    const usersStats: Record<string, UserStats> =
+      await this.repository.getUsersStats(userIds);
+
+    const combined = users.map((user) => ({
+      ...user,
+      ...usersStats[user._id.toString()],
+    }));
+
+    const followers: UserSummaryDTOType[] = combined.map((user) =>
+      FollowingMapper.toUserSummary(user),
+    );
+
+    return followers;
+  }
+
+  async getFollowed(
+    id: string,
+    offset = 0,
+    limit = 20,
+  ): Promise<UserSummaryDTOType[]> {
+    const existingUser = await this.repository.getUserById(id);
+    if (!existingUser) throw NotFoundError('User not found');
+
+    const userIds: Types.ObjectId[] = await this.repository.getUsersIds(
+      id,
+      'followed',
+      offset,
+      limit,
+    );
+    const users: IUser[] = await this.repository.getUsersWithIds(userIds);
+    const usersStats: Record<string, UserStats> =
+      await this.repository.getUsersStats(userIds);
+
+    const combined = users.map((user) => ({
+      ...user,
+      ...usersStats[user._id.toString()],
+    }));
+
+    const followed: UserSummaryDTOType[] = combined.map((user) =>
+      FollowingMapper.toUserSummary(user),
+    );
+
+    return followed;
   }
 }
