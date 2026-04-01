@@ -40,10 +40,6 @@ class RedisRepoCacher {
     object: T,
     ttlSeconds: number = 900,
   ): Promise<void> {
-    if (process.env.USE_REDIS !== 'TRUE') {
-      return;
-    }
-
     const redisKey = this.buildKey(objectType, objectId);
     await redisCacher.set(redisKey, object, ttlSeconds);
   }
@@ -64,10 +60,6 @@ class RedisRepoCacher {
     objectType: RedisObjectType,
     objectId: string,
   ): Promise<T | null> {
-    if (process.env.USE_REDIS !== 'TRUE') {
-      return null;
-    }
-
     const redisKey = this.buildKey(objectType, objectId);
     return await redisCacher.get<T>(redisKey);
   }
@@ -80,10 +72,6 @@ class RedisRepoCacher {
    * invalidate `USER:userId` so no stale profile data is served to any caller.
    */
   async invalidateCache(objectType: RedisObjectType, objectId: string) {
-    if (process.env.USE_REDIS !== 'TRUE') {
-      return;
-    }
-
     const redisKey = this.buildKey(objectType, objectId);
     await redisCacher.delete(redisKey);
   }

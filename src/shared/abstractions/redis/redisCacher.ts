@@ -5,11 +5,15 @@ class RedisCacher {
   private static instance: RedisCacher;
   private client: RedisClientType;
   private isConnected = false;
+  private isConnecting = false;
 
   private constructor() {
     this.client = createClient({
       url: process.env.REDIS_URL ?? 'redis://localhost:6379',
       socket: {
+        connectTimeout: 5000, // fail fast if Redis is unreachable on boot
+        keepAliveInitialDelay: 10000, // start keepalive after 10s of idle time
+        keepAlive: true, // detect dead TCP connections (10s keepalive)
         reconnectStrategy: (retries) => {
           if (retries > 10)
             return new Error('RedisCacher: max retries exceeded');
@@ -17,10 +21,9 @@ class RedisCacher {
         },
       },
     }) as RedisClientType;
-
-    this.client.on('connect', () => {
+    this.client.on('ready', () => {
       this.isConnected = true;
-      logger.info('[RedisCacher] Connected');
+      logger.info('[RedisCacher] Ready');
     });
 
     this.client.on('error', (err) => {
@@ -32,6 +35,11 @@ class RedisCacher {
       this.isConnected = false;
       logger.warn('[RedisCacher] Reconnecting...');
     });
+
+    this.client.on('end', () => {
+      this.isConnected = false;
+      logger.warn('[RedisCacher] Connection closed');
+    });
   }
 
   static getInstance(): RedisCacher {
@@ -42,7 +50,13 @@ class RedisCacher {
   }
 
   async connect(): Promise<void> {
-    if (!this.isConnected) await this.client.connect();
+    if (this.isConnected || this.isConnecting) return;
+    this.isConnecting = true;
+    try {
+      await this.client.connect();
+    } finally {
+      this.isConnecting = false;
+    }
   }
 
   /**
@@ -55,9 +69,19 @@ class RedisCacher {
    * @param ttlSeconds - Time to live in seconds default ~ 15 mins
    */
   async set<T>(key: string, value: T, ttlSeconds: number = 900): Promise<void> {
-    const serialized = JSON.stringify(value);
-    logger.info(`[Cache] SET ${key}`);
-    await this.client.setEx(key, ttlSeconds, serialized);
+    if (!this.isConnected) return;
+
+    try {
+      const serialized = JSON.stringify(value);
+
+      logger.info(`[Cache] SET ${key}`);
+
+      await this.client.setEx(key, ttlSeconds, serialized);
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error(`[Cache] Failed to set key ${key}: ${error.message}`);
+      }
+    }
   }
 
   /**
@@ -67,26 +91,38 @@ class RedisCacher {
    * @returns The data you supposedly cached
    */
   async get<T>(key: string): Promise<T | null> {
-    const data = await this.client.get(key);
-    logger.info(`[Cache] GET ${key}`);
+    if (!this.isConnected) return null;
 
-    if (!data) return null;
-    return JSON.parse(data) as T;
+    try {
+      logger.info(`[Cache] GET ${key}`);
+
+      const data = await this.client.get(key);
+      if (!data) return null;
+      return JSON.parse(data) as T;
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error(`[Cache] Failed to get key ${key}: ${error.message}`);
+      }
+      return null;
+    }
   }
 
   async delete(...keys: string[]): Promise<void> {
-    await this.client.del(keys);
-    logger.info(`[Cache] DELETED keys: ${keys.join(', ')}`);
+    if (!this.isConnected || keys.length === 0) return;
+    try {
+      await this.client.del(keys);
+      logger.info(`[Cache] DELETED keys: ${keys.join(', ')}`);
+    } catch (err) {
+      logger.error(
+        `[Cache] DELETE failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
   }
 
-  // Useful for wildcard invalidation e.g. "products:list:*"
-  async deleteByPattern(pattern: string): Promise<void> {
-    const keys = await this.client.keys(pattern);
-    if (keys.length > 0) {
-      await this.client.del(keys);
-      logger.info(`[Cache] DELETED keys matching pattern: ${pattern}`);
-    } else {
-      logger.info(`[Cache] No keys found for pattern: ${pattern}`);
+  async disconnect(): Promise<void> {
+    if (this.isConnected) {
+      await this.client.quit(); // sends QUIT command, flushes pipeline
+      logger.info('[RedisCacher] Disconnected gracefully');
     }
   }
 }
