@@ -4,6 +4,7 @@ import Playlist, { IPlaylist } from '../../shared/models/models.playlist';
 import User, { IUser } from '../../shared/models/models.user';
 import Following from '../../shared/models/models.following';
 import Comment, { IComment } from '../../shared/models/models.comment';
+import Settings, { ISettings } from '../../shared/models/models.settings';
 
 export class EngagementRepository {
   async findTrackById(trackId: string): Promise<ITrack | null> {
@@ -12,6 +13,72 @@ export class EngagementRepository {
 
   async findTrackByIdForComments(trackId: string): Promise<ITrack | null> {
     return Track.findById(trackId).select('posterId');
+  }
+
+  async findTrackWithOwner(trackId: string): Promise<{
+    _id: Types.ObjectId;
+    posterId: Types.ObjectId;
+    basicInfo: { title: string };
+    owner: Pick<IUser, 'email' | 'displayName'>;
+  } | null> {
+    const track = await Track.findById(trackId)
+      .select('posterId basicInfo.title')
+      .lean();
+
+    if (!track) return null;
+
+    const owner = await User.findById(track.posterId)
+      .select('email displayName')
+      .lean();
+
+    if (!owner) return null;
+
+    return {
+      _id: track._id,
+      posterId: track.posterId,
+      basicInfo: track.basicInfo,
+      owner: owner,
+    };
+  }
+
+  async findPlaylistWithOwner(playlistId: string): Promise<{
+    _id: Types.ObjectId;
+    artistId: Types.ObjectId;
+    title: string;
+    owner: Pick<IUser, 'email' | 'displayName'>;
+  } | null> {
+    const playlist = await Playlist.findById(playlistId)
+      .select('artistId title')
+      .lean();
+
+    if (!playlist) return null;
+
+    const owner = await User.findById(playlist.artistId)
+      .select('email displayName')
+      .lean();
+
+    if (!owner) return null;
+
+    return {
+      _id: playlist._id,
+      artistId: playlist.artistId,
+      title: playlist.title,
+      owner: owner,
+    };
+  }
+
+  async findUserDisplayName(userId: string): Promise<string | null> {
+    const user = await User.findById(userId).select('displayName').lean();
+    return user?.displayName || null;
+  }
+
+  async findUserNotificationSettings(
+    userId: string,
+  ): Promise<ISettings['notifications'] | null> {
+    const settings = await Settings.findOne({ userId })
+      .select('notifications')
+      .lean();
+    return settings?.notifications || null;
   }
 
   async addLikeToTrack(trackId: string, userId: string): Promise<ITrack> {

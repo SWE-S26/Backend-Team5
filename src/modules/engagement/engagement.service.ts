@@ -21,11 +21,14 @@ import {
   GetCommentRepliesResponse,
   DeleteCommentResponse,
 } from './dtos/engagement.response';
-
-// TODO: notifications will be added later after the notification module is made
+import { EngagementEmailService } from './engagement.email';
 
 export class EngagementService {
-  constructor(private readonly repository: EngagementRepository) {}
+  private emailService: EngagementEmailService;
+
+  constructor(private readonly repository: EngagementRepository) {
+    this.emailService = new EngagementEmailService(repository);
+  }
 
   async toggleTrackLike(
     trackId: string,
@@ -50,6 +53,12 @@ export class EngagementService {
       this.repository.addLikeToTrack(trackId, userId),
       this.repository.addTrackToUserLikes(userId, trackId),
     ]);
+
+    // (async, don't await)
+    this.emailService
+      .sendTrackLikeEmail(trackId, userId)
+      .catch((err) => console.error('Failed to send track like email:', err));
+
     return EngagementMapper.toTrackLikeResponse(updated, true);
   }
 
@@ -79,6 +88,12 @@ export class EngagementService {
       this.repository.addRepostToTrack(trackId),
       this.repository.addRepostToUser(userId, trackId, caption),
     ]);
+
+    // (async, don't await)
+    this.emailService
+      .sendTrackRepostEmail(trackId, userId)
+      .catch((err) => console.error('Failed to send track repost email:', err));
+
     return EngagementMapper.toTrackRepostResponse(updated, true);
   }
 
@@ -107,6 +122,14 @@ export class EngagementService {
       this.repository.addLikeToPlaylist(playlistId, userId),
       this.repository.addPlaylistToUserLikes(userId, playlistId),
     ]);
+
+    // (async, don't await)
+    this.emailService
+      .sendPlaylistLikeEmail(playlistId, userId)
+      .catch((err) =>
+        console.error('Failed to send playlist like email:', err),
+      );
+
     return EngagementMapper.toPlaylistLikeResponse(updated, true);
   }
 
@@ -235,6 +258,14 @@ export class EngagementService {
       this.repository.addRepostToPlaylist(playlistId),
       this.repository.addPlaylistRepostToUser(userId, playlistId, caption),
     ]);
+
+    // (async, don't await)
+    this.emailService
+      .sendPlaylistRepostEmail(playlistId, userId)
+      .catch((err) =>
+        console.error('Failed to send playlist repost email:', err),
+      );
+
     return EngagementMapper.toPlaylistRepostResponse(updated, true);
   }
 
@@ -377,6 +408,16 @@ export class EngagementService {
         parentCommentId,
         comment._id.toString(),
       );
+    }
+
+    // (async, don't await)
+    // Only send for top-level comments, not replies
+    if (!parentCommentId) {
+      this.emailService
+        .sendTrackCommentEmail(trackId, userId)
+        .catch((err) =>
+          console.error('Failed to send track comment email:', err),
+        );
     }
 
     return EngagementMapper.toPostCommentResponse(comment);
