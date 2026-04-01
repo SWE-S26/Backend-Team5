@@ -6,6 +6,7 @@ import invalidRouter from './shared/errors/router.invalid';
 import logger from './shared/logger/logger';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import shutDown from './config/shutDown';
 
 const app = express();
 
@@ -36,5 +37,8 @@ app.use(cookieParser());
 app.use('/api', integrationRouter);
 app.use(invalidRouter);
 app.use(errorHandler);
+
+process.on('SIGTERM', shutDown);
+process.on('SIGINT', shutDown);
 
 export default app;

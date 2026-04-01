@@ -26,10 +26,10 @@ describe('MongoDB Initialization', () => {
     const mongoose = require('mongoose');
     mongoose.connect.mockResolvedValueOnce({});
 
-    const { intializeDbConnection } = require('../../src/config/db/connect');
+    const { initializeDbConnection } = require('../../src/config/db/connect');
     const logger = require('../../src/shared/logger/logger');
 
-    await intializeDbConnection();
+    await initializeDbConnection();
 
     expect(mongoose.connect).toHaveBeenCalledTimes(1);
     expect(logger.info).toHaveBeenCalledWith('[MongoDB] connected');
@@ -41,10 +41,10 @@ describe('MongoDB Initialization', () => {
       .mockRejectedValueOnce(new Error('fail'))
       .mockResolvedValueOnce({});
 
-    const { intializeDbConnection } = require('../../src/config/db/connect');
+    const { initializeDbConnection } = require('../../src/config/db/connect');
     const logger = require('../../src/shared/logger/logger');
 
-    await intializeDbConnection();
+    await initializeDbConnection();
 
     expect(logger.error).toHaveBeenCalledWith(
       expect.stringContaining('[MongoDB] Initial connection failed'),

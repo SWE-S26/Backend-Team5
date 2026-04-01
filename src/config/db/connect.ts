@@ -2,8 +2,14 @@ import mongoose from 'mongoose';
 import 'dotenv/config';
 import logger from '../../shared/logger/logger';
 let isConnected = false;
+let isShuttingDown = false;
 
-export const intializeDbConnection = async () => {
+export const closeDbConnection = () => {
+  logger.info(`[MongoDB] Shutting down gracefully, disconnecting...`);
+  isShuttingDown = true;
+};
+
+export const initializeDbConnection = async () => {
   if (isConnected) return;
 
   try {
@@ -17,14 +23,15 @@ export const intializeDbConnection = async () => {
   } catch (err) {
     logger.error(`[MongoDB] Initial connection failed: ${err}`);
 
-    setTimeout(intializeDbConnection, 5000);
+    setTimeout(initializeDbConnection, 5000);
   }
 };
 
 mongoose.connection.on('disconnected', () => {
+  if (isShuttingDown) return;
   logger.warn('[MongoDB] disconnected. Reconnecting...');
   isConnected = false;
-  setTimeout(intializeDbConnection, 5000);
+  setTimeout(initializeDbConnection, 5000);
 });
 
 mongoose.connection.on('error', (err) => {

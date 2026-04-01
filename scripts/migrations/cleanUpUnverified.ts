@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import logger from '../../shared/logger/logger';
+import logger from '../../src/shared/logger/logger';
 import 'dotenv/config';
 
 const userSchema = new mongoose.Schema({
