@@ -4,6 +4,7 @@ import Playlist, { IPlaylist } from '../../shared/models/models.playlist';
 import User, { IUser } from '../../shared/models/models.user';
 import Following from '../../shared/models/models.following';
 import Comment, { IComment } from '../../shared/models/models.comment';
+import Settings, { ISettings } from '../../shared/models/models.settings';
 
 export class EngagementRepository {
   async findTrackById(trackId: string): Promise<ITrack | null> {
@@ -14,9 +15,7 @@ export class EngagementRepository {
     return Track.findById(trackId).select('posterId');
   }
 
-  async findTrackWithOwner(
-    trackId: string,
-  ): Promise<{
+  async findTrackWithOwner(trackId: string): Promise<{
     _id: Types.ObjectId;
     posterId: Types.ObjectId;
     basicInfo: { title: string };
@@ -42,9 +41,7 @@ export class EngagementRepository {
     };
   }
 
-  async findPlaylistWithOwner(
-    playlistId: string,
-  ): Promise<{
+  async findPlaylistWithOwner(playlistId: string): Promise<{
     _id: Types.ObjectId;
     artistId: Types.ObjectId;
     title: string;
@@ -73,6 +70,15 @@ export class EngagementRepository {
   async findUserDisplayName(userId: string): Promise<string | null> {
     const user = await User.findById(userId).select('displayName').lean();
     return user?.displayName || null;
+  }
+
+  async findUserNotificationSettings(
+    userId: string,
+  ): Promise<ISettings['notifications'] | null> {
+    const settings = await Settings.findOne({ userId })
+      .select('notifications')
+      .lean();
+    return settings?.notifications || null;
   }
 
   async addLikeToTrack(trackId: string, userId: string): Promise<ITrack> {
