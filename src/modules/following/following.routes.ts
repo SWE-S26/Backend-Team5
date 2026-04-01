@@ -15,4 +15,9 @@ followingRouter.post(
   followingController.addFollower.bind(followingController),
 );
 
+followingRouter.post(
+  apiVersions.v1 + '/unfollow/:id',
+  followingController.removeFollower.bind(followingController),
+);
+
 export default followingRouter;

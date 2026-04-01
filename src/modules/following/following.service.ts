@@ -24,4 +24,20 @@ export class FollowingService {
 
     return FollowingMapper.toUserSummary({ ...followedUser, ...userStats });
   }
+
+  async removeFollower(
+    userId: string,
+    followedId: string,
+  ): Promise<UserSummaryDTOType> {
+    const followedUser: IUser | null =
+      await this.repository.getUserById(followedId);
+    if (!followedUser)
+      throw NotFoundError('User you want to unfollow is not found');
+
+    await this.repository.removeFollower(userId, followedId);
+
+    const userStats: UserStats = await this.repository.getUserStats(followedId);
+
+    return FollowingMapper.toUserSummary({ ...followedUser, ...userStats });
+  }
 }
