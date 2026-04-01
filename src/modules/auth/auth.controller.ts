@@ -22,7 +22,7 @@ import {
   ForbiddenError,
   UnauthorizedError,
 } from '../../shared/errors/responseErrors';
-import { JWTPayload } from '../../shared/abstractions/jwt';
+import { JWTPayload } from '../../shared/abstractions/jwt.service';
 import { LoginResponse } from './dtos/auth.response';
 import SecureParams from '../../shared/abstractions/security.service';
 
@@ -618,7 +618,10 @@ export class AuthController {
 
   async deleteAccount(req: Request, res: Response): Promise<void> {
     const userId = req.userInfo!._id;
-    await this.service.deleteAcount(userId);
+    const paymentInfo = req.userInfo!.paymentInfo;
+
+    await this.service.deleteAcount(userId, paymentInfo);
+
     res.clearCookie('accessToken', {
       httpOnly: true,
       secure: this.isProduction,

@@ -1,11 +1,20 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { GoneError, UnauthorizedError } from '../errors/responseErrors';
+import { PaymentInfo } from '../models/models.user';
 import logger from '../logger/logger';
 
 export interface JWTPayload {
   _id: string;
   role: string;
-  paymentInfo: unknown;
+  paymentInfo: PaymentInfo;
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      userInfo?: JWTPayload;
+    }
+  }
 }
 
 interface PendingTokenPayload {
@@ -23,19 +32,11 @@ export interface RefreshTokenPayload {
   _id: string;
 }
 
-declare global {
-  namespace Express {
-    interface Request {
-      userInfo?: JWTPayload;
-    }
-  }
-}
-
 class JWTService {
-  private secretKey: string;
-  private expiresIn: SignOptions['expiresIn'];
-  private refreshSecretKey: string;
-  private refreshExpiresIn: SignOptions['expiresIn'];
+  private readonly secretKey: string;
+  private readonly expiresIn: SignOptions['expiresIn'];
+  private readonly refreshSecretKey: string;
+  private readonly refreshExpiresIn: SignOptions['expiresIn'];
 
   constructor() {
     this.secretKey = process.env.JWT_SECRET!;

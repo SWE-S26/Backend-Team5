@@ -1,26 +1,47 @@
+import User, { IUser } from '../../shared/models/models.user';
+import {
+  RedisObjectType,
+  redisRepoCacher,
+} from '../../shared/abstractions/redis/redisRepoCacher';
+
+export interface PaymentUpdateFields {
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  isPaid?: boolean;
+  role?: string;
+  'subscription.subscriptionType'?: string;
+  'subscription.quota.unlimited'?: boolean;
+  'subscription.quota.leftSeconds'?: number;
+  'subscription.quota.usedSeconds'?: number;
+}
+
 export class PaymentRepository {
-  async findAll(): Promise<any[]> {
-    // TODO: query your data source
-    return [];
+  async findUserById(userId: string): Promise<IUser | null> {
+    return User.findById(userId).lean();
   }
 
-  async findById(id: string): Promise<any | null> {
-    // TODO: query your data source
-    return null;
+  async findUserByStripeCustomerId(
+    stripeCustomerId: string,
+  ): Promise<IUser | null> {
+    return User.findOne({ stripeCustomerId }).lean();
   }
 
-  async create(data: any): Promise<any> {
-    // TODO: insert into your data source
-    return data;
-  }
+  async updateUser(
+    userId: string,
+    set: PaymentUpdateFields,
+    unset?: Record<string, 1>,
+  ): Promise<IUser | null> {
+    const update: Record<string, any> = {};
+    if (Object.keys(set).length) {
+      update.$set = set;
+    }
 
-  async update(id: string, data: any): Promise<any | null> {
-    // TODO: update in your data source
-    return null;
-  }
+    if (unset && Object.keys(unset).length) {
+      update.$unset = unset;
+    }
 
-  async delete(id: string): Promise<boolean> {
-    // TODO: delete from your data source
-    return false;
+    redisRepoCacher.invalidateCache(RedisObjectType.USER, userId);
+
+    return User.findByIdAndUpdate(userId, update, { new: true }).lean();
   }
 }

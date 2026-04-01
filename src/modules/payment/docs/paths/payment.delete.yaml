@@ -3,7 +3,12 @@
     tags:
       - Payment
     summary: Cancel the user's subscription
-    description: Cancels the authenticated user's subscription. The cancellation can occur immediately or at the end of the billing period.
+    description: |
+      Cancels the authenticated user's subscription. 
+      The cancellation can occur immediately or at the end of the billing period.
+
+      Please call refresh token after this API to get the 
+      updated subscription status in the access token claims.
 
     security:
       - bearerAuth: []
@@ -21,7 +26,7 @@
                 example: true
 
     responses:
-      "200":
+      '200':
         description: Subscription cancelled successfully
         content:
           application/json:
@@ -42,10 +47,10 @@
               message: Subscription cancelled successfully
               data: null
 
-      "401":
+      '401':
         $ref: '#/components/responses/Unauthorized'
 
-      "404":
+      '404':
         description: Subscription not found
         content:
           application/json:
@@ -66,7 +71,7 @@
               message: Subscription not found
               data: null
 
-      "500":
+      '500':
         description: Internal server error
         content:
           application/json:

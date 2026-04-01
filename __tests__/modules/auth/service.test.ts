@@ -3,7 +3,7 @@ import { IUser } from '../../../src/shared/models/models.user';
 import { AuthService } from '../../../src/modules/auth/auth.service';
 import { AuthRepository } from '../../../src/modules/auth/auth.repository';
 import { Types } from 'mongoose';
-import JWTService from '../../../src/shared/abstractions/jwt';
+import JWTService from '../../../src/shared/abstractions/jwt.service';
 import { AuthMapper } from '../../../src/modules/auth/dtos/auth.mapper';
 import { LoginResponse } from '../../../src/modules/auth/dtos/auth.response';
 import bcrypt from 'bcrypt';

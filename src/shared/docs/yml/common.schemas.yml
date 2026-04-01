@@ -1,35 +1,6 @@
 # You won't need this schemas file, but in case you find a really useful schemas
 # And it is not auto-generated, put it here.
-Agent:
-  type: object
-  properties:
-    agentId:
-      $ref: "#/components/schemas/Id"
-    name:
-      type: string
-      maxLength: 50
-      example: "John"
-    email:
-      type: string
-      format: email
-      example: "john.doe@example.com"
-    phone:
-      type: string
-      example: "+1234567890"
-    imageUrl:
-      type: string
-      format: uri
-      example: "https://example.com/images/agent-profile.jpg"
-    createdAt:
-      type: string
-      format: date-time
-      example: "2025-07-30T08:25:51.000Z"
-    updatedAt:
-      type: string
-      format: date-time
-      example: "2025-07-30T08:25:51.000Z"
-
 Id:
   type: string
   description: Unique identifier for any object
-  example: "69420B00B6967"
+  example: '69420B00B6967'
