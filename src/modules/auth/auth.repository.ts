@@ -1,4 +1,5 @@
 import User, { IUser } from '../../shared/models/models.user';
+import { NotFoundError } from '../../shared/errors/responseErrors';
 
 export class AuthRepository {
   async findByEmail(email: string): Promise<IUser | null> {
@@ -11,6 +12,11 @@ export class AuthRepository {
 
   async findById(id: string): Promise<IUser | null> {
     const user = await User.findById<IUser>(id);
+    return user;
+  }
+
+  async findByIdForPasswordComparing(id: string): Promise<IUser | null> {
+    const user = await User.findById<IUser>(id).select('+password');
     return user;
   }
 
@@ -27,7 +33,7 @@ export class AuthRepository {
       displayName,
       dateOfBirth,
       gender,
-      role: 'Listener/Artist',
+      role: 'Listener',
       profileLink:
         displayName.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(),
     });
@@ -68,7 +74,7 @@ export class AuthRepository {
   }): Promise<IUser> {
     const user = await User.create({
       ...data,
-      role: 'Listener/Artist',
+      role: 'Listener',
       isVerified: true,
       profileLink:
         data.displayName.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now(),
@@ -85,5 +91,12 @@ export class AuthRepository {
     gender: 'Male' | 'Female';
   }): Promise<IUser> {
     return User.create(data);
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    const user = await User.findOneAndDelete({ _id: id });
+    if (!user) {
+      throw NotFoundError('User not found');
+    }
   }
 }

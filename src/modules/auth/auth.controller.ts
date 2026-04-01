@@ -88,7 +88,6 @@ export class AuthController {
       userParams.email,
     );
 
-    // ! 7aseb mn v1 de
     const verifyLink = new URL(`${this.hostUrl}/verify-email`);
 
     const encryptedToken = SecureParams.encrypt(token);
@@ -104,10 +103,6 @@ export class AuthController {
       logger.error(`Error sending verification email: ${error}`);
       throw new Error('Failed to send verification email');
     }
-
-    res.json({
-      message: 'Email Resent successfully',
-    });
   }
 
   async resendVerificationEmail(req: Request, res: Response): Promise<void> {
@@ -216,19 +211,16 @@ export class AuthController {
     );
   }
 
-  async forgotPassword(req: Request, res: Response): Promise<void> {
-    const validatedRequest = parseRequest(ForgotPasswordRequestDTO, req);
+  async forgotPasswordForLoggedInUser(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const userId = req.userInfo!._id;
 
-    if (!validatedRequest.success) {
-      throw validatedRequest.error;
-    }
-
-    const email = validatedRequest.data.body.email;
-    const { token, userName } =
-      await this.service.createPasswordResetToken(email);
+    const { token, userName, email } =
+      await this.service.createPasswordResetTokenForLoggedInUser(userId);
 
     try {
-      // ! 7aseb mn v1 de
       const resetLink = new URL(`${this.hostUrl}/reset-password`);
 
       const encryptedToken = SecureParams.encrypt(token);
@@ -243,6 +235,43 @@ export class AuthController {
         email,
         resetLink.toString(),
       );
+
+      res.json({
+        message: 'Password reset email sent successfully',
+      });
+    } catch (error) {
+      logger.error(`Failed to send password reset email to ${email}: ${error}`);
+      throw new Error('Failed to send password reset link');
+    }
+  }
+
+  async forgotPassword(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(ForgotPasswordRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const email = validatedRequest.data.body.email;
+    const { token, userName } =
+      await this.service.createPasswordResetToken(email);
+
+    try {
+      const resetLink = new URL(`${this.hostUrl}/reset-password`);
+
+      const encryptedToken = SecureParams.encrypt(token);
+      resetLink.searchParams.set('token', encryptedToken);
+
+      logger.debug(
+        `Generated password reset link for ${email}: ${encryptedToken}`,
+      );
+
+      await emailService.sendResetPassowordLink(
+        userName,
+        email,
+        resetLink.toString(),
+      );
+
       res.json({
         message: 'Password reset email sent successfully',
       });
@@ -584,6 +613,27 @@ export class AuthController {
         accessToken,
         refreshToken,
       },
+    });
+  }
+
+  async deleteAccount(req: Request, res: Response): Promise<void> {
+    const userId = req.userInfo!._id;
+    await this.service.deleteAcount(userId);
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: this.isProduction,
+      sameSite: 'strict',
+    });
+
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: this.isProduction,
+      sameSite: 'strict',
+      path: this.refreshTokenPath,
+    });
+
+    res.json({
+      message: 'Account deleted successfully',
     });
   }
 }

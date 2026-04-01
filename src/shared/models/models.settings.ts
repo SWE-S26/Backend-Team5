@@ -5,6 +5,7 @@ export type ISettings = {
   account: {
     dateOfBirth: Date;
     theme: 'Light' | 'Dark' | 'Automatic';
+    gender: 'Male' | 'Female';
   };
   content: {
     rssFeedLink: string;
@@ -15,6 +16,7 @@ export type ISettings = {
     customAuthorName: string;
   };
   privacy: {
+    accountIsPrivate: boolean;
     allowMessagesAnyone: boolean;
     showActivityDiscovery: boolean;
     showFirstTopFan: boolean;
@@ -91,6 +93,10 @@ const contentSettingsSchema = new Schema(
 
 const privacySettingsSchema = new Schema(
   {
+    accountIsPrivate: {
+      type: Boolean,
+      default: false,
+    },
     allowMessagesAnyone: {
       type: Boolean,
       default: true,
@@ -202,6 +208,11 @@ const accountSettingsSchema = new Schema(
       type: String,
       enum: ['Light', 'Dark', 'Automatic'],
       default: 'Automatic',
+    },
+    gender: {
+      type: String,
+      enum: ['Male', 'Female'],
+      required: true,
     },
   },
   { _id: false },

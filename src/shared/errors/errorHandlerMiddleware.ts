@@ -25,7 +25,11 @@ export const errorHandler = (
     });
   }
 
-  logger.error(`Unexpected error occurred: ${err}`);
+  if (err instanceof Error) {
+    logger.error(`Unexpected error occurred: ${err.message}`);
+  } else {
+    logger.error(`Unexpected error occurred: ${JSON.stringify(err)}`);
+  }
 
   // Fallback for unexpected errors
   return res.status(500).json({ message: 'Internal server error' });

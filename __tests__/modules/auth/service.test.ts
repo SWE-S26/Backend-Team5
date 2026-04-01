@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-import User, { IUser } from '../../../src/shared/models/models.user';
+import { IUser } from '../../../src/shared/models/models.user';
 import { AuthService } from '../../../src/modules/auth/auth.service';
 import { AuthRepository } from '../../../src/modules/auth/auth.repository';
 import { Types } from 'mongoose';
@@ -38,12 +38,13 @@ const fakeUser: IUser = {
   email: 'test@mail.com',
   password: 'hashed_password',
   googleId: 'google_123456',
-  role: 'Listener/Artist',
+  role: 'Listener',
   displayName: 'John Doe',
   firstName: 'John',
   lastName: 'Doe',
   city: 'Cairo',
   country: 'Egypt',
+  isPrivate: false,
   bio: 'Test bio',
   dateOfBirth: new Date('1995-01-01'),
   gender: 'Male',
@@ -99,7 +100,7 @@ const fakeUser: IUser = {
 const fakeLoginResponse: LoginResponse = {
   id: '507f1f77bcf86cd799439011',
   displayName: 'John Doe',
-  role: 'Listener/Artist',
+  role: 'Listener',
   profileLink: 'https://example.com/johndoe',
   profileImg: {
     imgLink: 'https://example.com/profile.jpg',
@@ -448,12 +449,13 @@ describe('AuthService : resetPasswordWithToken', () => {
     jest
       .spyOn(JWTService.prototype, 'verifyJWTForEmails')
       .mockReturnValue({ _id: '507f1f77bcf86cd799439011' });
-    (AuthRepository.prototype.findById as jest.Mock).mockResolvedValue(
-      fakeUser,
-    );
+    (
+      AuthRepository.prototype.findByIdForPasswordComparing as jest.Mock
+    ).mockResolvedValue(fakeUser);
     jest
       .spyOn(authService as any, 'hashPassowrd')
       .mockResolvedValue('hashed_password');
+    jest.spyOn(bcrypt, 'compare').mockResolvedValue(false as never);
     (AuthRepository.prototype.changePassword as jest.Mock).mockResolvedValue(
       fakeUser,
     );
@@ -470,23 +472,26 @@ describe('AuthService : resetPasswordWithToken', () => {
     jest
       .spyOn(JWTService.prototype, 'verifyJWTForEmails')
       .mockReturnValue({ _id: '507f1f77bcf86cd799439011' });
-    (AuthRepository.prototype.findById as jest.Mock).mockResolvedValue(null);
+    (
+      AuthRepository.prototype.findByIdForPasswordComparing as jest.Mock
+    ).mockResolvedValue(null);
 
     await expect(
       authService.resetPasswordWithToken('fake_token', 'new_password'),
-    ).rejects.toThrow('Failed to reset password');
+    ).rejects.toThrow('User not found');
   });
 
   it('should call verifyJWTForEmails with correct token', async () => {
     const jwtSpy = jest
       .spyOn(JWTService.prototype, 'verifyJWTForEmails')
       .mockReturnValue({ _id: '507f1f77bcf86cd799439011' });
-    (AuthRepository.prototype.findById as jest.Mock).mockResolvedValue(
-      fakeUser,
-    );
+    (
+      AuthRepository.prototype.findByIdForPasswordComparing as jest.Mock
+    ).mockResolvedValue(fakeUser);
     jest
       .spyOn(authService as any, 'hashPassowrd')
       .mockResolvedValue('hashed_password');
+    jest.spyOn(bcrypt, 'compare').mockResolvedValue(false as never);
     (AuthRepository.prototype.changePassword as jest.Mock).mockResolvedValue(
       fakeUser,
     );
@@ -496,37 +501,39 @@ describe('AuthService : resetPasswordWithToken', () => {
     expect(jwtSpy).toHaveBeenCalledWith('fake_token');
   });
 
-  it('should call findById with id from token payload', async () => {
+  it('should call findByIdForPasswordComparing with id from token payload', async () => {
     jest
       .spyOn(JWTService.prototype, 'verifyJWTForEmails')
       .mockReturnValue({ _id: '507f1f77bcf86cd799439011' });
-    (AuthRepository.prototype.findById as jest.Mock).mockResolvedValue(
-      fakeUser,
-    );
+    (
+      AuthRepository.prototype.findByIdForPasswordComparing as jest.Mock
+    ).mockResolvedValue(fakeUser);
     jest
       .spyOn(authService as any, 'hashPassowrd')
       .mockResolvedValue('hashed_password');
+    jest.spyOn(bcrypt, 'compare').mockResolvedValue(false as never);
     (AuthRepository.prototype.changePassword as jest.Mock).mockResolvedValue(
       fakeUser,
     );
 
     await authService.resetPasswordWithToken('fake_token', 'new_password');
 
-    expect(AuthRepository.prototype.findById).toHaveBeenCalledWith(
-      '507f1f77bcf86cd799439011',
-    );
+    expect(
+      AuthRepository.prototype.findByIdForPasswordComparing,
+    ).toHaveBeenCalledWith('507f1f77bcf86cd799439011');
   });
 
   it('should call hashPassword with plain new password', async () => {
     jest
       .spyOn(JWTService.prototype, 'verifyJWTForEmails')
       .mockReturnValue({ _id: '507f1f77bcf86cd799439011' });
-    (AuthRepository.prototype.findById as jest.Mock).mockResolvedValue(
-      fakeUser,
-    );
+    (
+      AuthRepository.prototype.findByIdForPasswordComparing as jest.Mock
+    ).mockResolvedValue(fakeUser);
     const hashSpy = jest
       .spyOn(authService as any, 'hashPassowrd')
       .mockResolvedValue('hashed_password');
+    jest.spyOn(bcrypt, 'compare').mockResolvedValue(false as never);
     (AuthRepository.prototype.changePassword as jest.Mock).mockResolvedValue(
       fakeUser,
     );
@@ -540,12 +547,13 @@ describe('AuthService : resetPasswordWithToken', () => {
     jest
       .spyOn(JWTService.prototype, 'verifyJWTForEmails')
       .mockReturnValue({ _id: '507f1f77bcf86cd799439011' });
-    (AuthRepository.prototype.findById as jest.Mock).mockResolvedValue(
-      fakeUser,
-    );
+    (
+      AuthRepository.prototype.findByIdForPasswordComparing as jest.Mock
+    ).mockResolvedValue(fakeUser);
     jest
       .spyOn(authService as any, 'hashPassowrd')
       .mockResolvedValue('hashed_password');
+    jest.spyOn(bcrypt, 'compare').mockResolvedValue(false as never);
     (AuthRepository.prototype.changePassword as jest.Mock).mockResolvedValue(
       fakeUser,
     );
@@ -570,17 +578,40 @@ describe('AuthService : resetPasswordWithToken', () => {
     ).rejects.toThrow('invalid token');
   });
 
-  it('should not propagate original error message', async () => {
+  it('should throw generic error when same password is used', async () => {
     jest
       .spyOn(JWTService.prototype, 'verifyJWTForEmails')
       .mockReturnValue({ _id: '507f1f77bcf86cd799439011' });
-    (AuthRepository.prototype.findById as jest.Mock).mockRejectedValue(
-      new Error('DB is down'),
-    );
+    (
+      AuthRepository.prototype.findByIdForPasswordComparing as jest.Mock
+    ).mockResolvedValue(fakeUser);
+    jest
+      .spyOn(authService as any, 'hashPassowrd')
+      .mockResolvedValue('hashed_password');
+    jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never); // same password
 
     await expect(
       authService.resetPasswordWithToken('fake_token', 'new_password'),
-    ).rejects.not.toThrow('DB is down');
+    ).rejects.toThrow('New password cannot be the same as the old password');
+  });
+
+  it('should not call changePassword when new password matches old password', async () => {
+    jest
+      .spyOn(JWTService.prototype, 'verifyJWTForEmails')
+      .mockReturnValue({ _id: '507f1f77bcf86cd799439011' });
+    (
+      AuthRepository.prototype.findByIdForPasswordComparing as jest.Mock
+    ).mockResolvedValue(fakeUser);
+    jest
+      .spyOn(authService as any, 'hashPassowrd')
+      .mockResolvedValue('hashed_password');
+    jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never); // same password
+
+    await expect(
+      authService.resetPasswordWithToken('fake_token', 'new_password'),
+    ).rejects.toThrow();
+
+    expect(AuthRepository.prototype.changePassword).not.toHaveBeenCalled();
   });
 });
 
@@ -947,7 +978,7 @@ describe('AuthService : issueTokenPair', () => {
 
     const result = authService.issueTokenPair(
       '507f1f77bcf86cd799439011',
-      'Listener/Artist',
+      'Listener',
       fakeUser.subscription,
     );
 
@@ -967,13 +998,13 @@ describe('AuthService : issueTokenPair', () => {
 
     authService.issueTokenPair(
       '507f1f77bcf86cd799439011',
-      'Listener/Artist',
+      'Listener',
       fakeUser.subscription,
     );
 
     expect(jwtSpy).toHaveBeenCalledWith(
       '507f1f77bcf86cd799439011',
-      'Listener/Artist',
+      'Listener',
       fakeUser.subscription,
     );
   });
@@ -988,7 +1019,7 @@ describe('AuthService : issueTokenPair', () => {
 
     authService.issueTokenPair(
       '507f1f77bcf86cd799439011',
-      'Listener/Artist',
+      'Listener',
       fakeUser.subscription,
     );
 
@@ -1005,7 +1036,7 @@ describe('AuthService : issueTokenPair', () => {
 
     const result = authService.issueTokenPair(
       '507f1f77bcf86cd799439011',
-      'Listener/Artist',
+      'Listener',
       fakeUser.subscription,
     );
 
@@ -1022,7 +1053,7 @@ describe('AuthService : issueTokenPair', () => {
 
     const result = authService.issueTokenPair(
       '507f1f77bcf86cd799439011',
-      'Listener/Artist',
+      'Listener',
       fakeUser.subscription,
     );
 

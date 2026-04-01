@@ -65,11 +65,17 @@ export const loadYamlFile = (
 export const removeSecurityFromAuthEndpoints = (
   paths: Record<string, any>,
 ): void => {
+  const endpointsToSkip = [
+    '/api/auth/v1/cross/mobile',
+    '/api/auth/v1/delete-account',
+    '/api/auth/v1/forgot-password/logged-in',
+  ];
+
   for (const [route, methods] of Object.entries(paths)) {
     if (!methods || typeof methods !== 'object') continue;
 
-    if (route === '/api/auth/v1/cross/mobile') {
-      logger.info(`Checking route: ${route} for authentication tags...`);
+    if (endpointsToSkip.includes(route) || route.includes('/public')) {
+      logger.debug(`Skipping route: ${route} for authentication tags...`);
       continue;
     }
 

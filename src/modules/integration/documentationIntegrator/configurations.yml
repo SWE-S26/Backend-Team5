@@ -3,7 +3,7 @@ openapi: 3.0.0
 
 info:
   title: Beatza API Documentation
-  version: 1.0.4
+  version: 1.0.5
   description: |
     Will comply with the standard HTTP status code, and standard naming conventions
     References:

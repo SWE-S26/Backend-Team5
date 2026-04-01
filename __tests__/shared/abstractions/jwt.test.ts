@@ -27,7 +27,7 @@ const FAKE_SECRET = 'test-secret';
 const FAKE_REFRESH_SECRET = 'test-refresh-secret';
 const FAKE_TOKEN = 'fake.jwt.token';
 const FAKE_USER_ID = 'user123';
-const FAKE_ROLE = 'Listener/Artist';
+const FAKE_ROLE = 'Listener';
 const FAKE_SUBSCRIPTION = { plan: 'free' };
 const FAKE_GOOGLE_ID = 'google456';
 

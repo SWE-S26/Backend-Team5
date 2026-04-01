@@ -84,4 +84,16 @@ authRouter.post(
   authController.pollQRCode.bind(authController),
 );
 
+authRouter.delete(
+  apiVersions.v1 + '/delete-account',
+  requireAuth,
+  authController.deleteAccount.bind(authController),
+);
+
+authRouter.get(
+  apiVersions.v1 + '/forgot-password/logged-in',
+  requireAuth,
+  authController.forgotPasswordForLoggedInUser.bind(authController),
+);
+
 export default authRouter;

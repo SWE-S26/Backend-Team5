@@ -11,7 +11,8 @@
     "dev": "tsx watch --clear-screen=false src/server.ts",
     "test": "jest",
     "postinstall": "node scripts/install-hooks.js",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "migrate": "tsx scripts/migrations/migrate.ts"
   },
   "author": "",
   "license": "ISC",
@@ -28,6 +29,7 @@
     "form-data": "^4.0.5",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.2.1",
+    "multer": "^2.1.1",
     "nodemailer": "^8.0.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",

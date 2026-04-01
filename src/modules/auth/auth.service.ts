@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import {
+  BadRequestError,
   ForbiddenError,
   GoneError,
   NotFoundError,
@@ -143,6 +144,24 @@ export class AuthService {
     return AuthMapper.toUserCredientialsResponse(user);
   }
 
+  async createPasswordResetTokenForLoggedInUser(
+    userId: string,
+  ): Promise<{ token: string; userName: string; email: string }> {
+    const user = await this.authRepository.findById(userId);
+
+    if (!user) {
+      throw NotFoundError('User not found');
+    }
+
+    const token = this.jwtService.createJWTForEmails(user._id.toString());
+
+    return {
+      token,
+      userName: user.displayName as string,
+      email: user.email as string,
+    };
+  }
+
   async createPasswordResetToken(
     email: string,
   ): Promise<{ token: string; userName: string }> {
@@ -162,21 +181,29 @@ export class AuthService {
     newPassword: string,
   ): Promise<Boolean> {
     const payload = this.jwtService.verifyJWTForEmails(token);
-    try {
-      const user = await this.authRepository.findById(payload!._id);
+    const user = await this.authRepository.findByIdForPasswordComparing(
+      payload!._id,
+    );
 
-      if (!user) {
-        throw NotFoundError('User not found');
-      }
-
-      const hashedPass = await this.hashPassowrd(newPassword);
-      await this.authRepository.changePassword(user._id.toString(), hashedPass);
-
-      return true;
-    } catch (error) {
-      logger.error(`Failed to reset password with token: ${error}`);
-      throw new Error('Failed to reset password');
+    if (!user) {
+      throw NotFoundError('User not found');
     }
+    const hashedPass = await this.hashPassowrd(newPassword);
+
+    if (!user.password) {
+      await this.authRepository.changePassword(user._id.toString(), hashedPass);
+      return true;
+    }
+
+    const same = await bcrypt.compare(newPassword, user.password as string);
+
+    if (same) {
+      BadRequestError('New password cannot be the same as the old password');
+    }
+
+    await this.authRepository.changePassword(user._id.toString(), hashedPass);
+
+    return true;
   }
 
   async refreshAccessToken(
@@ -188,6 +215,12 @@ export class AuthService {
     const user = await this.authRepository.findById(payload._id);
     if (!user)
       throw NotFoundError('How did you even get this token? User not found');
+
+    if (user.ban) {
+      throw ForbiddenError(
+        `Your account has been banned. Due to ${user.banReason} Please contact support.`,
+      );
+    }
 
     const tokens = this.issueTokenPair(
       user._id.toString(),
@@ -401,8 +434,13 @@ export class AuthService {
     );
 
     const user = await this.authRepository.findById(session.userId!);
-    if (user?.ban) {
-      throw UnauthorizedError(
+
+    if (!user) {
+      throw NotFoundError('How did you even get this token? User not found');
+    }
+
+    if (user.ban) {
+      throw ForbiddenError(
         `Your account has been banned. Due to ${user.banReason} Please contact support.`,
       );
     }
@@ -440,5 +478,9 @@ export class AuthService {
       updatedSession,
       QR_EXTEND_SECONDS,
     );
+  };
+
+  deleteAcount = async (userId: string): Promise<void> => {
+    await this.authRepository.deleteUser(userId);
   };
 }

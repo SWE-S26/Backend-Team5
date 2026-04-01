@@ -9,7 +9,12 @@ import cors from 'cors';
 
 const app = express();
 
-export const allowedOrigins = ['http://localhost:3000', process.env.HOST_URL];
+export const allowedOrigins = [
+  'http://localhost:4123/api/docs',
+  'http://localhost:3000',
+  process.env.HOST_URL,
+  process.env.SWAGGER_URL,
+];
 
 app.use(express.json());
 app.use(

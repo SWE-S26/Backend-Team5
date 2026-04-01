@@ -10,7 +10,7 @@ const fakeUser: IUser = {
   email: 'test@mail.com',
   password: 'hashed_password',
   googleId: 'google_123456',
-  role: 'Listener/Artist',
+  role: 'Listener',
   displayName: 'John Doe',
   firstName: 'John',
   lastName: 'Doe',
@@ -172,12 +172,12 @@ describe('AuthRepo : create', () => {
       displayName: 'John Doe',
       dateOfBirth: new Date('1995-01-01'),
       gender: 'Male',
-      role: 'Listener/Artist',
+      role: 'Listener',
       profileLink: expect.stringMatching(/^john-doe-\d+$/),
     });
   });
 
-  it('should call role with Listener/Artist always', async () => {
+  it('should call role with Listener always', async () => {
     (User.create as jest.Mock).mockResolvedValue(fakeUser);
     await authRepository.create(
       'test@mail.com',
@@ -186,7 +186,7 @@ describe('AuthRepo : create', () => {
       new Date('1995-01-01'),
       'Male',
     );
-    expect(fakeUser.role).toEqual('Listener/Artist');
+    expect(fakeUser.role).toEqual('Listener');
   });
 
   it('should generate profileLink from displayName and timestamp', async () => {
@@ -444,7 +444,7 @@ describe('AuthRepo : createWithGoogle', () => {
       displayName: 'John Doe',
       dateOfBirth: new Date('1995-01-01'),
       gender: 'Male',
-      role: 'Listener/Artist',
+      role: 'Listener',
       isVerified: true,
       profileLink: expect.stringMatching(/^john-doe-\d+$/),
     });
@@ -459,13 +459,13 @@ describe('AuthRepo : createWithGoogle', () => {
     expect(calledWith.isVerified).toBe(true);
   });
 
-  it('should always set role to Listener/Artist', async () => {
+  it('should always set role to Listener', async () => {
     (User.create as jest.Mock).mockResolvedValue(fakeUser);
 
     await authRepository.createWithGoogle(googleData);
 
     const calledWith = (User.create as jest.Mock).mock.calls[0][0];
-    expect(calledWith.role).toBe('Listener/Artist');
+    expect(calledWith.role).toBe('Listener');
   });
 
   it('should generate profileLink from displayName and timestamp', async () => {

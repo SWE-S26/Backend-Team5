@@ -1,14 +1,29 @@
-import { Schema, Types, model } from 'mongoose';
+import { Schema, Types, model, Document } from 'mongoose';
+import logger from '../logger/logger';
 import { imgSchema } from './schemas.shared';
 import Settings from './models.settings';
-import logger from '../logger/logger';
+import Notification from './models.notification';
+import Playlist from './models.playlist';
+import Following from './models.following';
+import History from './models.history';
+import Track from './models.track';
+import BlockedList from './models.blocked-list';
+import Comment from './models.comment';
+import SearchHistory from './models.search-history';
+import PlaysTrackHandling from './models.plays-track-handling';
+import Message from './models.message';
+import Report from './models.report';
+import { DEFAULT_PROFILE_IMAGE } from '../../config/constants';
+import { CloudinaryService } from '../abstractions/cloudinary.service';
+import publitioMediaStorage from '../abstractions/publitio';
+import { tr } from 'zod/v4/locales';
 
 export type IUser = {
   _id: Types.ObjectId;
   email: string;
-  password: string;
+  password?: string;
   googleId?: string;
-  role: 'Listener/Artist' | 'Admin';
+  role: 'Listener' | 'Admin';
   displayName: string;
   firstName: string;
   lastName: string;
@@ -54,6 +69,7 @@ export type IUser = {
     },
   ];
   isPaid: boolean;
+  isPrivate: boolean;
   ban: boolean;
   banReason: string;
   subscription: {
@@ -150,9 +166,9 @@ const userSchema = new Schema(
     },
     role: {
       type: String,
-      enum: ['Listener/Artist', 'Admin'],
+      enum: ['Listener', 'Artist', 'Pro', 'Admin'],
       required: true,
-      default: 'Listener/Artist',
+      default: 'Listener',
     },
     displayName: {
       type: String,
@@ -210,17 +226,15 @@ const userSchema = new Schema(
     profileImg: {
       type: imgSchema,
       default: () => ({
-        imgLink:
-          'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg',
-        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi',
+        imgLink: DEFAULT_PROFILE_IMAGE.imgLink,
+        publicId: DEFAULT_PROFILE_IMAGE.publicId,
       }),
     },
     bannerImg: {
       type: imgSchema,
       default: () => ({
-        imgLink:
-          'https://res.cloudinary.com/dexluedse/image/upload/v1744719629/mobile-app/lwvswk21xn3wpgoufqxi.jpg',
-        publicId: 'mobile-app/lwvswk21xn3wpgoufqxi',
+        imgLink: DEFAULT_PROFILE_IMAGE.imgLink,
+        publicId: DEFAULT_PROFILE_IMAGE.publicId,
       }),
     },
     socialMediaLinks: {
@@ -236,6 +250,8 @@ const userSchema = new Schema(
     profileLink: {
       type: String,
       required: true,
+      unique: true,
+      trim: true,
     },
     links: {
       type: [socialLinkSchema],
@@ -277,6 +293,10 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    isPrivate: {
+      type: Boolean,
+      default: false,
+    },
     ban: {
       type: Boolean,
       default: false,
@@ -306,7 +326,7 @@ userSchema.post('save', async function (doc) {
     if (!existingSettings) {
       await Settings.create({
         userId: doc._id,
-        account: { dateOfBirth: doc.dateOfBirth },
+        account: { dateOfBirth: doc.dateOfBirth, gender: doc.gender },
         content: { rssFeedLink: 'https://example.com/rss' },
       });
       logger.debug(`Settings created for user ${doc._id}`);
@@ -315,6 +335,207 @@ userSchema.post('save', async function (doc) {
     logger.error(
       `Failed to create settings for user ${doc._id}: ${err.message}`,
     );
+  }
+});
+
+function sanitizeName(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+interface IUserDoc extends IUser, Document {}
+
+userSchema.pre<IUserDoc>('save', async function () {
+  if (!this.isNew) return;
+
+  const namePart = sanitizeName(this.displayName || 'user');
+  const idPart = this._id.toString().slice(-4);
+  const timePart = Date.now().toString().slice(-5);
+
+  this.profileLink = `${namePart}-${idPart}${timePart}`;
+});
+
+userSchema.post('findOneAndDelete', async function (doc: IUser | null) {
+  if (!doc) return;
+
+  try {
+    if (doc.profileImg.publicId !== DEFAULT_PROFILE_IMAGE.publicId) {
+      CloudinaryService.deleteImage(doc.profileImg.publicId)
+        .then(() => {
+          logger.debug(
+            `Successfully deleted playlist image from Cloudinary for playlist ${doc._id}`,
+          );
+        })
+        .catch((error) => {
+          logger.error(
+            `Failed to delete profile image from Cloudinary for user ${doc._id}: ${error}`,
+          );
+        });
+    }
+
+    if (doc.bannerImg.publicId !== DEFAULT_PROFILE_IMAGE.publicId) {
+      CloudinaryService.deleteImage(doc.bannerImg.publicId)
+        .then(() => {
+          logger.debug(
+            `Successfully deleted banner image from Cloudinary for user ${doc._id}`,
+          );
+        })
+        .catch((error) => {
+          logger.error(
+            `Failed to delete banner image from Cloudinary for user ${doc._id}: ${error}`,
+          );
+        });
+    }
+
+    // ── Classify reposts by type up front ──────────────────────────────────
+    const trackReposts = doc.reposts
+      .filter((r) => r.type === 'track')
+      .map((r) => new Types.ObjectId(r.id));
+
+    const playlistReposts = doc.reposts
+      .filter((r) => r.type === 'playlist')
+      .map((r) => new Types.ObjectId(r.id));
+
+    // ── Fetch docs that require document-level cascade ──────────────────────
+    // (document-level deleteOne / findOneAndDelete triggers their own hooks)
+    const [userTracks, userPlaylists, userComments, followingDoc] =
+      await Promise.all([
+        Track.find({ posterId: doc._id }),
+        Playlist.find({ artistId: doc._id }),
+        Comment.find({ userId: doc._id }),
+        Following.findOne({ userId: doc._id }),
+      ]);
+
+    // removes user id found in replies before deletion of user comments
+    Comment.updateMany(
+      { replyList: { $in: userComments.map((c) => c._id) } },
+      { $pull: { replyList: { $in: userComments.map((c) => c._id) } } },
+    );
+
+    // Track cascade will already delete comments on the user's own tracks.
+    // Only cascade-delete comments the user left on *other* users' tracks
+    // to avoid redundant work and double-firing hooks.
+    const ownTrackIds = new Set(userTracks.map((t) => t._id.toString()));
+
+    // delete tracks from publitio
+    await Promise.allSettled(
+      userTracks.map((track) => {
+        publitioMediaStorage
+          .deleteAudioTrack(track.audio.id)
+          .then(() => {
+            logger.debug(
+              `Successfully deleted audio track from Publitio for user ${doc._id}`,
+            );
+          })
+          .catch((error) => {
+            logger.error(
+              `Failed to audio track from Publitio for user ${doc._id}: ${error}`,
+            );
+          });
+      }),
+    );
+
+    const commentsOnExternalTracks = userComments.filter(
+      (c) => !ownTrackIds.has(c.trackId.toString()),
+    );
+
+    // Tracks the user liked that are NOT their own (own tracks are being deleted)
+    const externalLikedTracks = doc.likedTracks.filter(
+      (id) => !ownTrackIds.has(id.toString()),
+    );
+
+    // Track reposts that reference tracks the user doesn't own
+    const externalTrackReposts = trackReposts.filter(
+      (id) => !ownTrackIds.has(id.toString()),
+    );
+
+    await Promise.all([
+      // ── Owned records ─────────────────────────────────────────────────────
+      Settings.findOneAndDelete({ userId: doc._id }),
+      History.findOneAndDelete({ userId: doc._id }),
+      SearchHistory.findOneAndDelete({ userId: doc._id }),
+      PlaysTrackHandling.deleteMany({ userId: doc._id }),
+
+      // ── Remove user from other users' search histories ────────────────────
+      SearchHistory.updateMany(
+        { historyList: { $elemMatch: { type: 'User', id: doc._id } } },
+        { $pull: { historyList: { type: 'User', id: doc._id } } },
+      ),
+
+      // ── Messages ──────────────────────────────────────────────────────────
+      Message.deleteMany({
+        $or: [{ senderId: doc._id }, { receiverId: doc._id }],
+      }),
+
+      // ── Following: use document deleteOne so its cascade hook fires ───────
+      followingDoc ? followingDoc.deleteOne() : Promise.resolve(),
+
+      // ── Blocked lists ─────────────────────────────────────────────────────
+      BlockedList.findOneAndDelete({ blockerId: doc._id }),
+      BlockedList.updateMany(
+        { blockedIds: doc._id },
+        { $pull: { blockedIds: doc._id } },
+      ),
+
+      // ── Remove user from other comments' liked lists ──────────────────────
+      Comment.updateMany(
+        { likedList: doc._id },
+        { $pull: { likedList: doc._id }, $inc: { numLikes: -1 } },
+      ),
+
+      // ── Cascade-delete user's tracks (each fires track's deleteOne hook) ──
+      ...userTracks.map((track) => track.deleteOne()),
+
+      // ── Cascade-delete user's playlists (fires playlist's cascade) ────────
+      ...userPlaylists.map((playlist) =>
+        Playlist.findOneAndDelete({ _id: playlist._id }),
+      ),
+
+      // ── Cascade-delete comments on external tracks ────────────────────────
+      ...commentsOnExternalTracks.map((comment) => comment.deleteOne()),
+
+      // ── Fix like counts on external tracks this user had liked ────────────
+      ...externalLikedTracks.map((trackId) =>
+        Track.updateOne(
+          { _id: trackId },
+          { $pull: { likedBy: doc._id }, $inc: { numOfLikes: -1 } },
+        ),
+      ),
+
+      // ── Fix repost counts on external tracks this user had reposted ───────
+      ...externalTrackReposts.map((trackId) =>
+        Track.updateOne({ _id: trackId }, { $inc: { numberOfReposts: -1 } }),
+      ),
+
+      // ── Fix like counts on playlists this user had liked ──────────────────
+      ...doc.likedPlaylists.map((playlistId) =>
+        Playlist.updateOne(
+          { _id: playlistId },
+          { $pull: { likedUser: doc._id }, $inc: { numOfLikes: -1 } },
+        ),
+      ),
+
+      // ── Fix repost counts on playlists this user had reposted ─────────────
+      ...playlistReposts.map((playlistId) =>
+        Playlist.updateOne({ _id: playlistId }, { $inc: { numOfReposts: -1 } }),
+      ),
+
+      // ── Reports: remove reports filed by or against the user ──────────────
+      Report.deleteMany({
+        $or: [
+          { reporterId: doc._id },
+          { reportedId: doc._id, violatorType: 'User' },
+        ],
+      }),
+
+      // ── Notifications: remove notifications sent to or triggered by user ──
+      Notification.deleteMany({
+        $or: [{ to: doc._id }, { 'type.referenceId': doc._id }],
+      }),
+    ]);
+
+    logger.debug(`Cascade deleted user ${doc._id}`);
+  } catch (err: Error | any) {
+    logger.error(`Failed to cascade delete user ${doc._id}: ${err.message}`);
   }
 });
 

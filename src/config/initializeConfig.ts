@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { intializeDbConnection } from './db';
+import { intializeDbConnection } from './db/connect';
 import { initializeRedis } from './redis';
 import logger from '../shared/logger/logger';
 
@@ -10,7 +10,7 @@ export const initializeConfig = async (): Promise<void> => {
     await initializeRedis();
     logger.info('[Config] Redis initialized');
   } else {
-    logger.info('[Config] Redis skipped');
+    logger.warn('[Config] Redis skipped');
   }
 
   logger.info('[Config] All services initialized');

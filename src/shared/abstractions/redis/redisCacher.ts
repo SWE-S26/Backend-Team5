@@ -56,6 +56,7 @@ class RedisCacher {
    */
   async set<T>(key: string, value: T, ttlSeconds: number = 900): Promise<void> {
     const serialized = JSON.stringify(value);
+    logger.info(`[Cache] SET ${key}`);
     await this.client.setEx(key, ttlSeconds, serialized);
   }
 
@@ -67,18 +68,26 @@ class RedisCacher {
    */
   async get<T>(key: string): Promise<T | null> {
     const data = await this.client.get(key);
+    logger.info(`[Cache] GET ${key}`);
+
     if (!data) return null;
     return JSON.parse(data) as T;
   }
 
   async delete(...keys: string[]): Promise<void> {
     await this.client.del(keys);
+    logger.info(`[Cache] DELETED keys: ${keys.join(', ')}`);
   }
 
   // Useful for wildcard invalidation e.g. "products:list:*"
   async deleteByPattern(pattern: string): Promise<void> {
     const keys = await this.client.keys(pattern);
-    if (keys.length > 0) await this.client.del(keys);
+    if (keys.length > 0) {
+      await this.client.del(keys);
+      logger.info(`[Cache] DELETED keys matching pattern: ${pattern}`);
+    } else {
+      logger.info(`[Cache] No keys found for pattern: ${pattern}`);
+    }
   }
 }
 
