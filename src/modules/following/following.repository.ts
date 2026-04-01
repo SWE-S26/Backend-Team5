@@ -13,9 +13,12 @@ export class FollowingRepository {
   }
 
   async getUserStats(id: string): Promise<UserStats> {
-    const followDoc = await Following.findOne({ userId: id }).lean();
+    const [followDoc, trackCount] = await Promise.all([
+      Following.findOne({ userId: id }).lean(),
+      Track.countDocuments({ posterId: id }),
+    ]);
+
     const followersCount = followDoc?.followers.length ?? 0;
-    const trackCount = await Track.countDocuments({ posterId: id });
 
     return {
       followersCount,
@@ -24,16 +27,30 @@ export class FollowingRepository {
   }
 
   async addFollower(id: string, followedId: string): Promise<void> {
-    await Following.findOneAndUpdate(
-      { userId: id },
-      { $addToSet: { followed: followedId } },
-      { upsert: true },
-    );
+    await Promise.all([
+      Following.findOneAndUpdate(
+        { userId: id },
+        { $addToSet: { followed: followedId } },
+        { upsert: true },
+      ),
+      Following.findOneAndUpdate(
+        { userId: followedId },
+        { $addToSet: { followers: id } },
+        { upsert: true },
+      ),
+    ]);
+  }
 
-    await Following.findOneAndUpdate(
-      { userId: followedId },
-      { $addToSet: { followers: id } },
-      { upsert: true },
-    );
+  async removeFollower(id: string, followedId: string): Promise<void> {
+    await Promise.all([
+      Following.findOneAndUpdate(
+        { userId: id },
+        { $pull: { followed: followedId } },
+      ),
+      Following.findOneAndUpdate(
+        { userId: followedId },
+        { $pull: { followers: id } },
+      ),
+    ]);
   }
 }

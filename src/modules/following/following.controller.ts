@@ -22,4 +22,20 @@ export class FollowingController {
 
     res.json(userSummary);
   }
+
+  async removeFollower(req: Request, res: Response): Promise<void> {
+    const userId = req.userInfo!._id;
+    const validatedRequest = parseRequest(UserIdParamDTO, req);
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+    const followedId = validatedRequest.data.params.id;
+
+    const userSummary: UserSummaryDTOType = await this.service.removeFollower(
+      userId,
+      followedId,
+    );
+
+    res.json(userSummary);
+  }
 }
