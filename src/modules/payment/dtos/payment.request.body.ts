@@ -1,14 +1,34 @@
+import z from 'zod';
 import extendedZod from '../../../shared/docs/dtoDocumenter';
-export const CreatePaymentRequestBodyDTO = extendedZod
-  .object({
-    email: extendedZod.string().email(),
-    password: extendedZod.string().min(6),
-    name: extendedZod.string().min(2),
-  })
-  .openapi('CreatePaymentRequest', {
-    example: {
-      email: 'john.doe@example.com',
-      password: 'secret123',
-      name: 'John Doe',
-    },
-  });
+
+export const CreatePayingUserRequestBodyDTO = extendedZod.object({
+  paymentMethodId: extendedZod.string().min(1),
+});
+
+export const CreateSubscriptionRequestBodyDTO = extendedZod.object({
+  priceId: extendedZod.string().min(1),
+});
+
+export const UpdateSubscriptionRequestBodyDTO = extendedZod.object({
+  priceId: extendedZod.string().min(1),
+});
+
+export const CancelSubscriptionRequestBodyDTO = extendedZod.object({
+  cancelAtPeriodEnd: extendedZod.boolean().optional(),
+});
+
+export type CreatePayingUserRequestBody = z.infer<
+  typeof CreatePayingUserRequestBodyDTO
+>;
+
+export type CreateSubscriptionRequestBody = z.infer<
+  typeof CreateSubscriptionRequestBodyDTO
+>;
+
+export type UpdateSubscriptionRequestBody = z.infer<
+  typeof UpdateSubscriptionRequestBodyDTO
+>;
+
+export type CancelSubscriptionRequestBody = z.infer<
+  typeof CancelSubscriptionRequestBodyDTO
+>;

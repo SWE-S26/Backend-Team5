@@ -16,7 +16,21 @@ export const allowedOrigins = [
   process.env.SWAGGER_URL,
 ];
 
-app.use(express.json());
+declare global {
+  namespace Express {
+    interface Request {
+      rawBody?: Buffer;
+    }
+  }
+}
+
+app.use(
+  express.json({
+    verify: (req: any, _res, buf) => {
+      req.rawBody = buf; // stash raw buffer before JSON parsing
+    },
+  }),
+);
 app.use(
   cors({
     origin: (origin, callback) => {

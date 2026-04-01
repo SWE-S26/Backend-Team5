@@ -12,7 +12,7 @@
     "test": "jest",
     "postinstall": "node scripts/install-hooks.js",
     "type-check": "tsc --noEmit",
-    "migrate": "tsx scripts/migrations/migrate.ts"
+    "migrations": "tsx scripts/migrations/migrate.ts"
   },
   "author": "",
   "license": "ISC",
@@ -41,7 +41,7 @@
     "stripe": "^20.4.0",
     "swagger-ui-express": "^5.0.1",
     "ts-node": "^10.9.2",
-    "yaml": "^2.8.2",
+    "yaml": "^2.8.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {

@@ -3,7 +3,12 @@
     tags:
       - Payment
     summary: Update the user's subscription plan
-    description: Allows the authenticated user to upgrade or downgrade their subscription by providing a new Stripe price ID.
+    description: |
+      Allows the authenticated user to upgrade or 
+      downgrade their subscription by providing a new Stripe price ID.
+
+      Please call refresh token after this API to get the 
+      updated subscription status in the access token claims.
 
     security:
       - bearerAuth: []

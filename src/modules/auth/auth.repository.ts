@@ -93,10 +93,7 @@ export class AuthRepository {
     return User.create(data);
   }
 
-  async deleteUser(id: string): Promise<void> {
-    const user = await User.findOneAndDelete({ _id: id });
-    if (!user) {
-      throw NotFoundError('User not found');
-    }
+  async deleteUser(id: string): Promise<IUser | null> {
+    return await User.findOneAndDelete({ _id: id });
   }
 }

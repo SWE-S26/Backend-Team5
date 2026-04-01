@@ -1,5 +1,5 @@
 import { Server, Socket } from 'socket.io';
-import JWTService from '../shared/abstractions/jwt';
+import JWTService from '../shared/abstractions/jwt.service';
 import logger from '../shared/logger/logger';
 import { SocketService } from './socket.service';
 import { SocketEvents } from './socket.events';

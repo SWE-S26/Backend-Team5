@@ -1,5 +1,5 @@
 import type {} from 'jest';
-import JWTService from '../../../src/shared/abstractions/jwt';
+import JWTService from '../../../src/shared/abstractions/jwt.service';
 
 // ── stable mock references — never invalidated ────────────────────────────────
 jest.mock('jsonwebtoken', () => ({

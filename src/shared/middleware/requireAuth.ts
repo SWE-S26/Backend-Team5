@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import JWTService from '../abstractions/jwt';
+import JWTService from '../abstractions/jwt.service';
 import { UnauthorizedError } from '../errors/responseErrors';
 import logger from '../logger/logger';
 
@@ -36,7 +36,7 @@ export const requireAuth = (
     `
     Authenticated user with ID: ${payload!._id}, 
     role: ${payload!.role}, 
-    paymentInfo:
+    paymentInfo: ${JSON.stringify(payload!.paymentInfo)}
     `,
   );
 

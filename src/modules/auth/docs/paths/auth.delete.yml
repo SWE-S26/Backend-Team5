@@ -39,5 +39,16 @@
       404:
         $ref: '#/components/responses/NotFound'
 
+      403:
+        description: Forbidden - active subscription must be canceled before account deletion
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: You cannot delete your account without canceling your subscription first. Please cancel your subscription first.
+
       500:
         $ref: '#/components/responses/ServerError'
