@@ -57,6 +57,7 @@ const fakeUser: IUser = {
   ],
   isPaid: false,
   ban: false,
+  isPrivate: false,
   banReason: '',
   subscription: {
     subscriptionType: 'free',
