@@ -40,4 +40,9 @@ followingRouter.get(
   followingController.getFollowed.bind(followingController),
 );
 
+followingRouter.get(
+  apiVersions.v1 + '/blocked',
+  followingController.getBlocked.bind(followingController),
+);
+
 export default followingRouter;

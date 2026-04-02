@@ -6,6 +6,7 @@ import { UserIdParamDTO } from './dtos/following.request.params';
 import {
   GetFollowersRequestDTO,
   GetFollowingRequestDTO,
+  GetBlockedRequestDTO,
 } from './dtos/following.request';
 
 export class FollowingController {
@@ -109,5 +110,23 @@ export class FollowingController {
     );
 
     res.json(followed);
+  }
+
+  async getBlocked(req: Request, res: Response): Promise<void> {
+    const userId = req.userInfo!._id;
+    const validatedRequest = parseRequest(GetBlockedRequestDTO, req);
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+    const offset = validatedRequest.data.query?.offset ?? 0;
+    const limit = validatedRequest.data.query?.limit ?? 20;
+
+    const blocked: UserSummaryDTOType[] = await this.service.getBlocked(
+      userId,
+      offset,
+      limit,
+    );
+
+    res.json(blocked);
   }
 }
