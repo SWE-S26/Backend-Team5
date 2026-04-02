@@ -6,8 +6,11 @@ import { LoginResponse } from '../../../src/modules/auth/dtos/auth.response';
 import { JwtPayload } from 'jsonwebtoken';
 import passport from '../../../src/modules/auth/auth.utils';
 import SecureParams from '../../../src/shared/abstractions/security.service';
-import { access } from 'node:fs';
 jest.mock('../../../src/shared/abstractions/security.service');
+import { PaymentController } from '../../../src/modules/payment/payment.controller';
+
+jest.mock('../../../src/modules/payment/payment.controller');
+jest.mock('Stripe', () => jest.fn());
 jest.mock('passport', () => ({
   authenticate: jest.fn(),
   use: jest.fn(),

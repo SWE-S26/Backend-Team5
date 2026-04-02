@@ -11,13 +11,10 @@ import {
 import { LoginResponse } from './dtos/auth.response';
 import { AuthRepository } from './auth.repository';
 import JWTService from '../../shared/abstractions/jwt.service';
-import logger from '../../shared/logger/logger';
 import { redisCacher } from '../../shared/abstractions/redis/redisCacher';
 import emailService from '../../shared/abstractions/email/EmailService';
 import { AuthMapper } from './dtos/auth.mapper';
 import { PaymentInfo } from '../../shared/models/models.user';
-import Stripe from 'stripe';
-import { PaymentController } from '../payment/payment.controller';
 import { paymentController } from '../payment/payment.routes';
 
 type newUserDTO = {
