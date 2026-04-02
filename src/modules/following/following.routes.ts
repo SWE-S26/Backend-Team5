@@ -25,6 +25,11 @@ followingRouter.post(
   followingController.block.bind(followingController),
 );
 
+followingRouter.post(
+  apiVersions.v1 + '/unblock/:id',
+  followingController.unblock.bind(followingController),
+);
+
 followingRouter.get(
   apiVersions.v1 + '/followers/:id',
   followingController.getFollowers.bind(followingController),
