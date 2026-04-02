@@ -75,6 +75,13 @@ export class FollowingRepository {
     ]);
   }
 
+  async unblock(id: string, blockedId: string): Promise<void> {
+    await blockedListSchema.findOneAndUpdate(
+      { blockerId: id },
+      { $pull: { blockedIds: blockedId } },
+    );
+  }
+
   async getUsersIds(
     id: string,
     field: 'followers' | 'followed',

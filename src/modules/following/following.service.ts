@@ -72,6 +72,25 @@ export class FollowingService {
     return FollowingMapper.toUserSummary({ ...blockedUser, ...userStats });
   }
 
+  async unblock(
+    userId: string,
+    blockedId: string,
+  ): Promise<UserSummaryDTOType> {
+    const existingUser: IUser | null =
+      await this.repository.getUserById(userId);
+    if (!existingUser) throw NotFoundError('User not found');
+
+    const blockedUser: IUser | null =
+      await this.repository.getUserById(blockedId);
+    if (!blockedUser)
+      throw NotFoundError('User you want to unblock is not found');
+
+    await this.repository.unblock(userId, blockedId);
+    const userStats: UserStats = await this.repository.getUserStats(blockedId);
+
+    return FollowingMapper.toUserSummary({ ...blockedUser, ...userStats });
+  }
+
   async getFollowers(
     id: string,
     offset = 0,
