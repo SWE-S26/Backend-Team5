@@ -2,6 +2,7 @@ import User, { IUser } from '../../shared/models/models.user';
 import Following from '../../shared/models/models.following';
 import { imgSchema } from '../../shared/models/schemas.shared';
 import Track from '../../shared/models/models.track';
+import blockedListSchema from '../../shared/models/models.blocked-list';
 import { Types } from 'mongoose';
 
 export interface UserStats {
@@ -52,6 +53,24 @@ export class FollowingRepository {
       Following.findOneAndUpdate(
         { userId: followedId },
         { $pull: { followers: id } },
+      ),
+    ]);
+  }
+
+  async block(id: string, blockedId: string): Promise<void> {
+    await Promise.all([
+      blockedListSchema.findOneAndUpdate(
+        { blockerId: id },
+        { $addToSet: { blockedIds: blockedId } },
+        { upsert: true },
+      ),
+      Following.findOneAndUpdate(
+        { userId: id },
+        { $pull: { followers: blockedId, followed: blockedId } },
+      ),
+      Following.findOneAndUpdate(
+        { userId: blockedId },
+        { $pull: { followers: id, followed: id } },
       ),
     ]);
   }

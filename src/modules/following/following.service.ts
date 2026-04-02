@@ -3,7 +3,10 @@ import User, { IUser } from '../../shared/models/models.user';
 import Following from '../../shared/models/models.following';
 import Track from '../../shared/models/models.track';
 import { UserSummaryDTOType } from './dtos/following.response';
-import { NotFoundError } from '../../shared/errors/responseErrors';
+import {
+  NotFoundError,
+  BadRequestError,
+} from '../../shared/errors/responseErrors';
 import { FollowingMapper } from './dtos/following.mapper';
 import { Types } from 'mongoose';
 
@@ -14,10 +17,15 @@ export class FollowingService {
     userId: string,
     followedId: string,
   ): Promise<UserSummaryDTOType> {
+    const existingUser: IUser | null =
+      await this.repository.getUserById(userId);
+    if (!existingUser) throw NotFoundError('User not found');
     const followedUser: IUser | null =
       await this.repository.getUserById(followedId);
     if (!followedUser)
       throw NotFoundError('User you want to follow is not found');
+    if (userId === followedId)
+      throw BadRequestError('You cannot follow yourself');
 
     await this.repository.addFollower(userId, followedId);
 
@@ -30,6 +38,9 @@ export class FollowingService {
     userId: string,
     followedId: string,
   ): Promise<UserSummaryDTOType> {
+    const existingUser: IUser | null =
+      await this.repository.getUserById(userId);
+    if (!existingUser) throw NotFoundError('User not found');
     const followedUser: IUser | null =
       await this.repository.getUserById(followedId);
     if (!followedUser)
@@ -40,6 +51,25 @@ export class FollowingService {
     const userStats: UserStats = await this.repository.getUserStats(followedId);
 
     return FollowingMapper.toUserSummary({ ...followedUser, ...userStats });
+  }
+
+  async block(userId: string, blockedId: string): Promise<UserSummaryDTOType> {
+    const existingUser: IUser | null =
+      await this.repository.getUserById(userId);
+    if (!existingUser) throw NotFoundError('User not found');
+
+    const blockedUser: IUser | null =
+      await this.repository.getUserById(blockedId);
+    if (!blockedUser)
+      throw NotFoundError('User you want to block is not found');
+
+    if (userId === blockedId)
+      throw BadRequestError('You cannot block yourself');
+
+    await this.repository.block(userId, blockedId);
+    const userStats: UserStats = await this.repository.getUserStats(blockedId);
+
+    return FollowingMapper.toUserSummary({ ...blockedUser, ...userStats });
   }
 
   async getFollowers(
