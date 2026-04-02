@@ -26,6 +26,7 @@ type ActivityParams = {
 
 class EmailService {
   private readonly transporter: Transporter;
+  private readonly hostURL: string = process.env.HOST_URL || '';
 
   constructor() {
     this.transporter = nodemailer.createTransport({
@@ -230,12 +231,11 @@ class EmailService {
     userEmail: string,
     planName: string,
   ): Promise<boolean> {
-    const hostURL = process.env.HOST_URL ?? '';
     let htmlContent = this.getHtmlTemplate('subscriptionCreated');
     htmlContent = htmlContent
       .replace('[User]', username)
       .replace('[Plan]', planName)
-      .replace('[hostURL]', hostURL);
+      .replace('[hostURL]', this.hostURL);
 
     return await this.sendEmail({
       userEmail,
@@ -248,11 +248,10 @@ class EmailService {
     username: string,
     userEmail: string,
   ): Promise<boolean> {
-    const hostURL = process.env.HOST_URL ?? '';
     let htmlContent = this.getHtmlTemplate('subscriptionCancelled');
     htmlContent = htmlContent
       .replace('[User]', username)
-      .replace('[hostURL]', hostURL);
+      .replace('[hostURL]', this.hostURL);
 
     return await this.sendEmail({
       userEmail,
@@ -267,13 +266,12 @@ class EmailService {
     oldPlan: string,
     newPlan: string,
   ): Promise<boolean> {
-    const hostURL = process.env.HOST_URL ?? '';
     let htmlContent = this.getHtmlTemplate('subscriptionUpdated');
     htmlContent = htmlContent
       .replace('[User]', username)
       .replace('[OldPlan]', oldPlan)
       .replace('[NewPlan]', newPlan)
-      .replace('[hostURL]', hostURL);
+      .replace('[hostURL]', this.hostURL);
 
     return await this.sendEmail({
       userEmail,
@@ -286,15 +284,30 @@ class EmailService {
     username: string,
     userEmail: string,
   ): Promise<boolean> {
-    const hostURL = process.env.HOST_URL ?? '';
     let htmlContent = this.getHtmlTemplate('paymentFailed');
     htmlContent = htmlContent
       .replace('[User]', username)
-      .replace('[hostURL]', hostURL);
+      .replace('[hostURL]', this.hostURL);
 
     return await this.sendEmail({
       userEmail,
       subject: `Action required: Your BeatZa payment failed`,
+      htmlContent,
+    });
+  }
+
+  async sendDeletedAccount(
+    username: string,
+    userEmail: string,
+  ): Promise<boolean> {
+    let htmlContent = this.getHtmlTemplate('deleteAccount');
+    htmlContent = htmlContent
+      .replace('[User]', username)
+      .replace('[hostURL]', this.hostURL);
+
+    return await this.sendEmail({
+      userEmail,
+      subject: `Your BeatZa account has been deleted`,
       htmlContent,
     });
   }
