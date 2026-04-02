@@ -94,6 +94,18 @@ export class FollowingRepository {
     ).lean();
     return followDoc?.[field] ?? [];
   }
+
+  async getBlockedIds(
+    id: string,
+    offset = 0,
+    limit = 20,
+  ): Promise<Types.ObjectId[]> {
+    const blockDoc = await blockedListSchema
+      .findOne({ blockerId: id }, { blockedIds: { $slice: [offset, limit] } })
+      .lean();
+    return blockDoc?.blockedIds ?? [];
+  }
+
   async getUsersWithIds(usersIds: Types.ObjectId[]): Promise<IUser[]> {
     return await User.find(
       { _id: { $in: usersIds } },

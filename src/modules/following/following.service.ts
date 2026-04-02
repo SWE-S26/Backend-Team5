@@ -150,4 +150,33 @@ export class FollowingService {
 
     return followed;
   }
+
+  async getBlocked(
+    id: string,
+    offset = 0,
+    limit = 20,
+  ): Promise<UserSummaryDTOType[]> {
+    const existingUser = await this.repository.getUserById(id);
+    if (!existingUser) throw NotFoundError('User not found');
+
+    const userIds: Types.ObjectId[] = await this.repository.getBlockedIds(
+      id,
+      offset,
+      limit,
+    );
+    const users: IUser[] = await this.repository.getUsersWithIds(userIds);
+    const usersStats: Record<string, UserStats> =
+      await this.repository.getUsersStats(userIds);
+
+    const combined = users.map((user) => ({
+      ...user,
+      ...usersStats[user._id.toString()],
+    }));
+
+    const blocked: UserSummaryDTOType[] = combined.map((user) =>
+      FollowingMapper.toUserSummary(user),
+    );
+
+    return blocked;
+  }
 }
