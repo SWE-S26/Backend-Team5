@@ -147,4 +147,11 @@ export class FollowingRepository {
 
     return statsMap;
   }
+
+  async amIBlocked(userId: string, followedId: string): Promise<boolean> {
+    const blockDoc = await blockedListSchema
+      .findOne({ blockerId: followedId, blockedIds: userId })
+      .lean();
+    return !!blockDoc;
+  }
 }

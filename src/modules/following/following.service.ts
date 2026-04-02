@@ -6,6 +6,7 @@ import { UserSummaryDTOType } from './dtos/following.response';
 import {
   NotFoundError,
   BadRequestError,
+  ForbiddenError,
 } from '../../shared/errors/responseErrors';
 import { FollowingMapper } from './dtos/following.mapper';
 import { Types } from 'mongoose';
@@ -26,6 +27,12 @@ export class FollowingService {
       throw NotFoundError('User you want to follow is not found');
     if (userId === followedId)
       throw BadRequestError('You cannot follow yourself');
+    const isBlocked = await this.repository.amIBlocked(userId, followedId);
+    if (isBlocked) {
+      throw ForbiddenError(
+        'You cannot follow this user because they have blocked you',
+      );
+    }
 
     await this.repository.addFollower(userId, followedId);
 
