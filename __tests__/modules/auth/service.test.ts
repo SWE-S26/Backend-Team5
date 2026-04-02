@@ -7,7 +7,11 @@ import JWTService from '../../../src/shared/abstractions/jwt.service';
 import { AuthMapper } from '../../../src/modules/auth/dtos/auth.mapper';
 import { LoginResponse } from '../../../src/modules/auth/dtos/auth.response';
 import bcrypt from 'bcrypt';
+jest.mock('../../../src/shared/abstractions/security.service');
+import { PaymentController } from '../../../src/modules/payment/payment.controller';
 
+jest.mock('../../../src/modules/payment/payment.controller');
+jest.mock('Stripe', () => jest.fn());
 jest.mock('../../../src/modules/auth/auth.repository');
 
 let authService: AuthService;
