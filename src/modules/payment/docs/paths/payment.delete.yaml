@@ -1,4 +1,4 @@
-/api/payment/subscriptions:
+/api/payment/v1/subscriptions:
   delete:
     tags:
       - Payment
@@ -7,6 +7,9 @@
       Cancels the authenticated user's subscription. 
       The cancellation can occur immediately or at the end of the billing period.
 
+      If the user has more than 3 posted tracks, the cancellation will be rejected 
+      since free users are limited to 3 tracks.
+
       Please call refresh token after this API to get the 
       updated subscription status in the access token claims.
 
@@ -14,7 +17,7 @@
       - bearerAuth: []
 
     requestBody:
-      required: false
+      required: true
       content:
         application/json:
           schema:
@@ -22,7 +25,7 @@
             properties:
               cancelAtPeriodEnd:
                 type: boolean
-                description: Whether to cancel at the end of the billing period
+                description: Whether to cancel at the end of the billing period. Defaults to true if not provided.
                 example: true
 
     responses:
@@ -50,6 +53,31 @@
       '401':
         $ref: '#/components/responses/Unauthorized'
 
+      '403':
+        description: Forbidden – user has too many tracks to cancel subscription
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: >
+                    Please delete some of your posted tracks before cancelling your subscription.
+                    You currently have 5 tracks and the limit for non-paying users is 3 tracks.
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: >
+                Please delete some of your posted tracks before cancelling your subscription.
+                You currently have 5 tracks and the limit for non-paying users is 3 tracks.
+              data: null
+
       '404':
         description: Subscription not found
         content:
@@ -72,22 +100,4 @@
               data: null
 
       '500':
-        description: Internal server error
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: false
-                message:
-                  type: string
-                  example: Failed to cancel subscription
-                data:
-                  type: object
-                  nullable: true
-            example:
-              success: false
-              message: Failed to cancel subscription
-              data: null
+        $ref: '#/components/responses/ServerError'

@@ -1,4 +1,74 @@
-/api/payment/subscriptions:
+/api/payment/v1/plans:
+  get:
+    tags:
+      - Payment
+    summary: Get available payment plans
+    description: Retrieves all available subscription plans with their Stripe price IDs and amounts.
+
+    security:
+      - bearerAuth: []
+
+    responses:
+      '200':
+        description: Payment plans retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: Payment plans retrieved successfully
+                data:
+                  type: object
+                  properties:
+                    pro_monthly:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: Pro Monthly
+                        priceId:
+                          type: string
+                          example: price_1TGQ4EKiCVlMQgBUJwZCK3um
+                        amount:
+                          type: number
+                          example: 9.99
+                    pro_yearly:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: Pro Yearly
+                        priceId:
+                          type: string
+                          example: price_1TGj1nKiCVlMQgBU9j8T38Fr
+                        amount:
+                          type: number
+                          example: 99.99
+            example:
+              success: true
+              message: Payment plans retrieved successfully
+              data:
+                pro_monthly:
+                  name: Pro Monthly
+                  priceId: price_1TGQ4EKiCVlMQgBUJwZCK3um
+                  amount: 9.99
+                pro_yearly:
+                  name: Pro Yearly
+                  priceId: price_1TGj1nKiCVlMQgBU9j8T38Fr
+                  amount: 99.99
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/payment/v1/subscriptions:
   get:
     tags:
       - Payment
@@ -9,7 +79,7 @@
       - bearerAuth: []
 
     responses:
-      "200":
+      '200':
         description: Subscription retrieved successfully
         content:
           application/json:
@@ -27,26 +97,30 @@
                   properties:
                     plan:
                       type: string
-                      example: pro
+                      example: pro_monthly
                     status:
                       type: string
                       example: active
                     currentPeriodEnd:
                       type: string
                       format: date-time
-                      example: 2026-04-01T00:00:00Z
+                      example: 2026-04-01T00:00:00.000Z
+                    isStripePayingCustomer:
+                      type: boolean
+                      example: true
             example:
               success: true
               message: Subscription retrieved successfully
               data:
-                plan: pro
+                plan: pro_monthly
                 status: active
-                currentPeriodEnd: 2026-04-01T00:00:00Z
+                currentPeriodEnd: 2026-04-01T00:00:00.000Z
+                isStripePayingCustomer: true
 
-      "401":
+      '401':
         $ref: '#/components/responses/Unauthorized'
 
-      "404":
+      '404':
         description: Subscription not found
         content:
           application/json:
@@ -66,3 +140,6 @@
               success: false
               message: Subscription not found
               data: null
+
+      '500':
+        $ref: '#/components/responses/ServerError'

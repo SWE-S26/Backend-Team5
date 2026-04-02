@@ -224,6 +224,80 @@ class EmailService {
       htmlContent: htmlContent,
     });
   }
+
+  async sendSubscriptionCreated(
+    username: string,
+    userEmail: string,
+    planName: string,
+  ): Promise<boolean> {
+    const hostURL = process.env.HOST_URL ?? '';
+    let htmlContent = this.getHtmlTemplate('subscriptionCreated');
+    htmlContent = htmlContent
+      .replace('[User]', username)
+      .replace('[Plan]', planName)
+      .replace('[hostURL]', hostURL);
+
+    return await this.sendEmail({
+      userEmail,
+      subject: `Welcome to BeatZa Pro, ${username}!`,
+      htmlContent,
+    });
+  }
+
+  async sendSubscriptionCancelled(
+    username: string,
+    userEmail: string,
+  ): Promise<boolean> {
+    const hostURL = process.env.HOST_URL ?? '';
+    let htmlContent = this.getHtmlTemplate('subscriptionCancelled');
+    htmlContent = htmlContent
+      .replace('[User]', username)
+      .replace('[hostURL]', hostURL);
+
+    return await this.sendEmail({
+      userEmail,
+      subject: `Your BeatZa Pro subscription has been cancelled`,
+      htmlContent,
+    });
+  }
+
+  async sendSubscriptionUpdated(
+    username: string,
+    userEmail: string,
+    oldPlan: string,
+    newPlan: string,
+  ): Promise<boolean> {
+    const hostURL = process.env.HOST_URL ?? '';
+    let htmlContent = this.getHtmlTemplate('subscriptionUpdated');
+    htmlContent = htmlContent
+      .replace('[User]', username)
+      .replace('[OldPlan]', oldPlan)
+      .replace('[NewPlan]', newPlan)
+      .replace('[hostURL]', hostURL);
+
+    return await this.sendEmail({
+      userEmail,
+      subject: `Your BeatZa subscription plan has been updated`,
+      htmlContent,
+    });
+  }
+
+  async sendPaymentFailed(
+    username: string,
+    userEmail: string,
+  ): Promise<boolean> {
+    const hostURL = process.env.HOST_URL ?? '';
+    let htmlContent = this.getHtmlTemplate('paymentFailed');
+    htmlContent = htmlContent
+      .replace('[User]', username)
+      .replace('[hostURL]', hostURL);
+
+    return await this.sendEmail({
+      userEmail,
+      subject: `Action required: Your BeatZa payment failed`,
+      htmlContent,
+    });
+  }
 }
 
 const emailService = new EmailService();

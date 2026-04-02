@@ -1,4 +1,4 @@
-/api/payment/subscriptions:
+/api/payment/v1/subscriptions:
   patch:
     tags:
       - Payment
@@ -24,8 +24,8 @@
             properties:
               priceId:
                 type: string
-                description: New Stripe price ID
-                example: price_new_plan
+                description: New Stripe price ID to switch the subscription to
+                example: price_1TGj1nKiCVlMQgBU9j8T38Fr
 
     responses:
       '200':
@@ -50,7 +50,7 @@
               data: null
 
       '400':
-        description: Invalid request
+        description: Invalid request – invalid price ID or missing Stripe customer
         content:
           application/json:
             schema:
@@ -61,20 +61,20 @@
                   example: false
                 message:
                   type: string
-                  example: Invalid request data
+                  example: Invalid price ID
                 data:
                   type: object
                   nullable: true
             example:
               success: false
-              message: Invalid request data
+              message: Invalid price ID
               data: null
 
       '401':
         $ref: '#/components/responses/Unauthorized'
 
-      '500':
-        description: Internal server error
+      '404':
+        description: Subscription not found
         content:
           application/json:
             schema:
@@ -85,11 +85,14 @@
                   example: false
                 message:
                   type: string
-                  example: Failed to update subscription
+                  example: Subscription not found
                 data:
                   type: object
                   nullable: true
             example:
               success: false
-              message: Failed to update subscription
+              message: Subscription not found
               data: null
+
+      '500':
+        $ref: '#/components/responses/ServerError'

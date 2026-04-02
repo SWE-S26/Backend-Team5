@@ -1,31 +1,33 @@
-/api/payment/user:
+/api/payment/v1/user:
   post:
     tags:
       - Payment
-    summary: Add a credit card info of the user to Stripe (THIS IS DONE ONLY ONCE ON SUCCESS!)
+    summary: Register the user as a Stripe customer (call this once before subscribing)
     description: |
-      Creates a new paying user in Stripe for the authenticated user.
-      The backend retrieves the user ID from the secure HTTP-only cookie.
-      The Stripe user can then be associated with subscriptions or one-time payments.
+      Creates a new Stripe customer for the authenticated user and attaches 
+      the provided payment method as their default. This must be called once 
+      successfully before the user can create a subscription.
 
     security:
       - bearerAuth: []
 
     requestBody:
-      required: false
+      required: true
       content:
         application/json:
           schema:
             type: object
+            required:
+              - paymentMethodId
             properties:
               paymentMethodId:
                 type: string
-                description: Optional. Stripe Payment Method ID to attach for future payments
+                description: Stripe Payment Method ID to attach as the default payment method
                 example: pm_1ABCXYZ
 
     responses:
       '201':
-        description: User created successfully
+        description: Stripe customer created successfully
         content:
           application/json:
             schema:
@@ -43,15 +45,16 @@
                   properties:
                     userId:
                       type: string
-                      example: usr_12345
+                      description: The Stripe customer ID
+                      example: cus_ABC123XYZ
             example:
               success: true
               message: User created successfully
               data:
-                userId: usr_12345
+                userId: cus_ABC123XYZ
 
       '400':
-        description: Bad request – invalid payment method
+        description: Bad request – user already has a Stripe customer ID, or Stripe rejected the payment method
         content:
           application/json:
             schema:
@@ -62,20 +65,20 @@
                   example: false
                 message:
                   type: string
-                  example: Invalid payment method
+                  example: User already has a Stripe customer ID
                 data:
                   type: object
                   nullable: true
             example:
               success: false
-              message: Invalid payment method
+              message: User already has a Stripe customer ID
               data: null
 
       '401':
         $ref: '#/components/responses/Unauthorized'
 
-      '429':
-        description: Too many requests
+      '403':
+        description: Forbidden – admin users cannot have subscriptions
         content:
           application/json:
             schema:
@@ -86,29 +89,51 @@
                   example: false
                 message:
                   type: string
-                  example: Too many requests, try again later
+                  example: Admin users cannot have subscriptions
                 data:
                   type: object
                   nullable: true
             example:
               success: false
-              message: Too many requests, try again later
+              message: Admin users cannot have subscriptions
+              data: null
+
+      '404':
+        description: User not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: User not found
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: User not found
               data: null
 
       '500':
         $ref: '#/components/responses/ServerError'
 
-/api/payment/subscriptions:
+/api/payment/v1/subscriptions:
   post:
     tags:
       - Payment
     summary: Create a subscription for the authenticated user
     description: |
-      Creates a Stripe subscription for the currently authenticated user.
-      The server attaches the provided payment method and subscribes the user
-      to the selected pricing plan in Stripe.
+      Creates a Stripe subscription for the currently authenticated user 
+      using their already-attached payment method. The user must have been 
+      registered as a Stripe customer first via POST /api/payment/v1/user.
 
-      Please call refresh token after this API to get the updated subscription status in the access token claims.
+      Please call refresh token after this API to get the updated subscription 
+      status in the access token claims.
 
     security:
       - bearerAuth: []
@@ -121,11 +146,11 @@
             type: object
             required:
               - priceId
-              - paymentMethodId
             properties:
               priceId:
                 type: string
-                example: price_123456789
+                description: Stripe price ID for the desired plan
+                example: price_1TGQ4EKiCVlMQgBUJwZCK3um
 
     responses:
       '201':
@@ -155,7 +180,7 @@
                 subscriptionId: sub_123456789
 
       '400':
-        description: Invalid request data
+        description: Bad request – invalid price ID, missing Stripe customer ID, or user already has an active subscription
         content:
           application/json:
             schema:
@@ -166,27 +191,86 @@
                   example: false
                 message:
                   type: string
-                  example: priceId and paymentMethodId are required
+                  example: User already has an active subscription
                 data:
                   type: object
                   nullable: true
             example:
               success: false
-              message: priceId and paymentMethodId are required
+              message: User already has an active subscription
               data: null
 
       '401':
         $ref: '#/components/responses/Unauthorized'
 
+      '403':
+        description: Forbidden – admin users cannot have subscriptions
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: Admin users cannot have subscriptions
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: Admin users cannot have subscriptions
+              data: null
+
+      '404':
+        description: User not found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: false
+                message:
+                  type: string
+                  example: User not found
+                data:
+                  type: object
+                  nullable: true
+            example:
+              success: false
+              message: User not found
+              data: null
+
       '500':
         $ref: '#/components/responses/ServerError'
 
-/api/public/payment/webhook/stripe:
+/api/public/payment/v1/webhook/stripe:
   post:
     tags:
       - Payment
-    summary: Stripe webhook listener (DON'T CALL THIS API, STRIPE CALLS IT)
-    description: Endpoint used by Stripe to send webhook events related to payments and subscriptions.
+    summary: Stripe webhook listener (DO NOT CALL — Stripe calls this automatically)
+    description: |
+      Endpoint used by Stripe to deliver webhook events related to payments and subscriptions.
+      Requires a valid `Stripe-Signature` header for verification.
+
+      Handled events:
+      - `invoice.paid` — marks the user as paid
+      - `invoice.payment_failed` — marks the user as unpaid
+      - `customer.subscription.deleted` — removes subscription and downgrades the user's role
+      - `customer.subscription.updated` — syncs subscription plan changes to the user's role
+
+    parameters:
+      - in: header
+        name: Stripe-Signature
+        required: true
+        schema:
+          type: string
+        description: Stripe webhook signature for payload verification
+        example: t=1234567890,v1=abc123...
 
     requestBody:
       required: true
@@ -237,7 +321,7 @@
               data: null
 
       '400':
-        description: Invalid webhook signature or malformed event
+        description: Invalid webhook signature or missing raw body
         content:
           application/json:
             schema:
