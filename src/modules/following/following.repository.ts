@@ -41,6 +41,10 @@ export class FollowingRepository {
         { $addToSet: { followers: id } },
         { upsert: true },
       ),
+      blockedListSchema.findOneAndUpdate(
+        { blockerId: id },
+        { $pull: { blockedIds: followedId } },
+      ),
     ]);
   }
 
