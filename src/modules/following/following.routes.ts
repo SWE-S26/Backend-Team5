@@ -20,6 +20,11 @@ followingRouter.post(
   followingController.removeFollower.bind(followingController),
 );
 
+followingRouter.post(
+  apiVersions.v1 + '/block/:id',
+  followingController.block.bind(followingController),
+);
+
 followingRouter.get(
   apiVersions.v1 + '/followers/:id',
   followingController.getFollowers.bind(followingController),
