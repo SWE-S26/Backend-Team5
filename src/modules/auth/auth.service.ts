@@ -16,6 +16,9 @@ import { redisCacher } from '../../shared/abstractions/redis/redisCacher';
 import emailService from '../../shared/abstractions/email/EmailService';
 import { AuthMapper } from './dtos/auth.mapper';
 import { PaymentInfo } from '../../shared/models/models.user';
+import Stripe from 'stripe';
+import { PaymentController } from '../payment/payment.controller';
+import { paymentController } from '../payment/payment.routes';
 
 type newUserDTO = {
   email: string;
@@ -486,15 +489,22 @@ export class AuthService {
     paymentInfo: PaymentInfo,
   ): Promise<void> => {
     if (paymentInfo.subscriptionType !== 'free') {
-      throw ForbiddenError(`
-        You cannot delete your account without canceling your subscription first. 
-        Please cancel your subscription first.
-      `);
+      ForbiddenError(
+        'You cannot delete your account without canceling your subscription first. Please cancel your subscription first.',
+      );
     }
 
-    const user = await this.authRepository.deleteUser(userId);
+    const user = await this.authRepository.findById(userId);
     if (!user) {
       throw NotFoundError('User not found');
     }
+
+    if (user.stripeCustomerId) {
+      await paymentController.removeStripeCustomer(user.stripeCustomerId);
+    }
+
+    await this.authRepository.deleteUser(userId);
+
+    emailService.sendDeletedAccount(user.displayName, user.email);
   };
 }

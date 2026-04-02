@@ -7,6 +7,16 @@ import {
 } from '../../shared/errors/responseErrors';
 import logger from '../../shared/logger/logger';
 import { IUser } from '../../shared/models/models.user';
+import { PaymentMapper } from './dtos/payment.mapper';
+import {
+  CreatePayingUserResponse,
+  GetPlanPricesResponse,
+  GetSubscriptionResponse,
+  SubscriptionCancelledResult,
+  SubscriptionCreatedResult,
+  SubscriptionUpdatedResult,
+} from './dtos/payment.response';
+import emailService from '../../shared/abstractions/email/EmailService';
 
 const PRICE_TO_PLAN: Record<
   string,
@@ -59,50 +69,20 @@ export class PaymentService {
     }
   }
 
-  async getPlanPrices(): Promise<
-    Record<string, { priceId: string; amount: number }>
-  > {
+  async getPlanPrices(): Promise<GetPlanPricesResponse> {
     const prices = await this.stripe.prices.list({
       expand: ['data.product'],
     });
 
-    const planPrices: Record<
-      string,
-      {
-        name: string;
-        priceId: string;
-        amount: number;
-      }
-    > = {};
-
-    for (const price of prices.data) {
-      const productName = (price.product as Stripe.Product).name;
-      const amount = Number(((price.unit_amount ?? 0) / 100).toFixed(2));
-      // There is test product that I can't delete, carefully not to spill it
-      // on the response, so I must apply the filtering
-
-      if (productName.includes('Monthly')) {
-        planPrices.pro_monthly = {
-          name: productName,
-          priceId: price.id,
-          amount,
-        };
-      } else if (productName.includes('Yearly')) {
-        planPrices.pro_yearly = {
-          name: productName,
-          priceId: price.id,
-          amount,
-        };
-      }
-    }
-
-    return planPrices;
+    // There is a test product that can't be deleted — filtering is applied
+    // inside the mapper to only include Monthly and Yearly products.
+    return PaymentMapper.toGetPlanPricesResponse(prices.data);
   }
 
   async createPayingUser(
     userId: string,
     paymentMethodId: string,
-  ): Promise<string> {
+  ): Promise<CreatePayingUserResponse> {
     const user = await this.repository.findUserById(userId);
     this.validateUser(user);
 
@@ -131,10 +111,13 @@ export class PaymentService {
 
     await this.repository.updateUser(userId, { stripeCustomerId: customer.id });
 
-    return customer.id;
+    return PaymentMapper.toCreatePayingUserResponse(customer.id);
   }
 
-  async createSubscription(userId: string, priceId: string): Promise<string> {
+  async createSubscription(
+    userId: string,
+    priceId: string,
+  ): Promise<SubscriptionCreatedResult> {
     const user = await this.repository.findUserById(userId);
 
     this.validateUser(user);
@@ -175,15 +158,14 @@ export class PaymentService {
       }),
     });
 
-    return subscription.id;
+    return PaymentMapper.toSubscriptionCreatedResult(
+      user,
+      subscription,
+      plan.subscriptionType,
+    );
   }
 
-  async getSubscription(userId: string): Promise<{
-    plan: string;
-    status: string;
-    currentPeriodEnd: string;
-    isStripePayingCustomer: boolean;
-  }> {
+  async getSubscription(userId: string): Promise<GetSubscriptionResponse> {
     const user = await this.repository.findUserById(userId);
 
     this.validateUser(user);
@@ -196,19 +178,13 @@ export class PaymentService {
       user.stripeSubscriptionId,
     );
 
-    const currentPeriodEnd = subscription.items.data[0]?.current_period_end;
-
-    return {
-      plan: user.subscription?.subscriptionType ?? 'unknown',
-      status: subscription.status,
-      currentPeriodEnd: currentPeriodEnd
-        ? new Date(currentPeriodEnd * 1000).toISOString()
-        : 'unknown',
-      isStripePayingCustomer: user.stripeCustomerId ? true : false,
-    };
+    return PaymentMapper.toGetSubscriptionResponse(user, subscription);
   }
 
-  async updateSubscription(userId: string, priceId: string): Promise<void> {
+  async updateSubscription(
+    userId: string,
+    priceId: string,
+  ): Promise<SubscriptionUpdatedResult> {
     const user = await this.repository.findUserById(userId);
 
     this.validateUser(user);
@@ -223,6 +199,13 @@ export class PaymentService {
 
     if (!user.stripeSubscriptionId) {
       throw NotFoundError('Subscription not found');
+    }
+
+    if (
+      PRICE_TO_PLAN[priceId].subscriptionType ===
+      user.subscription?.subscriptionType
+    ) {
+      throw BadRequestError('You are already subscribed to this plan');
     }
 
     const subscription = await this.stripe.subscriptions.retrieve(
@@ -246,20 +229,28 @@ export class PaymentService {
       throw BadRequestError('Failed to update Stripe subscription');
     }
 
+    const oldPlanSubscriptionType =
+      user.subscription?.subscriptionType ?? 'unknown';
+
     const plan = PRICE_TO_PLAN[priceId];
-    if (plan) {
-      await this.repository.updateUser(userId, {
-        role: plan.role,
-        'subscription.subscriptionType': plan.subscriptionType,
-        'subscription.quota.unlimited': plan.unlimited,
-      });
-    }
+
+    await this.repository.updateUser(userId, {
+      role: plan.role,
+      'subscription.subscriptionType': plan.subscriptionType,
+      'subscription.quota.unlimited': plan.unlimited,
+    });
+
+    return PaymentMapper.toSubscriptionUpdatedResult(
+      user,
+      oldPlanSubscriptionType,
+      plan.subscriptionType,
+    );
   }
 
   async cancelSubscription(
     userId: string,
     cancelAtPeriodEnd: boolean,
-  ): Promise<void> {
+  ): Promise<SubscriptionCancelledResult> {
     const user = await this.repository.findUserById(userId);
 
     this.validateUser(user);
@@ -284,7 +275,8 @@ export class PaymentService {
       await this.stripe.subscriptions.update(user.stripeSubscriptionId, {
         cancel_at_period_end: true,
       });
-      return;
+
+      return PaymentMapper.toSubscriptionCancelledResult(user);
     }
 
     await this.stripe.subscriptions.cancel(user.stripeSubscriptionId);
@@ -296,9 +288,31 @@ export class PaymentService {
 
     await this.repository.updateUser(
       userId,
-      { isPaid: false, role: role },
+      {
+        isPaid: false,
+        role: role,
+        'subscription.subscriptionType': 'free',
+        'subscription.quota.unlimited': false,
+      },
       { stripeSubscriptionId: 1 },
     );
+
+    return PaymentMapper.toSubscriptionCancelledResult(user);
+  }
+
+  async deleteStripeCustomer(stripeCustomerId: string): Promise<void> {
+    try {
+      await this.stripe.customers.del(stripeCustomerId);
+    } catch (error) {
+      if (error instanceof Error) {
+        logger.error(`Stripe customer deletion failed ${error.message}`);
+        throw BadRequestError(
+          'Failed to delete Stripe customer: ' + error.message,
+        );
+      }
+
+      throw BadRequestError('Failed to delete Stripe customer');
+    }
   }
 
   async handleWebhook(rawBody: Buffer, signature: string): Promise<void> {
@@ -317,7 +331,6 @@ export class PaymentService {
 
     switch (event!.type) {
       case 'invoice.paid': {
-        // Recurring payment succeeded — ensure user is marked as paid
         const invoice = event.data.object as Stripe.Invoice;
         const user = await this.repository.findUserByStripeCustomerId(
           invoice.customer as string,
@@ -332,7 +345,6 @@ export class PaymentService {
       }
 
       case 'invoice.payment_failed': {
-        // Payment failed — you may want to notify the user or restrict access
         const invoice = event.data.object as Stripe.Invoice;
         const user = await this.repository.findUserByStripeCustomerId(
           invoice.customer as string,
@@ -347,7 +359,6 @@ export class PaymentService {
       }
 
       case 'customer.subscription.deleted': {
-        // Subscription ended (immediate cancel or period-end cancel)
         const subscription = event.data.object as Stripe.Subscription;
         const user = await this.repository.findUserByStripeCustomerId(
           subscription.customer as string,
@@ -361,8 +372,20 @@ export class PaymentService {
 
           await this.repository.updateUser(
             user._id.toString(),
-            { isPaid: false, role: role },
+            {
+              isPaid: false,
+              role: role,
+              'subscription.subscriptionType': 'free',
+              'subscription.quota.unlimited': false,
+            },
             { stripeSubscriptionId: 1 },
+          );
+
+          const { emailData } =
+            PaymentMapper.toSubscriptionCancelledResult(user);
+          emailService.sendSubscriptionCancelled(
+            emailData.userName,
+            emailData.email,
           );
         }
         break;
@@ -388,7 +411,6 @@ export class PaymentService {
       }
 
       default:
-        // Unhandled event types — safe to ignore
         break;
     }
   }

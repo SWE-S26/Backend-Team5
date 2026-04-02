@@ -32,12 +32,21 @@ export const requireAuth = (
 
   req.userInfo = payload;
 
+  // logger.info(
+  //   `
+  //   Authenticated user with ID: ${payload!._id},
+  //   role: ${payload!.role},
+  //   paymentInfo: ${JSON.stringify(payload!.paymentInfo)}
+  //   `,
+  // );
+
   logger.info(
-    `
-    Authenticated user with ID: ${payload!._id}, 
-    role: ${payload!.role}, 
-    paymentInfo: ${JSON.stringify(payload!.paymentInfo)}
-    `,
+    {
+      userId: payload!._id,
+      role: payload!.role,
+      paymentInfo: payload!.paymentInfo,
+    },
+    'Authenticated user',
   );
 
   next();

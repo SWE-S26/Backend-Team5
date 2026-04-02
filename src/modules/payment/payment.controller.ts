@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { PaymentService } from './payment.service';
+import emailService from '../../shared/abstractions/email/EmailService';
 import {
   CancelSubscriptionRequestDTO,
   CreatePayingUserRequestDTO,
@@ -35,15 +36,12 @@ export class PaymentController {
 
     const paymentMethodId = validatedRequest.data.body.paymentMethodId;
 
-    const customerId = await this.service.createPayingUser(
-      userId,
-      paymentMethodId,
-    );
+    const data = await this.service.createPayingUser(userId, paymentMethodId);
 
     res.status(201).json({
       success: true,
       message: 'User created successfully',
-      data: { userId: customerId },
+      data,
     });
   }
 
@@ -57,7 +55,7 @@ export class PaymentController {
     const userId = req.userInfo!._id;
     const { priceId } = validatedRequest.data.body;
 
-    const subscriptionId = await this.service.createSubscription(
+    const { clientResponse, emailData } = await this.service.createSubscription(
       userId,
       priceId,
     );
@@ -65,8 +63,14 @@ export class PaymentController {
     res.status(201).json({
       success: true,
       message: 'Subscription created successfully',
-      data: { subscriptionId },
+      data: clientResponse,
     });
+
+    emailService.sendSubscriptionCreated(
+      emailData.userName,
+      emailData.email,
+      emailData.planName,
+    );
   }
 
   async getSubscription(req: Request, res: Response): Promise<void> {
@@ -89,12 +93,23 @@ export class PaymentController {
     const userId = req.userInfo!._id;
     const { priceId } = validatedRequest.data.body;
 
-    await this.service.updateSubscription(userId, priceId);
+    const { emailData } = await this.service.updateSubscription(
+      userId,
+      priceId,
+    );
+
     res.status(200).json({
       success: true,
       message: 'Subscription updated successfully',
       data: null,
     });
+
+    emailService.sendSubscriptionUpdated(
+      emailData.userName,
+      emailData.email,
+      emailData.oldPlanName,
+      emailData.planName,
+    );
   }
 
   async cancelSubscription(req: Request, res: Response): Promise<void> {
@@ -107,12 +122,18 @@ export class PaymentController {
     const userId = req.userInfo!._id;
     const { cancelAtPeriodEnd } = validatedRequest.data.body;
 
-    await this.service.cancelSubscription(userId, cancelAtPeriodEnd ?? true);
+    const { emailData } = await this.service.cancelSubscription(
+      userId,
+      cancelAtPeriodEnd ?? true,
+    );
+
     res.status(200).json({
       success: true,
       message: 'Subscription cancelled successfully',
       data: null,
     });
+
+    emailService.sendSubscriptionCancelled(emailData.userName, emailData.email);
   }
 
   async handleWebhook(req: Request, res: Response): Promise<void> {
@@ -133,5 +154,9 @@ export class PaymentController {
       message: 'Webhook processed successfully',
       data: null,
     });
+  }
+
+  async removeStripeCustomer(stripeCustomerId: string): Promise<void> {
+    await this.service.deleteStripeCustomer(stripeCustomerId);
   }
 }

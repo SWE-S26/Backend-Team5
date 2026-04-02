@@ -4,7 +4,7 @@ import apiVersions from '../../shared/middleware/apiVersions';
 
 const paymentRouter = Router();
 const paymentPublicRouter = Router();
-const paymentController = new PaymentController();
+export const paymentController = new PaymentController();
 
 paymentPublicRouter.post(
   apiVersions.v1 + '/webhook/stripe',
