@@ -339,6 +339,54 @@ export class AuthController {
     }
   }
 
+  googleCrossRedirect = async (
+    req: Request,
+    res: Response,
+    payload: GoogleAuthPayload,
+  ): Promise<boolean> => {
+    const activeClient = payload.client;
+
+    if (activeClient !== 'Android') {
+      return false;
+    }
+
+    let accessToken = '';
+    let refreshToken = '';
+    let pendingToken = '';
+    let incompleteToken = '';
+
+    if (payload.status === 'new') {
+      incompleteToken = this.service.issueIncompleteToken({
+        googleId: payload.googleId,
+        email: payload.email,
+        displayName: payload.displayName,
+      });
+    }
+
+    if (payload.status === 'existing') {
+      pendingToken = await this.service.initiateGoogleSignIn({
+        userId: payload.userId,
+        role: payload.role,
+        subscription: payload.subscription,
+        email: payload.email,
+        displayName: payload.displayName,
+        googleId: payload.googleId,
+      });
+    }
+
+    const redirectUrl = new URL(`${this.hostUrl}/cross-callback`);
+
+    redirectUrl.searchParams.set('client', activeClient);
+    redirectUrl.searchParams.set('status', payload.status);
+    redirectUrl.searchParams.set('accessToken', accessToken);
+    redirectUrl.searchParams.set('refreshToken', refreshToken);
+    redirectUrl.searchParams.set('pendingToken', pendingToken);
+    redirectUrl.searchParams.set('incompleteToken', incompleteToken);
+
+    res.redirect(redirectUrl.toString());
+    return true;
+  };
+
   googleRedirect = (req: Request, res: Response, next: NextFunction): void => {
     const client =
       typeof req.query.client === 'string' ? req.query.client : undefined;
@@ -385,6 +433,10 @@ export class AuthController {
         }
 
         if (payload.status === 'new') {
+          if (await this.googleCrossRedirect(req, res, payload)) {
+            return;
+          }
+
           const incompleteToken = this.service.issueIncompleteToken({
             googleId: payload.googleId,
             email: payload.email,
@@ -397,13 +449,17 @@ export class AuthController {
             'incompleteToken',
             SecureParams.encrypt(incompleteToken),
           );
-          redirectUrl.searchParams.set('email', 'No');
+          redirectUrl.searchParams.set('email', '');
           redirectUrl.searchParams.set('displayName', payload.displayName);
           if (payload.client) {
             redirectUrl.searchParams.set('client', payload.client);
           }
 
           return res.redirect(redirectUrl.toString());
+        }
+
+        if (await this.googleCrossRedirect(req, res, payload)) {
+          return;
         }
 
         const pendingToken = await this.service.initiateGoogleSignIn({
