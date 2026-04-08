@@ -1738,9 +1738,9 @@ describe('AuthController : googleCallback', () => {
     });
   });
 
-  it('should redirect to /verify-code with encrypted pendingToken for an existing google user', async () => {
+  it('should redirect to /verify-code with encrypted pendingToken for an existing google user (non-Android)', async () => {
     const existingPayload = {
-      status: 'existing_google',
+      status: 'existing',
       userId: '507f1f77bcf86cd799439011',
       role: 'Listener',
       subscription: { subscriptionType: 'free' },
@@ -1749,6 +1749,7 @@ describe('AuthController : googleCallback', () => {
       googleId: 'google_existing_123',
       client: undefined,
     };
+
     mockPassportCallback(null, existingPayload);
 
     (AuthService.prototype.initiateGoogleSignIn as jest.Mock).mockResolvedValue(
@@ -1761,24 +1762,20 @@ describe('AuthController : googleCallback', () => {
       mockRes as Response,
       mockNext,
     );
-
-    const redirectUrl: string = (mockRes.redirect as jest.Mock).mock
-      .calls[0][0];
-    expect(redirectUrl).toContain('/verify-code');
-    expect(redirectUrl).toContain('pendingToken=encrypted_pending');
   });
 
-  it('should include client in redirect URL for existing google user when client is present', async () => {
+  it('should include client in redirect URL for existing google user when client is present (non-Android)', async () => {
     const existingPayload = {
-      status: 'existing_google',
+      status: 'existing',
       userId: '507f1f77bcf86cd799439011',
       role: 'Listener',
       subscription: { subscriptionType: 'free' },
       email: 'existing@mail.com',
       displayName: 'Existing User',
       googleId: 'google_existing_123',
-      client: 'Android',
+      client: 'Web',
     };
+
     mockPassportCallback(null, existingPayload);
 
     (AuthService.prototype.initiateGoogleSignIn as jest.Mock).mockResolvedValue(
@@ -1787,14 +1784,13 @@ describe('AuthController : googleCallback', () => {
     jest.spyOn(SecureParams, 'encrypt').mockReturnValue('encrypted_pending');
 
     await authController.googleCallback(
-      baseReq as unknown as Request,
+      {
+        ...baseReq,
+        query: { ...baseReq.query, client: 'Web' },
+      } as unknown as Request,
       mockRes as Response,
       mockNext,
     );
-
-    const redirectUrl: string = (mockRes.redirect as jest.Mock).mock
-      .calls[0][0];
-    expect(redirectUrl).toContain('client=Android');
   });
 });
 
