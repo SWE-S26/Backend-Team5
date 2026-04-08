@@ -344,9 +344,7 @@ export class AuthController {
     res: Response,
     payload: GoogleAuthPayload,
   ): Promise<boolean> => {
-    const activeClient =
-      (req.query.client as string) ||
-      (typeof req.query.client === 'string' ? req.query.client : '');
+    const activeClient = payload.client;
 
     if (activeClient !== 'Android') {
       return false;
