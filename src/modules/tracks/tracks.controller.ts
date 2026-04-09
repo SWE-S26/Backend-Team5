@@ -129,6 +129,7 @@ export class TracksController {
   }
 
   async uploadAudioTrack(req: Request, res: Response): Promise<void> {
+    // TODO : Check if user is Pro or no subscription to update criteria
     const validatedRequest = parseRequest(UploadAudioTrackRequestDTO, req);
 
     if (!validatedRequest.success) {

@@ -18,19 +18,19 @@ tracksRouter.put(apiVersions.v1 + '/listen/{:id}', (req, res) =>
 );
 
 tracksRouter.get(apiVersions.v1 + '/liked', (req, res) =>
-  tracksController.incrementTrackNumPlays.bind(tracksController),
+  tracksController.getUserLikedTracks.bind(tracksController),
 );
 
 tracksRouter.get(apiVersions.v1 + '/permalink/{:permalink}', (req, res) =>
   tracksController.getTrackByPermalink.bind(tracksController),
 );
 
-tracksRouter.delete(apiVersions.v1, (req, res) =>
-  tracksController.deleteTrackById.bind(tracksController),
-);
-
 tracksRouter.patch(apiVersions.v1, (req, res) =>
   tracksController.updateTrackInfo.bind(tracksController),
+);
+
+tracksRouter.get(apiVersions.v1, (req, res) =>
+  tracksController.getPaginatedListOfTracks.bind(tracksController),
 );
 
 // TODO : NEED AN ENDPOINT FOR FETCHING ALL DETAILS for track
