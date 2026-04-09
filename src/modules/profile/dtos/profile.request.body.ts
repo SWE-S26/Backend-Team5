@@ -96,7 +96,6 @@ export type UpdateContentSettingsDTOType = z.infer<
 >;
 
 export const UpdatePrivacySettingsDTO = extendedZod.object({
-  accountIsPrivate: extendedZod.boolean().optional(),
   allowMessagesAnyone: extendedZod.boolean().optional(),
   showActivityDiscovery: extendedZod.boolean().optional(),
   showFirstTopFan: extendedZod.boolean().optional(),
