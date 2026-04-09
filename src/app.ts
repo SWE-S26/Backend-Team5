@@ -11,7 +11,7 @@ import shutDown from './config/shutDown';
 const app = express();
 
 export const allowedOrigins = [
-  'http://localhost:4123/api/docs',
+  'http://localhost:4123',
   'http://localhost:3000',
   process.env.HOST_URL,
   process.env.SWAGGER_URL,

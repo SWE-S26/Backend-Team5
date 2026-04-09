@@ -5,7 +5,7 @@
     tags:
       - Notifications
     summary: Mark all notifications as read.
-    description: Sets read to true on every unread notification belonging to the authenticated user. Also triggers a notification.read_all WebSocket event to all active sessions for this user.
+    description: Sets read to true on every unread notification belonging to the authenticated user and returns the updated unread count.
     operationId: markAllNotificationsRead
     responses:
       200:
@@ -13,33 +13,31 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UnreadCountResponse"
+              $ref: '#/components/schemas/UnreadCountResponse'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
 /api/notifications/{notificationId}/read:
   patch:
     tags:
       - Notifications
     summary: Mark a single notification as read.
-    description: Sets read to true on the specified notification. Also triggers a notification.read WebSocket event to all active sessions for this user so other tabs/devices can sync their unread counter.
+    description: Sets read to true on the specified notification (if it belongs to the authenticated user) and returns the updated unread count.
     operationId: markNotificationRead
     parameters:
-      - $ref: "#/components/parameters/NotificationIdParam"
+      - $ref: '#/components/parameters/NotificationIdParam'
     responses:
       200:
         description: Notification marked as read.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/MarkReadResponse"
+              $ref: '#/components/schemas/MarkReadResponse'
       401:
-        $ref: "#/components/responses/Unauthorized"
-      403:
-        $ref: "#/components/responses/Forbidden"
+        $ref: '#/components/responses/Unauthorized'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'

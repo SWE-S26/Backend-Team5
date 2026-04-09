@@ -4,78 +4,137 @@ NotificationUserSnippet:
   properties:
     userId:
       type: string
-      example: "usr_001"
+      example: 'usr_001'
     displayName:
       type: string
-      example: "Jane Smith"
+      example: 'Jane Smith'
     avatarUrl:
       type: string
       format: uri
-      example: "https://cdn.example.com/avatars/usr_001.jpg"
+      example: 'https://cdn.example.com/avatars/usr_001.jpg'
   required:
     - userId
     - displayName
 
-NotificationTarget:
+NotificationActivityType:
+  type: string
+  description: |
+    Notification activity type.
+    - track_liked: someone liked a track
+    - track_commented: someone commented on a track
+    - track_reposted: someone reposted a track
+    - user_followed: someone followed a user
+    - new_track: a followed user posted a new track
+  enum:
+    - track_liked
+    - track_commented
+    - track_reposted
+    - user_followed
+    - new_track
+
+NotificationTargetTrack:
   type: object
-  description: The resource that was acted upon (track, comment, etc.). Null for new_follower activity type.
-  nullable: true
+  description: Target object for track-based notifications (like, repost, new track).
   properties:
     targetType:
       type: string
       enum:
         - track
-        - comment
-        - playlist
-      example: "track"
+      example: track
     targetId:
       type: string
-      example: "trk_456"
+      description: Track id.
+      example: trk_456
     title:
       type: string
-      example: "My Awesome Track"
+      description: Track title.
+      example: My Awesome Track
   required:
     - targetType
     - targetId
 
+NotificationTargetComment:
+  type: object
+  description: Target object for comment notifications.
+  properties:
+    targetType:
+      type: string
+      enum:
+        - comment
+      example: comment
+    targetId:
+      type: string
+      description: Comment id.
+      example: cmt_321
+    trackId:
+      type: string
+      description: Track id the comment belongs to.
+      example: trk_456
+    commentText:
+      type: string
+      description: Comment text payload.
+      example: Great track!
+  required:
+    - targetType
+    - targetId
+
+NotificationTargetUser:
+  type: object
+  description: Target object for follow notifications.
+  properties:
+    targetType:
+      type: string
+      enum:
+        - user
+      example: user
+    targetId:
+      type: string
+      description: Followed user id.
+      example: usr_999
+  required:
+    - targetType
+    - targetId
+
+NotificationTarget:
+  description: Target payload shape depends on activityType.
+  oneOf:
+    - $ref: '#/components/schemas/NotificationTargetTrack'
+    - $ref: '#/components/schemas/NotificationTargetComment'
+    - $ref: '#/components/schemas/NotificationTargetUser'
+
 NotificationDTO:
   type: object
-  description: A single notification delivered to a user. The activityType field indicates what happened.
+  description: |
+    A single notification delivered to a user.
+    The activityType value determines the target shape and additional fields.
   properties:
     notificationId:
       type: string
-      example: "ntf_789"
+      example: 'ntf_789'
     to:
       type: string
       description: The userId of the notification recipient.
-      example: "usr_001"
+      example: 'usr_001'
     read:
       type: boolean
       example: false
     activityType:
-      type: string
-      enum:
-        - track_liked
-        - track_reposted
-        - new_follower
-        - new_comment
-        - comment_liked
-        - comment_reply
-      example: "track_liked"
+      $ref: '#/components/schemas/NotificationActivityType'
     actor:
-      $ref: "#/components/schemas/NotificationUserSnippet"
+      $ref: '#/components/schemas/NotificationUserSnippet'
     target:
-      $ref: "#/components/schemas/NotificationTarget"
+      $ref: '#/components/schemas/NotificationTarget'
     createdAt:
       type: string
       format: date-time
-      example: "2025-01-15T12:00:00Z"
+      example: '2025-01-15T12:00:00Z'
   required:
     - notificationId
     - to
     - read
     - activityType
     - actor
+    - target
     - createdAt
 
 NotificationListResponse:
@@ -86,14 +145,14 @@ NotificationListResponse:
       example: 75
     offset:
       type: integer
-      example: 0
+      example: 1
     limit:
       type: integer
       example: 20
     notifications:
       type: array
       items:
-        $ref: "#/components/schemas/NotificationDTO"
+        $ref: '#/components/schemas/NotificationDTO'
   required:
     - total
     - offset
@@ -114,7 +173,7 @@ MarkReadResponse:
   properties:
     notificationId:
       type: string
-      example: "ntf_789"
+      example: 'ntf_789'
     read:
       type: boolean
       example: true

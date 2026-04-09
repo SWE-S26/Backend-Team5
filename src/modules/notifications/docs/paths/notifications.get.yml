@@ -5,23 +5,23 @@
     tags:
       - Notifications
     summary: Get notifications for the authenticated user.
-    description: Returns a paginated list of notifications for the currently authenticated user, ordered by created_at descending. Supports filtering by read state.
+    description: Returns a paginated list of notifications for the currently authenticated user, ordered by createdAt descending. Supports filtering by read state.
     operationId: getNotifications
     parameters:
-      - $ref: "#/components/parameters/NotificationsOffsetParam"
-      - $ref: "#/components/parameters/NotificationsLimitParam"
-      - $ref: "#/components/parameters/NotificationsReadFilterParam"
+      - $ref: '#/components/parameters/NotificationsOffsetParam'
+      - $ref: '#/components/parameters/NotificationsLimitParam'
+      - $ref: '#/components/parameters/NotificationsReadFilterParam'
     responses:
       200:
         description: Paginated list of notifications.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/NotificationListResponse"
+              $ref: '#/components/schemas/NotificationListResponse'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
 /api/notifications/unread-count:
   get:
@@ -36,33 +36,11 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UnreadCountResponse"
+              $ref: '#/components/schemas/UnreadCountResponse'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       500:
-        $ref: "#/components/responses/ServerError"
-
-/api/notifications/unread:
-  get:
-    tags:
-      - Notifications
-    summary: Get all unread notifications.
-    description: Returns all unread notifications for the authenticated user, ordered by created_at descending. Designed for mobile clients populating a push notification tray on app open.
-    operationId: getUnreadNotifications
-    parameters:
-      - $ref: "#/components/parameters/NotificationsOffsetParam"
-      - $ref: "#/components/parameters/NotificationsLimitParam"
-    responses:
-      200:
-        description: List of unread notifications.
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/NotificationListResponse"
-      401:
-        $ref: "#/components/responses/Unauthorized"
-      500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
 /api/notifications/{notificationId}:
   get:
@@ -72,19 +50,94 @@
     description: Returns the full detail of a specific notification belonging to the authenticated user.
     operationId: getNotificationById
     parameters:
-      - $ref: "#/components/parameters/NotificationIdParam"
+      - $ref: '#/components/parameters/NotificationIdParam'
     responses:
       200:
         description: Notification detail.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/NotificationDTO"
+              $ref: '#/components/schemas/NotificationDTO'
+            examples:
+              trackLiked:
+                summary: Track liked notification
+                value:
+                  notificationId: ntf_like_001
+                  to: usr_001
+                  read: false
+                  activityType: track_liked
+                  actor:
+                    userId: usr_010
+                    displayName: Jane Smith
+                    avatarUrl: https://cdn.example.com/avatars/usr_010.jpg
+                  target:
+                    targetType: track
+                    targetId: trk_456
+                    title: My Awesome Track
+                  createdAt: 2025-01-15T12:00:00Z
+              trackCommented:
+                summary: Track commented notification
+                value:
+                  notificationId: ntf_comment_001
+                  to: usr_001
+                  read: false
+                  activityType: track_commented
+                  actor:
+                    userId: usr_011
+                    displayName: Ali Kareem
+                  target:
+                    targetType: comment
+                    targetId: cmt_123
+                    trackId: trk_456
+                    commentText: Great track!
+                  createdAt: 2025-01-15T12:05:00Z
+              trackReposted:
+                summary: Track reposted notification
+                value:
+                  notificationId: ntf_repost_001
+                  to: usr_001
+                  read: false
+                  activityType: track_reposted
+                  actor:
+                    userId: usr_012
+                    displayName: Maya Noor
+                  target:
+                    targetType: track
+                    targetId: trk_456
+                    title: My Awesome Track
+                  createdAt: 2025-01-15T12:10:00Z
+              userFollowed:
+                summary: User followed notification
+                value:
+                  notificationId: ntf_follow_001
+                  to: usr_001
+                  read: false
+                  activityType: user_followed
+                  actor:
+                    userId: usr_013
+                    displayName: Samir
+                  target:
+                    targetType: user
+                    targetId: usr_001
+                  createdAt: 2025-01-15T12:12:00Z
+              newTrack:
+                summary: New track notification
+                value:
+                  notificationId: ntf_newtrack_001
+                  to: usr_001
+                  read: false
+                  activityType: new_track
+                  actor:
+                    userId: usr_014
+                    displayName: Nora Wave
+                  target:
+                    targetType: track
+                    targetId: trk_999
+                    title: Neon Drift
+                  createdAt: 2025-01-15T12:15:00Z
       401:
-        $ref: "#/components/responses/Unauthorized"
-      403:
-        $ref: "#/components/responses/Forbidden"
+        $ref: '#/components/responses/Unauthorized'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'

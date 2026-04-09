@@ -1,6 +1,7 @@
 export enum SocketEvents {
   TEST_SEND = 'test:send', // client → server
   TEST_RECEIVE = 'test:receive', // server → client
+  NOTIFICATION_RECEIVE = 'notification:receive', // server → client
 
   USER_CONNECTED = 'user:connected',
   USER_DISCONNECTED = 'user:disconnected',
