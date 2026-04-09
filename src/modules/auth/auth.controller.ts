@@ -354,6 +354,7 @@ export class AuthController {
     let refreshToken = '';
     let pendingToken = '';
     let incompleteToken = '';
+    let displayName = '';
 
     if (payload.status === 'new') {
       incompleteToken = this.service.issueIncompleteToken({
@@ -361,6 +362,8 @@ export class AuthController {
         email: payload.email,
         displayName: payload.displayName,
       });
+      displayName = payload.displayName;
+      incompleteToken = SecureParams.encrypt(incompleteToken);
     }
 
     if (payload.status === 'existing') {
@@ -372,12 +375,15 @@ export class AuthController {
         displayName: payload.displayName,
         googleId: payload.googleId,
       });
+      pendingToken = SecureParams.encrypt(pendingToken);
     }
 
     const redirectUrl = new URL(`${this.hostUrl}/cross-callback`);
 
     redirectUrl.searchParams.set('client', activeClient);
     redirectUrl.searchParams.set('status', payload.status);
+    redirectUrl.searchParams.set('email', '');
+    redirectUrl.searchParams.set('displayName', displayName);
     redirectUrl.searchParams.set('accessToken', accessToken);
     redirectUrl.searchParams.set('refreshToken', refreshToken);
     redirectUrl.searchParams.set('pendingToken', pendingToken);
