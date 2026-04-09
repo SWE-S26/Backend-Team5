@@ -1,5 +1,7 @@
 import User, { IUser } from '../../shared/models/models.user';
 import Settings, { ISettings } from '../../shared/models/models.settings';
+import Following from '../../shared/models/models.following';
+import Track from '../../shared/models/models.track';
 import {
   UpdateProfileRequestBodyDTOType,
   UpdatePrivacySettingsDTOType,
@@ -7,6 +9,12 @@ import {
   UpdateAccountSettingsDTOType,
   UpdateContentSettingsDTOType,
 } from './dtos/profile.request.body';
+
+export interface UserStats {
+  trackCount: number;
+  followersCount: number;
+  followedCount: number;
+}
 
 export class ProfileRepository {
   async getProfileById(id: string): Promise<IUser | null> {
@@ -171,5 +179,21 @@ export class ProfileRepository {
   async isProfileLinkTaken(username: string): Promise<boolean> {
     const user = await User.findOne({ profileLink: username }).lean();
     return !!user;
+  }
+
+  async getUserStats(id: string): Promise<UserStats> {
+    const [followDoc, trackCount] = await Promise.all([
+      Following.findOne({ userId: id }).lean(),
+      Track.countDocuments({ posterId: id }),
+    ]);
+
+    const followersCount = followDoc?.followers.length ?? 0;
+    const followedCount = followDoc?.followed.length ?? 0;
+
+    return {
+      followersCount,
+      followedCount,
+      trackCount,
+    };
   }
 }

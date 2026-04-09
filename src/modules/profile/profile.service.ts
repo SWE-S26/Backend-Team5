@@ -2,7 +2,7 @@ import Following from '../../shared/models/models.following';
 import Track from '../../shared/models/models.track';
 import { IUser } from '../../shared/models/models.user';
 import { ProfileMapper } from './dtos/profile.mapper';
-import { ProfileRepository } from './profile.repository';
+import { ProfileRepository, UserStats } from './profile.repository';
 import { ProfileResponseDTOType } from './dtos/profile.response';
 import {
   UpdateProfileRequestBodyDTOType,
@@ -33,16 +33,11 @@ export class ProfileService {
     const user: IUser | null = await this.repository.getProfileById(id);
     if (!user) throw NotFoundError('User not found');
 
-    const followDoc = await Following.findOne({ userId: id }).lean();
-    const followersCount = followDoc?.followers.length ?? 0;
-    const followedCount = followDoc?.followed.length ?? 0;
-    const trackCount = await Track.countDocuments({ posterId: id });
+    const userStats: UserStats = await this.repository.getUserStats(id);
 
     const combined = {
       ...user,
-      followersCount,
-      followedCount,
-      trackCount,
+      ...userStats,
     };
 
     return ProfileMapper.toResponse(combined);
@@ -63,16 +58,11 @@ export class ProfileService {
     }
     if (!updatedUser) throw NotFoundError('User not found');
 
-    const followDoc = await Following.findOne({ userId: id }).lean();
-    const followersCount = followDoc?.followers.length ?? 0;
-    const followedCount = followDoc?.followed.length ?? 0;
-    const trackCount = await Track.countDocuments({ posterId: id });
+    const userStats: UserStats = await this.repository.getUserStats(id);
 
     const combined = {
       ...updatedUser,
-      followersCount,
-      followedCount,
-      trackCount,
+      ...userStats,
     };
 
     return ProfileMapper.toResponse(combined);
@@ -235,16 +225,13 @@ export class ProfileService {
     const user = await this.repository.getProfileByProfileLink(username);
     if (!user) throw NotFoundError('User not found');
 
-    const followDoc = await Following.findOne({ userId: user._id }).lean();
-    const followersCount = followDoc?.followers.length ?? 0;
-    const followedCount = followDoc?.followed.length ?? 0;
-    const trackCount = await Track.countDocuments({ posterId: user._id });
+    const userStats: UserStats = await this.repository.getUserStats(
+      user._id.toString(),
+    );
 
     const combined = {
       ...user,
-      followersCount,
-      followedCount,
-      trackCount,
+      ...userStats,
     };
 
     return ProfileMapper.toResponse(combined);
