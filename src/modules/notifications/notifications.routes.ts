@@ -1,8 +1,30 @@
 import { Router } from 'express';
 import { NotificationsController } from './notifications.controller';
+import { NotificationsService } from './notifications.service';
+import { NotificationsRepository } from './notifications.repository';
 
 const router = Router();
-//TODO: const notificationsController = new NotificationsController(/* TODO: inject service */);
+const notificationsController = new NotificationsController(
+  new NotificationsService(new NotificationsRepository()),
+);
+
+router.get('/', notificationsController.findAll.bind(notificationsController));
+router.get(
+  '/unread-count',
+  notificationsController.getUnreadCount.bind(notificationsController),
+);
+router.patch(
+  '/read-all',
+  notificationsController.markAllAsRead.bind(notificationsController),
+);
+router.patch(
+  '/:notificationId/read',
+  notificationsController.markAsRead.bind(notificationsController),
+);
+router.get(
+  '/:notificationId',
+  notificationsController.findOne.bind(notificationsController),
+);
 
 // notificationsRouter.get('/',      (req, res) => notificationsController.findAll(req, res));
 // notificationsRouter.get('/:id',   (req, res) => notificationsController.findOne(req, res));

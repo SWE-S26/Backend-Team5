@@ -22,6 +22,7 @@ import {
   DeleteCommentResponse,
 } from './dtos/engagement.response';
 import { EngagementEmailService } from './engagement.email';
+import { getNotificationSocketHandler } from '../../sockets/handlers/notification.handler';
 
 export class EngagementService {
   private emailService: EngagementEmailService;
@@ -59,7 +60,28 @@ export class EngagementService {
       .sendTrackLikeEmail(trackId, userId)
       .catch((err) => console.error('Failed to send track like email:', err));
 
+    this.sendTrackLikeSocketNotification(userId, trackId);
+
     return EngagementMapper.toTrackLikeResponse(updated, true);
+  }
+
+  private sendTrackLikeSocketNotification(
+    actorId: string,
+    trackId: string,
+  ): void {
+    let notificationHandler;
+
+    try {
+      notificationHandler = getNotificationSocketHandler();
+    } catch {
+      return;
+    }
+
+    notificationHandler
+      .sendLikeNotification(actorId, trackId)
+      .catch((err) =>
+        console.error('Failed to send track like socket notification:', err),
+      );
   }
 
   async toggleTrackRepost(
@@ -94,7 +116,28 @@ export class EngagementService {
       .sendTrackRepostEmail(trackId, userId)
       .catch((err) => console.error('Failed to send track repost email:', err));
 
+    this.sendTrackRepostSocketNotification(userId, trackId);
+
     return EngagementMapper.toTrackRepostResponse(updated, true);
+  }
+
+  private sendTrackRepostSocketNotification(
+    actorId: string,
+    trackId: string,
+  ): void {
+    let notificationHandler;
+
+    try {
+      notificationHandler = getNotificationSocketHandler();
+    } catch {
+      return;
+    }
+
+    notificationHandler
+      .sendRepostNotification(actorId, trackId)
+      .catch((err) =>
+        console.error('Failed to send track repost socket notification:', err),
+      );
   }
 
   async togglePlaylistLike(
@@ -410,6 +453,8 @@ export class EngagementService {
       );
     }
 
+    const response = EngagementMapper.toPostCommentResponse(comment);
+
     // (async, don't await)
     // Only send for top-level comments, not replies
     if (!parentCommentId) {
@@ -418,9 +463,30 @@ export class EngagementService {
         .catch((err) =>
           console.error('Failed to send track comment email:', err),
         );
+
+      this.sendTrackCommentSocketNotification(userId, comment._id.toString());
     }
 
-    return EngagementMapper.toPostCommentResponse(comment);
+    return response;
+  }
+
+  private sendTrackCommentSocketNotification(
+    actorId: string,
+    commentId: string,
+  ): void {
+    let notificationHandler;
+
+    try {
+      notificationHandler = getNotificationSocketHandler();
+    } catch {
+      return;
+    }
+
+    notificationHandler
+      .sendCommentNotification(actorId, commentId)
+      .catch((err) =>
+        console.error('Failed to send track comment socket notification:', err),
+      );
   }
 
   async toggleCommentLike(

@@ -1,8 +1,11 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
-import { NotificationsIdParamDTO } from './notifications.request.params';
-import { ListNotificationssQueryDto } from './notifications.request.query';
+import { NotificationIdParamDTO } from './notifications.request.params';
+import { ListNotificationsQueryDTO } from './notifications.request.query';
 
-export const CreateNotificationsRequestDTO = extendedZod.object({
-  params: NotificationsIdParamDTO,
-  query: ListNotificationssQueryDto,
+export const GetNotificationsRequestDTO = extendedZod.object({
+  query: ListNotificationsQueryDTO,
+});
+
+export const GetNotificationByIdRequestDTO = extendedZod.object({
+  params: NotificationIdParamDTO,
 });

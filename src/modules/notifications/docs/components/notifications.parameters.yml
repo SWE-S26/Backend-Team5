@@ -5,18 +5,18 @@ NotificationIdParam:
   description: The unique identifier of the notification.
   schema:
     type: string
-    example: "ntf_789"
+    example: 'ntf_789'
 
 NotificationsOffsetParam:
   name: offset
   in: query
   required: false
-  description: Number of items to skip before returning results.
+  description: Page index (1-based).
   schema:
     type: integer
-    minimum: 0
-    default: 0
-    example: 0
+    minimum: 1
+    default: 1
+    example: 1
 
 NotificationsLimitParam:
   name: limit

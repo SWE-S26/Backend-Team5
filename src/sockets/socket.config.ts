@@ -4,6 +4,7 @@ import logger from '../shared/logger/logger';
 import { SocketService } from './socket.service';
 import { SocketEvents } from './socket.events';
 import { registerTestHandlers } from './handlers/test.handler';
+import { initializeNotificationSocketHandler } from './handlers/notification.handler';
 
 declare module 'socket.io' {
   interface SocketData {
@@ -14,12 +15,18 @@ declare module 'socket.io' {
 
 function attachAuthMiddleware(io: Server): void {
   io.use((socket, next) => {
-    let token: string = (socket.handshake.auth?.token as string) || '';
+    let token: string = (socket.handshake.headers?.token as string) || '';
     // console.log('Received socket connection with token:', token);
 
     if (!token) {
       token = (socket.handshake.query?.token as string) || '';
       // console.log('Checked query params, token:', token);
+    }
+
+    if (!token) {
+      token = socket.handshake.headers?.authorization?.split(' ')[1] || '';
+      // console.log('Checked auth payload, token:', token);
+      // req.headers['authorization']?.split(' ')[1]
     }
 
     if (!token) {
@@ -35,7 +42,15 @@ function attachAuthMiddleware(io: Server): void {
       return next(new Error('Unauthorized'));
     }
 
-    const payload = JWTService.verifyJWTForMiddleware(token);
+    let payload;
+    try {
+      payload = JWTService.verifyJWTForMiddleware(token);
+    } catch {
+      logger.warn(
+        `[Socket] Rejected invalid/expired token (socket ${socket.id})`,
+      );
+      return next(new Error('Unauthorized'));
+    }
 
     if (!payload) {
       logger.warn(
@@ -53,6 +68,7 @@ function attachAuthMiddleware(io: Server): void {
 
 export function initSocket(io: Server): SocketService {
   const socketService = new SocketService(io);
+  initializeNotificationSocketHandler(socketService);
 
   attachAuthMiddleware(io);
 
