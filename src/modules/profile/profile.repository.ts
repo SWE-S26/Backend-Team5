@@ -1,6 +1,7 @@
 import User, { IUser } from '../../shared/models/models.user';
 import Settings, { ISettings } from '../../shared/models/models.settings';
 import Following from '../../shared/models/models.following';
+import blockedListSchema from '../../shared/models/models.blocked-list';
 import Track from '../../shared/models/models.track';
 import {
   UpdateProfileRequestBodyDTOType,
@@ -195,5 +196,20 @@ export class ProfileRepository {
       followedCount,
       trackCount,
     };
+  }
+
+  async isFollowed(myId: string, followedId: string): Promise<boolean> {
+    const followedDoc = await Following.findOne({
+      userId: myId,
+      followed: followedId,
+    }).lean();
+    return !!followedDoc;
+  }
+
+  async isBlocked(myId: string, blockedId: string): Promise<boolean> {
+    const blockedDoc = await blockedListSchema
+      .findOne({ blockerId: myId, blockedIds: blockedId })
+      .lean();
+    return !!blockedDoc;
   }
 }
