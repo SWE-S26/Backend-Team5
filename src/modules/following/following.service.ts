@@ -158,6 +158,59 @@ export class FollowingService {
     return followed;
   }
 
+  async getSuggestedUsers(
+    id: string,
+    offset = 0,
+    limit = 20,
+  ): Promise<UserSummaryDTOType[]> {
+    const existingUser = await this.repository.getUserById(id);
+    if (!existingUser) throw NotFoundError('User not found');
+
+    const suggestedUsersIds: Types.ObjectId[] =
+      await this.repository.getSuggestedUserIds(id);
+
+    const followedId: Types.ObjectId[] = await this.repository.getUsersIds(
+      id,
+      'followed',
+    );
+
+    const blockedByMeIds: Types.ObjectId[] =
+      await this.repository.getBlockedIds(id);
+
+    const blockedMeIds: Types.ObjectId[] =
+      await this.repository.getUsersWhoBlockedMe(id);
+
+    const followedSet = new Set(followedId.map((id) => id.toString()));
+    const blockedByMeSet = new Set(blockedByMeIds.map((id) => id.toString()));
+    const blockedMeSet = new Set(blockedMeIds.map((id) => id.toString()));
+
+    const filtered = suggestedUsersIds.filter((userId) => {
+      const idStr = userId.toString();
+      return (
+        !followedSet.has(idStr) &&
+        !blockedByMeSet.has(idStr) &&
+        !blockedMeSet.has(idStr)
+      );
+    });
+
+    const userIds = filtered.slice(offset, offset + limit);
+
+    const users: IUser[] = await this.repository.getUsersWithIds(userIds);
+    const usersStats: Record<string, UserStats> =
+      await this.repository.getUsersStats(userIds);
+
+    const combined = users.map((user) => ({
+      ...user,
+      ...usersStats[user._id.toString()],
+    }));
+
+    const suggested: UserSummaryDTOType[] = combined.map((user) =>
+      FollowingMapper.toUserSummary(user),
+    );
+
+    return suggested;
+  }
+
   async getBlocked(
     id: string,
     offset = 0,

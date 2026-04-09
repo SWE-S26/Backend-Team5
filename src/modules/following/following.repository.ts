@@ -89,23 +89,64 @@ export class FollowingRepository {
   async getUsersIds(
     id: string,
     field: 'followers' | 'followed',
-    offset = 0,
-    limit = 20,
+    offset?: number,
+    limit?: number,
   ): Promise<Types.ObjectId[]> {
+    const projection: any = {};
+
+    if (offset !== undefined && limit !== undefined) {
+      projection[field] = { $slice: [offset, limit] };
+    } else {
+      projection[field] = 1;
+    }
     const followDoc = await Following.findOne(
       { userId: id },
-      { [field]: { $slice: [offset, limit] } },
+      projection,
     ).lean();
     return followDoc?.[field] ?? [];
   }
 
+  async getSuggestedUserIds(id: string): Promise<Types.ObjectId[]> {
+    const followDoc = await Following.findOne(
+      { userId: id },
+      { followed: 1 },
+    ).lean();
+
+    const followedIds = (followDoc?.followed ?? []).slice(0, 30);
+    if (followedIds.length === 0) return [];
+
+    const followedDocs = await Following.find(
+      { userId: { $in: followedIds } },
+      { followed: { $slice: 30 } },
+    ).lean();
+
+    const suggestedUsersIdsSet = new Set<Types.ObjectId>();
+    for (const doc of followedDocs) {
+      for (const suggestedId of doc.followed ?? []) {
+        if (suggestedId.toString() !== id) {
+          suggestedUsersIdsSet.add(suggestedId);
+        }
+      }
+    }
+
+    return Array.from(suggestedUsersIdsSet);
+  }
+
   async getBlockedIds(
     id: string,
-    offset = 0,
-    limit = 20,
+    offset?: number,
+    limit?: number,
   ): Promise<Types.ObjectId[]> {
+    const projection: any = {};
+
+    if (offset !== undefined && limit !== undefined) {
+      projection['blockedIds'] = { $slice: [offset, limit] };
+    } else {
+      projection['blockedIds'] = 1;
+    }
+
     const blockDoc = await blockedListSchema
-      .findOne({ blockerId: id }, { blockedIds: { $slice: [offset, limit] } })
+      .findOne({ blockerId: id }, projection)
       .lean();
     return blockDoc?.blockedIds ?? [];
   }
@@ -157,5 +198,13 @@ export class FollowingRepository {
       .findOne({ blockerId: followedId, blockedIds: userId })
       .lean();
     return !!blockDoc;
+  }
+
+  async getUsersWhoBlockedMe(userId: string): Promise<Types.ObjectId[]> {
+    const docs = await blockedListSchema
+      .find({ blockedIds: userId }, { blockerId: 1 })
+      .lean();
+
+    return docs.map((doc) => doc.blockerId);
   }
 }

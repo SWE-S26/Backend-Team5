@@ -7,6 +7,7 @@ import {
   GetFollowersRequestDTO,
   GetFollowingRequestDTO,
   GetBlockedRequestDTO,
+  GetSuggestedRequestDTO,
 } from './dtos/following.request';
 
 export class FollowingController {
@@ -110,6 +111,21 @@ export class FollowingController {
     );
 
     res.json(followed);
+  }
+
+  async getSuggestedUsers(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(GetSuggestedRequestDTO, req);
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+    const userId = req.userInfo!._id;
+    const offset = validatedRequest.data.query?.offset ?? 0;
+    const limit = validatedRequest.data.query?.limit ?? 20;
+
+    const suggested: UserSummaryDTOType[] =
+      await this.service.getSuggestedUsers(userId, offset, limit);
+
+    res.json(suggested);
   }
 
   async getBlocked(req: Request, res: Response): Promise<void> {
