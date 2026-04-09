@@ -45,4 +45,9 @@ followingRouter.get(
   followingController.getBlocked.bind(followingController),
 );
 
+followingRouter.get(
+  apiVersions.v1 + '/suggested',
+  followingController.getSuggestedUsers.bind(followingController),
+);
+
 export default followingRouter;
