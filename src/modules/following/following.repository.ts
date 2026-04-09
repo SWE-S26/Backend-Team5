@@ -162,8 +162,8 @@ export class FollowingRepository {
     usersIds: Types.ObjectId[],
   ): Promise<Record<string, UserStats>> {
     const followersDocs = await Following.find(
-      { usersId: { $in: usersIds } },
-      { followers: 1 },
+      { userId: { $in: usersIds } },
+      { userId: 1, followers: 1 },
     ).lean();
     const followersMap: Record<string, number> = {};
     followersDocs.forEach((doc) => {
