@@ -508,7 +508,22 @@ export class AuthController {
       const decryptedPendingToken = SecureParams.decrypt(pendingToken);
       const { accessToken, refreshToken } =
         await this.service.verifyGoogleSignInCode(decryptedPendingToken, code);
-      this.sendGoogleTokenResponse(req, res, accessToken, refreshToken);
+
+      if (
+        !validatedRequest.data.query.client ||
+        validatedRequest.data.query.client === 'Android'
+      ) {
+        this.sendGoogleTokenResponse(req, res, accessToken, refreshToken);
+      }
+
+      // FOR THE CROSS !!!!!!!!!!
+      res.json({
+        message: 'Google sign-up completed successfully',
+        data: {
+          refreshToken: refreshToken,
+          accessToken: accessToken,
+        },
+      });
     } catch (err) {
       next(err);
     }
@@ -537,7 +552,22 @@ export class AuthController {
           dateOfBirth,
           gender,
         });
-      this.sendGoogleTokenResponse(req, res, accessToken, refreshToken);
+
+      if (
+        !validatedRequest.data.query.client ||
+        validatedRequest.data.query.client === 'Android'
+      ) {
+        this.sendGoogleTokenResponse(req, res, accessToken, refreshToken);
+      }
+
+      // FOR THE CROSS !!!!!!!!!!
+      res.json({
+        message: 'Google sign-up completed successfully',
+        data: {
+          refreshToken: refreshToken,
+          accessToken: accessToken,
+        },
+      });
     } catch (err) {
       next(err);
     }
@@ -598,6 +628,42 @@ export class AuthController {
       message: 'Login approved successfully',
     });
   };
+
+  private sendGoogleJsonResponse(
+    req: Request,
+    res: Response,
+    accessToken: string,
+    refreshToken: string,
+    payload: GoogleAuthPayload,
+  ): void {
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: this.isProduction,
+      sameSite: 'strict',
+      maxAge: 1000 * 60 * 60 * 1,
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: this.isProduction,
+      sameSite: 'strict',
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+      path: this.refreshTokenPath,
+    });
+
+    let redirectUrl = new URL(`${this.hostUrl}/home`);
+    const activeClient =
+      payload.client ??
+      (typeof req.query.client === 'string' ? req.query.client : '');
+
+    if (activeClient === 'Android') {
+      redirectUrl = new URL(`${this.hostUrl}/cross-callback`);
+      redirectUrl.searchParams.set('accessToken', accessToken);
+      redirectUrl.searchParams.set('refreshToken', refreshToken);
+    }
+
+    return res.redirect(redirectUrl.toString());
+  }
 
   private sendGoogleTokenResponse(
     req: Request,

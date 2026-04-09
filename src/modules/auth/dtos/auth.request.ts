@@ -54,10 +54,12 @@ export const GoogleCallbackRequestDTO = extendedZod.object({
 });
 
 export const GoogleCompleteSignUpRequestDTO = extendedZod.object({
+  query: loginCrossQueryDto,
   body: GoogleCompleteSignUpRequestBodyDTO,
 });
 
 export const GoogleVerifyCodeRequestDTO = extendedZod.object({
+  query: loginCrossQueryDto,
   body: GoogleVerifyCodeRequestBodyDTO,
 });
 
