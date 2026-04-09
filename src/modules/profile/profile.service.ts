@@ -29,15 +29,30 @@ const isDefaultImage = (publicId: string) => {
 export class ProfileService {
   constructor(private readonly repository: ProfileRepository) {}
 
-  async getProfileById(id: string): Promise<ProfileResponseDTOType | null> {
+  async getProfileById(
+    id: string,
+    myId: string,
+  ): Promise<ProfileResponseDTOType | null> {
     const user: IUser | null = await this.repository.getProfileById(id);
     if (!user) throw NotFoundError('User not found');
 
     const userStats: UserStats = await this.repository.getUserStats(id);
 
+    let isFollowed = false;
+    let isBlocked = false;
+    let amIBlocked = false;
+    if (myId !== id) {
+      isFollowed = await this.repository.isFollowed(myId, id);
+      isBlocked = await this.repository.isBlocked(myId, id);
+      amIBlocked = await this.repository.isBlocked(id, myId);
+    }
+
     const combined = {
       ...user,
       ...userStats,
+      isFollowed,
+      isBlocked,
+      amIBlocked,
     };
 
     return ProfileMapper.toResponse(combined);
@@ -221,17 +236,30 @@ export class ProfileService {
 
   async getProfileByProfileLink(
     username: string,
+    myId: string,
   ): Promise<ProfileResponseDTOType | null> {
     const user = await this.repository.getProfileByProfileLink(username);
     if (!user) throw NotFoundError('User not found');
 
-    const userStats: UserStats = await this.repository.getUserStats(
-      user._id.toString(),
-    );
+    const strId = user._id.toString();
+
+    const userStats: UserStats = await this.repository.getUserStats(strId);
+
+    let isFollowed = false;
+    let isBlocked = false;
+    let amIBlocked = false;
+    if (myId !== strId) {
+      isFollowed = await this.repository.isFollowed(myId, strId);
+      isBlocked = await this.repository.isBlocked(myId, strId);
+      amIBlocked = await this.repository.isBlocked(strId, myId);
+    }
 
     const combined = {
       ...user,
       ...userStats,
+      isFollowed,
+      isBlocked,
+      amIBlocked,
     };
 
     return ProfileMapper.toResponse(combined);

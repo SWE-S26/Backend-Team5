@@ -23,6 +23,9 @@ export const ProfileResponseDTO = extendedZod.object({
   followersCount: extendedZod.number().optional(),
   followedCount: extendedZod.number().optional(),
   trackCount: extendedZod.number().optional(),
+  isFollowed: extendedZod.boolean().optional(),
+  isBlocked: extendedZod.boolean().optional(),
+  amIBlocked: extendedZod.boolean().optional(),
 });
 
 export type ProfileResponseDTOType = z.infer<typeof ProfileResponseDTO>;

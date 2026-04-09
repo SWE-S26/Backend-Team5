@@ -54,6 +54,12 @@ Profile:
       type: integer
     trackCount:
       type: integer
+    isBlocked: 
+      type: boolean
+    isFollowed: 
+      type: boolean
+    blockingMe: 
+      type: boolean      
 
 ProfileUpdate:
   type: object
