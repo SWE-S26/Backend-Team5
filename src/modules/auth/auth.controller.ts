@@ -511,7 +511,7 @@ export class AuthController {
 
       if (
         !validatedRequest.data.query.client ||
-        validatedRequest.data.query.client === 'Android'
+        validatedRequest.data.query.client !== 'Android'
       ) {
         this.sendGoogleTokenResponse(req, res, accessToken, refreshToken);
       }
@@ -555,7 +555,7 @@ export class AuthController {
 
       if (
         !validatedRequest.data.query.client ||
-        validatedRequest.data.query.client === 'Android'
+        validatedRequest.data.query.client !== 'Android'
       ) {
         this.sendGoogleTokenResponse(req, res, accessToken, refreshToken);
       }
