@@ -195,4 +195,15 @@ export class TracksService {
     const postedTracks = await this.tracksRepository.getPostedTracks(userId);
     return TracksMapper.toTrackResponseList(postedTracks);
   }
+
+  async addToUserHistory(userId: string, trackId: string) {
+    const searchTrack = await this.tracksRepository.findById(trackId);
+
+    if (!searchTrack) {
+      throw NotFoundError('Track Not Found');
+    }
+
+    await this.tracksRepository.addToHistory(userId, trackId);
+    return true;
+  }
 }

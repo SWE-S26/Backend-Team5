@@ -73,3 +73,44 @@
 
       '500':
         $ref: '#/components/responses/ServerError'
+
+/api/tracks/v1/played/{id}:
+  post:
+    tags:
+      - Track Management
+    summary: Add track to user history
+    operationId: addTrackToHistory
+    security:
+      - bearerAuth: []
+
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: bbbbbbbbbbbbbbbbbbbbbb03
+
+    responses:
+      '200':
+        description: Track added to history successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track Added To History Successfully
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'

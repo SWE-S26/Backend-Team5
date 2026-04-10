@@ -14,6 +14,10 @@ export const DeleteTrackRequestDTO = extendedZod.object({
   params: TracksIdParamDTO,
 });
 
+export const AddTrackToUserHistoryRequestDTO = extendedZod.object({
+  params: TracksIdParamDTO,
+});
+
 export const GetTrackByIdRequestDTO = extendedZod.object({
   params: TracksIdParamDTO,
 });

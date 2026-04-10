@@ -65,5 +65,9 @@ tracksPrivateRouter.post(
   (req, res) => tracksController.uploadAudioTrack(req, res),
 );
 
+tracksPrivateRouter.post(apiVersions.v1 + '/played/:id', (req, res) =>
+  tracksController.addTrackToUserHistory(req, res),
+);
+
 export { tracksPublicRouter };
 export default tracksPrivateRouter;

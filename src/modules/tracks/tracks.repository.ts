@@ -1,10 +1,12 @@
 import Track, { ITrack } from '../../shared/models/models.track';
+import History, { IHistory } from '../../shared/models/models.history';
 import { NotFoundError } from '../../shared/errors/responseErrors';
 import User, { IUser } from '../../shared/models/models.user';
 import { PublitioUploadResult } from '../../shared/abstractions/publitio';
 import { CreateTrackDTO, UpdateTrackDTO } from './dtos/tracks.request.body';
 import AdvancedAudioDetails from '../../shared/models/models.advanced-audio-details';
 import { TrackInput } from './dtos/tracks.request.body';
+import { Types } from 'mongoose';
 
 type PaginationList = {
   tracks: ITrack[];
@@ -138,5 +140,22 @@ export class TracksRepository {
     });
     // returns null if user doesnt have any liked tracks
     return postedTracks;
+  }
+
+  async addToHistory(userId: string, trackId: string) {
+    let userHistory = await History.findOne({ userId: userId });
+
+    if (!userHistory) {
+      userHistory = await History.create({
+        userId: userId,
+        historyTracks: [{ trackId, timestamp: new Date() }],
+      });
+    } else {
+      userHistory.historyTracks.push({
+        trackId: new Types.ObjectId(trackId),
+        timestamp: new Date(),
+      });
+      await userHistory.save();
+    }
   }
 }

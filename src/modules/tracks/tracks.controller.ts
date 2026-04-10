@@ -11,6 +11,7 @@ import {
   UpdateTrackRequestDTO,
   GetLikedTracksByUserIdRequestDTO,
   GetPostedTracksByUserIdRequestDTO,
+  AddTrackToUserHistoryRequestDTO,
 } from './dtos/tracks.request';
 import logger from '../../shared/logger/logger';
 
@@ -260,5 +261,28 @@ export class TracksController {
       message: 'User Posted Tracks Retrieved Successfully',
       data: postedTracks,
     });
+  }
+
+  async addTrackToUserHistory(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(AddTrackToUserHistoryRequestDTO, req);
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const userInfo = this.getUserInfo(req);
+    const userId = userInfo.userId;
+    const trackId = validatedRequest.data.params.id;
+    const result = await this.service.addToUserHistory(userId, trackId);
+    if (result) {
+      res.status(200);
+      res.json({
+        message: 'Added To User History',
+      });
+    } else {
+      res.status(500);
+      res.json({
+        message: 'Internal Server Error',
+      });
+    }
   }
 }
