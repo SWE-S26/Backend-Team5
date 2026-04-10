@@ -62,21 +62,11 @@ export class TracksService {
     return isDeleted;
   }
 
-  async getTrackById(
-    trackId: string,
-    userId: string,
-  ): Promise<TrackResponseDTO | null> {
+  async getTrackById(trackId: string): Promise<TrackResponseDTO | null> {
     const searchTrack = await this.tracksRepository.findById(trackId);
 
     // if not found
     if (!searchTrack) {
-      throw NotFoundError("Track Doesn't Exists");
-    }
-
-    const posterId = (searchTrack.posterId._id as Types.ObjectId).toString();
-
-    // track is private and the user searching for him isnt the owner
-    if (searchTrack.basicInfo.isPrivate && posterId != userId) {
       throw NotFoundError("Track Doesn't Exists");
     }
 
