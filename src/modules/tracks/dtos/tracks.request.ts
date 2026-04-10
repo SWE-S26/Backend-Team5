@@ -1,5 +1,9 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
-import { TracksIdParamDTO, PermaLinkParamDTO } from './tracks.request.params';
+import {
+  TracksIdParamDTO,
+  PermaLinkParamDTO,
+  UserIdParamDTO,
+} from './tracks.request.params';
 import { ListTrackssQueryDto } from './tracks.request.query';
 import {
   CreateTrackRequestBodyDTO,
@@ -12,6 +16,10 @@ export const DeleteTrackRequestDTO = extendedZod.object({
 
 export const GetTrackByIdRequestDTO = extendedZod.object({
   params: TracksIdParamDTO,
+});
+
+export const GetLikedTracksByUserIdRequestDTO = extendedZod.object({
+  params: UserIdParamDTO,
 });
 
 export const IncrementTrackListenCountRequestDTO = extendedZod.object({

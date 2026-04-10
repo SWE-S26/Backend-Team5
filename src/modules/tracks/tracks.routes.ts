@@ -6,40 +6,45 @@ import multer from 'multer';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-const tracksRouter = Router();
+const tracksPrivateRouter = Router();
+const tracksPublicRouter = Router();
 const tracksController = new TracksController();
 
-// ================= GET ===================
+// ========================= PUBLIC =========================
 
-tracksRouter.get(apiVersions.v1 + '/liked/:id', (req, res) =>
+tracksPublicRouter.get(apiVersions.v1 + '/liked/:id', (req, res) =>
   tracksController.getUserLikedTracks(req, res),
 );
 
-tracksRouter.get(apiVersions.v1 + '/:id', (req, res) =>
+tracksPublicRouter.get(apiVersions.v1 + '/:id', (req, res) =>
   tracksController.getTrackById(req, res),
 );
 
-tracksRouter.get(apiVersions.v1 + '/permalink/:permalink', (req, res) =>
+tracksPublicRouter.get(apiVersions.v1 + '/permalink/:permalink', (req, res) =>
   tracksController.getTrackByPermalink(req, res),
 );
 
-tracksRouter.get(apiVersions.v1, (req, res) =>
+tracksPublicRouter.get(apiVersions.v1, (req, res) =>
   tracksController.getPaginatedListOfTracks(req, res),
 );
 
+// ======================== PRIVATE =========================
+
+// ================= GET ===================
+
 // ================= DELETE ===================
 
-tracksRouter.delete(apiVersions.v1 + '/:id', (req, res) =>
+tracksPrivateRouter.delete(apiVersions.v1 + '/:id', (req, res) =>
   tracksController.deleteTrackById(req, res),
 );
 
 // ================= PATCH ===================
 
-tracksRouter.patch(apiVersions.v1 + '/listen/:id', (req, res) =>
+tracksPrivateRouter.patch(apiVersions.v1 + '/listen/:id', (req, res) =>
   tracksController.incrementTrackNumPlays(req, res),
 );
 
-tracksRouter.patch(
+tracksPrivateRouter.patch(
   apiVersions.v1,
   upload.fields([{ name: 'image', maxCount: 1 }]),
   (req, res) => tracksController.updateTrackInfo(req, res),
@@ -47,7 +52,7 @@ tracksRouter.patch(
 
 // ================= POST ===================
 
-tracksRouter.post(
+tracksPrivateRouter.post(
   apiVersions.v1,
   upload.fields([
     { name: 'audio', maxCount: 1 },
@@ -56,4 +61,5 @@ tracksRouter.post(
   (req, res) => tracksController.uploadAudioTrack(req, res),
 );
 
-export default tracksRouter;
+export { tracksPublicRouter };
+export default tracksPrivateRouter;
