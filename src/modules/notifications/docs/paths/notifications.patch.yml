@@ -1,6 +1,6 @@
 # PATCH paths for notifications module
 
-/api/notifications/read-all:
+/api/notifications/v1/read-all:
   patch:
     tags:
       - Notifications
@@ -19,7 +19,7 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/notifications/{notificationId}/read:
+/api/notifications/v1/{notificationId}/read:
   patch:
     tags:
       - Notifications

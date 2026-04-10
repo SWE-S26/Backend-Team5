@@ -1,6 +1,6 @@
 # GET paths for notifications module
 
-/api/notifications:
+/api/notifications/v1:
   get:
     tags:
       - Notifications
@@ -23,7 +23,7 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/notifications/unread-count:
+/api/notifications/v1/unread-count:
   get:
     tags:
       - Notifications
@@ -42,7 +42,7 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/notifications/{notificationId}:
+/api/notifications/v1/{notificationId}:
   get:
     tags:
       - Notifications
