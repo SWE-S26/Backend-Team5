@@ -1,20 +1,14 @@
+/// <reference types="jest" />
 import { Request, Response } from 'express';
 import { EngagementController } from '../../../src/modules/engagement/engagement.controller';
 import { EngagementService } from '../../../src/modules/engagement/engagement.service';
 
 jest.mock('../../../src/modules/engagement/engagement.service');
 
-interface AuthenticatedRequest extends Request {
-  userInfo?: {
-    _id: string;
-    role?: string;
-  };
-}
-
 describe('EngagementController', () => {
   let controller: EngagementController;
-  let mockReq: Partial<AuthenticatedRequest>;
-  let mockRes: Partial<Response>;
+  let mockReq: any;
+  let mockRes: any;
 
   beforeEach(() => {
     controller = new EngagementController(new EngagementService({} as any));
@@ -513,7 +507,9 @@ describe('EngagementController', () => {
         controller.postTrackComment(mockReq as Request, mockRes as Response),
       ).rejects.toThrow();
 
-      expect(EngagementService.prototype.postTrackComment).not.toHaveBeenCalled();
+      expect(
+        EngagementService.prototype.postTrackComment,
+      ).not.toHaveBeenCalled();
     });
 
     it('should throw error when timestamp is decimal and not call service', async () => {
@@ -528,7 +524,9 @@ describe('EngagementController', () => {
         controller.postTrackComment(mockReq as Request, mockRes as Response),
       ).rejects.toThrow();
 
-      expect(EngagementService.prototype.postTrackComment).not.toHaveBeenCalled();
+      expect(
+        EngagementService.prototype.postTrackComment,
+      ).not.toHaveBeenCalled();
     });
   });
 
