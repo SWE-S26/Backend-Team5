@@ -96,10 +96,9 @@ export class TracksController {
       throw validatedRequest.error;
     }
 
-    const userInfo = this.getUserInfo(req);
     const trackId = validatedRequest.data.params.id;
 
-    const trackInfo = await this.service.getTrackById(trackId, userInfo.userId);
+    const trackInfo = await this.service.getTrackById(trackId);
     res.json({
       message: 'Track Info Retrieved Successfully',
       data: trackInfo,

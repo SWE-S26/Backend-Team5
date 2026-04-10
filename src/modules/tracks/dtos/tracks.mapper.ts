@@ -54,6 +54,7 @@ export class TracksMapper {
       numLikes: track.numOfLikes,
       numPlays: track.numOfPlays,
       numReposts: track.numberOfReposts,
+      numComments: track.comments.length,
       releaseDate: track.createdAt,
     };
   }

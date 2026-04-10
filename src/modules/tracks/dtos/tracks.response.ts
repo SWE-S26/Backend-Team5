@@ -23,6 +23,7 @@ export const TrackResponse = extendedZod.object({
   numLikes: extendedZod.number(),
   numPlays: extendedZod.number(),
   numReposts: extendedZod.number(),
+  numComments: extendedZod.number(),
   releaseDate: extendedZod.date(),
 });
 
