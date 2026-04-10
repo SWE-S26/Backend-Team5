@@ -28,6 +28,10 @@ tracksPublicRouter.get(apiVersions.v1, (req, res) =>
   tracksController.getPaginatedListOfTracks(req, res),
 );
 
+tracksPublicRouter.get(apiVersions.v1 + '/posted/:id', (req, res) =>
+  tracksController.getUserPostedTracks(req, res),
+);
+
 // ======================== PRIVATE =========================
 
 // ================= GET ===================

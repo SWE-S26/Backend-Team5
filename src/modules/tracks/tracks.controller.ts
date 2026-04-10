@@ -10,6 +10,7 @@ import {
   PaginationRequestDTO,
   UpdateTrackRequestDTO,
   GetLikedTracksByUserIdRequestDTO,
+  GetPostedTracksByUserIdRequestDTO,
 } from './dtos/tracks.request';
 import logger from '../../shared/logger/logger';
 
@@ -239,6 +240,25 @@ export class TracksController {
     res.json({
       message: 'Track Info Updated Successfully',
       data: updatedTrack,
+    });
+  }
+
+  async getUserPostedTracks(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(
+      GetPostedTracksByUserIdRequestDTO,
+      req,
+    );
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const userId = validatedRequest.data.params.id;
+    const postedTracks = await this.service.getUserPostedTracks(userId);
+
+    res.status(200);
+    res.json({
+      message: 'User Posted Tracks Retrieved Successfully',
+      data: postedTracks,
     });
   }
 }

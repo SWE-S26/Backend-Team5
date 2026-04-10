@@ -124,4 +124,19 @@ export class TracksRepository {
     });
     return updatedTrack as ITrack;
   }
+
+  async getPostedTracks(userId: string): Promise<ITrack[]> {
+    const searchUser = await User.findById<IUser>(userId);
+    if (!searchUser) {
+      throw NotFoundError('User Not Found');
+    }
+
+    // run queries in paralled insteaad of a for loop
+    const postedTracks = await Track.find({
+      posterId: userId,
+      'basicInfo.isPrivate': false,
+    });
+    // returns null if user doesnt have any liked tracks
+    return postedTracks;
+  }
 }

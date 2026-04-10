@@ -22,6 +22,10 @@ export const GetLikedTracksByUserIdRequestDTO = extendedZod.object({
   params: UserIdParamDTO,
 });
 
+export const GetPostedTracksByUserIdRequestDTO = extendedZod.object({
+  params: UserIdParamDTO,
+});
+
 export const IncrementTrackListenCountRequestDTO = extendedZod.object({
   params: TracksIdParamDTO,
 });

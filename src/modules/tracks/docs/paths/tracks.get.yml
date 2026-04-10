@@ -359,3 +359,86 @@
 
       '500':
         $ref: '#/components/responses/ServerError'
+
+/api/public/tracks/v1/posted/{id}:
+  get:
+    tags:
+      - Track Management
+    summary: Get user posted tracks
+    operationId: getUserPostedTracks
+
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: bbbbbbbbbbbbbbbbbbbbbb03
+
+    responses:
+      '200':
+        description: Posted tracks retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track Info Retrieved Successfully
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                      basicInfo:
+                        type: object
+                        properties:
+                          title:
+                            type: string
+                          permalink:
+                            type: string
+                          mainArtists:
+                            type: array
+                            items:
+                              type: string
+                          genre:
+                            type: string
+                          tags:
+                            type: array
+                            items:
+                              type: string
+                          isPrivate:
+                            type: boolean
+                      image:
+                        type: object
+                        properties:
+                          imgLink:
+                            type: string
+                          publicId:
+                            type: string
+                      numLikes:
+                        type: integer
+                      numPlays:
+                        type: integer
+                      numReposts:
+                        type: integer
+                      numComments:
+                        type: integer
+                      releaseDate:
+                        type: string
+                        format: date-time
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
