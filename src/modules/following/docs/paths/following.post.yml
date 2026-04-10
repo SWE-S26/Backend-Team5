@@ -18,7 +18,7 @@ api/social/v1/follow/{userId}:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserSummery'
+              $ref: '#/components/schemas/UserSummary'
       '400':
         description: Invalid user ID
         content:
@@ -77,7 +77,7 @@ api/social/v1/unfollow/{userId}:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserSummery'
+              $ref: '#/components/schemas/UserSummary'
       '400':
         description: Invalid user ID
         content:
@@ -136,7 +136,7 @@ api/social/v1/block/{userId}:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserSummery'
+              $ref: '#/components/schemas/UserSummary'
       '400':
         description: Invalid user ID
         content:
@@ -195,7 +195,7 @@ api/social/v1/unblock/{userId}:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserSummery'
+              $ref: '#/components/schemas/UserSummary'
       '400':
         description: Invalid user ID
         content:
