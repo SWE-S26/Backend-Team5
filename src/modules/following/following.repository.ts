@@ -186,7 +186,7 @@ export class FollowingRepository {
   async getUsersWithIds(usersIds: Types.ObjectId[]): Promise<IUser[]> {
     return await User.find(
       { _id: { $in: usersIds } },
-      { diaplayName: 1, profileImg: 1 },
+      { displayName: 1, profileImg: 1 },
     ).lean();
   }
 
