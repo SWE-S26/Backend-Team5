@@ -5,6 +5,7 @@ import {
 } from '../../modules/notifications/notifications.repository';
 import { NotificationsService } from '../../modules/notifications/notifications.service';
 import logger from '../../shared/logger/logger';
+import Settings from '../../shared/models/models.settings';
 import { SocketEvents } from '../socket.events';
 import { SocketService } from '../socket.service';
 
@@ -16,6 +17,14 @@ type NotificationActivityType =
   | 'new_track';
 
 type NotificationTargetType = 'track' | 'comment' | 'user';
+
+type SettingsNotificationMode = 'email' | 'devices' | 'both' | 'off';
+type DevicePreferenceField =
+  | 'newFollower'
+  | 'repostOfYourPost'
+  | 'newPostByFollowedUser'
+  | 'likesAndPlaysOnYourPost'
+  | 'commentOnYourPost';
 
 export type NotificationReceivePayload = {
   notificationId: string;
@@ -102,15 +111,23 @@ export class NotificationSocketHandler {
         trackId,
       );
 
-    return notifications.map((notification) =>
-      this.emitNotification(notification),
+    return Promise.all(
+      notifications.map((notification) => this.emitNotification(notification)),
     );
   }
 
-  private emitNotification(
+  private async emitNotification(
     notification: NotificationRecord,
-  ): NotificationReceivePayload {
+  ): Promise<NotificationReceivePayload> {
     const payload = this.toReceivePayload(notification);
+    const shouldSend = await this.shouldSendToDevice(notification);
+
+    if (!shouldSend) {
+      logger.info(
+        `[notification:receive] recipient ${notification.to.toString()} disabled device notifications for ${payload.activityType}`,
+      );
+      return payload;
+    }
 
     const delivered = this.socketService.sendToUser(
       notification.to.toString(),
@@ -125,6 +142,44 @@ export class NotificationSocketHandler {
     }
 
     return payload;
+  }
+
+  private async shouldSendToDevice(
+    notification: NotificationRecord,
+  ): Promise<boolean> {
+    const preferenceField = this.toPreferenceField(notification.type.type);
+
+    const settings = await Settings.findOne({
+      userId: notification.to,
+    })
+      .select(`notifications.${preferenceField}`)
+      .lean<{
+        notifications?: Partial<
+          Record<DevicePreferenceField, SettingsNotificationMode>
+        >;
+      } | null>();
+
+    const preference = settings?.notifications?.[preferenceField] ?? 'devices';
+    return preference === 'devices' || preference === 'both';
+  }
+
+  private toPreferenceField(
+    type: NotificationRecord['type']['type'],
+  ): DevicePreferenceField {
+    switch (type) {
+      case 'like':
+        return 'likesAndPlaysOnYourPost';
+      case 'comment':
+        return 'commentOnYourPost';
+      case 'repost':
+        return 'repostOfYourPost';
+      case 'follow':
+        return 'newFollower';
+      case 'newTrack':
+        return 'newPostByFollowedUser';
+      default:
+        return 'likesAndPlaysOnYourPost';
+    }
   }
 
   private toReceivePayload(

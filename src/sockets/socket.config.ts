@@ -88,7 +88,6 @@ export function initSocket(io: Server): SocketService {
 
     registerTestHandlers(socket, socketService);
     // future: registerChatHandlers(socket, socketService);
-    // future: registerNotificationHandlers(socket, socketService);
 
     socket.on('disconnect', (reason) => {
       socketService.unregisterSocket(socket.id);

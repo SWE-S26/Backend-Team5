@@ -35,7 +35,7 @@ export class NotificationsController {
     res.json(result);
   }
 
-  async findAll(req: Request, res: Response): Promise<void> {
+  async getNotifications(req: Request, res: Response): Promise<void> {
     const parsed = parseRequest(GetNotificationsRequestDTO, req);
 
     if (!parsed.success) {
@@ -61,7 +61,7 @@ export class NotificationsController {
     );
   }
 
-  async findOne(req: Request, res: Response): Promise<void> {
+  async getNotificationById(req: Request, res: Response): Promise<void> {
     const parsed = parseRequest(GetNotificationByIdRequestDTO, req);
 
     if (!parsed.success) {
@@ -77,25 +77,5 @@ export class NotificationsController {
     );
 
     res.json(NotificationsMapper.toResponse(notification));
-  }
-
-  async create(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
-
-  async replace(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
-
-  async update(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
-
-  async remove(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
   }
 }
