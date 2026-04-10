@@ -9,24 +9,34 @@ const upload = multer({ storage: multer.memoryStorage() });
 const tracksRouter = Router();
 const tracksController = new TracksController();
 
-tracksRouter.get(apiVersions.v1 + '/liked', (req, res) =>
-  tracksController.getUserLikedTracks(req, res),
-);
+// ================= GET ===================
 
-tracksRouter.delete(apiVersions.v1 + '/:id', (req, res) =>
-  tracksController.deleteTrackById(req, res),
+tracksRouter.get(apiVersions.v1 + '/liked/:id', (req, res) =>
+  tracksController.getUserLikedTracks(req, res),
 );
 
 tracksRouter.get(apiVersions.v1 + '/:id', (req, res) =>
   tracksController.getTrackById(req, res),
 );
 
-tracksRouter.put(apiVersions.v1 + '/listen/:id', (req, res) =>
-  tracksController.incrementTrackNumPlays(req, res),
-);
-
 tracksRouter.get(apiVersions.v1 + '/permalink/:permalink', (req, res) =>
   tracksController.getTrackByPermalink(req, res),
+);
+
+tracksRouter.get(apiVersions.v1, (req, res) =>
+  tracksController.getPaginatedListOfTracks(req, res),
+);
+
+// ================= DELETE ===================
+
+tracksRouter.delete(apiVersions.v1 + '/:id', (req, res) =>
+  tracksController.deleteTrackById(req, res),
+);
+
+// ================= PATCH ===================
+
+tracksRouter.patch(apiVersions.v1 + '/listen/:id', (req, res) =>
+  tracksController.incrementTrackNumPlays(req, res),
 );
 
 tracksRouter.patch(
@@ -35,9 +45,7 @@ tracksRouter.patch(
   (req, res) => tracksController.updateTrackInfo(req, res),
 );
 
-tracksRouter.get(apiVersions.v1, (req, res) =>
-  tracksController.getPaginatedListOfTracks(req, res),
-);
+// ================= POST ===================
 
 tracksRouter.post(
   apiVersions.v1,

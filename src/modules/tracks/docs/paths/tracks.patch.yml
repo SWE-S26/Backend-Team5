@@ -1,17 +1,14 @@
-# PATCH
-/api/tracks/id/{trackId}:
+/api/tracks/v1/:
   patch:
     tags:
       - Track Management
-    summary: Update track file by audio ID
-    description: Updates the track with the provided audio ID using the uploaded file.
-    parameters:
-      - name: trackId
-        in: path
-        required: true
-        description: The ID of the audio resource
-        schema:
-          $ref: '#/components/schemas/Id'
+    summary: Update track (metadata and/or media)
+    description: >
+      Updates track metadata and optionally replaces the audio file or cover image.
+      All fields are optional. Only provided fields will be updated.
+
+    operationId: updateTrackById
+
     requestBody:
       required: true
       content:
@@ -19,10 +16,41 @@
           schema:
             type: object
             properties:
-              file:
+
+              image:
                 type: string
                 format: binary
-                description: The audio file to upload
+                description: Optional cover image replacement
+
+              id:
+                type: string
+                description: ID of the track to update
+                example: 69d81e7846eff3dce7069b08
+
+              basicInfo:
+                type: string
+                description: |
+                  Stringified JSON. Example:
+                  {"title":"New Track Title","permalink":"new-track-title","mainArtists":["Artist 1"],"genre":"Hip-Hop","tags":["rap"],"description":"","isPrivate":false,"caption":""}
+
+              permissions:
+                type: string
+                description: |
+                  Stringified JSON. Example:
+                  {"enableDirectDownload":true,"offlineListening":true,"includeInRssFeed":true,"displayedEmbedCode":true,"enableAppPlayback":true}
+
+              license:
+                type: string
+                description: |
+                  Stringified JSON. Example:
+                  {"type":"allRightsReserved","attribution":false,"nonCommercial":false,"noDerivativeWorks":false,"shareAlike":false}
+
+              advanced:
+                type: string
+                description: |
+                  Stringified JSON. Example:
+                  {"buyLink":"https://example.com/buy","recordLabel":"Label","releaseDate":"2026-01-01T00:00:00Z","publisher":"Publisher","ISRC":"USRC17607839","explicitContent":false,"pLine":"2026 Label","audioClipStart":0,"audioClipEnd":30,"composer":"Composer","ISWC":"T-123.456.789-0","albumTitle":"Album"}
+                  
     responses:
       '200':
         description: Track updated successfully
@@ -33,12 +61,109 @@
               properties:
                 message:
                   type: string
-                  example: updated successfully
+                  example: Track Info Updated Successfully
+                data:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                      example: 69d81e7846eff3dce7069b08
+                    basicInfo:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                        permalink:
+                          type: string
+                        mainArtists:
+                          type: array
+                          items:
+                            type: string
+                        genre:
+                          type: string
+                        tags:
+                          type: array
+                          items:
+                            type: string
+                        description:
+                          type: string
+                        isPrivate:
+                          type: boolean
+                    audio:
+                      type: object
+                      properties:
+                        audioLink:
+                          type: string
+                        id:
+                          type: string
+                    image:
+                      type: object
+                      properties:
+                        imgLink:
+                          type: string
+                        publicId:
+                          type: string
+                    numLikes:
+                      type: integer
+                    numPlays:
+                      type: integer
+                    numReposts:
+                      type: integer
+                    releaseDate:
+                      type: string
+                      format: date-time
+
       '400':
         $ref: '#/components/responses/InvalidParameters'
+
       '401':
         $ref: '#/components/responses/Unauthorized'
+
+      '403':
+        $ref: '#/components/responses/Forbidden'
+
       '404':
         $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+
+/api/tracks/v1/listen/{id}:
+  patch:
+    tags:
+      - Track Management
+    summary: Increment track play count
+    operationId: incrementTrackNumPlays
+
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 69d81e7846eff3dce7069b08
+
+    responses:
+      '200':
+        description: Play count updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Number of Plays Updated Successfully
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
       '500':
         $ref: '#/components/responses/ServerError'
