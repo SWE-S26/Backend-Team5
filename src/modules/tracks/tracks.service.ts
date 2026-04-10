@@ -190,4 +190,9 @@ export class TracksService {
     );
     return TracksMapper.toTrackResponse(updatedTrack);
   }
+
+  async getUserPostedTracks(userId: string) {
+    const postedTracks = await this.tracksRepository.getPostedTracks(userId);
+    return TracksMapper.toTrackResponseList(postedTracks);
+  }
 }
