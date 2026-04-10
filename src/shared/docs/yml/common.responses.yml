@@ -1,6 +1,6 @@
 # 400 Bad Request
 BadRequest:
-  description: Bad request due to invalid parameters or payload
+  description: The request could not be processed due to invalid syntax, malformed JSON, missing required fields, or invalid parameter values.
   content:
     application/json:
       schema:
@@ -8,7 +8,7 @@ BadRequest:
         properties:
           message:
             type: string
-            example: 'WHAT DID YOU DO!!!!?!?!?!??'
+            example: Invalid request. Please check your parameters and request body.
             
 InvalidParameters:
   description: A required parameter is missing or payload is invalid

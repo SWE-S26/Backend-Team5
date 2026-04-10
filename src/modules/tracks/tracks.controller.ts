@@ -76,7 +76,7 @@ export class TracksController {
       userInfo.userRole,
     );
     if (isDeleted) {
-      res.statusCode = 204;
+      res.statusCode = 200;
       res.json({
         message: 'Track Deleted Sucessfully',
       });
