@@ -32,8 +32,25 @@ export class TracksMapper {
         comments: [] as Types.ObjectId[],
         permissions: track.permissions,
         license: track.license,
+        composer: track.advanced.composer ?? '',
+        releaseTitle: track.advanced.releaseTitle ?? '',
+        hidden: false,
       },
-      advanced: track.advanced,
+      advanced: {
+        buyLink: track.advanced.buyLink ?? '',
+        recordLabel: track.advanced.recordLabel ?? '',
+        releaseDate: track.advanced.releaseDate ?? '',
+        publisher: track.advanced.publisher ?? '',
+        isrc: track.advanced.ISRC ?? '',
+        iswc: track.advanced.ISWC ?? '',
+        explicitContent: track.advanced.explicitContent,
+        pLine: track.advanced.pLine ?? '',
+        audioClip: {
+          start: track.advanced.audioClipStart ?? 0,
+          end: track.advanced.audioClipEnd ?? 0,
+        },
+        albumTitle: track.advanced.albumTitle ?? '',
+      },
     };
   }
 
