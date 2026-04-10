@@ -1,25 +1,14 @@
 import { PlaybackRepository } from './playback.repository';
+import { TracksMapper } from '../tracks/dtos/tracks.mapper';
 
 export class PlaybackService {
-  constructor(private readonly repository: PlaybackRepository) {}
-
-  async findAll(): Promise<any[]> {
-    return this.repository.findAll();
+  private readonly repository: PlaybackRepository;
+  constructor() {
+    this.repository = new PlaybackRepository();
   }
 
-  async findById(id: string): Promise<any | null> {
-    return this.repository.findById(id);
-  }
-
-  async create(data: any): Promise<any> {
-    return this.repository.create(data);
-  }
-
-  async update(id: string, data: any): Promise<any | null> {
-    return this.repository.update(id, data);
-  }
-
-  async delete(id: string): Promise<boolean> {
-    return this.repository.delete(id);
+  async getUserHistoryTracks(userId: string): Promise<any[]> {
+    const tracks = await this.repository.getUserHistoryTracks(userId);
+    return TracksMapper.toTrackResponseList(tracks);
   }
 }
