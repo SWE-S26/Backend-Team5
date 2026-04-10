@@ -3,6 +3,8 @@ import extendedZod from '../../../shared/docs/dtoDocumenter';
 
 export const TracksIdParamDTO = idParamDto.extend({});
 
+export const UserIdParamDTO = idParamDto.extend({});
+
 export const PermaLinkParamDTO = extendedZod.object({
   permalink: extendedZod
     .string()

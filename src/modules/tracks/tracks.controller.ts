@@ -9,6 +9,7 @@ import {
   PermalinkRequestDTO,
   PaginationRequestDTO,
   UpdateTrackRequestDTO,
+  GetLikedTracksByUserIdRequestDTO,
 } from './dtos/tracks.request';
 import logger from '../../shared/logger/logger';
 
@@ -132,8 +133,17 @@ export class TracksController {
 
   async getUserLikedTracks(req: Request, res: Response): Promise<void> {
     // no validator required except auth middleware
-    const userInfo = this.getUserInfo(req);
-    const likedTracks = await this.service.getLikedTracks(userInfo.userId);
+    const validatedRequest = parseRequest(
+      GetLikedTracksByUserIdRequestDTO,
+      req,
+    );
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const userId = validatedRequest.data.params.id;
+    const likedTracks = await this.service.getLikedTracks(userId);
     res.json({
       message: 'User Liked Tracks Received Successfully',
       data: likedTracks,
