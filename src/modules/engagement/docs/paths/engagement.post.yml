@@ -109,7 +109,7 @@
     tags:
       - Comments
     summary: Post a comment on a track.
-    description: Creates a new comment on a track. Comments can be pinned to a specific timestamp. If parentCommentId is provided, the comment is treated as a reply. Requires allow_comments to be enabled on the track.
+    description: Creates a new comment on a track. Comments can be pinned to a specific timestamp. If parentCommentId is provided, the comment is treated as a reply.
     operationId: createComment
     parameters:
       - $ref: '#/components/parameters/TrackIdParam'

@@ -2,14 +2,18 @@ import extendedZod from '../../../shared/docs/dtoDocumenter';
 
 export const CreateCommentRequestBodyDTO = extendedZod
   .object({
-    content: extendedZod.string().max(500),
-    timestamp: extendedZod.number().min(0).optional(),
+    content: extendedZod
+      .string()
+      .trim()
+      .min(1, "content can't be empty")
+      .max(500),
+    timestamp: extendedZod.number().int().min(0),
     parentCommentId: extendedZod.string().optional(),
   })
   .openapi('CreateCommentRequest', {
     example: {
       content: 'Great track!',
-      timestamp: 42.5,
+      timestamp: 42,
     },
   });
 

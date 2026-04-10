@@ -430,4 +430,92 @@ describe('EngagementRepository', () => {
       expect(result).toEqual({});
     });
   });
+
+  describe('getCommentReplies', () => {
+    const commentId = '507f1f77bcf86cd799439011';
+
+    it('should query replies ordered by createdAt ascending with pagination', async () => {
+      const reply1Id = new Types.ObjectId();
+      const reply2Id = new Types.ObjectId();
+      const reply3Id = new Types.ObjectId();
+
+      const parentComment = {
+        _id: new Types.ObjectId(commentId),
+        replyList: [reply3Id, reply1Id, reply2Id],
+      };
+
+      const selectMock = jest.fn().mockResolvedValue(parentComment);
+      (Comment.findById as jest.Mock).mockReturnValue({
+        select: selectMock,
+      });
+
+      const populatedReplies = [
+        {
+          _id: reply2Id,
+          userId: {
+            _id: new Types.ObjectId(),
+            displayName: 'User 2',
+            profileImg: null,
+          },
+          createdAt: new Date('2026-01-01T00:00:02.000Z'),
+          content: 'Reply 2',
+        },
+      ];
+
+      const leanMock = jest.fn().mockResolvedValue(populatedReplies);
+      const populateMock = jest.fn().mockReturnValue({ lean: leanMock });
+      const limitMock = jest.fn().mockReturnValue({ populate: populateMock });
+      const skipMock = jest.fn().mockReturnValue({ limit: limitMock });
+      const sortMock = jest.fn().mockReturnValue({ skip: skipMock });
+
+      (Comment.find as jest.Mock).mockReturnValue({ sort: sortMock });
+
+      const result = await repository.getCommentReplies(commentId, 2, 1);
+
+      expect(Comment.find).toHaveBeenCalledWith({
+        _id: { $in: parentComment.replyList },
+      });
+      expect(sortMock).toHaveBeenCalledWith({ createdAt: 1 });
+      expect(skipMock).toHaveBeenCalledWith(1);
+      expect(limitMock).toHaveBeenCalledWith(1);
+      expect(result.total).toBe(3);
+      expect(result.replies).toHaveLength(1);
+      expect(result.replies[0]).toMatchObject({
+        _id: reply2Id,
+        content: 'Reply 2',
+        user: {
+          displayName: 'User 2',
+        },
+      });
+    });
+
+    it('should return empty when parent comment does not exist', async () => {
+      const selectMock = jest.fn().mockResolvedValue(null);
+      (Comment.findById as jest.Mock).mockReturnValue({
+        select: selectMock,
+      });
+
+      const result = await repository.getCommentReplies(commentId, 1, 20);
+
+      expect(result).toEqual({ replies: [], total: 0 });
+      expect(Comment.find).not.toHaveBeenCalled();
+    });
+
+    it('should return empty when comment has no replies', async () => {
+      const parentComment = {
+        _id: new Types.ObjectId(commentId),
+        replyList: [],
+      };
+
+      const selectMock = jest.fn().mockResolvedValue(parentComment);
+      (Comment.findById as jest.Mock).mockReturnValue({
+        select: selectMock,
+      });
+
+      const result = await repository.getCommentReplies(commentId, 1, 20);
+
+      expect(result).toEqual({ replies: [], total: 0 });
+      expect(Comment.find).not.toHaveBeenCalled();
+    });
+  });
 });
