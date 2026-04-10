@@ -7,12 +7,14 @@ export type IAdvancedAudioDetails = {
   releaseDate?: Date;
   publisher?: string;
   isrc?: string;
+  iswc?: string;
   explicitContent?: boolean;
   pLine?: string;
   audioClip?: {
     start: number;
     end: number;
   };
+  albumTitle?: string;
 };
 
 const audioClipSchema = new Schema(
@@ -71,6 +73,14 @@ const advancedAudioDetailsSchema = new Schema(
     },
     audioClip: {
       type: audioClipSchema,
+    },
+    iswc: {
+      type: String,
+      default: '',
+    },
+    albumTitle: {
+      type: String,
+      default: '',
     },
   },
   { timestamps: false },

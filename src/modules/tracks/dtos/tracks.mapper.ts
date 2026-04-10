@@ -2,9 +2,10 @@ import { ITrack } from '../../../shared/models/models.track';
 import { TrackResponseDTO } from './tracks.response';
 import { CreateTrackDTO } from './tracks.request.body';
 import { PublitioUploadResult } from '../../../shared/abstractions/publitio';
-import { CloudinaryUploadResult } from '../../../shared/abstractions/cloudinary.service';
 import { TrackInput } from './tracks.request.body';
 import { Types } from 'mongoose';
+import { IAdvancedAudioDetails } from '../../../shared/models/models.advanced-audio-details';
+import { TrackDetailedInfo } from './tracks.response';
 
 type ImageInfo = {
   imgLink: string;
@@ -66,5 +67,33 @@ export class TracksMapper {
       tracksMapped.push(trackMapped);
     });
     return tracksMapped;
+  }
+
+  static toTrackDetailedResponse(
+    track: ITrack,
+    advanced: IAdvancedAudioDetails,
+  ): TrackDetailedInfo {
+    return {
+      id: track._id.toString(),
+      basicInfo: track.basicInfo,
+      permissions: track.permissions,
+      license: track.license,
+      advanced: {
+        buyLink: advanced.buyLink,
+        recordLabel: advanced.recordLabel,
+        releaseDate: advanced.releaseDate
+          ? advanced.releaseDate.toISOString()
+          : undefined,
+        publisher: advanced.publisher,
+        ISRC: advanced.isrc,
+        explicitContent: advanced.explicitContent,
+        pLine: advanced.pLine,
+        audioClipStart: advanced.audioClip?.start,
+        audioClipEnd: advanced.audioClip?.end,
+        composer: track.composer,
+        ISWC: advanced.iswc,
+        albumTitle: advanced.albumTitle,
+      },
+    };
   }
 }
