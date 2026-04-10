@@ -3,12 +3,6 @@ import { imgSchema, audioSchema } from './schemas.shared';
 import { DEFAULT_AUDIO_IMAGE } from '../../config/constants';
 import { CloudinaryService } from '../abstractions/cloudinary.service';
 import logger from '../logger/logger';
-import AdvancedAudioDetails from './models.advanced-audio-details';
-import Playlist from './models.playlist';
-import User from './models.user';
-import Comment from './models.comment';
-import Plays from './models.plays';
-import PlaysTrackHandling from './models.plays-track-handling';
 import Report from './models.report';
 import Notification from './models.notification';
 import SearchHistory from './models.search-history';
@@ -27,11 +21,12 @@ export type ITrack = {
   basicInfo: {
     title: string;
     permalink: string;
-    mainArtists: [string];
+    mainArtists: string[];
     genre: string;
-    tags: [string];
+    tags: string[];
     description: string;
     isPrivate: boolean;
+    caption: string;
   };
   audio: {
     url: string;
@@ -43,10 +38,10 @@ export type ITrack = {
     publicId: string;
   };
   numOfPlays: number;
-  comments: [Types.ObjectId];
+  comments: Types.ObjectId[];
   numberOfReposts: number;
   numOfLikes: number;
-  likedBy: [Types.ObjectId];
+  likedBy: Types.ObjectId[];
   permissions: {
     enableDirectDownload: boolean;
     offlineListening: boolean;
@@ -63,7 +58,6 @@ export type ITrack = {
   };
   composer: string;
   releaseTitle: string;
-  caption: string;
   hidden: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -149,11 +143,16 @@ const trackSchema = new Schema(
       },
       description: {
         type: String,
-        default: [],
+        default: '',
       },
       isPrivate: {
         type: Boolean,
         default: false,
+      },
+      caption: {
+        type: String,
+        default: '',
+        maxlength: 500,
       },
     },
     audio: {
@@ -215,11 +214,6 @@ const trackSchema = new Schema(
       type: String,
       default: '',
       maxlength: 100,
-    },
-    caption: {
-      type: String,
-      default: '',
-      maxlength: 500,
     },
     hidden: {
       type: Boolean,

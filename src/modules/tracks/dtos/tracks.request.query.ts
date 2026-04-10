@@ -8,6 +8,6 @@ export const TracksRoleQueryDto = extendedZod.object({
 export const ListTrackssQueryDto = PaginationQueryDto.extend(
   TracksRoleQueryDto.shape,
 ).extend({
-  page: extendedZod.number().default(1),
-  limit: extendedZod.number().default(20),
+  page: extendedZod.coerce.number().default(1),
+  limit: extendedZod.coerce.number().default(20),
 });

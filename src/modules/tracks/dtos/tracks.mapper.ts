@@ -1,7 +1,41 @@
 import { ITrack } from '../../../shared/models/models.track';
 import { TrackResponseDTO } from './tracks.response';
+import { CreateTrackDTO } from './tracks.request.body';
+import { PublitioUploadResult } from '../../../shared/abstractions/publitio';
+import { CloudinaryUploadResult } from '../../../shared/abstractions/cloudinary.service';
+import { TrackInput } from './tracks.request.body';
+import { Types } from 'mongoose';
+
+type ImageInfo = {
+  imgLink: string;
+  publicId: string;
+};
 
 export class TracksMapper {
+  static toTrackInput(
+    track: CreateTrackDTO,
+    audioInfo: PublitioUploadResult,
+    imgInfo: ImageInfo | null,
+    posterId: Types.ObjectId,
+  ): TrackInput {
+    return {
+      trackInfo: {
+        basicInfo: track.basicInfo,
+        audio: audioInfo,
+        ...(imgInfo && { image: imgInfo }),
+        posterId: posterId,
+        numOfPlays: 0,
+        numberOfReposts: 0,
+        numOfLikes: 0,
+        likedBy: [] as Types.ObjectId[],
+        comments: [] as Types.ObjectId[],
+        permissions: track.permissions,
+        license: track.license,
+      },
+      advanced: track.advanced,
+    };
+  }
+
   static toTrackResponse(track: ITrack): TrackResponseDTO {
     const trackBasicInfo = track.basicInfo;
     return {

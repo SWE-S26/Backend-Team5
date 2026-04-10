@@ -12,7 +12,15 @@ import {
 import { ITrack } from '../../shared/models/models.track';
 import { CreateTrackDTO, UpdateTrackDTO } from './dtos/tracks.request.body';
 import publitioMediaStorage from '../../shared/abstractions/publitio';
-import { CloudinaryService } from '../../shared/abstractions/cloudinary.service';
+import {
+  CloudinaryService,
+  ImageFolder,
+} from '../../shared/abstractions/cloudinary.service';
+
+type ImageInfo = {
+  imgLink: string;
+  publicId: string;
+};
 
 export class TracksService {
   private readonly tracksRepository: TracksRepository;
@@ -81,9 +89,7 @@ export class TracksService {
     if (!searchTrack) {
       throw NotFoundError("Track Doesn't Exists");
     }
-
-    const newNumPlays = searchTrack.numOfPlays + 1;
-    return await this.tracksRepository.incrementNumPlays(trackId, newNumPlays);
+    return await this.tracksRepository.incrementNumPlays(trackId);
   }
 
   async getLikedTracks(userId: string): Promise<TrackResponseDTO[] | null> {
@@ -94,13 +100,8 @@ export class TracksService {
       return null;
     }
 
-    const trackResponseList: TrackResponseDTO[] = [];
-
-    likedTracksList.forEach((track) => {
-      const trackResponse = TracksMapper.toTrackResponse(track as ITrack);
-      trackResponseList.push(trackResponse);
-    });
-
+    const trackResponseList: TrackResponseDTO[] =
+      TracksMapper.toTrackResponseList(likedTracksList as ITrack[]);
     return trackResponseList;
   }
 
@@ -108,18 +109,29 @@ export class TracksService {
     trackInfo: CreateTrackDTO,
     audio: Express.Multer.File,
     image: Express.Multer.File | null,
+    posterId: string,
   ): Promise<Boolean> {
     const audioInfo = await this.trackUploader.uploadAudioTrack(audio);
-    const imgInfo = null;
+    let imgInfo: ImageInfo | null = null;
     if (image) {
-      // this.imgUploader.uploadImage(image)
+      const retreiveImgInfo = await this.imgUploader.uploadImage(
+        image.buffer,
+        ImageFolder.AUDIO,
+      );
+      imgInfo = {
+        imgLink: retreiveImgInfo?.url as string,
+        publicId: retreiveImgInfo?.publicId,
+      };
     }
 
-    return await this.tracksRepository.createNewTrack(
+    const trackInput = TracksMapper.toTrackInput(
       trackInfo,
       audioInfo,
       imgInfo,
+      new Types.ObjectId(posterId),
     );
+
+    return await this.tracksRepository.createNewTrack(trackInput);
   }
 
   async getTrackByPermalink(permalink: string) {
@@ -152,12 +164,25 @@ export class TracksService {
     trackInfo: UpdateTrackDTO,
     userId: string,
     userRole: string,
+    image: Express.Multer.File | null,
   ) {
     const searchTrack = await this.tracksRepository.findById(trackInfo.id);
 
     // TODO: REFACTOR THIS PART : MAKE IT DRY
     if (!searchTrack) {
       throw NotFoundError('Track Not Found');
+    }
+
+    let imgInfo: ImageInfo | null = null;
+    if (image) {
+      const retreiveImgInfo = await this.imgUploader.uploadImage(
+        image.buffer,
+        ImageFolder.AUDIO,
+      );
+      imgInfo = {
+        imgLink: retreiveImgInfo?.url as string,
+        publicId: retreiveImgInfo?.publicId,
+      };
     }
 
     const posterId = searchTrack.posterId.toString();
@@ -169,11 +194,10 @@ export class TracksService {
         throw UnauthorizedError('Unauthorized Action');
       }
     }
-    const updatedTrack = await this.tracksRepository.updateTrackInfo(trackInfo);
+    const updatedTrack = await this.tracksRepository.updateTrackInfo(
+      trackInfo,
+      imgInfo,
+    );
     return TracksMapper.toTrackResponse(updatedTrack);
-  }
-
-  async update(id: string, data: any): Promise<any | null> {
-    return this.tracksRepository.update(id, data);
   }
 }

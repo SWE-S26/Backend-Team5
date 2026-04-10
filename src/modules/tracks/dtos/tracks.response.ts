@@ -16,10 +16,10 @@ export const TrackResponse = extendedZod.object({
     id: extendedZod.string(),
     url: extendedZod.string(),
   }),
-  image: {
+  image: extendedZod.object({
     url: extendedZod.string(),
     publicId: extendedZod.string(),
-  },
+  }),
   numLikes: extendedZod.number(),
   numPlays: extendedZod.number(),
   numReposts: extendedZod.number(),

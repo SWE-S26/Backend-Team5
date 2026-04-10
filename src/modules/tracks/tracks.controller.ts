@@ -10,8 +10,9 @@ import {
   PaginationRequestDTO,
   UpdateTrackRequestDTO,
 } from './dtos/tracks.request';
+import logger from '../../shared/logger/logger';
 
-import { JWTPayload } from '../../shared/abstractions/jwt';
+import { JWTPayload } from '../../shared/abstractions/jwt.service';
 import { BadRequestError } from '../../shared/errors/responseErrors';
 
 type userInfo = {
@@ -36,22 +37,33 @@ export class TracksController {
     };
   }
 
-  private extractRequestFiles(req: Request) {
+  private extractAudioFile(req: Request) {
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     const audio = files?.audio?.[0];
-    const image = files?.image?.[0];
 
-    // No Uploaded Track
     if (!audio) {
       throw BadRequestError('Audio File Required');
     }
 
-    return { audio, image };
+    return audio;
+  }
+
+  private extractImageFile(req: Request) {
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    return files?.image?.[0];
+  }
+
+  private parseFormDataToJson(req: Request) {
+    if (req.body.basicInfo) req.body.basicInfo = JSON.parse(req.body.basicInfo);
+    if (req.body.permissions)
+      req.body.permissions = JSON.parse(req.body.permissions);
+    if (req.body.license) req.body.license = JSON.parse(req.body.license);
+    if (req.body.advanced) req.body.advanced = JSON.parse(req.body.advanced);
   }
 
   async deleteTrackById(req: Request, res: Response): Promise<void> {
+    logger.info('I AM HERE HELP US GOD');
     const validatedRequest = parseRequest(DeleteTrackRequestDTO, req);
-
     if (!validatedRequest.success) {
       throw validatedRequest.error;
     }
@@ -121,7 +133,7 @@ export class TracksController {
   async getUserLikedTracks(req: Request, res: Response): Promise<void> {
     // no validator required except auth middleware
     const userInfo = this.getUserInfo(req);
-    const likedTracks = this.service.getLikedTracks(userInfo.userId);
+    const likedTracks = await this.service.getLikedTracks(userInfo.userId);
     res.json({
       message: 'User Liked Tracks Received Successfully',
       data: likedTracks,
@@ -130,18 +142,23 @@ export class TracksController {
 
   async uploadAudioTrack(req: Request, res: Response): Promise<void> {
     // TODO : Check if user is Pro or no subscription to update criteria
+    this.parseFormDataToJson(req);
+
     const validatedRequest = parseRequest(UploadAudioTrackRequestDTO, req);
 
     if (!validatedRequest.success) {
       throw validatedRequest.error;
     }
 
-    const { audio, image } = this.extractRequestFiles(req);
+    const audio = this.extractAudioFile(req);
+    const image = this.extractImageFile(req);
+    const userInfo = this.getUserInfo(req);
     const trackInfo = validatedRequest.data.body;
     const isUploaded = await this.service.uploadAudioTrack(
       trackInfo,
       audio,
       image,
+      userInfo.userId,
     );
 
     if (isUploaded) {
@@ -179,7 +196,6 @@ export class TracksController {
     const page = validatedRequest.data.query.page;
     const limit = validatedRequest.data.query.limit;
 
-    // TODO : Make sure you are not fetching private trakcs
     const paginationList = await this.service.getPaginatedList(page, limit);
     if (paginationList) {
       res.status(200);
@@ -193,17 +209,21 @@ export class TracksController {
   }
 
   async updateTrackInfo(req: Request, res: Response): Promise<void> {
+    this.parseFormDataToJson(req);
+
     const validatedRequest = parseRequest(UpdateTrackRequestDTO, req);
 
     if (!validatedRequest.success) {
       throw validatedRequest.error;
     }
+    const image = this.extractImageFile(req);
     const userInfo = this.getUserInfo(req);
     const trackInfo = validatedRequest.data.body;
     const updatedTrack = await this.service.updateTrackInfo(
       trackInfo,
       userInfo.userId,
       userInfo.userRole,
+      image,
     );
 
     res.status(200);
@@ -211,20 +231,5 @@ export class TracksController {
       message: 'Track Info Updated Successfully',
       data: updatedTrack,
     });
-  }
-
-  async replace(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
-
-  async update(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
-
-  async remove(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
   }
 }
