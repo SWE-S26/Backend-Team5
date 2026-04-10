@@ -109,27 +109,59 @@ export class FollowingRepository {
   async getSuggestedUserIds(id: string): Promise<Types.ObjectId[]> {
     const followDoc = await Following.findOne(
       { userId: id },
-      { followed: 1 },
+      { followed: { $slice: 30 } },
     ).lean();
 
-    const followedIds = (followDoc?.followed ?? []).slice(0, 30);
-    if (followedIds.length === 0) return [];
+    const followedIds = followDoc?.followed ?? [];
 
     const followedDocs = await Following.find(
       { userId: { $in: followedIds } },
       { followed: { $slice: 30 } },
     ).lean();
 
-    const suggestedUsersIdsSet = new Set<Types.ObjectId>();
+    const topTrackUsers = await User.aggregate([
+      {
+        $project: {
+          _id: 1,
+          trackCount: { $size: '$tracks' },
+        },
+      },
+      {
+        $sort: { trackCount: -1 },
+      },
+      {
+        $limit: 30,
+      },
+    ]);
+
+    const suggestedUsersIdsSet = new Set<string>();
     for (const doc of followedDocs) {
-      for (const suggestedId of doc.followed ?? []) {
-        if (suggestedId.toString() !== id) {
+      for (const suggested of doc.followed ?? []) {
+        const suggestedId = suggested.toString();
+        if (suggestedId !== id) {
           suggestedUsersIdsSet.add(suggestedId);
         }
       }
     }
 
-    return Array.from(suggestedUsersIdsSet);
+    topTrackUsers.forEach((topUser) => {
+      const topUserId = topUser._id.toString();
+      if (topUserId !== id) {
+        suggestedUsersIdsSet.add(topUserId);
+      }
+    });
+
+    if (suggestedUsersIdsSet.size < 30) {
+      const anyUsers = await User.find({}, { _id: 1 }).limit(30).lean();
+      anyUsers.forEach((user) => {
+        const userId = user._id.toString();
+        if (!suggestedUsersIdsSet.has(userId) && userId !== id) {
+          suggestedUsersIdsSet.add(userId);
+        }
+      });
+    }
+
+    return Array.from(suggestedUsersIdsSet).map((id) => new Types.ObjectId(id));
   }
 
   async getBlockedIds(
