@@ -160,13 +160,15 @@ CreateCommentRequest:
   properties:
     content:
       type: string
+      minLength: 1
       maxLength: 500
+      description: Comment text. Must not be empty or whitespace-only.
       example: 'Great track!'
     timestamp:
-      type: number
+      type: integer
       minimum: 0
       description: Position in the track in seconds to pin the comment.
-      example: 42.5
+      example: 42
     parentCommentId:
       type: string
       description: ID of the parent comment when posting a reply.

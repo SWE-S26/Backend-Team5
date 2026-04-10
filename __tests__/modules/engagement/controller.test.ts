@@ -397,12 +397,13 @@ describe('EngagementController', () => {
     const trackId = '507f1f77bcf86cd799439011';
     const userId = '507f1f77bcf86cd799439022';
     const content = 'Great track!';
+    const timestamp = 0;
 
     it('should post track comment and return 201', async () => {
       mockReq = {
         params: { trackId },
         userInfo: { _id: userId } as any,
-        body: { content },
+        body: { content, timestamp },
         query: {},
       };
 
@@ -424,7 +425,7 @@ describe('EngagementController', () => {
         trackId,
         userId,
         content,
-        undefined,
+        timestamp,
         undefined,
       );
       expect(mockRes.status).toHaveBeenCalledWith(201);
@@ -464,7 +465,7 @@ describe('EngagementController', () => {
       mockReq = {
         params: { trackId },
         userInfo: { _id: userId } as any,
-        body: { content, parentCommentId },
+        body: { content, timestamp, parentCommentId },
         query: {},
       };
 
@@ -482,7 +483,7 @@ describe('EngagementController', () => {
         trackId,
         userId,
         content,
-        undefined,
+        timestamp,
         parentCommentId,
       );
     });
@@ -498,6 +499,36 @@ describe('EngagementController', () => {
       await expect(
         controller.postTrackComment(mockReq as Request, mockRes as Response),
       ).rejects.toThrow();
+    });
+
+    it('should throw error when content is empty string and not call service', async () => {
+      mockReq = {
+        params: { trackId },
+        userInfo: { _id: userId } as any,
+        body: { content: '' },
+        query: {},
+      };
+
+      await expect(
+        controller.postTrackComment(mockReq as Request, mockRes as Response),
+      ).rejects.toThrow();
+
+      expect(EngagementService.prototype.postTrackComment).not.toHaveBeenCalled();
+    });
+
+    it('should throw error when timestamp is decimal and not call service', async () => {
+      mockReq = {
+        params: { trackId },
+        userInfo: { _id: userId } as any,
+        body: { content, timestamp: 42.5 },
+        query: {},
+      };
+
+      await expect(
+        controller.postTrackComment(mockReq as Request, mockRes as Response),
+      ).rejects.toThrow();
+
+      expect(EngagementService.prototype.postTrackComment).not.toHaveBeenCalled();
     });
   });
 

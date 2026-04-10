@@ -422,6 +422,15 @@ export class EngagementService {
     timestampSeconds?: number,
     parentCommentId?: string,
   ): Promise<PostCommentResponse> {
+    const trimmedContent = content.trim();
+    if (!trimmedContent) {
+      BadRequestError("content can't be empty");
+    }
+
+    if (timestampSeconds !== undefined && !Number.isInteger(timestampSeconds)) {
+      BadRequestError('timestamp must be a non-negative integer');
+    }
+
     const track = await this.repository.findTrackById(trackId);
 
     if (!track) NotFoundError('Track not found');
@@ -440,7 +449,7 @@ export class EngagementService {
     const comment = await this.repository.createComment(
       userId,
       trackId,
-      content,
+      trimmedContent,
       parentCommentId ? 0 : (timestampSeconds ?? 0),
     );
 

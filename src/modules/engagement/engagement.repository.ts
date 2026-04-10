@@ -625,9 +625,14 @@ export class EngagementRepository {
 
       const skip = (page - 1) * limit;
       const total = comment.replyList.length;
-      const pagedReplyIds = comment.replyList.slice(skip, skip + limit);
+      if (total === 0) {
+        return { replies: [], total: 0 };
+      }
 
-      const replies = await Comment.find({ _id: { $in: pagedReplyIds } })
+      const replies = await Comment.find({ _id: { $in: comment.replyList } })
+        .sort({ createdAt: 1 })
+        .skip(skip)
+        .limit(limit)
         .populate<{
           user: Pick<IUser, '_id' | 'displayName' | 'profileImg'>;
         }>({
@@ -637,12 +642,7 @@ export class EngagementRepository {
         })
         .lean();
 
-      const repliesById = new Map(
-        replies.map((reply) => [reply._id.toString(), reply]),
-      );
-      const orderedReplies = pagedReplyIds
-        .map((id) => repliesById.get(id.toString()))
-        .filter((reply): reply is (typeof replies)[number] => Boolean(reply))
+      const orderedReplies = replies
         .filter((reply) => reply.userId != null) // Filter out replies with deleted users
         .map((reply) => ({
           ...reply,
