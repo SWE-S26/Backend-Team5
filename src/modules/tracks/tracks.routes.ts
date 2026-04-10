@@ -2,43 +2,50 @@ import { Router } from 'express';
 import { TracksController } from './tracks.controller';
 import apiVersions from '../../shared/middleware/apiVersions';
 
+import multer from 'multer';
+
+const upload = multer({ storage: multer.memoryStorage() });
+
 const tracksRouter = Router();
 const tracksController = new TracksController();
 
-tracksRouter.delete(apiVersions.v1 + '/{:id}', (req, res) =>
-  tracksController.deleteTrackById.bind(tracksController),
-);
-
-tracksRouter.get(apiVersions.v1 + '/{:id}', (req, res) =>
-  tracksController.getTrackById.bind(tracksController),
-);
-
-tracksRouter.put(apiVersions.v1 + '/listen/{:id}', (req, res) =>
-  tracksController.incrementTrackNumPlays.bind(tracksController),
-);
-
 tracksRouter.get(apiVersions.v1 + '/liked', (req, res) =>
-  tracksController.getUserLikedTracks.bind(tracksController),
+  tracksController.getUserLikedTracks(req, res),
 );
 
-tracksRouter.get(apiVersions.v1 + '/permalink/{:permalink}', (req, res) =>
-  tracksController.getTrackByPermalink.bind(tracksController),
+tracksRouter.delete(apiVersions.v1 + '/:id', (req, res) =>
+  tracksController.deleteTrackById(req, res),
 );
 
-tracksRouter.patch(apiVersions.v1, (req, res) =>
-  tracksController.updateTrackInfo.bind(tracksController),
+tracksRouter.get(apiVersions.v1 + '/:id', (req, res) =>
+  tracksController.getTrackById(req, res),
+);
+
+tracksRouter.put(apiVersions.v1 + '/listen/:id', (req, res) =>
+  tracksController.incrementTrackNumPlays(req, res),
+);
+
+tracksRouter.get(apiVersions.v1 + '/permalink/:permalink', (req, res) =>
+  tracksController.getTrackByPermalink(req, res),
+);
+
+tracksRouter.patch(
+  apiVersions.v1,
+  upload.fields([{ name: 'image', maxCount: 1 }]),
+  (req, res) => tracksController.updateTrackInfo(req, res),
 );
 
 tracksRouter.get(apiVersions.v1, (req, res) =>
-  tracksController.getPaginatedListOfTracks.bind(tracksController),
+  tracksController.getPaginatedListOfTracks(req, res),
 );
 
-// TODO : NEED AN ENDPOINT FOR FETCHING ALL DETAILS for track
-
-// tracksRouter.get('/:id',   (req, res) => tracksController.findOne(req, res));
-// tracksRouter.post('/',     (req, res) => tracksController.create(req, res));
-// tracksRouter.put('/:id',   (req, res) => tracksController.replace(req, res));
-// tracksRouter.patch('/:id', (req, res) => tracksController.update(req, res));
-// tracksRouter.delete('/:id',(req, res) => tracksController.remove(req, res));
+tracksRouter.post(
+  apiVersions.v1,
+  upload.fields([
+    { name: 'audio', maxCount: 1 },
+    { name: 'image', maxCount: 1 },
+  ]),
+  (req, res) => tracksController.uploadAudioTrack(req, res),
+);
 
 export default tracksRouter;

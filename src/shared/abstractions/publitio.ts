@@ -6,7 +6,7 @@ import fs from 'fs';
 import path from 'path';
 
 export type PublitioUploadResult = {
-  url: string;
+  audioLink: string;
   id: string;
 };
 
@@ -66,7 +66,7 @@ class PublitioMediaStorage {
 
     const audioInfo: PublitioUploadResult = {
       id: id,
-      url: url_preview,
+      audioLink: url_preview,
     };
 
     return audioInfo;

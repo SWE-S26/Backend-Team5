@@ -1,10 +1,18 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 import { z } from 'zod';
+import { Types } from 'mongoose';
+import { PublitioUploadResult } from '../../../shared/abstractions/publitio';
+import { CloudinaryUploadResult } from '../../../shared/abstractions/cloudinary.service';
+
+type ImageInfo = {
+  imgLink: string;
+  publicId: string;
+};
 
 export const CreateTrackRequestBodyDTO = extendedZod.object({
   basicInfo: extendedZod.object({
     title: extendedZod.string(),
-    permaLink: extendedZod
+    permalink: extendedZod
       .string()
       .regex(
         /^[a-z0-9_-]+$/,
@@ -28,6 +36,7 @@ export const CreateTrackRequestBodyDTO = extendedZod.object({
       .transform((value) => value?.trim())
       .optional(),
     isPrivate: extendedZod.boolean().default(false),
+    caption: extendedZod.string().optional(),
   }),
   permissions: extendedZod.object({
     enableDirectDownload: extendedZod.boolean().default(false),
@@ -71,6 +80,9 @@ export const CreateTrackRequestBodyDTO = extendedZod.object({
     pLine: extendedZod.string().optional(),
     audioClipStart: extendedZod.number().optional(),
     audioClipEnd: extendedZod.number().optional(),
+    composer: extendedZod.string().optional(),
+    ISWC: extendedZod.string().optional(),
+    albumTitle: extendedZod.string().optional(),
   }),
 });
 
@@ -82,6 +94,23 @@ export const UpdateTrackRequestBodyDTO = extendedZod.object({
   license: CreateTrackRequestBodyDTO.shape.license.partial(),
   advanced: CreateTrackRequestBodyDTO.shape.advanced.partial(),
 });
+
+export type TrackInput = {
+  trackInfo: {
+    basicInfo: CreateTrackDTO['basicInfo'];
+    audio: PublitioUploadResult;
+    image?: ImageInfo;
+    posterId: Types.ObjectId;
+    numOfPlays: number;
+    numberOfReposts: number;
+    numOfLikes: number;
+    likedBy: Types.ObjectId[];
+    comments: Types.ObjectId[];
+    permissions: CreateTrackDTO['permissions'];
+    license: CreateTrackDTO['license'];
+  };
+  advanced: CreateTrackDTO['advanced'];
+};
 
 export type CreateTrackDTO = z.infer<typeof CreateTrackRequestBodyDTO>;
 export type UpdateTrackDTO = z.infer<typeof UpdateTrackRequestBodyDTO>;

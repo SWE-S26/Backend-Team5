@@ -4,6 +4,7 @@ import User, { IUser } from '../../shared/models/models.user';
 import { PublitioUploadResult } from '../../shared/abstractions/publitio';
 import { CreateTrackDTO, UpdateTrackDTO } from './dtos/tracks.request.body';
 import AdvancedAudioDetails from '../../shared/models/models.advanced-audio-details';
+import { TrackInput } from './dtos/tracks.request.body';
 
 type PaginationList = {
   tracks: ITrack[];
@@ -13,6 +14,11 @@ type PaginationList = {
     totalPages: number;
     hasNext: boolean;
   };
+};
+
+type ImageInfo = {
+  imgLink: string;
+  publicId: string;
 };
 
 export class TracksRepository {
@@ -30,12 +36,9 @@ export class TracksRepository {
     return true;
   }
 
-  async incrementNumPlays(
-    trackId: string,
-    newNumPlays: number,
-  ): Promise<Boolean> {
+  async incrementNumPlays(trackId: string): Promise<Boolean> {
     const updatedTrack = await Track.findByIdAndUpdate(trackId, {
-      $set: { numOfPlays: newNumPlays },
+      $inc: { numOfPlays: 1 },
     });
 
     if (!updatedTrack) return false;
@@ -59,22 +62,13 @@ export class TracksRepository {
     return tracksList;
   }
 
-  async createNewTrack(
-    trackInfo: CreateTrackDTO,
-    audioInfo: PublitioUploadResult,
-    imgInfo: any,
-  ): Promise<Boolean> {
-    const trackCreate = await Track.create({
-      ...trackInfo,
-      audio: {
-        ...audioInfo,
-      },
-      image: {
-        ...imgInfo,
-      },
+  async createNewTrack(trackInput: TrackInput): Promise<Boolean> {
+    const trackCreate = await Track.create(trackInput.trackInfo);
+    const advancedTrackInfoCreate = await AdvancedAudioDetails.create({
+      trackId: trackCreate._id,
+      ...trackInput.advanced,
     });
-    if (trackCreate) return true;
-    else return false;
+    return true;
   }
 
   async getTrackByPermalink(permalink: string): Promise<ITrack | null> {
@@ -87,7 +81,7 @@ export class TracksRepository {
 
     // get limited tracks + total count of tracks
     const [tracks, totalNumTracks] = await Promise.all([
-      Track.find().skip(skip).limit(limit),
+      Track.find({ 'basicInfo.isPrivate': false }).skip(skip).limit(limit),
       Track.countDocuments(),
     ]);
 
@@ -107,13 +101,21 @@ export class TracksRepository {
     };
   }
 
-  async updateTrackInfo(trackInfo: UpdateTrackDTO): Promise<ITrack> {
+  async updateTrackInfo(
+    trackInfo: UpdateTrackDTO,
+    imgInfo: ImageInfo | null,
+  ): Promise<ITrack> {
     const { id, advanced, ...mainInfo } = trackInfo;
 
+    const updatePayload = {
+      ...mainInfo,
+      ...(imgInfo && { image: imgInfo }),
+    };
+    console.log('THE ADVANCED SHIT', advanced);
     const [updatedTrack] = await Promise.all([
-      Track.findByIdAndUpdate(id, { $set: mainInfo }, { new: true }),
-      await AdvancedAudioDetails.findByIdAndUpdate(
-        id,
+      Track.findByIdAndUpdate(id, { $set: updatePayload }, { new: true }),
+      AdvancedAudioDetails.findOneAndUpdate(
+        { trackId: id },
         { $set: advanced },
         { new: true },
       ),
@@ -121,15 +123,5 @@ export class TracksRepository {
       throw new Error('Unexpected Error Happened During Track Update');
     });
     return updatedTrack as ITrack;
-  }
-
-  async create(data: any): Promise<any> {
-    // TODO: insert into your data source
-    return data;
-  }
-
-  async update(id: string, data: any): Promise<any | null> {
-    // TODO: update in your data source
-    return null;
   }
 }
