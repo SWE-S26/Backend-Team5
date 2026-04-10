@@ -20,18 +20,9 @@ api/social/v1/followers/{userId}:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                total:
-                  type: integer
-                offset:
-                  type: integer
-                limit:
-                  type: integer
-                data:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/UserSummary'
+              type: array
+              items:
+                $ref: '#/components/schemas/UserSummary'
       '400':
         description: Invalid user ID
         content:
@@ -92,18 +83,9 @@ api/social/v1/following/{userId}:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                total:
-                  type: integer
-                offset:
-                  type: integer
-                limit:
-                  type: integer
-                data:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/UserSummary'
+              type: array
+              items:
+                $ref: '#/components/schemas/UserSummary'
       '400':
         description: Invalid user ID
         content:
@@ -158,18 +140,9 @@ api/social/v1/suggested:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                total:
-                  type: integer
-                offset:
-                  type: integer
-                limit:
-                  type: integer
-                data:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/UserSummary'
+              type: array
+              items:
+                $ref: '#/components/schemas/UserSummary'
       '401':
         description: Unauthorized
         content:
@@ -199,18 +172,9 @@ api/social/v1/blocked:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                total:
-                  type: integer
-                offset:
-                  type: integer
-                limit:
-                  type: integer
-                data:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/UserSummary'
+              type: array
+              items:
+                $ref: '#/components/schemas/UserSummary'
       '401':
         description: Unauthorized
         content:
