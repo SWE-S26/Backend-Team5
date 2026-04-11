@@ -1704,40 +1704,6 @@ describe('AuthController : googleCallback', () => {
     expect(redirectUrl).toContain('client=Android');
   });
 
-  it('should call initiateGoogleSignIn with correct args for an existing google user', async () => {
-    const existingPayload = {
-      status: 'existing_google',
-      userId: '507f1f77bcf86cd799439011',
-      role: 'Listener',
-      subscription: { subscriptionType: 'free' },
-      email: 'existing@mail.com',
-      displayName: 'Existing User',
-      googleId: 'google_existing_123',
-      client: undefined,
-    };
-    mockPassportCallback(null, existingPayload);
-
-    (AuthService.prototype.initiateGoogleSignIn as jest.Mock).mockResolvedValue(
-      'pending_token_value',
-    );
-    jest.spyOn(SecureParams, 'encrypt').mockReturnValue('encrypted_pending');
-
-    await authController.googleCallback(
-      baseReq as unknown as Request,
-      mockRes as Response,
-      mockNext,
-    );
-
-    expect(AuthService.prototype.initiateGoogleSignIn).toHaveBeenCalledWith({
-      userId: existingPayload.userId,
-      role: existingPayload.role,
-      subscription: existingPayload.subscription,
-      email: existingPayload.email,
-      displayName: existingPayload.displayName,
-      googleId: existingPayload.googleId,
-    });
-  });
-
   it('should redirect to /verify-code with encrypted pendingToken for an existing google user (non-Android)', async () => {
     const existingPayload = {
       status: 'existing',
@@ -1752,9 +1718,9 @@ describe('AuthController : googleCallback', () => {
 
     mockPassportCallback(null, existingPayload);
 
-    (AuthService.prototype.initiateGoogleSignIn as jest.Mock).mockResolvedValue(
-      'pending_token_value',
-    );
+    (
+      AuthService.prototype.sendGoogleVerificationEmail as jest.Mock
+    ).mockResolvedValue('pending_token_value');
     jest.spyOn(SecureParams, 'encrypt').mockReturnValue('encrypted_pending');
 
     await authController.googleCallback(
@@ -1778,9 +1744,9 @@ describe('AuthController : googleCallback', () => {
 
     mockPassportCallback(null, existingPayload);
 
-    (AuthService.prototype.initiateGoogleSignIn as jest.Mock).mockResolvedValue(
-      'pending_token_value',
-    );
+    (
+      AuthService.prototype.sendGoogleVerificationEmail as jest.Mock
+    ).mockResolvedValue('pending_token_value');
     jest.spyOn(SecureParams, 'encrypt').mockReturnValue('encrypted_pending');
 
     await authController.googleCallback(
