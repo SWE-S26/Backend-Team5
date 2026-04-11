@@ -1,3 +1,4 @@
+import z from 'zod';
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 
 export const checkEmailRequestBodyDTO = extendedZod
@@ -146,3 +147,12 @@ export const MobileApproveLoginRequestBodyDTO =
         'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.amno345pqr678stu901vwx234yz567',
     },
   });
+
+export type SignUpRequestBody = z.infer<typeof SignUpRequestBodyDTO>;
+export type LoginRequestBody = z.infer<typeof LoginInRequestBodyDTO>;
+export type ForgotPasswordRequestBody = z.infer<
+  typeof ForgotPasswordRequestBodyDTO
+>;
+export type GoogleCompleteSignUpBody = z.infer<
+  typeof GoogleCompleteSignUpRequestBodyDTO
+>;

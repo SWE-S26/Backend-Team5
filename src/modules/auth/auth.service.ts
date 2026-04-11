@@ -8,7 +8,7 @@ import {
   ResourceAlreadyExists,
   UnauthorizedError,
 } from '../../shared/errors/responseErrors';
-import { LoginResponse } from './dtos/auth.response';
+import { LoginResponse, LoginSession, AuthTokens } from './dtos/auth.response';
 import { AuthRepository } from './auth.repository';
 import JWTService from '../../shared/abstractions/jwt.service';
 import { redisCacher } from '../../shared/abstractions/redis/redisCacher';
@@ -16,30 +16,13 @@ import emailService from '../../shared/abstractions/email/EmailService';
 import { AuthMapper } from './dtos/auth.mapper';
 import { PaymentInfo } from '../../shared/models/models.user';
 import { paymentController } from '../payment/payment.routes';
-
-type newUserDTO = {
-  email: string;
-  password: string;
-  displayName: string;
-  dateOfBirth: Date;
-  gender: 'Male' | 'Female';
-};
-
-type logInDTO = {
-  email: string;
-  password: string;
-};
+import { LoginRequestBody, SignUpRequestBody } from './dtos/auth.request.body';
 
 type QRSession = {
   status: 'pending' | 'verified';
   userId: string | null;
   role: string | null;
   subscription: unknown | null;
-};
-
-type LoginSession = {
-  tokens: AuthTokens;
-  userDetails: LoginResponse;
 };
 
 const QR_PREFIX = 'qr-login:';
@@ -52,7 +35,7 @@ export type GoogleCompleteSignUpBody = {
   gender: 'Male' | 'Female';
 };
 
-export type InitiateGoogleSignInDTO = {
+export type SendGoogleVerificationCode = {
   userId: string;
   role: string;
   subscription: unknown;
@@ -60,11 +43,6 @@ export type InitiateGoogleSignInDTO = {
   displayName: string;
   googleId: string;
 };
-
-interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-}
 
 export class AuthService {
   private readonly jwtService: JWTService;
@@ -98,7 +76,7 @@ export class AuthService {
     return AuthMapper.toUserCredientialsResponse(user);
   }
 
-  async registerNewUser(newUserDTO: newUserDTO): Promise<Boolean> {
+  async registerNewUser(newUserDTO: SignUpRequestBody): Promise<Boolean> {
     const existingUser = await this.authRepository.findByEmail(
       newUserDTO.email,
     );
@@ -232,7 +210,7 @@ export class AuthService {
     return { tokens, userId: user._id.toString() };
   }
 
-  async logInUser(logInDTO: logInDTO): Promise<LoginSession> {
+  async logInUser(logInDTO: LoginRequestBody): Promise<LoginSession> {
     const searchUser = await this.authRepository.findByEmail(logInDTO.email);
 
     if (!searchUser) {
@@ -295,7 +273,9 @@ export class AuthService {
     }
   }
 
-  async initiateGoogleSignIn(data: InitiateGoogleSignInDTO): Promise<string> {
+  async sendGoogleVerificationEmail(
+    data: SendGoogleVerificationCode,
+  ): Promise<string> {
     const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits
     const TTL_SECONDS = 300; // 5 minutes
 
