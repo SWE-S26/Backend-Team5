@@ -12,6 +12,7 @@ import {
   GetLikedTracksByUserIdRequestDTO,
   GetPostedTracksByUserIdRequestDTO,
   AddTrackToUserHistoryRequestDTO,
+  GetUserTrackDetailedInfoRequestDTO,
 } from './dtos/tracks.request';
 import logger from '../../shared/logger/logger';
 
@@ -284,5 +285,31 @@ export class TracksController {
         message: 'Internal Server Error',
       });
     }
+  }
+
+  async getDetailedTrackInfo(req: Request, res: Response) {
+    const validatedRequest = parseRequest(
+      GetUserTrackDetailedInfoRequestDTO,
+      req,
+    );
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const userInfo = this.getUserInfo(req);
+    const userId = userInfo.userId;
+    const userRole = userInfo.userRole;
+    const trackId = validatedRequest.data.params.id;
+    const trackDetailedInfo = await this.service.getTrackDetailedInfo(
+      userId,
+      trackId,
+      userRole,
+    );
+
+    res.status(200);
+    res.json({
+      message: 'Detailed Track Info Successfully',
+      data: trackDetailedInfo,
+    });
   }
 }

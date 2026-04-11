@@ -36,6 +36,10 @@ tracksPublicRouter.get(apiVersions.v1 + '/posted/:id', (req, res) =>
 
 // ================= GET ===================
 
+tracksPrivateRouter.get(apiVersions.v1 + '/detailed/:id', (req, res) =>
+  tracksController.getDetailedTrackInfo(req, res),
+);
+
 // ================= DELETE ===================
 
 tracksPrivateRouter.delete(apiVersions.v1 + '/:id', (req, res) =>

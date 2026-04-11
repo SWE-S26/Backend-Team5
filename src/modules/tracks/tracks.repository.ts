@@ -4,7 +4,9 @@ import { NotFoundError } from '../../shared/errors/responseErrors';
 import User, { IUser } from '../../shared/models/models.user';
 import { PublitioUploadResult } from '../../shared/abstractions/publitio';
 import { CreateTrackDTO, UpdateTrackDTO } from './dtos/tracks.request.body';
-import AdvancedAudioDetails from '../../shared/models/models.advanced-audio-details';
+import AdvancedAudioDetails, {
+  IAdvancedAudioDetails,
+} from '../../shared/models/models.advanced-audio-details';
 import { TrackInput } from './dtos/tracks.request.body';
 import { Types } from 'mongoose';
 
@@ -157,5 +159,14 @@ export class TracksRepository {
       });
       await userHistory.save();
     }
+  }
+
+  async getTrackAdvancedInfo(
+    trackId: string,
+  ): Promise<IAdvancedAudioDetails | null> {
+    const advancedTrackInfo = await AdvancedAudioDetails.findOne({
+      trackId: trackId,
+    });
+    return advancedTrackInfo;
   }
 }

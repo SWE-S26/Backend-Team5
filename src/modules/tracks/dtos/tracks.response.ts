@@ -1,4 +1,5 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
+import { UpdateTrackDTO } from './tracks.request.body';
 import { z } from 'zod';
 
 export const TrackResponse = extendedZod.object({
@@ -38,5 +39,7 @@ export const PaginationResponse = extendedZod.object({
     hasNext: extendedZod.boolean(),
   }),
 });
+
+export type TrackDetailedInfo = UpdateTrackDTO;
 
 export type PaginationResponseDTO = z.infer<typeof PaginationResponse>;

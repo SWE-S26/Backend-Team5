@@ -16,6 +16,7 @@ import {
   CloudinaryService,
   ImageFolder,
 } from '../../shared/abstractions/cloudinary.service';
+import { IAdvancedAudioDetails } from '../../shared/models/models.advanced-audio-details';
 
 type ImageInfo = {
   imgLink: string;
@@ -205,5 +206,34 @@ export class TracksService {
 
     await this.tracksRepository.addToHistory(userId, trackId);
     return true;
+  }
+
+  async getTrackDetailedInfo(
+    userId: string,
+    trackId: string,
+    userRole: string,
+  ) {
+    const searchTrack = await this.tracksRepository.findById(trackId);
+
+    if (!searchTrack) {
+      throw NotFoundError('Track Not Found');
+    }
+
+    const posterId = searchTrack.posterId.toString();
+
+    // if the user trying to delete is not
+    if (userRole !== 'Admin') {
+      if (userId !== posterId) {
+        // means user is trying to delete a track he has not posted
+        throw UnauthorizedError('Unauthorized Action');
+      }
+    }
+
+    const searchAdvancedInfo =
+      await this.tracksRepository.getTrackAdvancedInfo(trackId);
+    return TracksMapper.toTrackDetailedResponse(
+      searchTrack,
+      searchAdvancedInfo as IAdvancedAudioDetails,
+    );
   }
 }

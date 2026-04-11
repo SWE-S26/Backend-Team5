@@ -83,6 +83,7 @@ export const CreateTrackRequestBodyDTO = extendedZod.object({
     composer: extendedZod.string().optional(),
     ISWC: extendedZod.string().optional(),
     albumTitle: extendedZod.string().optional(),
+    releaseTitle: extendedZod.string().optional(),
   }),
 });
 
@@ -108,8 +109,25 @@ export type TrackInput = {
     comments: Types.ObjectId[];
     permissions: CreateTrackDTO['permissions'];
     license: CreateTrackDTO['license'];
+    composer: string;
+    releaseTitle: string;
+    hidden: boolean;
   };
-  advanced: CreateTrackDTO['advanced'];
+  advanced: {
+    buyLink: string;
+    recordLabel: string;
+    releaseDate: string;
+    publisher: string;
+    isrc: string;
+    iswc: string;
+    explicitContent: boolean;
+    pLine: string;
+    audioClip: {
+      start: number;
+      end: number;
+    };
+    albumTitle: string;
+  };
 };
 
 export type CreateTrackDTO = z.infer<typeof CreateTrackRequestBodyDTO>;
