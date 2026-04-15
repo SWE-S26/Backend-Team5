@@ -14,7 +14,7 @@ import {
   SignUpRequestDTO,
   VerifyEmailRequestDTO,
 } from './dtos/auth.request';
-import emailService from '../../shared/abstractions/email/EmailService';
+import emailService from '../../shared/abstractions/email/email.service';
 import passport, { GoogleAuthPayload } from './auth.utils';
 import logger from '../../shared/logger/logger';
 import {

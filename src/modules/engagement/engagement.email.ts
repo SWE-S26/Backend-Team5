@@ -1,4 +1,4 @@
-import emailService from '../../shared/abstractions/email/EmailService';
+import emailService from '../../shared/abstractions/email/email.service';
 import { EngagementRepository } from './engagement.repository';
 
 // Engagement enum for email notifications

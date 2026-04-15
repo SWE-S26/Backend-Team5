@@ -1,7 +1,7 @@
 import { AuthController } from '../../../src/modules/auth/auth.controller';
 import { AuthService } from '../../../src/modules/auth/auth.service';
 import { NextFunction, Request, Response } from 'express';
-import emailService from '../../../src/shared/abstractions/email/EmailService';
+import emailService from '../../../src/shared/abstractions/email/email.service';
 import { LoginResponse } from '../../../src/modules/auth/dtos/auth.response';
 import { JwtPayload } from 'jsonwebtoken';
 import passport from '../../../src/modules/auth/auth.utils';
