@@ -16,7 +16,7 @@ import {
   SubscriptionCreatedResult,
   SubscriptionUpdatedResult,
 } from './dtos/payment.response';
-import emailService from '../../shared/abstractions/email/EmailService';
+import emailService from '../../shared/abstractions/email/email.service';
 
 const PRICE_TO_PLAN: Record<
   string,

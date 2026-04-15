@@ -10,6 +10,11 @@ export const DEFAULT_AUDIO_IMAGE = {
   publicId: 'audio/file_d8zkpy',
 };
 
+export const DEFAULT_FAMILY_FRIENDLY_IMAGE = {
+  url: 'https://res.cloudinary.com/dr1sqiouu/image/upload/v1776194326/audio/file_wfcupp.jpg',
+  publicId: 'audio/file_wfcupp',
+};
+
 export const DEFAULT_PLAYLIST_IMAGE = {
   imgLink:
     'https://res.cloudinary.com/dr1sqiouu/image/upload/v1774614396/playlist/file_bh81hj.png',

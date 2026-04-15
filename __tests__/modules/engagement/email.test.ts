@@ -1,10 +1,10 @@
 import { Types } from 'mongoose';
 import { EngagementEmailService } from '../../../src/modules/engagement/engagement.email';
 import { EngagementRepository } from '../../../src/modules/engagement/engagement.repository';
-import emailService from '../../../src/shared/abstractions/email/EmailService';
+import emailService from '../../../src/shared/abstractions/email/email.service';
 
 jest.mock('../../../src/modules/engagement/engagement.repository');
-jest.mock('../../../src/shared/abstractions/email/EmailService');
+jest.mock('../../../src/shared/abstractions/email/email.service');
 
 describe('EngagementEmailService', () => {
   let service: EngagementEmailService;

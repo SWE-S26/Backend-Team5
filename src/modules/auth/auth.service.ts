@@ -12,7 +12,7 @@ import { LoginResponse, LoginSession, AuthTokens } from './dtos/auth.response';
 import { AuthRepository } from './auth.repository';
 import JWTService from '../../shared/abstractions/jwt.service';
 import { redisCacher } from '../../shared/abstractions/redis/redisCacher';
-import emailService from '../../shared/abstractions/email/EmailService';
+import emailService from '../../shared/abstractions/email/email.service';
 import { AuthMapper } from './dtos/auth.mapper';
 import { PaymentInfo } from '../../shared/models/models.user';
 import { paymentController } from '../payment/payment.routes';
@@ -226,6 +226,12 @@ export class AuthService {
     if (searchUser.ban) {
       throw ForbiddenError(
         `Your account has been banned. Due to ${searchUser.banReason} Please contact support.`,
+      );
+    }
+
+    if (!searchUser.password) {
+      throw NotFoundError(
+        'This email is registered with Google Sign-In. Please log in with Google.',
       );
     }
 
