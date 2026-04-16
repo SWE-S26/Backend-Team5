@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import 'dotenv/config';
-import logger from '../../shared/logger/logger';
+import logger from '../shared/logger/logger';
 let isConnected = false;
 let isShuttingDown = false;
 

@@ -57,3 +57,25 @@ export class CloudinaryService {
     return result;
   }
 }
+
+// CloudinaryService.uploadImage(
+//   Buffer.from(fs.readFileSync(newProfileImage)),
+//   ImageFolder.PROFILE,
+// )
+//   .then((result) => {
+//     console.log(result);
+//   })
+//   .catch((error) => {
+//     console.error('Error uploading image:', error);
+//   });
+
+// CloudinaryService.uploadImage(
+//   Buffer.from(fs.readFileSync(newAudioImage)),
+//   ImageFolder.AUDIO,
+// )
+//   .then((result) => {
+//     console.log(result);
+//   })
+//   .catch((error) => {
+//     console.error('Error uploading image:', error);
+//   });

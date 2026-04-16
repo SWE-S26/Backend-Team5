@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import logger from '../../src/shared/logger/logger';
 import 'dotenv/config';
 import User from '../../src/shared/models/models.user';
