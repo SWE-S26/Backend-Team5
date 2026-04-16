@@ -18,6 +18,7 @@ export class TracksMapper {
     audioInfo: PublitioUploadResult,
     imgInfo: ImageInfo | null,
     posterId: Types.ObjectId,
+    duration: number,
   ): TrackInput {
     return {
       trackInfo: {
@@ -28,6 +29,7 @@ export class TracksMapper {
         numOfPlays: 0,
         numberOfReposts: 0,
         numOfLikes: 0,
+        durationInSeconds: duration,
         likedBy: [] as Types.ObjectId[],
         comments: [] as Types.ObjectId[],
         permissions: track.permissions,
@@ -67,6 +69,7 @@ export class TracksMapper {
         description: trackBasicInfo.description,
         isPrivate: trackBasicInfo.isPrivate,
       },
+      durationInSeconds: track.durationInSeconds,
       audio: track.audio,
       image: track.image,
       numLikes: track.numOfLikes,
