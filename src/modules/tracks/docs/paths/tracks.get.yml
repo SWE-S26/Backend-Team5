@@ -3,6 +3,24 @@
     tags:
       - Track Management
     summary: Get all tracks paginated
+    description: >
+      Retrieves a paginated list of publicly available tracks.
+
+      This endpoint is primarily used for:
+        - Displaying tracks on the home page (e.g., feed, discovery, or trending sections).
+        - Fetching a limited subset of tracks without loading the entire dataset.
+        - Supporting features such as pagination, lazy loading, or infinite scrolling.
+
+      The response includes only a portion of the total tracks based on the provided
+      pagination parameters (such as page number and page size), ensuring efficient
+      data transfer and performance.
+
+      This endpoint does not return private or restricted tracks. Only publicly
+      accessible tracks are included in the response.
+
+      Clients can use this endpoint to build user-facing views that require browsing
+      or previewing tracks without overwhelming the system or the user with all
+      available records in the database.
     operationId: getAllTracks
 
     parameters:
@@ -69,8 +87,13 @@
                             properties:
                               audioLink:
                                 type: string
+                                example: https://example.com/audio.mp3
                               id:
                                 type: string
+                                example: LQ9uT2jj
+                          durationInSeconds:
+                            type: integer
+                            example: 13
                           image:
                             type: object
                             properties:
@@ -119,6 +142,19 @@
     tags:
       - Track Management
     summary: Get track by ID
+    description: >
+      Retrieves a single track by its unique ID.
+
+      This endpoint is used to fetch full details of a specific track, including its metadata,
+      audio information, and engagement statistics.
+
+      It is typically used in:
+        - Track detail pages (when a user opens a specific track).
+        - Playback screens where full track information is required.
+
+      The response includes all publicly accessible information about the track,
+      such as title, artists, genre, tags, audio URL, image, duration, and engagement metrics
+      (likes, plays, reposts, and comments).
     operationId: getTrackById
 
     parameters:
@@ -172,6 +208,18 @@
                           type: string
                         publicId:
                           type: string
+                    audio:
+                      type: object
+                      properties:
+                        audioLink:
+                          type: string
+                          example: https://example.com/audio.mp3
+                        id:
+                          type: string
+                          example: LQ9uT2jj
+                    durationInSeconds:
+                      type: integer
+                      example: 13
                     numLikes:
                       type: integer
                     numPlays:
@@ -201,6 +249,21 @@
     tags:
       - Track Management
     summary: Get track by permalink
+    description: >
+      Retrieves a single track using its unique permalink instead of the internal database ID.
+
+      This endpoint is used to fetch full track details in a user-friendly and SEO-friendly way,
+      since permalinks are readable and commonly used in URLs (e.g., /track/my-song-title).
+
+      It is typically used in:
+        - Public track pages accessed via shareable links.
+        - Web and mobile deep links where the track is identified by its permalink.
+        - SEO-friendly routing for track detail pages.
+
+      The response includes complete publicly available track information such as metadata,
+      audio details, image, duration.
+
+      If no track matches the provided permalink, a 404 Not Found response is returned.
     operationId: getTrackByPermalink
 
     parameters:
@@ -253,6 +316,18 @@
                           type: string
                         publicId:
                           type: string
+                    audio:
+                      type: object
+                      properties:
+                        audioLink:
+                          type: string
+                          example: https://example.com/audio.mp3
+                        id:
+                          type: string
+                          example: LQ9uT2jj
+                    durationInSeconds:
+                      type: integer
+                      example: 13
                     numLikes:
                       type: integer
                     numPlays:
@@ -282,6 +357,22 @@
     tags:
       - Track Management
     summary: Get user liked tracks
+    description: >
+      Retrieves a list of tracks that a specific user has liked.
+
+      This endpoint is used to fetch all publicly accessible tracks that the user has
+      interacted with by liking them.
+
+      It is typically used in:
+        - User profile pages (Liked Tracks section).
+
+      The response includes an array of full track objects containing metadata,
+      audio information, image, and engagement statistics.
+
+      Only tracks that are accessible to the requesting context (public or permitted content)
+      are returned (Private Tracks Are Not Returned).
+
+      If the user ID is invalid or does not exist, a 404 Not Found response is returned.
     operationId: getUserLikedTracks
 
     parameters:
@@ -365,6 +456,22 @@
     tags:
       - Track Management
     summary: Get user posted tracks
+    description: >
+      Retrieves a list of tracks that were posted (uploaded) by a specific user.
+
+      This endpoint is used to fetch all publicly available tracks created by the given user,
+      allowing clients to display user-generated content.
+
+      It is typically used in:
+        - User profile pages (Uploaded/Created Tracks section).
+        - Artist pages showing published works.
+
+      The response includes an array of full track objects containing metadata,
+      audio information, image, and engagement statistics.
+
+      Only tracks that are publicly accessible or allowed for viewing are returned.
+
+      If the user ID is invalid or does not exist, a 404 Not Found response is returned.
     operationId: getUserPostedTracks
 
     parameters:
@@ -419,6 +526,18 @@
                             type: string
                           publicId:
                             type: string
+                      audio:
+                        type: object
+                        properties:
+                          audioLink:
+                            type: string
+                            example: https://example.com/audio.mp3
+                          id:
+                            type: string
+                            example: LQ9uT2jj
+                      durationInSeconds:
+                        type: integer
+                        example: 13
                       numLikes:
                         type: integer
                       numPlays:

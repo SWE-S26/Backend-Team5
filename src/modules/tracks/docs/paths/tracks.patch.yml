@@ -1,11 +1,20 @@
-/api/tracks/v1/:
+ /api/tracks/v1/:
   patch:
     tags:
       - Track Management
     summary: Update track (metadata and/or media)
     description: >
-      Updates track metadata and optionally replaces the audio file or cover image.
-      All fields are optional. Only provided fields will be updated.
+      Updates an existing track. Supports partial updates.
+
+      This endpoint is used to:
+        - Update track metadata (title, genre, tags, etc.)
+        - Update permissions and licensing
+        - Update advanced publishing settings
+        - Replace cover image
+
+      Note:
+        - Structured data fields are sent as JSON strings in multipart/form-data
+        - Image upload is handled as binary file
 
     operationId: updateTrackById
 
@@ -17,40 +26,74 @@
             type: object
             properties:
 
+              id:
+                type: string
+                description: Track ID to update
+                example: 69d81e7846eff3dce7069b08
+
               image:
                 type: string
                 format: binary
                 description: Optional cover image replacement
 
-              id:
-                type: string
-                description: ID of the track to update
-                example: 69d81e7846eff3dce7069b08
-
               basicInfo:
                 type: string
-                description: |
-                  Stringified JSON. Example:
-                  {"title":"New Track Title","permalink":"new-track-title","mainArtists":["Artist 1"],"genre":"Hip-Hop","tags":["rap"],"description":"","isPrivate":false,"caption":""}
+                description: >
+                  JSON stringified object:
+                  {
+                    "title": "New Title",
+                    "permalink": "new-title",
+                    "mainArtists": ["Artist 1"],
+                    "genre": "Hip-Hop",
+                    "tags": ["rap"],
+                    "description": "",
+                    "isPrivate": false,
+                    "caption": ""
+                  }
 
               permissions:
                 type: string
-                description: |
-                  Stringified JSON. Example:
-                  {"enableDirectDownload":true,"offlineListening":true,"includeInRssFeed":true,"displayedEmbedCode":true,"enableAppPlayback":true}
+                description: >
+                  JSON stringified object:
+                  {
+                    "enableDirectDownload": true,
+                    "offlineListening": true,
+                    "includeInRssFeed": true,
+                    "displayedEmbedCode": true,
+                    "enableAppPlayback": true
+                  }
 
               license:
                 type: string
-                description: |
-                  Stringified JSON. Example:
-                  {"type":"allRightsReserved","attribution":false,"nonCommercial":false,"noDerivativeWorks":false,"shareAlike":false}
+                description: >
+                  JSON stringified object:
+                  {
+                    "type": "allRightsReserved",
+                    "attribution": false,
+                    "nonCommercial": false,
+                    "noDerivativeWorks": false,
+                    "shareAlike": false
+                  }
 
               advanced:
                 type: string
-                description: |
-                  Stringified JSON. Example:
-                  {"buyLink":"https://example.com/buy","recordLabel":"Label","releaseDate":"2026-01-01T00:00:00Z","publisher":"Publisher","ISRC":"USRC17607839","explicitContent":false,"pLine":"2026 Label","audioClipStart":0,"audioClipEnd":30,"composer":"Composer","ISWC":"T-123.456.789-0","albumTitle":"Album"}
-                  
+                description: >
+                  JSON stringified object:
+                  {
+                    "buyLink": "",
+                    "recordLabel": "",
+                    "releaseDate": "2026-01-01T00:00:00Z",
+                    "publisher": "",
+                    "ISRC": "",
+                    "ISWC": "",
+                    "explicitContent": false,
+                    "pLine": "",
+                    "audioClipStart": 0,
+                    "audioClipEnd": 30,
+                    "composer": "",
+                    "albumTitle": ""
+                  }
+
     responses:
       '200':
         description: Track updated successfully
@@ -63,55 +106,7 @@
                   type: string
                   example: Track Info Updated Successfully
                 data:
-                  type: object
-                  properties:
-                    _id:
-                      type: string
-                      example: 69d81e7846eff3dce7069b08
-                    basicInfo:
-                      type: object
-                      properties:
-                        title:
-                          type: string
-                        permalink:
-                          type: string
-                        mainArtists:
-                          type: array
-                          items:
-                            type: string
-                        genre:
-                          type: string
-                        tags:
-                          type: array
-                          items:
-                            type: string
-                        description:
-                          type: string
-                        isPrivate:
-                          type: boolean
-                    audio:
-                      type: object
-                      properties:
-                        audioLink:
-                          type: string
-                        id:
-                          type: string
-                    image:
-                      type: object
-                      properties:
-                        imgLink:
-                          type: string
-                        publicId:
-                          type: string
-                    numLikes:
-                      type: integer
-                    numPlays:
-                      type: integer
-                    numReposts:
-                      type: integer
-                    releaseDate:
-                      type: string
-                      format: date-time
+                  $ref: '#/components/schemas/Track'
 
       '400':
         $ref: '#/components/responses/InvalidParameters'
@@ -129,11 +124,23 @@
         $ref: '#/components/responses/ServerError'
 
 
-/api/tracks/v1/listen/{id}:
+ /api/tracks/v1/listen/{id}:
   patch:
     tags:
       - Track Management
     summary: Increment track play count
+    description: |
+      Increments the number of plays for a specific track.
+
+      This endpoint is called when a user starts and completes playback of a track
+      (from start to finish).
+
+      **Note:**
+      The current implementation treats a play event as a single increment trigger.
+
+      More advanced play-tracking logic (e.g., time-based validation, partial plays,
+      or engagement thresholds) may be introduced in future releases.
+
     operationId: incrementTrackNumPlays
 
     parameters:
