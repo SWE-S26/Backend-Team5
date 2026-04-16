@@ -1,5 +1,5 @@
 import { MessagingRepository } from './messaging.repository';
-import { CreateMessagingRequestDTO } from './dtos/messaging.request.body';
+import { SendNewMessageDTO } from './dtos/messaging.request.body';
 import {
   BadRequestError,
   ForbiddenError,
@@ -15,7 +15,7 @@ export class MessagingService {
 
   async sendNewMessage(
     userId: Types.ObjectId,
-    newMessageDTO: CreateMessagingRequestDTO,
+    newMessageDTO: SendNewMessageDTO,
   ): Promise<any[] | null> {
     // validate Receiver Exists
     const receiverId = new Types.ObjectId(newMessageDTO.receiverId);

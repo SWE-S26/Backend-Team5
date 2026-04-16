@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { MessagingService } from './messaging.service';
 import { JWTPayload } from '../../shared/abstractions/jwt.service';
-import { CreateMessagingRequestBodyDTO } from './dtos/messaging.request.body';
+import { SendNewMessageRequestDTO } from './dtos/messaging.request';
 import { Types } from 'mongoose';
 
 type userInfo = {
@@ -28,14 +28,14 @@ export class MessagingController {
   }
 
   async sendNewMessage(req: Request, res: Response): Promise<void> {
-    const validatedRequest = parseRequest(CreateMessagingRequestBodyDTO, req);
+    const validatedRequest = parseRequest(SendNewMessageRequestDTO, req);
 
     if (!validatedRequest.success) {
       throw validatedRequest.error;
     }
 
     const userInfo = this.getUserInfo(req);
-    const newMessageDTO = validatedRequest.data;
+    const newMessageDTO = validatedRequest.data.body;
     const userId = new Types.ObjectId(userInfo.userId);
     const updatedMessageHistory = await this.service.sendNewMessage(
       userId,

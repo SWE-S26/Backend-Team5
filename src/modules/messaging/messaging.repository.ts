@@ -103,6 +103,7 @@ export class MessagingRepository {
   ): Promise<IConversationPopulated[] | null> {
     return await Conversation.find({
       participants: userId,
+      isArchived: false,
     })
       .populate('participants', 'displayName profileImg')
       .sort({ updatedAt: -1 })
