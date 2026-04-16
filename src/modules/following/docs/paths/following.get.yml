@@ -22,7 +22,13 @@ api/social/v1/followers/{userId}:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/UserSummary'
+                allOf:
+                  - $ref: '#/components/schemas/UserSummary'
+                  - type: object
+                    properties:
+                      isFollowed:
+                        type: boolean
+                        description: Whether the authenticated user follows this user
       '400':
         description: Invalid user ID
         content:
@@ -85,7 +91,13 @@ api/social/v1/following/{userId}:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/UserSummary'
+                allOf:
+                  - $ref: '#/components/schemas/UserSummary'
+                  - type: object
+                    properties:
+                      isFollowed:
+                        type: boolean
+                        description: Whether the authenticated user follows this user
       '400':
         description: Invalid user ID
         content:
