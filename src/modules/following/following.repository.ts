@@ -239,4 +239,22 @@ export class FollowingRepository {
 
     return docs.map((doc) => doc.blockerId);
   }
+
+  async isUsersFollowed(
+    userId: string,
+    usersIds: Types.ObjectId[],
+  ): Promise<Record<string, boolean>> {
+    const doc = await Following.findOne({ userId }, { followed: 1 }).lean();
+
+    const followedSet = new Set(doc?.followed.map((id) => id.toString()) ?? []);
+
+    const isFollowedMap: Record<string, boolean> = {};
+
+    usersIds.forEach((id) => {
+      const key = id.toString();
+      isFollowedMap[key] = followedSet.has(key);
+    });
+
+    return isFollowedMap;
+  }
 }

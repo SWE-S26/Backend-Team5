@@ -1,7 +1,10 @@
 import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { FollowingService } from './following.service';
-import { UserSummaryDTOType } from './dtos/following.response';
+import {
+  UserSummaryDTOType,
+  UserSummaryWithFollowDTOType,
+} from './dtos/following.response';
 import { UserIdParamDTO } from './dtos/following.request.params';
 import {
   GetFollowersRequestDTO,
@@ -86,11 +89,10 @@ export class FollowingController {
     const offset = validatedRequest.data.query?.offset ?? 0;
     const limit = validatedRequest.data.query?.limit ?? 20;
 
-    const followers: UserSummaryDTOType[] = await this.service.getFollowers(
-      userId,
-      offset,
-      limit,
-    );
+    const myId = req.userInfo!._id;
+
+    const followers: UserSummaryWithFollowDTOType[] =
+      await this.service.getFollowers(userId, myId, offset, limit);
 
     res.json(followers);
   }
@@ -104,11 +106,10 @@ export class FollowingController {
     const offset = validatedRequest.data.query?.offset ?? 0;
     const limit = validatedRequest.data.query?.limit ?? 20;
 
-    const followed: UserSummaryDTOType[] = await this.service.getFollowed(
-      userId,
-      offset,
-      limit,
-    );
+    const myId = req.userInfo!._id;
+
+    const followed: UserSummaryWithFollowDTOType[] =
+      await this.service.getFollowed(userId, myId, offset, limit);
 
     res.json(followed);
   }
