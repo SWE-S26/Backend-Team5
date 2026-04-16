@@ -3,7 +3,6 @@ import { Schema, Types, model } from 'mongoose';
 export type IMessage = {
   chatId: string;
   senderId: Types.ObjectId;
-  receiverId: Types.ObjectId;
   content: string;
   createdAt: Date;
 };
@@ -12,15 +11,11 @@ const messageSchema = new Schema(
   {
     chatId: {
       type: String,
+      ref: 'Conversation',
       required: true,
       index: true,
     },
     senderId: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    receiverId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
@@ -30,6 +25,7 @@ const messageSchema = new Schema(
       required: true,
       minlength: 1,
       maxlength: 2000,
+      trim: true,
     },
   },
   { timestamps: { createdAt: 'createdAt', updatedAt: false } },
