@@ -2,7 +2,7 @@ import Track from '../../src/shared/models/models.track';
 import logger from '../../src/shared/logger/logger';
 import {
   OLD_DEFAULT_AUDIO_IMAGE,
-  NEW_DEFAULT_AUDIO_IMAGE,
+  DEFAULT_AUDIO_IMAGE,
 } from '../../src/config/constants';
 
 export const changeTracksImages = async () => {
@@ -19,8 +19,8 @@ export const changeTracksImages = async () => {
       },
       {
         $set: {
-          'image.imgLink': NEW_DEFAULT_AUDIO_IMAGE.imgLink,
-          'image.publicId': NEW_DEFAULT_AUDIO_IMAGE.publicId,
+          'image.imgLink': DEFAULT_AUDIO_IMAGE.imgLink,
+          'image.publicId': DEFAULT_AUDIO_IMAGE.publicId,
         },
       },
     );

@@ -1,7 +1,7 @@
 import User from '../../src/shared/models/models.user';
 import logger from '../../src/shared/logger/logger';
 import {
-  NEW_DEFAULT_PROFILE_IMAGE,
+  DEFAULT_PROFILE_IMAGE,
   OLD_DEFAULT_PROFILE_IMAGE,
 } from '../../src/config/constants';
 
@@ -28,10 +28,10 @@ export const changeProfileImages = async () => {
       },
       {
         $set: {
-          'profileImg.imgLink': OLD_DEFAULT_PROFILE_IMAGE.imgLink,
-          'profileImg.publicId': OLD_DEFAULT_PROFILE_IMAGE.publicId,
-          'bannerImg.imgLink': OLD_DEFAULT_PROFILE_IMAGE.imgLink,
-          'bannerImg.publicId': OLD_DEFAULT_PROFILE_IMAGE.publicId,
+          'profileImg.imgLink': DEFAULT_PROFILE_IMAGE.imgLink,
+          'profileImg.publicId': DEFAULT_PROFILE_IMAGE.publicId,
+          'bannerImg.imgLink': DEFAULT_PROFILE_IMAGE.imgLink,
+          'bannerImg.publicId': DEFAULT_PROFILE_IMAGE.publicId,
         },
       },
     );

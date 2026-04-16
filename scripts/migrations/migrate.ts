@@ -1,5 +1,8 @@
-import { initializeDbConnection } from '../../src/config/db/connect';
-import mongoose, { mongo } from 'mongoose';
+import {
+  closeDbConnection,
+  initializeDbConnection,
+} from '../../src/config/connect';
+import mongoose from 'mongoose';
 import logger from '../../src/shared/logger/logger';
 import { cleanUpDeletedUsers } from './cleanUpDeletedUsersSettings';
 import { deleteStaleUnverifiedUsers } from './cleanUpUnverifiedUsers';
@@ -27,6 +30,7 @@ initializeDbConnection()
     return runMigrations();
   })
   .then(() => {
+    closeDbConnection();
     logger.info('Migrations completed successfully.');
   })
   .catch((err) => {
