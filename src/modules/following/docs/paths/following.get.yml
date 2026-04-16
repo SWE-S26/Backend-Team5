@@ -1,4 +1,4 @@
-api/social/v1/followers/{userId}:
+/api/social/v1/followers/{userId}:
   get:
     tags:
       - Social
@@ -67,7 +67,7 @@ api/social/v1/followers/{userId}:
                   code: 404
 
 # Get following
-api/social/v1/following/{userId}:
+/api/social/v1/following/{userId}:
   get:
     tags:
       - Social
@@ -136,7 +136,7 @@ api/social/v1/following/{userId}:
                   code: 404
 
 # Suggested users
-api/social/v1/suggested:
+/api/social/v1/suggested:
   get:
     tags:
       - Social
@@ -168,7 +168,7 @@ api/social/v1/suggested:
                   message: "Unauthorized"
                   code: 401
 
-api/social/v1/blocked:
+/api/social/v1/blocked:
   get:
     tags:
       - Social

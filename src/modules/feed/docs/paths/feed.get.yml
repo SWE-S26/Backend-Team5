@@ -1,4 +1,4 @@
-  api/feed:
+  /api/feed:
     get:
       tags:
         - Feed
@@ -34,7 +34,7 @@
                 $ref: '#/components/schemas/ErrorResponse'
 
   # Global Search
-  api/search:
+  /api/search:
     get:
       tags:
         - Search
@@ -113,7 +113,7 @@
   
   
   # Search Suggestions
-  api/search/suggestions:
+  /api/search/suggestions:
     get:
       tags:
         - Search
@@ -190,7 +190,7 @@
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  api/search/history:
+  /api/search/history:
     get:
       tags:
         - Search
@@ -214,7 +214,7 @@
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  api/trending:
+  /api/trending:
     get:
       tags:
         - Feed
