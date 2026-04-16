@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { MessagingController } from './messaging.controller';
+import apiVersions from '../../shared/middleware/apiVersions';
 
 const messagingRouter = Router();
 const messagingController = new MessagingController();
 
-messagingRouter.post('/', (req, res) =>
+messagingRouter.post(apiVersions.v1 + '/send', (req, res) =>
   messagingController.sendNewMessage(req, res),
 );
 
