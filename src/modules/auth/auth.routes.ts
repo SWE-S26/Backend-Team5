@@ -64,6 +64,11 @@ authRouter.post(
 );
 
 authRouter.post(
+  apiVersions.v1 + '/google/resend-code',
+  authController.googleResendVerificationCode,
+);
+
+authRouter.post(
   apiVersions.v1 + '/google/verify-code',
   authController.googleVerifyCode,
 );

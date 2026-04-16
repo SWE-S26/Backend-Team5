@@ -457,6 +457,51 @@
       500:
         $ref: '#/components/responses/ServerError'
 
+/api/auth/v1/google/resend-code:
+  post:
+    tags:
+      - Authentication
+    summary: Resend verification code for Google sign-in
+    description: |
+      The SAME verification is resent to the user's email if they request it again 
+      within the 5-minute validity window. 
+      This allows users to receive a new code 
+      if they missed or lost the original email without having to restart the Google sign-in process.
+
+      **THIS DOES NOT EXTEND THE 5 MINUTE WINDOW!!!**
+
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - pendingToken
+            properties:
+              pendingToken:
+                type: string
+                description: Short-lived JWT from Google callback step
+                example: 'eyJhbGciOi...'
+
+    responses:
+      200:
+        description: Verification code resent
+        content:
+          application/json:
+            example:
+              message: 'Verification code resent successfully'
+      400:
+        $ref: '#/components/responses/InvalidParameters'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      404:
+        $ref: '#/components/responses/NotFound'
+      410:
+        $ref: '#/components/responses/Gone'
+      500:
+        $ref: '#/components/responses/ServerError'
+
 /api/auth/v1/google/complete:
   post:
     tags:

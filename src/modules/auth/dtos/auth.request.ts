@@ -9,6 +9,7 @@ import {
   DesktopPollingRequestBodyDTO,
   ForgotPasswordRequestBodyDTO,
   GoogleCompleteSignUpRequestBodyDTO,
+  GoogleResendVerificationCodeRequestBodyDTO,
   GoogleVerifyCodeRequestBodyDTO,
   LoginInRequestBodyDTO,
   MobileApproveLoginRequestBodyDTO,
@@ -53,6 +54,10 @@ export const GoogleCompleteSignUpRequestDTO = extendedZod.object({
 export const GoogleVerifyCodeRequestDTO = extendedZod.object({
   query: loginCrossQueryDto,
   body: GoogleVerifyCodeRequestBodyDTO,
+});
+
+export const GoogleResendVerificationCodeRequestDTO = extendedZod.object({
+  body: GoogleResendVerificationCodeRequestBodyDTO,
 });
 
 export const DesktopPollingRequestDTO = extendedZod.object({
