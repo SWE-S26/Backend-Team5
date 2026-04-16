@@ -4,7 +4,5 @@ import { ListMessagingsQueryDto } from './messaging.request.query';
 import { CreateMessagingRequestBodyDTO } from './messaging.request.body';
 
 export const CreateMessagingRequestDTO = extendedZod.object({
-  params: MessagingIdParamDTO,
-  query: ListMessagingsQueryDto,
   body: CreateMessagingRequestBodyDTO,
 });

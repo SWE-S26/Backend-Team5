@@ -1,7 +1,8 @@
 import { Schema, Types, model } from 'mongoose';
 
 export type IMessage = {
-  chatId: string;
+  _id: Types.ObjectId;
+  chatId: Types.ObjectId;
   senderId: Types.ObjectId;
   content: string;
   createdAt: Date;
@@ -10,7 +11,7 @@ export type IMessage = {
 const messageSchema = new Schema(
   {
     chatId: {
-      type: String,
+      type: Schema.Types.ObjectId,
       ref: 'Conversation',
       required: true,
       index: true,
