@@ -7,6 +7,7 @@ import {
   ForgotPasswordRequestDTO,
   GoogleCallbackRequestDTO,
   GoogleCompleteSignUpRequestDTO,
+  GoogleResendVerificationCodeRequestDTO,
   GoogleVerifyCodeRequestDTO,
   LogInRequestDTO,
   MobileLoginApprovalRequestDTO,
@@ -607,6 +608,26 @@ export class AuthController {
         }
       },
     )(req, res, next);
+  };
+
+  googleResendVerificationCode = async (req: Request, res: Response) => {
+    const validatedRequest = parseRequest(
+      GoogleResendVerificationCodeRequestDTO,
+      req,
+    );
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const { pendingToken } = validatedRequest.data.body;
+
+    const decryptedPendingToken = SecureParams.decrypt(pendingToken);
+
+    await this.service.resendGoogleVerificationEmail(decryptedPendingToken);
+
+    res.json({
+      message: 'Verification code resent successfully',
+    });
   };
 
   googleVerifyCode = async (

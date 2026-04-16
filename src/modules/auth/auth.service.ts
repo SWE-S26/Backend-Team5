@@ -17,6 +17,7 @@ import { AuthMapper } from './dtos/auth.mapper';
 import { PaymentInfo } from '../../shared/models/models.user';
 import { paymentController } from '../payment/payment.routes';
 import { LoginRequestBody, SignUpRequestBody } from './dtos/auth.request.body';
+import { email } from 'zod';
 
 type QRSession = {
   status: 'pending' | 'verified';
@@ -301,6 +302,36 @@ export class AuthService {
     });
 
     return pendingToken;
+  }
+
+  async resendGoogleVerificationEmail(pendingToken: string): Promise<void> {
+    const payload = this.jwtService.verifyPending(pendingToken);
+
+    if (!payload) {
+      throw UnauthorizedError('Invalid token');
+    }
+
+    const code = await redisCacher.get<string>(
+      `google-signin:${payload.userId}`,
+    );
+
+    if (!code) {
+      throw GoneError(
+        'Verification code expired. Please sign in with Google again to receive a new code.',
+      );
+    }
+
+    const user = await this.authRepository.findById(payload.userId);
+
+    if (!user) {
+      throw NotFoundError('User not found');
+    }
+
+    await emailService.sendGoogleSignInVerificationCode(
+      user.displayName,
+      user.email,
+      code,
+    );
   }
 
   async verifyGoogleSignInCode(

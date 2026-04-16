@@ -127,6 +127,19 @@ export const GoogleVerifyCodeRequestBodyDTO = extendedZod
     },
   });
 
+export const GoogleResendVerificationCodeRequestBodyDTO = extendedZod
+  .object({
+    pendingToken: extendedZod.string(
+      'Missing pending token from Google sign-in process',
+    ),
+  })
+  .openapi('GoogleResendVerificationCodeRequest', {
+    example: {
+      pendingToken:
+        'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.amno345pqr678stu901vwx234yz567',
+    },
+  });
+
 export const DesktopPollingRequestBodyDTO = extendedZod
   .object({
     qrCode: extendedZod.string('Missing QR code'),
