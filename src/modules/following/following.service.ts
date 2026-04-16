@@ -2,7 +2,10 @@ import { FollowingRepository, UserStats } from './following.repository';
 import User, { IUser } from '../../shared/models/models.user';
 import Following from '../../shared/models/models.following';
 import Track from '../../shared/models/models.track';
-import { UserSummaryDTOType } from './dtos/following.response';
+import {
+  UserSummaryDTOType,
+  UserSummaryWithFollowDTOType,
+} from './dtos/following.response';
 import {
   NotFoundError,
   BadRequestError,
@@ -100,9 +103,10 @@ export class FollowingService {
 
   async getFollowers(
     id: string,
+    myId: string,
     offset = 0,
     limit = 20,
-  ): Promise<UserSummaryDTOType[]> {
+  ): Promise<UserSummaryWithFollowDTOType[]> {
     const existingUser = await this.repository.getUserById(id);
     if (!existingUser) throw NotFoundError('User not found');
 
@@ -116,13 +120,17 @@ export class FollowingService {
     const usersStats: Record<string, UserStats> =
       await this.repository.getUsersStats(userIds);
 
+    const isFollowedUsers: Record<string, boolean> =
+      await this.repository.isUsersFollowed(myId, userIds);
+
     const combined = users.map((user) => ({
       ...user,
       ...usersStats[user._id.toString()],
+      isFollowed: isFollowedUsers[user._id.toString()] ?? false,
     }));
 
-    const followers: UserSummaryDTOType[] = combined.map((user) =>
-      FollowingMapper.toUserSummary(user),
+    const followers: UserSummaryWithFollowDTOType[] = combined.map((user) =>
+      FollowingMapper.toUserSummaryWithFollow(user),
     );
 
     return followers;
@@ -130,9 +138,10 @@ export class FollowingService {
 
   async getFollowed(
     id: string,
+    myId: string,
     offset = 0,
     limit = 20,
-  ): Promise<UserSummaryDTOType[]> {
+  ): Promise<UserSummaryWithFollowDTOType[]> {
     const existingUser = await this.repository.getUserById(id);
     if (!existingUser) throw NotFoundError('User not found');
 
@@ -146,13 +155,17 @@ export class FollowingService {
     const usersStats: Record<string, UserStats> =
       await this.repository.getUsersStats(userIds);
 
+    const isFollowedUsers: Record<string, boolean> =
+      await this.repository.isUsersFollowed(myId, userIds);
+
     const combined = users.map((user) => ({
       ...user,
       ...usersStats[user._id.toString()],
+      isFollowed: isFollowedUsers[user._id.toString()] ?? false,
     }));
 
-    const followed: UserSummaryDTOType[] = combined.map((user) =>
-      FollowingMapper.toUserSummary(user),
+    const followed: UserSummaryWithFollowDTOType[] = combined.map((user) =>
+      FollowingMapper.toUserSummaryWithFollow(user),
     );
 
     return followed;
