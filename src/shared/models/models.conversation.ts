@@ -1,15 +1,17 @@
 import { Schema, Types, model } from 'mongoose';
 
 export type IConversation = {
+  _id: Types.ObjectId;
   participants: Types.ObjectId[];
   isArchived: boolean;
   isReported: boolean;
   lastMessage?: {
-    content?: string;
+    content: string;
     senderId: Types.ObjectId;
-    timestamp?: Date;
+    timestamp: Date;
   };
   createdAt: Date;
+  updatedAt: Date;
 };
 
 const lastMessageSchema = new Schema(
@@ -58,10 +60,9 @@ const conversationSchema = new Schema(
     },
     lastMessage: {
       type: lastMessageSchema,
-      default: null,
     },
   },
-  { timestamps: { createdAt: 'createdAt', updatedAt: false } },
+  { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } },
 );
 
 const Conversation = model<IConversation>('Conversation', conversationSchema);
