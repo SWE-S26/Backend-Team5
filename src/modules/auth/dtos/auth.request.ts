@@ -1,8 +1,6 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
-import { AuthIdParamDTO } from './auth.request.params';
 import {
   GoogleCallbackQueryDto,
-  ListAuthsQueryDto,
   loginCrossQueryDto,
   VerifyEmailQueryDto,
 } from './auth.request.query';
@@ -11,18 +9,13 @@ import {
   DesktopPollingRequestBodyDTO,
   ForgotPasswordRequestBodyDTO,
   GoogleCompleteSignUpRequestBodyDTO,
+  GoogleResendVerificationCodeRequestBodyDTO,
   GoogleVerifyCodeRequestBodyDTO,
   LoginInRequestBodyDTO,
   MobileApproveLoginRequestBodyDTO,
   ResetPasswordRequestBodyDTO,
   SignUpRequestBodyDTO,
 } from './auth.request.body';
-
-// ! THIS IS AN EXAMPLE DTO
-export const CreateAuthRequestDTO = extendedZod.object({
-  params: AuthIdParamDTO,
-  query: ListAuthsQueryDto,
-});
 
 export const SignUpRequestDTO = extendedZod.object({
   body: SignUpRequestBodyDTO,
@@ -61,6 +54,10 @@ export const GoogleCompleteSignUpRequestDTO = extendedZod.object({
 export const GoogleVerifyCodeRequestDTO = extendedZod.object({
   query: loginCrossQueryDto,
   body: GoogleVerifyCodeRequestBodyDTO,
+});
+
+export const GoogleResendVerificationCodeRequestDTO = extendedZod.object({
+  body: GoogleResendVerificationCodeRequestBodyDTO,
 });
 
 export const DesktopPollingRequestDTO = extendedZod.object({

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { redisCacher } from '../shared/abstractions/redis/redisCacher';
 import logger from '../shared/logger/logger';
-import { closeDbConnection } from './db/connect';
+import { closeDbConnection } from './connect';
 
 const shutDown = async (signal: NodeJS.Signals) => {
   logger.info(`[Shutdown] Received ${signal}, shutting down gracefully...`);

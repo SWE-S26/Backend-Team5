@@ -1,14 +1,42 @@
-# DELETE
-/api/tracks/id/{trackId}:
+/api/tracks/v1/{trackId}:
   delete:
     tags:
       - Track Management
-    summary: Retrieve track(s) by audio ID
-    description: Returns track information associated with the provided audio ID.
+    summary: Delete a track by ID
+    description: Permanently deletes the track associated with the provided track ID. This action cannot be undone.
+    operationId: deleteTrackById
+
     parameters:
       - name: trackId
         in: path
         required: true
-        description: The ID of the audio resource.
+        description: Unique identifier of the track to delete.
         schema:
           $ref: '#/components/schemas/Id'
+
+    responses:
+      '200':
+        description: Track successfully deleted.
+        content:
+          application/json:
+            example:
+              message: Track Deleted Sucessfully
+
+
+      '400':
+        $ref: '#/components/responses/BadRequest'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '403':
+        $ref: '#/components/responses/Forbidden'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+      '503':
+        $ref: '#/components/responses/ServiceUnavailable'

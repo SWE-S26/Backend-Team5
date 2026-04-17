@@ -1,23 +1,95 @@
-# GET
-# /api/playback/example:
-#   get:
-#     tags:
-#       - playback
-#     summary: Get agent profile by ID.
-#     description: Returns the agent profile associated with the provided ID.
-#     parameters:
-#       - $ref: '#/components/parameters/IdPathParam'
-#     responses:
-#       200:
-#         description: Successfully retrieved agent profile.
-#         content:
-#           application/json:
-#             schema:
-#               $ref: '#/components/schemas/GetUserByIdResponseDTO'
+/api/playback/v1/history/tracks:
+  get:
+    tags:
+      - Playback
+    summary: Get user history tracks
+    operationId: getUserHistoryTracks
+    security:
+      - bearerAuth: []
 
-#       401:
-#         $ref: '#/components/responses/Unauthorized'
-#       404:
-#         $ref: '#/components/responses/NotFound'
-#       500:
-#         $ref: '#/components/responses/ServerError'
+    responses:
+      '200':
+        description: User history retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: User History Retrieved Successfully
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: 69d81e0c46eff3dce7069b04
+                      basicInfo:
+                        type: object
+                        properties:
+                          title:
+                            type: string
+                            example: My Track
+                          permalink:
+                            type: string
+                            example: my-track
+                          mainArtists:
+                            type: array
+                            items:
+                              type: string
+                            example: ["Artist One"]
+                          genre:
+                            type: string
+                            example: Hip-Hop
+                          tags:
+                            type: array
+                            items:
+                              type: string
+                          description:
+                            type: string
+                          isPrivate:
+                            type: boolean
+                            example: false
+                      audio:
+                        type: object
+                        properties:
+                          audioLink:
+                            type: string
+                            example: https://example.com/audio.mp3
+                          id:
+                            type: string
+                            example: zTwsHooe
+                      image:
+                        type: object
+                        properties:
+                          imgLink:
+                            type: string
+                            example: https://example.com/image.jpg
+                          publicId:
+                            type: string
+                            example: audio/file_lqvurx
+                      numLikes:
+                        type: integer
+                        example: 0
+                      numPlays:
+                        type: integer
+                        example: 2
+                      numReposts:
+                        type: integer
+                        example: 0
+                      numComments:
+                        type: integer
+                        example: 0
+                      releaseDate:
+                        type: string
+                        format: date-time
+                        example: 2026-04-09T21:45:48.437Z
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '404':
+        $ref: '#/components/responses/NotFound'
+      '500':
+        $ref: '#/components/responses/ServerError'

@@ -3,26 +3,30 @@ import { imgSchema, audioSchema } from './schemas.shared';
 import { DEFAULT_AUDIO_IMAGE } from '../../config/constants';
 import { CloudinaryService } from '../abstractions/cloudinary.service';
 import logger from '../logger/logger';
-import AdvancedAudioDetails from './models.advanced-audio-details';
-import Playlist from './models.playlist';
-import User from './models.user';
-import Comment from './models.comment';
-import Plays from './models.plays';
-import PlaysTrackHandling from './models.plays-track-handling';
 import Report from './models.report';
 import Notification from './models.notification';
 import SearchHistory from './models.search-history';
+import AdvancedAudioDetails, {
+  IAdvancedAudioDetails,
+} from './models.advanced-audio-details';
+import Comment from './models.comment';
+import User from './models.user';
+import History from './models.history';
+import Playlist from './models.playlist';
+import Plays from './models.plays';
+import PlaysTrackHandling from './models.plays-track-handling';
 
 export type ITrack = {
   _id: Types.ObjectId;
   basicInfo: {
     title: string;
     permalink: string;
-    mainArtists: [string];
+    mainArtists: string[];
     genre: string;
-    tags: [string];
-    description: [string];
+    tags: string[];
+    description: string;
     isPrivate: boolean;
+    caption: string;
   };
   audio: {
     url: string;
@@ -34,10 +38,10 @@ export type ITrack = {
     publicId: string;
   };
   numOfPlays: number;
-  comments: [Types.ObjectId];
+  comments: Types.ObjectId[];
   numberOfReposts: number;
   numOfLikes: number;
-  likedBy: [Types.ObjectId];
+  likedBy: Types.ObjectId[];
   permissions: {
     enableDirectDownload: boolean;
     offlineListening: boolean;
@@ -54,7 +58,6 @@ export type ITrack = {
   };
   composer: string;
   releaseTitle: string;
-  caption: string;
   hidden: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -139,12 +142,17 @@ const trackSchema = new Schema(
         default: [],
       },
       description: {
-        type: [String],
-        default: [],
+        type: String,
+        default: '',
       },
       isPrivate: {
         type: Boolean,
         default: false,
+      },
+      caption: {
+        type: String,
+        default: '',
+        maxlength: 500,
       },
     },
     audio: {
@@ -207,17 +215,50 @@ const trackSchema = new Schema(
       default: '',
       maxlength: 100,
     },
-    caption: {
-      type: String,
-      default: '',
-      maxlength: 500,
-    },
     hidden: {
       type: Boolean,
       default: false,
     },
   },
   { timestamps: true },
+);
+
+trackSchema.pre<ITrack>(
+  'deleteOne',
+  { document: true, query: false },
+  async function () {
+    const trackToDelete = this;
+
+    // Get all comments of the track
+    const comments = await Comment.find({ trackId: trackToDelete._id }).select(
+      '_id replyList',
+    );
+    const commentIds = comments.map((c) => c._id);
+    const replyIds = comments.flatMap((c) => c.replyList);
+
+    await Promise.all([
+      AdvancedAudioDetails.deleteOne({ trackId: trackToDelete._id }),
+      Comment.deleteMany({ _id: { $in: [...commentIds, ...replyIds] } }),
+      User.updateMany(
+        { likedTracks: trackToDelete._id },
+        { $pull: { likedTracks: trackToDelete._id } },
+      ),
+      User.deleteMany(
+        { reposts: { $elemMatch: { id: trackToDelete._id, type: 'track' } } },
+        { $pull: { reposts: { id: trackToDelete._id, type: 'track' } } },
+      ),
+      History.updateMany(
+        { 'historyTracks.trackId': trackToDelete._id },
+        { $pull: { historyTracks: { trackId: trackToDelete._id } } },
+      ),
+      Playlist.updateMany(
+        { listOfTracks: trackToDelete._id },
+        { $pull: { listOfTracks: trackToDelete._id } },
+      ),
+      Plays.deleteMany({ trackId: trackToDelete._id }),
+      PlaysTrackHandling.deleteOne({ trackId: trackToDelete._id }),
+    ]);
+  },
 );
 
 const Track = model<ITrack>('Track', trackSchema);

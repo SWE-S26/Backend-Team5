@@ -1,14 +1,77 @@
 import { Router } from 'express';
 import { TracksController } from './tracks.controller';
+import apiVersions from '../../shared/middleware/apiVersions';
 
-const router = Router();
-//TODO: const tracksController = new TracksController(/* TODO: inject service */);
+import multer from 'multer';
 
-// tracksRouter.get('/',      (req, res) => tracksController.findAll(req, res));
-// tracksRouter.get('/:id',   (req, res) => tracksController.findOne(req, res));
-// tracksRouter.post('/',     (req, res) => tracksController.create(req, res));
-// tracksRouter.put('/:id',   (req, res) => tracksController.replace(req, res));
-// tracksRouter.patch('/:id', (req, res) => tracksController.update(req, res));
-// tracksRouter.delete('/:id',(req, res) => tracksController.remove(req, res));
+const upload = multer({ storage: multer.memoryStorage() });
 
-export default router;
+const tracksPrivateRouter = Router();
+const tracksPublicRouter = Router();
+const tracksController = new TracksController();
+
+// ========================= PUBLIC =========================
+
+tracksPublicRouter.get(apiVersions.v1 + '/liked/:id', (req, res) =>
+  tracksController.getUserLikedTracks(req, res),
+);
+
+tracksPublicRouter.get(apiVersions.v1 + '/:id', (req, res) =>
+  tracksController.getTrackById(req, res),
+);
+
+tracksPublicRouter.get(apiVersions.v1 + '/permalink/:permalink', (req, res) =>
+  tracksController.getTrackByPermalink(req, res),
+);
+
+tracksPublicRouter.get(apiVersions.v1, (req, res) =>
+  tracksController.getPaginatedListOfTracks(req, res),
+);
+
+tracksPublicRouter.get(apiVersions.v1 + '/posted/:id', (req, res) =>
+  tracksController.getUserPostedTracks(req, res),
+);
+
+// ======================== PRIVATE =========================
+
+// ================= GET ===================
+
+tracksPrivateRouter.get(apiVersions.v1 + '/detailed/:id', (req, res) =>
+  tracksController.getDetailedTrackInfo(req, res),
+);
+
+// ================= DELETE ===================
+
+tracksPrivateRouter.delete(apiVersions.v1 + '/:id', (req, res) =>
+  tracksController.deleteTrackById(req, res),
+);
+
+// ================= PATCH ===================
+
+tracksPrivateRouter.patch(apiVersions.v1 + '/listen/:id', (req, res) =>
+  tracksController.incrementTrackNumPlays(req, res),
+);
+
+tracksPrivateRouter.patch(
+  apiVersions.v1,
+  upload.fields([{ name: 'image', maxCount: 1 }]),
+  (req, res) => tracksController.updateTrackInfo(req, res),
+);
+
+// ================= POST ===================
+
+tracksPrivateRouter.post(
+  apiVersions.v1,
+  upload.fields([
+    { name: 'audio', maxCount: 1 },
+    { name: 'image', maxCount: 1 },
+  ]),
+  (req, res) => tracksController.uploadAudioTrack(req, res),
+);
+
+tracksPrivateRouter.post(apiVersions.v1 + '/played/:id', (req, res) =>
+  tracksController.addTrackToUserHistory(req, res),
+);
+
+export { tracksPublicRouter };
+export default tracksPrivateRouter;

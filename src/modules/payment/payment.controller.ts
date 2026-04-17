@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { PaymentService } from './payment.service';
-import emailService from '../../shared/abstractions/email/EmailService';
+import emailService from '../../shared/abstractions/email/email.service';
 import {
   CancelSubscriptionRequestDTO,
   CreatePayingUserRequestDTO,

@@ -1,121 +1,58 @@
-# POST
-/api/tracks:
+/api/tracks/v1:
   post:
     tags:
       - Track Management
     summary: Create a new track
-    description: Creates a new audio track with metadata, permissions, licensing information, and associated media files. Flattened for multipart/form-data.
+    description: Creates a new audio track with metadata, permissions, licensing information, and associated media files.
+    operationId: createTrack
     requestBody:
       required: true
       content:
         multipart/form-data:
           schema:
             type: object
-            properties:
-              # BasicInfo fields
-              title:
-                type: string
-              permalink:
-                type: string
-              mainArtists:
-                type: array
-                items:
-                  type: string
-              genre:
-                type: string
-              tags:
-                type: array
-                items:
-                  type: string
-              description:
-                type: array
-                items:
-                  type: string
-              isPrivate:
-                type: boolean
-
-              # Permissions fields
-              enableDirectDownload:
-                type: boolean
-              offlineListening:
-                type: boolean
-              includeInRssFeed:
-                type: boolean
-              displayedEmbedCode:
-                type: boolean
-              enableAppPlayback:
-                type: boolean
-
-              # Licensing fields
-              licensingType:
-                type: string
-                enum: [allRightsReserved, creativeCommon]
-              attribution:
-                type: boolean
-              nonCommercial:
-                type: boolean
-              noDerivativeWorks:
-                type: boolean
-              shareAlike:
-                type: boolean
-
-              # Audio clip
-              audioClipStart:
-                type: string
-                description: Start timestamp mm:ss
-                example: '00:01'
-              audioClipEnd:
-                type: string
-                description: End timestamp mm:ss
-                example: '00:04'
-
-              # Files
-              audioFile:
-                type: string
-                format: binary
-              imageFile:
-                type: string
-                format: binary
-
-              buyLink:
-                type: string
-              recordLabel:
-                type: string
-              releaseDate:
-                type: date-time
-              publisher:
-                type: string
-              ISRC:
-                type: string
-              hasExplictContent:
-                type: boolean
-              pLine:
-                type: string
-
             required:
-              - title
-              - permalink
-              - mainArtists
-              - genre
-              - isPrivate
-              - enableDirectDownload
-              - offlineListening
-              - includeInRssFeed
-              - displayedEmbedCode
-              - enableAppPlayback
-              - licensingType
-              - audioFile
-              - imageFile
-              - buyLink
-              - recordLabel
-              - releaseDate
-              - publisher
-              - ISRC
-              - hasExplictContent
-              - pLine
+              - audio
+              - basicInfo
+            properties:
+
+              audio:
+                type: string
+                format: binary
+                description: Required audio file
+
+              image:
+                type: string
+                format: binary
+                description: Optional cover image
+
+              basicInfo:
+                type: string
+                description: |
+                  Stringified JSON. Example:
+                    {"title":"New Track Title","permalink":"new-track-title","mainArtists":["Artist 1"],"genre":"Hip-Hop","tags":["rap"],"description":"","isPrivate":false,"caption":""}
+
+              permissions:
+                type: string
+                description: |
+                  Stringified JSON. Example:
+                    {"enableDirectDownload":true,"offlineListening":true,"includeInRssFeed":true,"displayedEmbedCode":true,"enableAppPlayback":true}
+
+              license:
+                type: string
+                description: |
+                  Stringified JSON. Example:
+                    {"type":"allRightsReserved","attribution":false,"nonCommercial":false,"noDerivativeWorks":false,"shareAlike":false}
+
+              advanced:
+                type: string
+                description: |
+                  Stringified JSON. Example:
+                    {"buyLink":"https://example.com/buy","recordLabel":"Label","releaseDate":"2026-01-01T00:00:00Z","publisher":"Publisher","ISRC":"USRC17607839","explicitContent":false,"pLine":"2026 Label","audioClipStart":0,"audioClipEnd":30,"composer":"Composer","ISWC":"T-123.456.789-0","albumTitle":"Album"}
+
     responses:
       '201':
-        description: Audio track created successfully.
+        description: Track created successfully
         content:
           application/json:
             schema:
@@ -123,12 +60,48 @@
               properties:
                 message:
                   type: string
-                  example: 'created an audio file'
-                trackId:
-                  $ref: '#/components/schemas/Id'
-              required:
-                - message
-                - trackId
+                  example: Track created successfully
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/tracks/v1/played/{id}:
+  post:
+    tags:
+      - Track Management
+    summary: Add track to user history
+    operationId: addTrackToHistory
+    security:
+      - bearerAuth: []
+
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: bbbbbbbbbbbbbbbbbbbbbb03
+
+    responses:
+      '200':
+        description: Track added to history successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track Added To History Successfully
 
       '400':
         $ref: '#/components/responses/InvalidParameters'
