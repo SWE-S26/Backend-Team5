@@ -6,9 +6,11 @@ import {
   CancelSubscriptionRequestDTO,
   CreatePayingUserRequestDTO,
   CreateSubscriptionRequestDTO,
+  GetTransactionsRequestDTO,
   UpdateSubscriptionRequestDTO,
 } from './dtos/payment.request';
 import { BadRequestError } from '../../shared/errors/responseErrors';
+import { GetTransactionsQueryDTO } from './dtos/payment.request.query';
 
 export class PaymentController {
   private readonly service: PaymentService;
@@ -134,6 +136,25 @@ export class PaymentController {
     });
 
     emailService.sendSubscriptionCancelled(emailData.userName, emailData.email);
+  }
+
+  async getTransactions(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(GetTransactionsRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const userId = req.userInfo!._id;
+    const { page, limit } = validatedRequest.data.query;
+
+    const data = await this.service.getTransactionHistory(userId, page, limit);
+
+    res.status(200).json({
+      success: true,
+      message: 'Transaction history retrieved successfully',
+      data,
+    });
   }
 
   async handleWebhook(req: Request, res: Response): Promise<void> {
