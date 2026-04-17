@@ -48,20 +48,51 @@
           description: Keyword for search
           schema:
             type: string
+
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [everything, tracks, users, playlists, albums]      
+
+        - name: dateRange
+          in: query
+          schema:
+            type: string
+            enum: [hour, day, week, month, year, all]   
+            description: this is only for tracks
+
+        - name: duration
+          in: query
+          schema:
+            type: string
+            enum: [lt2, 2to10, 10to30, gt30, all]    
+            description: this is only for tracks
+
+        - name: usage
+          in: query
+          schema:
+            type: string
+            enum: [commercial, modify, share, listen]     
+            description: this is only for tracks
+
+        - name: tag
+          in: query
+          schema:
+            type: string   
+            description: this is used 
+
+
+        - name: location
+          in: query
+          schema:
+            type: string  
+            description: this is only for users                                                             
   
         - $ref: '#/components/parameters/OffsetParam'
         - $ref: '#/components/parameters/LimitParam'
   
-        - name: type
-          in: query
-          required: false
-          description: |
-            Filter by resource type.
-            If omitted or set to "everything", returns limited preview per category.
-            If specific type is provided, pagination applies to that type only.
-          schema:
-            type: string
-            enum: [everything, track, user, playlist, album]
+
   
       responses:
         '200':
@@ -71,39 +102,28 @@
               schema:
                 type: object
                 properties:
-                
-                  tracksCount:
-                    type: integer
-                    description: Total number of tracks matching the query
-  
-                  usersCount:
-                    type: integer
-                    description: Total number of users matching the query
-  
-                  playlistsCount:
-                    type: integer
-                    description: Total number of playlists matching the query
-  
-                  albumsCount:
-                    type: integer
-                    description: Total number of albums matching the query
-                    
-                  tracks:
+                  counts:
+                    type: object
+                    properties:
+                      tracks:
+                        type: integer
+                      users:
+                        type: integer
+                      playlists:
+                        type: integer
+                      albums:
+                        type: integer
+
+                  results:
                     type: array
                     items:
-                      $ref: '#/components/schemas/TrackSummary'
-                  users:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/UserSummary'
-                  playlists:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/PlaylistSummary'
-                  albums:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/AlbumSummary'
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        type:
+                          type: string
+                          enum: [track, user, playlist, album]
         '401':
           description: Unauthorized
           content:
