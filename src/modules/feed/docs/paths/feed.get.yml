@@ -2,7 +2,7 @@
     get:
       tags:
         - Feed
-      summary: Get user activity feed
+      summary: Get user activity feed, and it is equivilant to the following feed in the mobile app
       description: Returns chronological feed of new tracks from followed artists
       operationId: getUserFeed
       parameters:
@@ -249,12 +249,12 @@
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /api/trending:
+  /api/trending-tracks:
     get:
       tags:
         - Feed
       summary: Get trending tracks
-      description: Returns top tracks based on recent plays and engagement
+      description: this endpoint returns the trending tracks, it could be used in the discover feed in cross, it could be somewhere else in the app but now sure where
       operationId: getTrendingTracks
       parameters:
         - $ref: '#/components/parameters/OffsetParam'
@@ -265,18 +265,14 @@
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  total:
-                    type: integer
-                  offset:
-                    type: integer
-                  limit:
-                    type: integer
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/TrackSummary'
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ids of the trending tracks
+
         '401':
           description: Unauthorized
           content:
