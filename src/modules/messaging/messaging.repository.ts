@@ -7,33 +7,15 @@ import Conversation, {
 } from '../../shared/models/models.conversation';
 import Message, { IMessage } from '../../shared/models/models.message';
 import { Types } from 'mongoose';
-
-export type IConversationParticipant = {
-  _id: Types.ObjectId;
-  displayName: string;
-  profileImg: {
-    imgLink: string;
-    publicId: string;
-  };
-};
-
-export type IConversationPopulated = {
-  _id: Types.ObjectId;
-  participants: IConversationParticipant[];
-  isArchived: boolean;
-  isReported: boolean;
-  lastMessage?: {
-    content: string;
-    senderId: Types.ObjectId;
-    timestamp: Date;
-  } | null;
-  createdAt: Date;
-  updatedAt: Date;
-};
+import { IConversationPopulated } from './dtos/messaging.response';
 
 export class MessagingRepository {
   async findUserById(userId: Types.ObjectId): Promise<IUser | null> {
     return await User.findById<IUser>(userId);
+  }
+
+  async findChatById(chatId: Types.ObjectId): Promise<IConversation | null> {
+    return await Conversation.findById<IConversation>(chatId);
   }
 
   async findUserBlockedList(
@@ -49,6 +31,19 @@ export class MessagingRepository {
     return await Conversation.findOne({
       participants: { $all: [userId, receiverId] },
     });
+  }
+
+  async archiveChat(
+    userId: Types.ObjectId,
+    chatId: Types.ObjectId,
+  ): Promise<any> {
+    return await Conversation.findOneAndUpdate(
+      { _id: chatId },
+      {
+        $addToSet: { archivedBy: userId },
+      },
+      { new: true },
+    );
   }
 
   async createNewChat(
@@ -82,6 +77,7 @@ export class MessagingRepository {
       },
       {
         $set: {
+          archivedBy: [],
           lastMessage: {
             senderId: userId,
             content,
@@ -103,7 +99,7 @@ export class MessagingRepository {
   ): Promise<IConversationPopulated[] | null> {
     return await Conversation.find({
       participants: userId,
-      isArchived: false,
+      archivedBy: { $ne: userId },
     })
       .populate('participants', 'displayName profileImg')
       .sort({ updatedAt: -1 })

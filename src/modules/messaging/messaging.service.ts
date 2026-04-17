@@ -1,8 +1,12 @@
 import { MessagingRepository } from './messaging.repository';
-import { SendNewMessageDTO } from './dtos/messaging.request.body';
+import {
+  SendNewMessageDTO,
+  ArchiveChatDTO,
+} from './dtos/messaging.request.body';
 import {
   BadRequestError,
   ForbiddenError,
+  NotFoundError,
 } from '../../shared/errors/responseErrors';
 import { Types } from 'mongoose';
 import { MessagingMapper } from './dtos/messaging.mapper';
@@ -55,6 +59,25 @@ export class MessagingService {
     }
 
     return MessagingMapper.toChatsHistoryResponse(updatedChatsHistory, userId);
+  }
+
+  async archiveChat(
+    userId: Types.ObjectId,
+    archiveChatDTO: ArchiveChatDTO,
+  ): Promise<void> {
+    // check if chat exists
+    const chatId = new Types.ObjectId(archiveChatDTO.chatId);
+    const searchChat = await this.repository.findChatById(chatId);
+
+    if (!searchChat) throw NotFoundError("A Chat With this ID Doesn't Exist");
+
+    if (!searchChat.participants.some((p) => p.equals(userId)))
+      throw ForbiddenError(
+        'Cannot Delete A Chat User is not a participant in it',
+      );
+
+    await this.repository.archiveChat(userId, chatId);
+    return;
   }
 
   async delete(id: string): Promise<boolean> {
