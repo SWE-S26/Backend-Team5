@@ -1,4 +1,4 @@
-  /api/search/history:
+  /api/search/add-to-history:
     post:
       tags:
         - Search
@@ -9,14 +9,19 @@
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SearchHistoryCreate'
+              type: object
+              required: [id, type]
+              properties:
+                id:
+                  type: string
+                  description: the id of the clicked item
+                type:
+                  type: string
+                  enum: [track, user, playlist, album]
+                  description: the type of the clicked item
       responses:
         '201':
           description: Item added to history
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SearchHistoryItem'
         '400':
           description: Invalid request
           content:
