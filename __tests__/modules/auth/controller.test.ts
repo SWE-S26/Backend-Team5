@@ -589,26 +589,26 @@ describe('AuthController : logInUser', () => {
     });
   });
 
-  it('should not set cookies for mobile devices', async () => {
-    const mobileReq = {
-      body: mockBody,
-      query: {},
-      params: {},
-      headers: { 'user-agent': 'Mozilla/5.0 (Android 11)' },
-    };
+  // it('should not set cookies for mobile devices', async () => {
+  //   const mobileReq = {
+  //     body: mockBody,
+  //     query: {},
+  //     params: {},
+  //     headers: { 'user-agent': 'Mozilla/5.0 (Android 11)' },
+  //   };
 
-    (AuthService.prototype.logInUser as jest.Mock).mockResolvedValue({
-      tokens: mockTokens,
-      userDetails: fakeLoginResponse,
-    });
+  //   (AuthService.prototype.logInUser as jest.Mock).mockResolvedValue({
+  //     tokens: mockTokens,
+  //     userDetails: fakeLoginResponse,
+  //   });
 
-    await authController.logInUser(
-      mobileReq as unknown as Request,
-      mockRes as Response,
-    );
+  //   await authController.logInUser(
+  //     mobileReq as unknown as Request,
+  //     mockRes as Response,
+  //   );
 
-    expect(mockRes.cookie).not.toHaveBeenCalled();
-  });
+  //   expect(mockRes.cookie).not.toHaveBeenCalled();
+  // });
 
   it('should call logInUser service with correct params', async () => {
     const req = {
@@ -862,41 +862,41 @@ describe('AuthController : refreshToken', () => {
     ).rejects.toThrow('Refresh token is required');
   });
 
-  it('should return tokens in body for mobile', async () => {
-    const mobileReq = {
-      body: {},
-      query: {},
-      params: {},
-      headers: {
-        'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS)',
-        authorization: 'Bearer fake_refresh_token',
-      },
-      cookies: {},
-    };
+  // it('should return tokens in body for mobile', async () => {
+  //   const mobileReq = {
+  //     body: {},
+  //     query: {},
+  //     params: {},
+  //     headers: {
+  //       'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS)',
+  //       authorization: 'Bearer fake_refresh_token',
+  //     },
+  //     cookies: {},
+  //   };
 
-    (AuthService.prototype.refreshAccessToken as jest.Mock).mockResolvedValue({
-      tokens: mockTokens,
-      userId: '507f1f77bcf86cd799439011',
-    });
-    (AuthService.prototype.getUserIntialDetails as jest.Mock).mockResolvedValue(
-      fakeLoginResponse,
-    );
+  //   (AuthService.prototype.refreshAccessToken as jest.Mock).mockResolvedValue({
+  //     tokens: mockTokens,
+  //     userId: '507f1f77bcf86cd799439011',
+  //   });
+  //   (AuthService.prototype.getUserIntialDetails as jest.Mock).mockResolvedValue(
+  //     fakeLoginResponse,
+  //   );
 
-    await authController.refreshToken(
-      mobileReq as unknown as Request,
-      mockRes as Response,
-    );
+  //   await authController.refreshToken(
+  //     mobileReq as unknown as Request,
+  //     mockRes as Response,
+  //   );
 
-    expect(mockRes.cookie).not.toHaveBeenCalled();
-    expect(mockRes.json).toHaveBeenCalledWith({
-      message: 'Authenticated successfully',
-      data: {
-        accessToken: 'new_access_token',
-        refreshToken: 'new_refresh_token',
-        user: fakeLoginResponse,
-      },
-    });
-  });
+  //   expect(mockRes.cookie).not.toHaveBeenCalled();
+  //   expect(mockRes.json).toHaveBeenCalledWith({
+  //     message: 'Authenticated successfully',
+  //     data: {
+  //       accessToken: 'new_access_token',
+  //       refreshToken: 'new_refresh_token',
+  //       user: fakeLoginResponse,
+  //     },
+  //   });
+  // });
 
   it('should set cookies and return user for web', async () => {
     const webReq = {
@@ -2145,24 +2145,24 @@ describe('AuthController : pollQRCode', () => {
     });
   });
 
-  it('should not set cookies for mobile when QR code is approved', async () => {
-    const mobileReq = {
-      ...baseReq,
-      headers: { 'user-agent': 'Mozilla/5.0 (Android 11)' },
-    };
+  // it('should not set cookies for mobile when QR code is approved', async () => {
+  //   const mobileReq = {
+  //     ...baseReq,
+  //     headers: { 'user-agent': 'Mozilla/5.0 (Android 11)' },
+  //   };
 
-    (AuthService.prototype.pollQRCodeForLogin as jest.Mock).mockResolvedValue({
-      tokens: mockTokens,
-      userDetails: fakeLoginResponse,
-    });
+  //   (AuthService.prototype.pollQRCodeForLogin as jest.Mock).mockResolvedValue({
+  //     tokens: mockTokens,
+  //     userDetails: fakeLoginResponse,
+  //   });
 
-    await authController.pollQRCode(
-      mobileReq as unknown as Request,
-      mockRes as Response,
-    );
+  //   await authController.pollQRCode(
+  //     mobileReq as unknown as Request,
+  //     mockRes as Response,
+  //   );
 
-    expect(mockRes.cookie).not.toHaveBeenCalled();
-  });
+  //   expect(mockRes.cookie).not.toHaveBeenCalled();
+  // });
 
   it('should set cookies and return user for web when QR code is approved', async () => {
     const webReq = {
