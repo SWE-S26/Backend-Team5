@@ -3,6 +3,7 @@ import { parseRequest } from '../../shared/dtos/requestParser';
 import { EngagementService } from './engagement.service';
 import {
   GetPlaylistLikersRequestDTO,
+  GetTrackLikeStatusRequestDTO,
   GetTrackLikersRequestDTO,
   ToggleTrackLikeRequestDTO,
   TogglePlaylistLikeRequestDTO,
@@ -99,6 +100,19 @@ export class EngagementController {
       offset,
       limit,
     );
+    res.json(result);
+  }
+
+  async getTrackLikeStatus(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetTrackLikeStatusRequestDTO, req);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { trackId } = parsed.data!.params;
+    const userId = req.userInfo!._id;
+
+    const result = await this.service.getTrackLikeStatus(trackId, userId);
     res.json(result);
   }
 

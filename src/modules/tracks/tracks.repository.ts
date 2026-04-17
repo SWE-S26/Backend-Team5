@@ -66,13 +66,13 @@ export class TracksRepository {
     return tracksList;
   }
 
-  async createNewTrack(trackInput: TrackInput): Promise<Boolean> {
+  async createNewTrack(trackInput: TrackInput): Promise<string> {
     const trackCreate = await Track.create(trackInput.trackInfo);
     const advancedTrackInfoCreate = await AdvancedAudioDetails.create({
       trackId: trackCreate._id,
       ...trackInput.advanced,
     });
-    return true;
+    return trackCreate._id.toString();
   }
 
   async getTrackByPermalink(permalink: string): Promise<ITrack | null> {

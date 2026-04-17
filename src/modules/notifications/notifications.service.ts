@@ -114,28 +114,28 @@ export class NotificationsService {
   async createLikeNotification(
     actorId: string,
     trackId: string,
-  ): Promise<NotificationRecord> {
+  ): Promise<NotificationRecord | null> {
     return this.repository.createLikeNotification(actorId, trackId);
   }
 
   async createCommentNotification(
     actorId: string,
     commentId: string,
-  ): Promise<NotificationRecord> {
+  ): Promise<NotificationRecord | null> {
     return this.repository.createCommentNotification(actorId, commentId);
   }
 
   async createRepostNotification(
     actorId: string,
     trackId: string,
-  ): Promise<NotificationRecord> {
+  ): Promise<NotificationRecord | null> {
     return this.repository.createRepostNotification(actorId, trackId);
   }
 
   async createFollowNotification(
     actorId: string,
     followedUserId: string,
-  ): Promise<NotificationRecord> {
+  ): Promise<NotificationRecord | null> {
     return this.repository.createFollowNotification(actorId, followedUserId);
   }
 

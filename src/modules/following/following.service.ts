@@ -13,6 +13,7 @@ import {
 } from '../../shared/errors/responseErrors';
 import { FollowingMapper } from './dtos/following.mapper';
 import { Types } from 'mongoose';
+import { getNotificationSocketHandler } from '../../sockets/handlers/notification.handler';
 
 export class FollowingService {
   constructor(private readonly repository: FollowingRepository) {}
@@ -37,11 +38,36 @@ export class FollowingService {
       );
     }
 
+    const wasFollowing = await this.repository.isFollowing(userId, followedId);
+
     await this.repository.addFollower(userId, followedId);
+
+    if (!wasFollowing) {
+      this.sendFollowSocketNotification(userId, followedId);
+    }
 
     const userStats: UserStats = await this.repository.getUserStats(followedId);
 
     return FollowingMapper.toUserSummary({ ...followedUser, ...userStats });
+  }
+
+  private sendFollowSocketNotification(
+    actorId: string,
+    followedUserId: string,
+  ): void {
+    let notificationHandler;
+
+    try {
+      notificationHandler = getNotificationSocketHandler();
+    } catch {
+      return;
+    }
+
+    notificationHandler
+      .sendFollowNotification(actorId, followedUserId)
+      .catch((error) =>
+        console.error('Failed to send follow socket notification:', error),
+      );
   }
 
   async removeFollower(

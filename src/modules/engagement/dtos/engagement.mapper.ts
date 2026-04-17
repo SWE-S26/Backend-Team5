@@ -13,6 +13,8 @@ import {
   ToggleRepostResponseDTO,
   TogglePlaylistRepostResponse,
   TogglePlaylistRepostResponseDTO,
+  TrackLikeStatusResponse,
+  TrackLikeStatusResponseDTO,
   TrackRepostStatusResponse,
   TrackRepostStatusResponseDTO,
   PlaylistRepostStatusResponse,
@@ -96,6 +98,12 @@ export class EngagementMapper {
       reposted: true,
       caption: repost.caption || undefined,
       repostedAt: repost.timestamp?.toISOString(),
+    });
+  }
+
+  static toTrackLikeStatusResponse(liked: boolean): TrackLikeStatusResponse {
+    return TrackLikeStatusResponseDTO.parse({
+      liked,
     });
   }
 

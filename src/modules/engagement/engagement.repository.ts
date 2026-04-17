@@ -260,8 +260,7 @@ export class EngagementRepository {
     await User.findOneAndUpdate(
       {
         _id: userId,
-        'reposts.id': trackId,
-        'reposts.type': 'track',
+        reposts: { $elemMatch: { id: trackId, type: 'track' } },
       },
       {
         $set: {
