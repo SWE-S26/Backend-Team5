@@ -4,35 +4,16 @@ export type IConversation = {
   _id: Types.ObjectId;
   participants: Types.ObjectId[];
   archivedBy: Types.ObjectId[];
-  lastMessage?: {
+  lastMessage: {
+    _id: Types.ObjectId;
     content: string;
     senderId: Types.ObjectId;
     timestamp: Date;
+    seenBy: Types.ObjectId[];
   };
   createdAt: Date;
   updatedAt: Date;
 };
-
-const lastMessageSchema = new Schema(
-  {
-    content: {
-      type: String,
-      minlength: 1,
-      maxlength: 2000,
-      trim: true,
-    },
-    senderId: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    timestamp: {
-      type: Date,
-      default: Date.now,
-    },
-  },
-  { _id: false },
-);
 
 const conversationSchema = new Schema(
   {
@@ -53,7 +34,9 @@ const conversationSchema = new Schema(
       default: [],
     },
     lastMessage: {
-      type: lastMessageSchema,
+      type: Schema.Types.ObjectId,
+      ref: 'Message',
+      default: null,
     },
   },
   { timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' } },

@@ -6,6 +6,7 @@ export type IMessage = {
   senderId: Types.ObjectId;
   content: string;
   createdAt: Date;
+  seenBy: Types.ObjectId[];
 };
 
 const messageSchema = new Schema(
@@ -27,6 +28,11 @@ const messageSchema = new Schema(
       minlength: 1,
       maxlength: 2000,
       trim: true,
+    },
+    seenBy: {
+      type: [Schema.Types.ObjectId],
+      ref: 'User',
+      require: true,
     },
   },
   { timestamps: { createdAt: 'createdAt', updatedAt: false } },

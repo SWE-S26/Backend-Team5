@@ -10,6 +10,7 @@ import {
 } from '../../shared/errors/responseErrors';
 import { Types } from 'mongoose';
 import { MessagingMapper } from './dtos/messaging.mapper';
+import logger from '../../shared/logger/logger';
 
 export class MessagingService {
   private readonly repository: MessagingRepository;
@@ -38,6 +39,7 @@ export class MessagingService {
     }
 
     // search if chat exits with these two participents first
+    logger.info('Searching For Archived Chat');
     const archivedChat = await this.repository.findArchivedChat(
       userId,
       receiverId,
@@ -51,6 +53,7 @@ export class MessagingService {
         content,
       );
     } else {
+      logger.info('Hello I am Creating New Chat');
       updatedChatsHistory = await this.repository.createNewChat(
         userId,
         receiverId,
