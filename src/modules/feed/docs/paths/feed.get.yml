@@ -186,12 +186,23 @@
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/SearchHistoryItem'
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      type: string
+                      enum: [track, user, playlist, album]
+                    title:
+                      type: string
+                    imageUrl:
+                      type: string
+                    metadata:
+                      type: string
+                      nullable: true
+                      description: this metadata is user-->location, playlist--> the account displayname, track --> the account displayname, note the user can have no location so i return null
         '401':
           description: Unauthorized
           content:
