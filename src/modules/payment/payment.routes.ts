@@ -41,5 +41,10 @@ paymentRouter.post(
   paymentController.createPayingUser.bind(paymentController),
 );
 
+paymentRouter.get(
+  apiVersions.v1 + '/transactions',
+  paymentController.getTransactions.bind(paymentController),
+);
+
 export { paymentPublicRouter };
 export default paymentRouter;
