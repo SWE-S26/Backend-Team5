@@ -3,8 +3,15 @@
     tags:
       - Track Management
     summary: Delete a track by ID
-    description: Permanently deletes the track associated with the provided track ID. This action cannot be undone.
-    operationId: deleteTrackById
+    description: >
+      Permanently deletes the track associated with the provided track ID.
+      This action is irreversible and cannot be undone.
+
+      This endpoint can be used by:
+        - The track owner, when they choose to delete their own track.
+        - An administrator, when deleting a track on behalf of a user.
+
+      Unauthorized users are not permitted to delete tracks they do not own.
 
     parameters:
       - name: trackId

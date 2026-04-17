@@ -105,6 +105,7 @@ export type TrackInput = {
     numOfPlays: number;
     numberOfReposts: number;
     numOfLikes: number;
+    durationInSeconds: number;
     likedBy: Types.ObjectId[];
     comments: Types.ObjectId[];
     permissions: CreateTrackDTO['permissions'];

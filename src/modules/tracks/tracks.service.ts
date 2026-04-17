@@ -18,6 +18,8 @@ import {
 } from '../../shared/abstractions/cloudinary.service';
 import { IAdvancedAudioDetails } from '../../shared/models/models.advanced-audio-details';
 import { getNotificationSocketHandler } from '../../sockets/handlers/notification.handler';
+import { parseBuffer } from 'music-metadata';
+import logger from '../../shared/logger/logger';
 
 type ImageInfo = {
   imgLink: string;
@@ -33,6 +35,11 @@ export class TracksService {
     this.tracksRepository = new TracksRepository();
     this.trackUploader = publitioMediaStorage;
     this.imgUploader = CloudinaryService;
+  }
+
+  private async calculateTrackDuration(file: Express.Multer.File) {
+    const metadata = await parseBuffer(file.buffer, file.mimetype);
+    return Math.ceil(metadata.format.duration as number);
   }
 
   async deleteTrackById(
@@ -103,7 +110,10 @@ export class TracksService {
     image: Express.Multer.File | null,
     posterId: string,
   ): Promise<Boolean> {
+    const duration = await this.calculateTrackDuration(audio);
+    logger.info('Track Duration Calculated');
     const audioInfo = await this.trackUploader.uploadAudioTrack(audio);
+    logger.info('Audio Uploaded To Cloud');
     let imgInfo: ImageInfo | null = null;
     if (image) {
       const retreiveImgInfo = await this.imgUploader.uploadImage(
@@ -114,6 +124,7 @@ export class TracksService {
         imgLink: retreiveImgInfo?.url as string,
         publicId: retreiveImgInfo?.publicId,
       };
+      logger.info('Image Uploaded To Cloud');
     }
 
     const trackInput = TracksMapper.toTrackInput(
@@ -121,7 +132,9 @@ export class TracksService {
       audioInfo,
       imgInfo,
       new Types.ObjectId(posterId),
+      duration,
     );
+    logger.info('Track Parsed To Input');
 
     const trackId = await this.tracksRepository.createNewTrack(trackInput);
 
@@ -139,9 +152,11 @@ export class TracksService {
       return;
     }
 
-    notificationHandler.sendNewTrackNotification(actorId, trackId).catch((err) =>
-      console.error('Failed to send new track socket notification:', err),
-    );
+    notificationHandler
+      .sendNewTrackNotification(actorId, trackId)
+      .catch((err) =>
+        console.error('Failed to send new track socket notification:', err),
+      );
   }
 
   async getTrackByPermalink(permalink: string) {

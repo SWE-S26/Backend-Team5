@@ -1,4 +1,4 @@
-api/social/v1/follow/{userId}:
+/api/social/v1/follow/{userId}:
   post:
     tags:
       - Social
@@ -57,7 +57,7 @@ api/social/v1/follow/{userId}:
                   code: 404
 
 # Unfollow a user
-api/social/v1/unfollow/{userId}:
+/api/social/v1/unfollow/{userId}:
   post:
     tags:
       - Social
@@ -116,7 +116,7 @@ api/social/v1/unfollow/{userId}:
                   code: 404
 
 
-api/social/v1/block/{userId}:
+/api/social/v1/block/{userId}:
   post:
     tags:
       - Social
@@ -175,7 +175,7 @@ api/social/v1/block/{userId}:
                   code: 404
 
 # Unblock a user
-api/social/v1/unblock/{userId}:
+/api/social/v1/unblock/{userId}:
   post:
     tags:
       - Social

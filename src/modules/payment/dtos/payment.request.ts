@@ -6,6 +6,8 @@ import {
   CreateSubscriptionRequestBodyDTO,
   UpdateSubscriptionRequestBodyDTO,
 } from './payment.request.body';
+import { GetTransactionsQueryDTO } from './payment.request.query';
+import { extend } from 'zod/mini';
 
 export const CreatePayingUserRequestDTO = extendedZod.object({
   body: CreatePayingUserRequestBodyDTO,
@@ -23,6 +25,10 @@ export const CancelSubscriptionRequestDTO = extendedZod.object({
   body: CancelSubscriptionRequestBodyDTO,
 });
 
+export const GetTransactionsRequestDTO = extendedZod.object({
+  query: GetTransactionsQueryDTO,
+});
+
 export type CreatePayingUserRequest = z.infer<
   typeof CreatePayingUserRequestDTO
 >;
@@ -38,3 +44,5 @@ export type UpdateSubscriptionRequest = z.infer<
 export type CancelSubscriptionRequest = z.infer<
   typeof CancelSubscriptionRequestDTO
 >;
+
+export type GetTransactionsRequest = z.infer<typeof GetTransactionsRequestDTO>;

@@ -17,7 +17,6 @@ import { AuthMapper } from './dtos/auth.mapper';
 import { PaymentInfo } from '../../shared/models/models.user';
 import { paymentController } from '../payment/payment.routes';
 import { LoginRequestBody, SignUpRequestBody } from './dtos/auth.request.body';
-import { email } from 'zod';
 
 type QRSession = {
   status: 'pending' | 'verified';
@@ -34,6 +33,7 @@ export type GoogleCompleteSignUpBody = {
   incompleteToken: string;
   dateOfBirth: Date;
   gender: 'Male' | 'Female';
+  displayName: string;
 };
 
 export type SendGoogleVerificationCode = {
@@ -393,10 +393,14 @@ export class AuthService {
       );
     }
 
+    const finalDisplayName = body.displayName
+      ? body.displayName
+      : payload.displayName;
+
     const newUser = await this.authRepository.createWithGoogle({
       googleId: payload.googleId,
       email: payload.email,
-      displayName: payload.displayName,
+      displayName: finalDisplayName,
       dateOfBirth: body.dateOfBirth,
       gender: body.gender,
     });

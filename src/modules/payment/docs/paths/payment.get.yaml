@@ -1,3 +1,137 @@
+/api/payment/v1/transactions:
+  get:
+    tags:
+      - Payment
+    summary: Get user's transaction history
+    description: Retrieves a paginated list of transactions for the authenticated user, including payment status, amount, and associated plan.
+    security:
+      - bearerAuth: []
+    parameters:
+      - $ref: '#/components/parameters/offset'
+      - $ref: '#/components/parameters/limit'
+
+    responses:
+      '200':
+        description: Transaction history retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: Transaction history retrieved successfully
+                data:
+                  type: object
+                  properties:
+                    transactions:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                            example: 69e26df337eb9b75127d4844
+                          userId:
+                            type: string
+                            example: 69bc1964148a2e47017de175
+                          stripeCustomerId:
+                            type: string
+                            example: cus_UFCuogr804sMjP
+                          stripeSubscriptionId:
+                            type: string
+                            example: sub_1TNGDCKiCVlMQgBUuowzCx2c
+                          stripeInvoiceId:
+                            type: string
+                            nullable: true
+                            example: in_1TNGDCKiCVlMQgBUYnSh7oDF
+                          type:
+                            type: string
+                            enum:
+                              - payment_succeeded
+                              - payment_failed
+                              - subscription_created
+                              - subscription_updated
+                              - subscription_cancelled
+                            example: payment_succeeded
+                          amount:
+                            type: number
+                            description: Amount in smallest currency unit (e.g., cents)
+                            example: 999
+                          currency:
+                            type: string
+                            example: usd
+                          subscriptionType:
+                            type: string
+                            example: pro_monthly
+                          description:
+                            type: string
+                            example: Payment of 9.99 USD for Pro Monthly
+                          createdAt:
+                            type: string
+                            format: date-time
+                            example: 2026-04-17T17:29:19.939Z
+                          updatedAt:
+                            type: string
+                            format: date-time
+                            example: 2026-04-17T17:29:19.939Z
+                    total:
+                      type: number
+                      example: 6
+                    page:
+                      type: number
+                      example: 1
+                    limit:
+                      type: number
+                      example: 10
+                    totalPages:
+                      type: number
+                      example: 1
+
+            example:
+              success: true
+              message: Transaction history retrieved successfully
+              data:
+                transactions:
+                  - _id: 69e26df337eb9b75127d4844
+                    userId: 69bc1964148a2e47017de175
+                    stripeCustomerId: cus_UFCuogr804sMjP
+                    stripeSubscriptionId: sub_1TNGDCKiCVlMQgBUuowzCx2c
+                    stripeInvoiceId: null
+                    type: subscription_cancelled
+                    amount: 0
+                    currency: usd
+                    subscriptionType: pro_monthly
+                    description: Subscription cancelled immediately
+                    createdAt: 2026-04-17T17:29:23.657Z
+                    updatedAt: 2026-04-17T17:29:23.657Z
+                  - _id: 69e26def37eb9b75127d4840
+                    userId: 69bc1964148a2e47017de175
+                    stripeCustomerId: cus_UFCuogr804sMjP
+                    stripeSubscriptionId: sub_1TNGDCKiCVlMQgBUuowzCx2c
+                    stripeInvoiceId: in_1TNGDCKiCVlMQgBUYnSh7oDF
+                    type: payment_succeeded
+                    amount: 999
+                    currency: usd
+                    subscriptionType: pro_monthly
+                    description: Payment of 9.99 USD for Pro Monthly
+                    createdAt: 2026-04-17T17:29:19.939Z
+                    updatedAt: 2026-04-17T17:29:19.939Z
+                total: 6
+                page: 1
+                limit: 10
+                totalPages: 1
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
+      '500':
+        $ref: '#/components/responses/ServerError'
+
 /api/payment/v1/plans:
   get:
     tags:

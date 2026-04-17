@@ -55,14 +55,14 @@ export class AuthController {
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: this.isProduction,
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: 1000 * 60 * 60 * 1,
     });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: this.isProduction,
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: 1000 * 60 * 60 * 24 * 7,
       path: this.refreshTokenPath,
     });
@@ -72,13 +72,13 @@ export class AuthController {
     res.clearCookie('accessToken', {
       httpOnly: true,
       secure: this.isProduction,
-      sameSite: 'strict',
+      sameSite: 'lax',
     });
 
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: this.isProduction,
-      sameSite: 'strict',
+      sameSite: 'lax',
       path: this.refreshTokenPath,
     });
   }
@@ -113,17 +113,6 @@ export class AuthController {
     userCreditianls?: LoginResponse,
     status = 200,
   ) {
-    if (this.isCross(req)) {
-      return res.status(status).json({
-        message: 'Authenticated successfully',
-        data: {
-          user: userCreditianls,
-          accessToken,
-          refreshToken,
-        },
-      });
-    }
-
     this.setCookies(res, accessToken, refreshToken);
 
     return res.status(status).json({
@@ -281,6 +270,9 @@ export class AuthController {
     let incomingRefreshToken: string;
     if (this.isCross(req)) {
       incomingRefreshToken = req.headers['authorization']?.split(' ')[1] || '';
+      if (!incomingRefreshToken) {
+        incomingRefreshToken = req.cookies['refreshToken'];
+      }
     } else {
       incomingRefreshToken = req.cookies['refreshToken'];
     }
@@ -679,7 +671,7 @@ export class AuthController {
     }
 
     try {
-      const { incompleteToken, dateOfBirth, gender } =
+      const { incompleteToken, dateOfBirth, gender, displayName } =
         req.body as GoogleCompleteSignUpBody;
 
       const decryptedIncompleteToken = SecureParams.decrypt(incompleteToken);
@@ -689,6 +681,7 @@ export class AuthController {
           incompleteToken: decryptedIncompleteToken,
           dateOfBirth,
           gender,
+          displayName,
         });
 
       if (

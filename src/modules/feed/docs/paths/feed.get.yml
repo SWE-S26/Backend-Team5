@@ -1,11 +1,17 @@
-  api/feed:
+  /api/feed:
     get:
       tags:
         - Feed
-      summary: Get user activity feed
+      summary: Get user activity feed, and it is equivilant to the following feed in the mobile app
       description: Returns chronological feed of new tracks from followed artists
       operationId: getUserFeed
       parameters:
+        - name: includeReposts
+          in: query
+          schema:
+            type: boolean
+            default: true 
+            description: true if you want to include reposts in feed     
         - $ref: '#/components/parameters/OffsetParam'
         - $ref: '#/components/parameters/LimitParam' 
       responses:
@@ -16,16 +22,36 @@
               schema:
                 type: object
                 properties:
-                  total:
-                    type: integer
-                  offset:
-                    type: integer
-                  limit:
-                    type: integer
-                  data:
+                  results:
                     type: array
                     items:
-                      $ref: '#/components/schemas/TrackSummary'
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: ID of track/playlist/album
+                        type:
+                          type: string
+                          enum: [track, playlist, album]
+                        isRepost:
+                          type: boolean
+                          description: true if it is repost false if it is a post
+                        createdAt:
+                          type: string
+                          format: date-time
+                          description: the date this action was done
+                        actorId:
+                          type: string
+                          description: the user who did the action
+                        displayName:
+                          type: string
+                          description: display name of the actor
+                        profileImg:
+                          type: string
+                          description: profile img of actor
+                  hasMore:
+                    type: boolean
+                    description: indicates whether more feed items are available              
         '401':
           description: Unauthorized
           content:
@@ -34,7 +60,7 @@
                 $ref: '#/components/schemas/ErrorResponse'
 
   # Global Search
-  api/search:
+  /api/search:
     get:
       tags:
         - Search
@@ -48,20 +74,51 @@
           description: Keyword for search
           schema:
             type: string
+
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [everything, tracks, users, playlists, albums]      
+
+        - name: dateRange
+          in: query
+          schema:
+            type: string
+            enum: [hour, day, week, month, year, all]   
+            description: this is only for tracks
+
+        - name: duration
+          in: query
+          schema:
+            type: string
+            enum: [lt2, 2to10, 10to30, gt30, all]    
+            description: this is only for tracks
+
+        - name: usage
+          in: query
+          schema:
+            type: string
+            enum: [commercial, modify, share, listen]     
+            description: this is only for tracks
+
+        - name: tag
+          in: query
+          schema:
+            type: string   
+            description: this is not used for users  
+
+
+        - name: location
+          in: query
+          schema:
+            type: string  
+            description: this is only for users                                                             
   
         - $ref: '#/components/parameters/OffsetParam'
         - $ref: '#/components/parameters/LimitParam'
   
-        - name: type
-          in: query
-          required: false
-          description: |
-            Filter by resource type.
-            If omitted or set to "everything", returns limited preview per category.
-            If specific type is provided, pagination applies to that type only.
-          schema:
-            type: string
-            enum: [everything, track, user, playlist, album]
+
   
       responses:
         '200':
@@ -71,39 +128,31 @@
               schema:
                 type: object
                 properties:
-                
-                  tracksCount:
-                    type: integer
-                    description: Total number of tracks matching the query
-  
-                  usersCount:
-                    type: integer
-                    description: Total number of users matching the query
-  
-                  playlistsCount:
-                    type: integer
-                    description: Total number of playlists matching the query
-  
-                  albumsCount:
-                    type: integer
-                    description: Total number of albums matching the query
-                    
-                  tracks:
+                  counts:
+                    type: object
+                    properties:
+                      tracks:
+                        type: integer
+                      users:
+                        type: integer
+                      playlists:
+                        type: integer
+                      albums:
+                        type: integer
+
+                  results:
                     type: array
                     items:
-                      $ref: '#/components/schemas/TrackSummary'
-                  users:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/UserSummary'
-                  playlists:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/PlaylistSummary'
-                  albums:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/AlbumSummary'
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        type:
+                          type: string
+                          enum: [track, user, playlist, album]
+                  hasMore:
+                    type: boolean
+                    description: indicates whether more search results are available                          
         '401':
           description: Unauthorized
           content:
@@ -113,7 +162,7 @@
   
   
   # Search Suggestions
-  api/search/suggestions:
+  /api/search/suggestions:
     get:
       tags:
         - Search
@@ -130,45 +179,29 @@
             type: string
             minLength: 1
   
-        - name: limit
-          in: query
-          required: false
-          description: Maximum number of suggestions per category
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 10
-            default: 9
-  
       responses:
         '200':
-          description: Suggestions retrieved successfully
+          description: Suggestions retrieved
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  queries:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/QuerySuggestion'
-                  tracks:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/TrackSuggestion'
-                  users:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/UserSuggestion'
-                  playlists:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/PlaylistSuggestion'
-                  albums:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/AlbumSuggestion'
-                additionalProperties: false
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      type: string
+                      enum: [track, user, playlist, album]
+                    title:
+                      type: string
+                    imgLink:
+                      type: string
+                      format: uri
+                    isPersonalized:
+                      type: boolean
+                      description:  true if user likes or follows they are of max 2, and it has different view in the app
   
         '400':
           description: Invalid search query
@@ -190,7 +223,7 @@
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  api/search/history:
+  /api/search/history:
     get:
       tags:
         - Search
@@ -202,24 +235,35 @@
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/SearchHistoryItem'
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      type: string
+                      enum: [track, user, playlist, album]
+                    title:
+                      type: string
+                    imageUrl:
+                      type: string
+                    metadata:
+                      type: string
+                      nullable: true
+                      description: this metadata is user-->location, playlist--> the account displayname, track --> the account displayname, note the user can have no location so i return null
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  api/trending:
+  /api/trending-tracks:
     get:
       tags:
         - Feed
       summary: Get trending tracks
-      description: Returns top tracks based on recent plays and engagement
+      description: this endpoint returns the trending tracks, it could be used in the discover feed in cross, it could be somewhere else in the app but now sure where
       operationId: getTrendingTracks
       parameters:
         - $ref: '#/components/parameters/OffsetParam'
@@ -232,16 +276,17 @@
               schema:
                 type: object
                 properties:
-                  total:
-                    type: integer
-                  offset:
-                    type: integer
-                  limit:
-                    type: integer
-                  data:
+                  results:
                     type: array
                     items:
-                      $ref: '#/components/schemas/TrackSummary'
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: ID of the trending track
+                  hasMore:
+                    type: boolean
+                    description: indicates whether more trending tracks are available
         '401':
           description: Unauthorized
           content:

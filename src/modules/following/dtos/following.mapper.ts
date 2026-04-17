@@ -1,4 +1,7 @@
-import { UserSummaryDTOType } from './following.response';
+import {
+  UserSummaryDTOType,
+  UserSummaryWithFollowDTOType,
+} from './following.response';
 
 export class FollowingMapper {
   static toUserSummary(user: any): UserSummaryDTOType {
@@ -8,6 +11,17 @@ export class FollowingMapper {
       profileImgLink: user.profileImg?.imgLink || null,
       trackCount: user.trackCount || 0,
       followersCount: user.followersCount || 0,
+    };
+  }
+
+  static toUserSummaryWithFollow(user: any): UserSummaryWithFollowDTOType {
+    return {
+      userId: user._id.toString(),
+      displayName: user.displayName,
+      profileImgLink: user.profileImg?.imgLink || null,
+      trackCount: user.trackCount || 0,
+      followersCount: user.followersCount || 0,
+      isFollowed: user.isFollowed ?? false,
     };
   }
 }

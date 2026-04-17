@@ -37,6 +37,7 @@ export type ITrack = {
     url: string;
     publicId: string;
   };
+  durationInSeconds: number;
   numOfPlays: number;
   comments: Types.ObjectId[];
   numberOfReposts: number;
@@ -170,6 +171,11 @@ const trackSchema = new Schema(
         imgLink: DEFAULT_AUDIO_IMAGE.imgLink,
         publicId: DEFAULT_AUDIO_IMAGE.publicId,
       }),
+    },
+    durationInSeconds: {
+      type: Number,
+      required: true,
+      min: [1, 'Duration Cannot Be Less Than One Second'],
     },
     numOfPlays: {
       type: Number,

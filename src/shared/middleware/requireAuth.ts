@@ -20,6 +20,9 @@ export const requireAuth = (
 
   if (isCross(req)) {
     accessToken = req.headers['authorization']?.split(' ')[1] || '';
+    if (!accessToken) {
+      accessToken = req.cookies['accessToken'];
+    }
   } else {
     accessToken = req.cookies['accessToken'];
   }
@@ -31,14 +34,6 @@ export const requireAuth = (
   const payload = JWTService.verifyJWTForMiddleware(accessToken);
 
   req.userInfo = payload;
-
-  // logger.info(
-  //   `
-  //   Authenticated user with ID: ${payload!._id},
-  //   role: ${payload!.role},
-  //   paymentInfo: ${JSON.stringify(payload!.paymentInfo)}
-  //   `,
-  // );
 
   logger.info(
     {

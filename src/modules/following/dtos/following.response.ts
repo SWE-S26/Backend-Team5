@@ -10,3 +10,11 @@ export const UserSummaryDTO = extendedZod.object({
 });
 
 export type UserSummaryDTOType = z.infer<typeof UserSummaryDTO>;
+
+export const UserSummaryWithFollowDTO = UserSummaryDTO.extend({
+  isFollowed: extendedZod.boolean(),
+});
+
+export type UserSummaryWithFollowDTOType = z.infer<
+  typeof UserSummaryWithFollowDTO
+>;

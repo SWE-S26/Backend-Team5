@@ -1,5 +1,8 @@
 import Stripe from 'stripe';
-import { PaymentRepository } from './payment.repository';
+import {
+  FindTransactionsResult,
+  PaymentRepository,
+} from './payment.repository';
 import {
   BadRequestError,
   ForbiddenError,
@@ -18,19 +21,25 @@ import {
 } from './dtos/payment.response';
 import emailService from '../../shared/abstractions/email/email.service';
 
-const PRICE_TO_PLAN: Record<
-  string,
-  { role: string; subscriptionType: string; unlimited: boolean }
-> = {
+export interface PricePlans {
+  role: string;
+  subscriptionType: string;
+  unlimited: boolean;
+  label: string;
+}
+
+const PRICE_TO_PLAN: Record<string, PricePlans> = {
   price_1TGQ4EKiCVlMQgBUJwZCK3um: {
     role: 'Pro',
     subscriptionType: 'pro_monthly',
     unlimited: true,
+    label: 'Pro Monthly',
   },
   price_1TGj1nKiCVlMQgBU9j8T38Fr: {
     role: 'Pro',
     subscriptionType: 'pro_yearly',
     unlimited: true,
+    label: 'Pro Yearly',
   },
 };
 
@@ -66,6 +75,20 @@ export class PaymentService {
   private validatePriceId(priceId: string): void {
     if (!PRICE_TO_PLAN[priceId]) {
       throw BadRequestError('Invalid price ID');
+    }
+  }
+
+  private async recordTransaction(
+    fields: Parameters<PaymentRepository['createTransaction']>[0],
+  ): Promise<void> {
+    try {
+      await this.repository.createTransaction(fields);
+    } catch (error) {
+      logger.error(
+        `Failed to record transaction [${fields.type}] for user ${fields.userId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
     }
   }
 
@@ -158,6 +181,15 @@ export class PaymentService {
       }),
     });
 
+    await this.recordTransaction({
+      userId,
+      stripeCustomerId: user.stripeCustomerId!,
+      stripeSubscriptionId: subscription.id,
+      type: 'subscription_created',
+      subscriptionType: plan.subscriptionType,
+      description: `Subscribed to ${plan.label}`,
+    });
+
     return PaymentMapper.toSubscriptionCreatedResult(
       user,
       subscription,
@@ -234,10 +266,24 @@ export class PaymentService {
 
     const plan = PRICE_TO_PLAN[priceId];
 
+    const oldLabel =
+      Object.values(PRICE_TO_PLAN).find(
+        (p) => p.subscriptionType === oldPlanSubscriptionType,
+      )?.label ?? oldPlanSubscriptionType;
+
     await this.repository.updateUser(userId, {
       role: plan.role,
       'subscription.subscriptionType': plan.subscriptionType,
       'subscription.quota.unlimited': plan.unlimited,
+    });
+
+    await this.recordTransaction({
+      userId,
+      stripeCustomerId: user.stripeCustomerId!,
+      stripeSubscriptionId: user.stripeSubscriptionId!,
+      type: 'subscription_updated',
+      subscriptionType: plan.subscriptionType,
+      description: `Switched from ${oldLabel} to ${plan.label}`,
     });
 
     return PaymentMapper.toSubscriptionUpdatedResult(
@@ -271,9 +317,30 @@ export class PaymentService {
       );
     }
 
+    if (user.playlists.length > 2) {
+      throw ForbiddenError(
+        `
+        Please delete some of your posted playlists before cancelling your subscription. 
+        You currently have ${user.playlists.length} playlists 
+        and the limit for non-paying users is 2 playlists.
+        `,
+      );
+    }
+
     if (cancelAtPeriodEnd) {
       await this.stripe.subscriptions.update(user.stripeSubscriptionId, {
         cancel_at_period_end: true,
+      });
+
+      await this.recordTransaction({
+        userId,
+        stripeCustomerId: user.stripeCustomerId!,
+        stripeSubscriptionId: user.stripeSubscriptionId!,
+        type: 'subscription_cancelled',
+        subscriptionType: user.subscription?.subscriptionType ?? 'unknown',
+        description: cancelAtPeriodEnd
+          ? 'Subscription set to cancel at period end'
+          : 'Subscription cancelled immediately',
       });
 
       return PaymentMapper.toSubscriptionCancelledResult(user);
@@ -281,11 +348,7 @@ export class PaymentService {
 
     await this.stripe.subscriptions.cancel(user.stripeSubscriptionId);
 
-    let role = 'Listener';
-    if (user.tracks.length > 0) {
-      role = 'Artist';
-    }
-
+    const role = 'Listener';
     await this.repository.updateUser(
       userId,
       {
@@ -296,6 +359,17 @@ export class PaymentService {
       },
       { stripeSubscriptionId: 1 },
     );
+
+    await this.recordTransaction({
+      userId,
+      stripeCustomerId: user.stripeCustomerId!,
+      stripeSubscriptionId: user.stripeSubscriptionId!,
+      type: 'subscription_cancelled',
+      subscriptionType: user.subscription?.subscriptionType ?? 'unknown',
+      description: cancelAtPeriodEnd
+        ? 'Subscription set to cancel at period end'
+        : 'Subscription cancelled immediately',
+    });
 
     return PaymentMapper.toSubscriptionCancelledResult(user);
   }
@@ -313,6 +387,38 @@ export class PaymentService {
 
       throw BadRequestError('Failed to delete Stripe customer');
     }
+  }
+
+  async getTransactionHistory(
+    userId: string,
+    page: number,
+    limit: number,
+  ): Promise<FindTransactionsResult> {
+    const user = await this.repository.findUserById(userId);
+    this.validateUser(user);
+
+    return this.repository.findTransactionsByUserId(userId, page, limit);
+  }
+
+  private extractSubscriptionId(invoice: Stripe.Invoice): string | null {
+    if (invoice.parent?.type === 'subscription_details') {
+      const sub = invoice.parent.subscription_details?.subscription;
+      return typeof sub === 'string' ? sub : (sub?.id ?? null);
+    }
+    return null;
+  }
+
+  private extractPriceId(invoice: Stripe.Invoice): string {
+    const line = invoice.lines?.data[0];
+    if (!line) return '';
+
+    // New clover-era path
+    const pricingPrice = line.pricing?.price_details?.price;
+    if (pricingPrice) {
+      return typeof pricingPrice === 'string' ? pricingPrice : pricingPrice.id;
+    }
+
+    return '';
   }
 
   async handleWebhook(rawBody: Buffer, signature: string): Promise<void> {
@@ -340,6 +446,27 @@ export class PaymentService {
           await this.repository.updateUser(user._id.toString(), {
             isPaid: true,
           });
+
+          const invoiceId = invoice.id;
+          const existing =
+            await this.repository.findTransactionByInvoiceId(invoiceId);
+
+          if (!existing) {
+            const priceId = this.extractPriceId(invoice);
+            const plan = PRICE_TO_PLAN[priceId];
+
+            await this.recordTransaction({
+              userId: user._id.toString(),
+              stripeCustomerId: invoice.customer as string,
+              stripeSubscriptionId: this.extractSubscriptionId(invoice),
+              stripeInvoiceId: invoiceId,
+              type: 'payment_succeeded',
+              amount: invoice.amount_paid,
+              currency: invoice.currency,
+              subscriptionType: plan?.subscriptionType ?? 'unknown',
+              description: `Payment of ${(invoice.amount_paid / 100).toFixed(2)} ${invoice.currency.toUpperCase()} for ${plan?.label ?? 'subscription'}`,
+            });
+          }
         }
         break;
       }
@@ -354,6 +481,27 @@ export class PaymentService {
           await this.repository.updateUser(user._id.toString(), {
             isPaid: false,
           });
+
+          const invoiceId = invoice.id;
+          const existing =
+            await this.repository.findTransactionByInvoiceId(invoiceId);
+
+          if (!existing) {
+            const priceId = this.extractPriceId(invoice);
+            const plan = PRICE_TO_PLAN[priceId];
+
+            await this.recordTransaction({
+              userId: user._id.toString(),
+              stripeCustomerId: invoice.customer as string,
+              stripeSubscriptionId: this.extractSubscriptionId(invoice),
+              stripeInvoiceId: invoiceId,
+              type: 'payment_failed',
+              amount: invoice.amount_due,
+              currency: invoice.currency,
+              subscriptionType: plan?.subscriptionType ?? 'unknown',
+              description: `Failed payment of ${(invoice.amount_due / 100).toFixed(2)} ${invoice.currency.toUpperCase()} for ${plan?.label ?? 'subscription'}`,
+            });
+          }
         }
         break;
       }
@@ -365,11 +513,7 @@ export class PaymentService {
         );
 
         if (user) {
-          let role = 'Listener';
-          if (user.tracks.length > 0) {
-            role = 'Artist';
-          }
-
+          const role = 'Listener';
           await this.repository.updateUser(
             user._id.toString(),
             {

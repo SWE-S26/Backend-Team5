@@ -13,3 +13,8 @@ export const ListPaymentsQueryDto = PaginationQueryDto.extend(
   page: extendedZod.string().default('1'),
   limit: extendedZod.string().default('20'),
 });
+
+export const GetTransactionsQueryDTO = extendedZod.object({
+  page: extendedZod.coerce.number().int().min(1).default(1),
+  limit: extendedZod.coerce.number().int().min(1).max(20).default(10),
+});

@@ -21,6 +21,7 @@ export const TrackResponse = extendedZod.object({
     url: extendedZod.string(),
     publicId: extendedZod.string(),
   }),
+  durationInSeconds: extendedZod.number(),
   numLikes: extendedZod.number(),
   numPlays: extendedZod.number(),
   numReposts: extendedZod.number(),
