@@ -17,7 +17,6 @@ import { AuthMapper } from './dtos/auth.mapper';
 import { PaymentInfo } from '../../shared/models/models.user';
 import { paymentController } from '../payment/payment.routes';
 import { LoginRequestBody, SignUpRequestBody } from './dtos/auth.request.body';
-import { email } from 'zod';
 
 type QRSession = {
   status: 'pending' | 'verified';

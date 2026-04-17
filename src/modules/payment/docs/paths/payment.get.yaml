@@ -6,6 +6,9 @@
     description: Retrieves a paginated list of transactions for the authenticated user, including payment status, amount, and associated plan.
     security:
       - bearerAuth: []
+    parameters:
+      - $ref: '#/components/parameters/offset'
+      - $ref: '#/components/parameters/limit'
 
     responses:
       '200':

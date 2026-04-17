@@ -21,19 +21,9 @@ authRouter.post(
   authController.logInUser.bind(authController),
 );
 
-authRouter.post(
-  apiVersions.v2 + '/login',
-  authController.logInUserV2.bind(authController),
-);
-
 authRouter.get(
   apiVersions.v1 + '/refresh-token',
   authController.refreshToken.bind(authController),
-);
-
-authRouter.get(
-  apiVersions.v2 + '/refresh-token',
-  authController.refreshTokenV2.bind(authController),
 );
 
 authRouter.post(

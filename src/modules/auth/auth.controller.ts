@@ -32,7 +32,7 @@ export class AuthController {
   private readonly service: AuthService;
   private readonly hostUrl: string =
     process.env.HOST_URL || 'http://localhost:4123';
-  private readonly refreshTokenPath: string = '/api/auth';
+  private readonly refreshTokenPath: string = '/api/auth/v1/refresh-token';
 
   constructor() {
     this.isProduction = process.env.MODE == 'PROD';
@@ -55,14 +55,14 @@ export class AuthController {
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: this.isProduction,
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: 1000 * 60 * 60 * 1,
     });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: this.isProduction,
-      sameSite: 'strict',
+      sameSite: 'lax',
       maxAge: 1000 * 60 * 60 * 24 * 7,
       path: this.refreshTokenPath,
     });
@@ -72,13 +72,13 @@ export class AuthController {
     res.clearCookie('accessToken', {
       httpOnly: true,
       secure: this.isProduction,
-      sameSite: 'strict',
+      sameSite: 'lax',
     });
 
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: this.isProduction,
-      sameSite: 'strict',
+      sameSite: 'lax',
       path: this.refreshTokenPath,
     });
   }
@@ -214,50 +214,6 @@ export class AuthController {
     });
   }
 
-  async logInUserV2(req: Request, res: Response): Promise<void> {
-    const validatedRequest = parseRequest(LogInRequestDTO, req);
-
-    if (!validatedRequest.success) {
-      throw validatedRequest.error;
-    }
-
-    const logInParams = validatedRequest.data.body;
-
-    const { tokens, userDetails } = await this.service.logInUser(logInParams);
-
-    if (validatedRequest.data.query.client === 'Android') {
-      return res.redirect(
-        `${this.hostUrl}/cross-callback?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
-      );
-    }
-
-    const { accessToken, refreshToken } = tokens;
-
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: this.isProduction,
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 1,
-    });
-
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: this.isProduction,
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-      path: this.refreshTokenPath,
-    });
-
-    res.json({
-      message: 'Authenticated successfully',
-      data: {
-        user: userDetails,
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-      },
-    });
-  }
-
   async logInUser(req: Request, res: Response): Promise<void> {
     const validatedRequest = parseRequest(LogInRequestDTO, req);
 
@@ -307,52 +263,6 @@ export class AuthController {
 
     res.json({
       message: 'Email Verified Successfully',
-    });
-  }
-
-  async refreshTokenV2(req: Request, res: Response): Promise<void> {
-    let incomingRefreshToken: string;
-    logger.debug({ cookies: req.cookies }, 'Found cookies');
-    if (this.isCross(req)) {
-      incomingRefreshToken = req.headers['authorization']?.split(' ')[1] || '';
-      if (!incomingRefreshToken) {
-        incomingRefreshToken = req.cookies['refreshToken'];
-      }
-    } else {
-      incomingRefreshToken = req.cookies['refreshToken'];
-    }
-
-    if (!incomingRefreshToken) {
-      throw UnauthorizedError('Refresh token is required');
-    }
-
-    const { tokens, userId } =
-      await this.service.refreshAccessToken(incomingRefreshToken);
-    const userDetails = await this.service.getUserIntialDetails(userId);
-    const { accessToken, refreshToken } = tokens;
-
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: this.isProduction,
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 1,
-    });
-
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: this.isProduction,
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-      path: this.refreshTokenPath,
-    });
-
-    res.json({
-      message: 'Authenticated successfully',
-      data: {
-        user: userDetails,
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-      },
     });
   }
 
