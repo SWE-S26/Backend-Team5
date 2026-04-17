@@ -1,27 +1,5 @@
 import { Types } from 'mongoose';
-
-export type IConversationParticipant = {
-  _id: Types.ObjectId;
-  displayName: string;
-  profileImg: {
-    imgLink: string;
-    publicId: string;
-  };
-};
-
-export type IConversationPopulated = {
-  _id: Types.ObjectId;
-  participants: IConversationParticipant[];
-  isArchived: boolean;
-  isReported: boolean;
-  lastMessage?: {
-    content: string;
-    senderId: Types.ObjectId;
-    timestamp: Date;
-  } | null;
-  createdAt: Date;
-  updatedAt: Date;
-};
+import { IConversationPopulated } from './messaging.response';
 
 export class MessagingMapper {
   static toChatsHistoryResponse(

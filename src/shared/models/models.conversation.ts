@@ -3,8 +3,7 @@ import { Schema, Types, model } from 'mongoose';
 export type IConversation = {
   _id: Types.ObjectId;
   participants: Types.ObjectId[];
-  isArchived: boolean;
-  isReported: boolean;
+  archivedBy: Types.ObjectId[];
   lastMessage?: {
     content: string;
     senderId: Types.ObjectId;
@@ -48,15 +47,10 @@ const conversationSchema = new Schema(
         message: 'A chat must have exactly 2 participants',
       },
     },
-    isArchived: {
-      type: Boolean,
-      required: true,
-      default: false,
-    },
-    isReported: {
-      type: Boolean,
-      required: true,
-      default: false,
+    archivedBy: {
+      type: [Schema.Types.ObjectId],
+      ref: 'User',
+      default: [],
     },
     lastMessage: {
       type: lastMessageSchema,

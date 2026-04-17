@@ -2,7 +2,10 @@ import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { MessagingService } from './messaging.service';
 import { JWTPayload } from '../../shared/abstractions/jwt.service';
-import { SendNewMessageRequestDTO } from './dtos/messaging.request';
+import {
+  SendNewMessageRequestDTO,
+  ArchiveChatRequestDTO,
+} from './dtos/messaging.request';
 import { Types } from 'mongoose';
 
 type userInfo = {
@@ -48,9 +51,20 @@ export class MessagingController {
     });
   }
 
-  async findOne(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
+  async archiveChat(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(ArchiveChatRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const userInfo = this.getUserInfo(req);
+    const archiveChatDTO = validatedRequest.data.body;
+    const userId = new Types.ObjectId(userInfo.userId);
+    await this.service.archiveChat(userId, archiveChatDTO);
+    res.json({
+      message: 'Chat Archived Successfully',
+    });
   }
 
   async create(req: Request, res: Response): Promise<void> {
