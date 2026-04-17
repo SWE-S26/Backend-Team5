@@ -46,6 +46,11 @@ engagementProtectedRouter.post(
   (req, res) => engagementController.toggleTrackLike(req, res),
 );
 
+engagementProtectedRouter.get(
+  '/tracks' + apiVersions.v1 + '/:trackId/like',
+  (req, res) => engagementController.getTrackLikeStatus(req, res),
+);
+
 engagementProtectedRouter.post(
   '/tracks' + apiVersions.v1 + '/:trackId/repost',
   (req, res) => engagementController.toggleTrackRepost(req, res),

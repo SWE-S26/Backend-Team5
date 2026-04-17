@@ -145,6 +145,39 @@
         $ref: '#/components/responses/ServerError'
     security: []
 
+/api/engagement/tracks/v1/{trackId}/like:
+  get:
+    tags:
+      - Likes
+    summary: Check if user has liked a track.
+    description: Returns the like status for the authenticated user. Requires authentication.
+    operationId: getTrackLikeStatus
+    parameters:
+      - $ref: '#/components/parameters/TrackIdParam'
+    responses:
+      200:
+        description: Like status for the authenticated user.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                liked:
+                  type: boolean
+                  example: true
+              required:
+                - liked
+            example:
+              liked: true
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
+    security:
+      - BearerAuth: []
+
 /api/engagement/tracks/v1/{trackId}/repost:
   get:
     tags:

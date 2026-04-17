@@ -17,6 +17,7 @@ import {
   ImageFolder,
 } from '../../shared/abstractions/cloudinary.service';
 import { IAdvancedAudioDetails } from '../../shared/models/models.advanced-audio-details';
+import { getNotificationSocketHandler } from '../../sockets/handlers/notification.handler';
 
 type ImageInfo = {
   imgLink: string;
@@ -122,7 +123,25 @@ export class TracksService {
       new Types.ObjectId(posterId),
     );
 
-    return await this.tracksRepository.createNewTrack(trackInput);
+    const trackId = await this.tracksRepository.createNewTrack(trackInput);
+
+    this.sendNewTrackSocketNotification(posterId, trackId);
+
+    return true;
+  }
+
+  private sendNewTrackSocketNotification(actorId: string, trackId: string) {
+    let notificationHandler;
+
+    try {
+      notificationHandler = getNotificationSocketHandler();
+    } catch {
+      return;
+    }
+
+    notificationHandler.sendNewTrackNotification(actorId, trackId).catch((err) =>
+      console.error('Failed to send new track socket notification:', err),
+    );
   }
 
   async getTrackByPermalink(permalink: string) {

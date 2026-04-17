@@ -3,7 +3,7 @@ api/social/v1/follow/{userId}:
     tags:
       - Social
     summary: Follow a user
-    description: Authenticated user follows another user
+    description: Authenticated user follows another user and sends a follow notification to the followed user.
     operationId: followUser
     parameters:
       - name: userId

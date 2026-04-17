@@ -206,7 +206,7 @@ export class NotificationsRepository {
   async createLikeNotification(
     actorId: string,
     trackId: string,
-  ): Promise<NotificationRecord> {
+  ): Promise<NotificationRecord | null> {
     const actorObjectId = this.parseObjectId(actorId, 'actor id');
     const trackObjectId = this.parseObjectId(trackId, 'track id');
 
@@ -224,6 +224,10 @@ export class NotificationsRepository {
 
     const actorDoc = this.requireFound(actor, 'Actor not found');
     const trackDoc = this.requireFound(track, 'Track not found');
+
+    if (actorDoc._id.equals(trackDoc.posterId)) {
+      return null;
+    }
 
     const trackName = this.getTrackTitle(trackDoc.basicInfo?.title);
 
@@ -250,7 +254,7 @@ export class NotificationsRepository {
   async createCommentNotification(
     actorId: string,
     commentId: string,
-  ): Promise<NotificationRecord> {
+  ): Promise<NotificationRecord | null> {
     const actorObjectId = this.parseObjectId(actorId, 'actor id');
     const commentObjectId = this.parseObjectId(commentId, 'comment id');
 
@@ -283,6 +287,10 @@ export class NotificationsRepository {
 
     const trackDoc = this.requireFound(track, 'Track not found');
 
+    if (actorDoc._id.equals(trackDoc.posterId)) {
+      return null;
+    }
+
     const created = await Notification.create({
       to: trackDoc.posterId,
       from: actorDoc._id,
@@ -306,7 +314,7 @@ export class NotificationsRepository {
   async createRepostNotification(
     actorId: string,
     trackId: string,
-  ): Promise<NotificationRecord> {
+  ): Promise<NotificationRecord | null> {
     const actorObjectId = this.parseObjectId(actorId, 'actor id');
     const trackObjectId = this.parseObjectId(trackId, 'track id');
 
@@ -324,6 +332,10 @@ export class NotificationsRepository {
 
     const actorDoc = this.requireFound(actor, 'Actor not found');
     const trackDoc = this.requireFound(track, 'Track not found');
+
+    if (actorDoc._id.equals(trackDoc.posterId)) {
+      return null;
+    }
 
     const trackName = this.getTrackTitle(trackDoc.basicInfo?.title);
 
@@ -350,12 +362,16 @@ export class NotificationsRepository {
   async createFollowNotification(
     actorId: string,
     followedUserId: string,
-  ): Promise<NotificationRecord> {
+  ): Promise<NotificationRecord | null> {
     const actorObjectId = this.parseObjectId(actorId, 'actor id');
     const followedObjectId = this.parseObjectId(
       followedUserId,
       'followed user id',
     );
+
+    if (actorObjectId.equals(followedObjectId)) {
+      return null;
+    }
 
     const [actor, followedUser] = await Promise.all([
       User.findById(actorObjectId)

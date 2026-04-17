@@ -57,47 +57,51 @@ export class NotificationSocketHandler {
   async sendLikeNotification(
     actorId: string,
     trackId: string,
-  ): Promise<NotificationReceivePayload> {
+  ): Promise<NotificationReceivePayload | null> {
     const notification = await this.notificationsService.createLikeNotification(
       actorId,
       trackId,
     );
+    if (!notification) return null;
     return this.emitNotification(notification);
   }
 
   async sendCommentNotification(
     actorId: string,
     commentId: string,
-  ): Promise<NotificationReceivePayload> {
+  ): Promise<NotificationReceivePayload | null> {
     const notification =
       await this.notificationsService.createCommentNotification(
         actorId,
         commentId,
       );
+    if (!notification) return null;
     return this.emitNotification(notification);
   }
 
   async sendRepostNotification(
     actorId: string,
     trackId: string,
-  ): Promise<NotificationReceivePayload> {
+  ): Promise<NotificationReceivePayload | null> {
     const notification =
       await this.notificationsService.createRepostNotification(
         actorId,
         trackId,
       );
+    if (!notification) return null;
     return this.emitNotification(notification);
   }
 
   async sendFollowNotification(
     actorId: string,
     followedUserId: string,
-  ): Promise<NotificationReceivePayload> {
+  ): Promise<NotificationReceivePayload | null> {
     const notification =
       await this.notificationsService.createFollowNotification(
         actorId,
         followedUserId,
       );
+    if (!notification) return null;
     return this.emitNotification(notification);
   }
 

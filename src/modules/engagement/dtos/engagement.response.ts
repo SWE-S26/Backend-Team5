@@ -75,6 +75,16 @@ export const TrackLikersResponseDTO = extendedZod.object({
   users: extendedZod.array(TrackLikerUserResponseDTO),
 });
 
+export const TrackLikeStatusResponseDTO = extendedZod
+  .object({
+    liked: extendedZod.boolean(),
+  })
+  .openapi('TrackLikeStatusResponse', {
+    example: {
+      liked: true,
+    },
+  });
+
 export const TrackRepostStatusResponseDTO = extendedZod
   .object({
     reposted: extendedZod.boolean(),
@@ -215,6 +225,9 @@ export type TogglePlaylistRepostResponse = z.infer<
   typeof TogglePlaylistRepostResponseDTO
 >;
 export type TrackLikersResponse = z.infer<typeof TrackLikersResponseDTO>;
+export type TrackLikeStatusResponse = z.infer<
+  typeof TrackLikeStatusResponseDTO
+>;
 export type TrackRepostStatusResponse = z.infer<
   typeof TrackRepostStatusResponseDTO
 >;

@@ -132,6 +132,15 @@ TrackRepostStatusResponse:
   required:
     - reposted
 
+TrackLikeStatusResponse:
+  type: object
+  properties:
+    liked:
+      type: boolean
+      example: true
+  required:
+    - liked
+
 UpdateRepostCaptionRequest:
   type: object
   properties:

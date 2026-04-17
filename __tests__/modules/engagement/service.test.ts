@@ -592,4 +592,65 @@ describe('EngagementService', () => {
       ).rejects.toThrow();
     });
   });
+
+  describe('getTrackLikeStatus', () => {
+    const trackId = '507f1f77bcf86cd799439011';
+    const userId = '507f1f77bcf86cd799439022';
+
+    it('should return liked: true if user liked the track', async () => {
+      const mockTrack = {
+        _id: new Types.ObjectId(trackId),
+        likedBy: [new Types.ObjectId(userId)],
+      };
+
+      (
+        EngagementRepository.prototype.findTrackById as jest.Mock
+      ).mockResolvedValue(mockTrack);
+      (EngagementMapper.toTrackLikeStatusResponse as jest.Mock).mockReturnValue(
+        {
+          liked: true,
+        },
+      );
+
+      const result = await service.getTrackLikeStatus(trackId, userId);
+
+      expect(EngagementMapper.toTrackLikeStatusResponse).toHaveBeenCalledWith(
+        true,
+      );
+      expect(result).toEqual({ liked: true });
+    });
+
+    it('should return liked: false if user did not like the track', async () => {
+      const mockTrack = {
+        _id: new Types.ObjectId(trackId),
+        likedBy: [],
+      };
+
+      (
+        EngagementRepository.prototype.findTrackById as jest.Mock
+      ).mockResolvedValue(mockTrack);
+      (EngagementMapper.toTrackLikeStatusResponse as jest.Mock).mockReturnValue(
+        {
+          liked: false,
+        },
+      );
+
+      const result = await service.getTrackLikeStatus(trackId, userId);
+
+      expect(EngagementMapper.toTrackLikeStatusResponse).toHaveBeenCalledWith(
+        false,
+      );
+      expect(result).toEqual({ liked: false });
+    });
+
+    it('should throw NotFoundError if track not found', async () => {
+      (
+        EngagementRepository.prototype.findTrackById as jest.Mock
+      ).mockResolvedValue(null);
+
+      await expect(
+        service.getTrackLikeStatus(trackId, userId),
+      ).rejects.toThrow();
+    });
+  });
 });

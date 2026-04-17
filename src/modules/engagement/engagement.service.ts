@@ -13,6 +13,7 @@ import {
   ToggleRepostResponse,
   TogglePlaylistRepostResponse,
   TrackRepostStatusResponse,
+  TrackLikeStatusResponse,
   PlaylistRepostStatusResponse,
   UpdateRepostCaptionResponse,
   PostCommentResponse,
@@ -242,6 +243,20 @@ export class EngagementService {
       parsedPage,
       parsedLimit,
     );
+  }
+
+  async getTrackLikeStatus(
+    trackId: string,
+    userId: string,
+  ): Promise<TrackLikeStatusResponse> {
+    const track = await this.repository.findTrackById(trackId);
+
+    if (!track) NotFoundError('Track not found');
+
+    const userObjectId = new Types.ObjectId(userId);
+    const liked = track!.likedBy.some((id) => id.equals(userObjectId));
+
+    return EngagementMapper.toTrackLikeStatusResponse(liked);
   }
 
   async getTrackRepostStatus(

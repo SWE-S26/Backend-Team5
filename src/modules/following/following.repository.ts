@@ -48,6 +48,17 @@ export class FollowingRepository {
     ]);
   }
 
+  async isFollowing(id: string, followedId: string): Promise<boolean> {
+    const relation = await Following.findOne({
+      userId: id,
+      followed: followedId,
+    })
+      .select('_id')
+      .lean();
+
+    return Boolean(relation);
+  }
+
   async removeFollower(id: string, followedId: string): Promise<void> {
     await Promise.all([
       Following.findOneAndUpdate(

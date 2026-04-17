@@ -253,6 +253,38 @@ describe('EngagementController', () => {
     });
   });
 
+  describe('getTrackLikeStatus', () => {
+    const trackId = '507f1f77bcf86cd799439011';
+    const userId = '507f1f77bcf86cd799439022';
+
+    it('should get track like status for user', async () => {
+      mockReq = {
+        params: { trackId },
+        userInfo: { _id: userId } as any,
+        body: {},
+        query: {},
+      };
+
+      const mockResult = {
+        liked: true,
+      };
+
+      (
+        EngagementService.prototype.getTrackLikeStatus as jest.Mock
+      ).mockResolvedValue(mockResult);
+
+      await controller.getTrackLikeStatus(
+        mockReq as Request,
+        mockRes as Response,
+      );
+
+      expect(
+        EngagementService.prototype.getTrackLikeStatus,
+      ).toHaveBeenCalledWith(trackId, userId);
+      expect(mockRes.json).toHaveBeenCalledWith(mockResult);
+    });
+  });
+
   describe('getTrackRepostStatus', () => {
     const trackId = '507f1f77bcf86cd799439011';
     const userId = '507f1f77bcf86cd799439022';
