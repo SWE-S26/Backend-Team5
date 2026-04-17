@@ -679,7 +679,7 @@ export class AuthController {
     }
 
     try {
-      const { incompleteToken, dateOfBirth, gender } =
+      const { incompleteToken, dateOfBirth, gender, displayName } =
         req.body as GoogleCompleteSignUpBody;
 
       const decryptedIncompleteToken = SecureParams.decrypt(incompleteToken);
@@ -689,6 +689,7 @@ export class AuthController {
           incompleteToken: decryptedIncompleteToken,
           dateOfBirth,
           gender,
+          displayName,
         });
 
       if (

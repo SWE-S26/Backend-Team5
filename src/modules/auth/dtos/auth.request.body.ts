@@ -102,6 +102,10 @@ export const GoogleCompleteSignUpRequestBodyDTO = extendedZod
     ),
 
     gender: extendedZod.enum(['Male', 'Female']),
+    displayName: extendedZod
+      .string()
+      .transform((value) => value.trim())
+      .optional(),
   })
   .openapi('GoogleCompleteSignUpRequest', {
     example: {
@@ -109,6 +113,7 @@ export const GoogleCompleteSignUpRequestBodyDTO = extendedZod
         'eyJhbGciO.eyNTYiLCJpYXQiOjE2ODg3NjQ4MDAsImV4cCI6MTY4ODc3ODQwMH0.amno345pqr678stu901vwx234yz567',
       dateOfBirth: '1990-05-15',
       gender: 'Male',
+      displayName: 'Who is you daddy',
     },
   });
 

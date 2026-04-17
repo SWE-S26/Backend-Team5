@@ -34,6 +34,7 @@ export type GoogleCompleteSignUpBody = {
   incompleteToken: string;
   dateOfBirth: Date;
   gender: 'Male' | 'Female';
+  displayName: string;
 };
 
 export type SendGoogleVerificationCode = {
@@ -393,10 +394,14 @@ export class AuthService {
       );
     }
 
+    const finalDisplayName = body.displayName
+      ? body.displayName
+      : payload.displayName;
+
     const newUser = await this.authRepository.createWithGoogle({
       googleId: payload.googleId,
       email: payload.email,
-      displayName: payload.displayName,
+      displayName: finalDisplayName,
       dateOfBirth: body.dateOfBirth,
       gender: body.gender,
     });
