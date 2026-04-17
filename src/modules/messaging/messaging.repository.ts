@@ -53,44 +53,43 @@ export class MessagingRepository {
   ): Promise<IConversationPopulated[] | null> {
     const newConversation = await Conversation.create({
       participants: [userId, receiverId],
-      lastMessage: {
-        senderId: userId,
-        content: content,
-      },
     });
     const newMessage = await Message.create({
       chatId: newConversation._id,
       senderId: userId,
       content: content,
+      seenBy: [userId],
     });
+
+    await Conversation.findByIdAndUpdate(newConversation._id, {
+      lastMessage: newMessage._id,
+    });
+
     return await this.getChatsHistory(userId);
   }
 
   async activateChat(
     userId: Types.ObjectId,
-    chadId: Types.ObjectId,
+    chatId: Types.ObjectId,
     content: string,
   ): Promise<IConversationPopulated[] | null> {
+    const newMessage = await Message.create({
+      chatId: chatId,
+      senderId: userId,
+      content: content,
+      seenBy: [userId],
+    });
     const updatedConversation = await Conversation.findOneAndUpdate(
       {
-        _id: chadId,
+        _id: chatId,
       },
       {
         $set: {
           archivedBy: [],
-          lastMessage: {
-            senderId: userId,
-            content,
-            timestamp: new Date(),
-          },
+          lastMessage: newMessage._id,
         },
       },
     );
-    const newMessage = await Message.create({
-      chatId: updatedConversation!._id,
-      senderId: userId,
-      content: content,
-    });
     return await this.getChatsHistory(userId);
   }
 
@@ -102,6 +101,7 @@ export class MessagingRepository {
       archivedBy: { $ne: userId },
     })
       .populate('participants', 'displayName profileImg')
+      .populate('lastMessage', '_id content senderId createdAt seenBy')
       .sort({ updatedAt: -1 })
       .lean<IConversationPopulated[]>();
   }
