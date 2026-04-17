@@ -130,45 +130,29 @@
             type: string
             minLength: 1
   
-        - name: limit
-          in: query
-          required: false
-          description: Maximum number of suggestions per category
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 10
-            default: 9
-  
       responses:
         '200':
-          description: Suggestions retrieved successfully
+          description: Suggestions retrieved
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  queries:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/QuerySuggestion'
-                  tracks:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/TrackSuggestion'
-                  users:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/UserSuggestion'
-                  playlists:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/PlaylistSuggestion'
-                  albums:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/AlbumSuggestion'
-                additionalProperties: false
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      type: string
+                      enum: [track, user, playlist, album]
+                    title:
+                      type: string
+                    imgLink:
+                      type: string
+                      format: uri
+                    isPersonalized:
+                      type: boolean
+                      description:  true if user likes or follows they are of max 2, and it has different view in the app
   
         '400':
           description: Invalid search query
