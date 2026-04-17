@@ -544,6 +544,9 @@
                 type: string
                 enum: [Male, Female]
                 example: 'Male'
+              displayName:
+                type: string
+                example: 'I AM YOUR DADDY'
 
     responses:
       201:
