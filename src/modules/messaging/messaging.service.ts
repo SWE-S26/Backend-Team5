@@ -31,10 +31,10 @@ export class MessagingService {
     }
 
     // validate user is not blocked
-    const blockedList = await this.repository.findUserBlockedList(userId);
+    const blockedList = await this.repository.findUserBlockedList(receiverId);
 
-    if (blockedList?.blockedIds.includes(receiverId)) {
-      throw ForbiddenError('User is Blocked Cannot Be Sent to');
+    if (blockedList?.blockedIds.includes(userId)) {
+      throw ForbiddenError('User Blocked You Cannot Send to Him');
     }
 
     // search if chat exits with these two participents first
