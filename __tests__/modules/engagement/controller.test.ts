@@ -453,6 +453,7 @@ describe('EngagementController', () => {
         content,
         timestamp,
         undefined,
+        undefined,
       );
       expect(mockRes.status).toHaveBeenCalledWith(201);
       expect(mockRes.json).toHaveBeenCalledWith(mockResult);
@@ -483,6 +484,7 @@ describe('EngagementController', () => {
         content,
         timestamp,
         undefined,
+        undefined,
       );
     });
 
@@ -511,6 +513,36 @@ describe('EngagementController', () => {
         content,
         timestamp,
         parentCommentId,
+        undefined,
+      );
+    });
+
+    it('should post comment with mentionedUserId', async () => {
+      const mentionedUserId = '507f1f77bcf86cd799439055';
+      mockReq = {
+        params: { trackId },
+        userInfo: { _id: userId } as any,
+        body: { content, timestamp, mentionedUserId },
+        query: {},
+      };
+
+      const mockResult = { commentId: '123', content };
+      (
+        EngagementService.prototype.postTrackComment as jest.Mock
+      ).mockResolvedValue(mockResult);
+
+      await controller.postTrackComment(
+        mockReq as Request,
+        mockRes as Response,
+      );
+
+      expect(EngagementService.prototype.postTrackComment).toHaveBeenCalledWith(
+        trackId,
+        userId,
+        content,
+        timestamp,
+        undefined,
+        mentionedUserId,
       );
     });
 
@@ -593,6 +625,7 @@ describe('EngagementController', () => {
 
   describe('getTrackComments', () => {
     const trackId = '507f1f77bcf86cd799439011';
+    const userId = '507f1f77bcf86cd799439022';
 
     it('should get track comments with sorting', async () => {
       mockReq = {
@@ -620,8 +653,40 @@ describe('EngagementController', () => {
         '0',
         '20',
         'newest',
+        undefined,
       );
       expect(mockRes.json).toHaveBeenCalledWith(mockResult);
+    });
+
+    it('should pass viewer id when authenticated user exists', async () => {
+      mockReq = {
+        params: { trackId },
+        query: { offset: '0', limit: '20', sortBy: 'newest' },
+        userInfo: { _id: userId } as any,
+        body: {},
+      };
+
+      const mockResult = {
+        comments: [{ commentId: '123', content: 'Comment 1' }],
+        total: 1,
+      };
+
+      (
+        EngagementService.prototype.getTrackComments as jest.Mock
+      ).mockResolvedValue(mockResult);
+
+      await controller.getTrackComments(
+        mockReq as Request,
+        mockRes as Response,
+      );
+
+      expect(EngagementService.prototype.getTrackComments).toHaveBeenCalledWith(
+        trackId,
+        '0',
+        '20',
+        'newest',
+        userId,
+      );
     });
 
     it('should work without sortBy parameter', async () => {
@@ -647,12 +712,14 @@ describe('EngagementController', () => {
         '0',
         '20',
         'newest',
+        undefined,
       );
     });
   });
 
   describe('getCommentReplies', () => {
     const commentId = '507f1f77bcf86cd799439011';
+    const userId = '507f1f77bcf86cd799439022';
 
     it('should get comment replies with pagination', async () => {
       mockReq = {
@@ -677,8 +744,35 @@ describe('EngagementController', () => {
 
       expect(
         EngagementService.prototype.getCommentReplies,
-      ).toHaveBeenCalledWith(commentId, '0', '10');
+      ).toHaveBeenCalledWith(commentId, '0', '10', undefined);
       expect(mockRes.json).toHaveBeenCalledWith(mockResult);
+    });
+
+    it('should pass viewer id for replies when authenticated user exists', async () => {
+      mockReq = {
+        params: { commentId },
+        query: { offset: '0', limit: '10' },
+        userInfo: { _id: userId } as any,
+        body: {},
+      };
+
+      const mockResult = {
+        replies: [{ commentId: '123', content: 'Reply 1' }],
+        total: 1,
+      };
+
+      (
+        EngagementService.prototype.getCommentReplies as jest.Mock
+      ).mockResolvedValue(mockResult);
+
+      await controller.getCommentReplies(
+        mockReq as Request,
+        mockRes as Response,
+      );
+
+      expect(
+        EngagementService.prototype.getCommentReplies,
+      ).toHaveBeenCalledWith(commentId, '0', '10', userId);
     });
   });
 
@@ -707,6 +801,42 @@ describe('EngagementController', () => {
       expect(
         EngagementService.prototype.deleteTrackComment,
       ).toHaveBeenCalledWith(commentId, userId);
+      expect(mockRes.json).toHaveBeenCalledWith(mockResult);
+    });
+  });
+
+  describe('getMentionFollowers', () => {
+    const userId = '507f1f77bcf86cd799439022';
+
+    it('should return mention followers list', async () => {
+      mockReq = {
+        userInfo: { _id: userId } as any,
+        query: { offset: '0', limit: '20' },
+        body: {},
+        params: {},
+      };
+
+      const mockResult = [
+        {
+          userId: '507f1f77bcf86cd799439011',
+          displayName: 'Follower',
+          avatarUrl: 'https://img.test/avatar.jpg',
+          profileLink: 'follower-ab12c',
+        },
+      ];
+
+      (
+        EngagementService.prototype.getMentionFollowers as jest.Mock
+      ).mockResolvedValue(mockResult);
+
+      await controller.getMentionFollowers(
+        mockReq as Request,
+        mockRes as Response,
+      );
+
+      expect(
+        EngagementService.prototype.getMentionFollowers,
+      ).toHaveBeenCalledWith(userId, '0', '20');
       expect(mockRes.json).toHaveBeenCalledWith(mockResult);
     });
   });

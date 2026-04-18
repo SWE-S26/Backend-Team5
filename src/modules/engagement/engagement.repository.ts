@@ -11,6 +11,12 @@ export class EngagementRepository {
     return Track.findById(trackId).select('likedBy numOfLikes');
   }
 
+  async findTrackByIdForCommentCreation(
+    trackId: string,
+  ): Promise<ITrack | null> {
+    return Track.findById(trackId).select('durationInSeconds');
+  }
+
   async findTrackByIdForComments(trackId: string): Promise<ITrack | null> {
     return Track.findById(trackId).select('posterId');
   }
@@ -70,6 +76,56 @@ export class EngagementRepository {
   async findUserDisplayName(userId: string): Promise<string | null> {
     const user = await User.findById(userId).select('displayName').lean();
     return user?.displayName || null;
+  }
+
+  async findUserById(
+    userId: string,
+  ): Promise<Pick<IUser, '_id' | 'profileLink'> | null> {
+    return User.findById(userId).select('_id profileLink').lean();
+  }
+
+  async findMentionFollowers(
+    userId: string,
+    offset: number,
+    limit: number,
+  ): Promise<
+    Pick<IUser, '_id' | 'displayName' | 'profileImg' | 'profileLink'>[]
+  > {
+    const followingDoc = await Following.findOne({
+      userId: new Types.ObjectId(userId),
+    })
+      .select('followers')
+      .lean<{ followers?: Types.ObjectId[] } | null>();
+
+    const followerIds = followingDoc?.followers ?? [];
+    if (followerIds.length === 0) {
+      return [];
+    }
+
+    const slicedFollowerIds = followerIds.slice(offset, offset + limit);
+    if (slicedFollowerIds.length === 0) {
+      return [];
+    }
+
+    const users = await User.find({
+      _id: { $in: slicedFollowerIds },
+    })
+      .select('_id displayName profileImg profileLink')
+      .lean<
+        Pick<IUser, '_id' | 'displayName' | 'profileImg' | 'profileLink'>[]
+      >();
+
+    const usersById = new Map(users.map((user) => [user._id.toString(), user]));
+    return slicedFollowerIds
+      .map((id) => usersById.get(id.toString()))
+      .filter(
+        (
+          user,
+        ): user is Pick<
+          IUser,
+          '_id' | 'displayName' | 'profileImg' | 'profileLink'
+        > => Boolean(user),
+      );
   }
 
   async findUserNotificationSettings(
@@ -427,6 +483,7 @@ export class EngagementRepository {
     trackId: string,
     content: string,
     timestampSeconds?: number,
+    mentionedUserId?: string,
   ): Promise<IComment> {
     const userObjectId = new Types.ObjectId(userId);
     const trackObjectId = new Types.ObjectId(trackId);
@@ -436,6 +493,9 @@ export class EngagementRepository {
       trackId: trackObjectId,
       content,
       timestampSeconds: timestampSeconds || 0,
+      mentionedUserId: mentionedUserId
+        ? new Types.ObjectId(mentionedUserId)
+        : undefined,
       numLikes: 0,
       likedList: [],
       replyList: [],
@@ -553,6 +613,7 @@ export class EngagementRepository {
     comments: Array<
       IComment & {
         user: Pick<IUser, '_id' | 'displayName' | 'profileImg'>;
+        mentionedUserProfileLink?: string;
       }
     >;
     total: number;
@@ -589,6 +650,16 @@ export class EngagementRepository {
           select: '_id displayName profileImg',
           model: 'User',
         })
+        .populate<{
+          mentionedUser:
+            | Pick<IUser, '_id' | 'profileLink'>
+            | Types.ObjectId
+            | null;
+        }>({
+          path: 'mentionedUserId',
+          select: '_id profileLink',
+          model: 'User',
+        })
         .lean(),
       Comment.countDocuments(filter),
     ]);
@@ -599,6 +670,13 @@ export class EngagementRepository {
         .map((c) => ({
           ...c,
           user: c.userId as any,
+          mentionedUserProfileLink:
+            c.mentionedUserId &&
+            typeof c.mentionedUserId === 'object' &&
+            'profileLink' in (c.mentionedUserId as object)
+              ? ((c.mentionedUserId as { profileLink?: string }).profileLink ??
+                undefined)
+              : undefined,
         })),
       total,
     };
@@ -612,6 +690,7 @@ export class EngagementRepository {
     replies: Array<
       IComment & {
         user: Pick<IUser, '_id' | 'displayName' | 'profileImg'>;
+        mentionedUserProfileLink?: string;
       }
     >;
     total: number;
@@ -639,6 +718,16 @@ export class EngagementRepository {
           select: '_id displayName profileImg',
           model: 'User',
         })
+        .populate<{
+          mentionedUser:
+            | Pick<IUser, '_id' | 'profileLink'>
+            | Types.ObjectId
+            | null;
+        }>({
+          path: 'mentionedUserId',
+          select: '_id profileLink',
+          model: 'User',
+        })
         .lean();
 
       const orderedReplies = replies
@@ -646,6 +735,13 @@ export class EngagementRepository {
         .map((reply) => ({
           ...reply,
           user: reply.userId as any,
+          mentionedUserProfileLink:
+            reply.mentionedUserId &&
+            typeof reply.mentionedUserId === 'object' &&
+            'profileLink' in (reply.mentionedUserId as object)
+              ? ((reply.mentionedUserId as { profileLink?: string })
+                  .profileLink ?? undefined)
+              : undefined,
         }));
 
       return {

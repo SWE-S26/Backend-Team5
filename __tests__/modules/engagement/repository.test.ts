@@ -463,8 +463,13 @@ describe('EngagementRepository', () => {
       ];
 
       const leanMock = jest.fn().mockResolvedValue(populatedReplies);
-      const populateMock = jest.fn().mockReturnValue({ lean: leanMock });
-      const limitMock = jest.fn().mockReturnValue({ populate: populateMock });
+      const secondPopulateMock = jest.fn().mockReturnValue({ lean: leanMock });
+      const firstPopulateMock = jest
+        .fn()
+        .mockReturnValue({ populate: secondPopulateMock });
+      const limitMock = jest
+        .fn()
+        .mockReturnValue({ populate: firstPopulateMock });
       const skipMock = jest.fn().mockReturnValue({ limit: limitMock });
       const sortMock = jest.fn().mockReturnValue({ skip: skipMock });
 

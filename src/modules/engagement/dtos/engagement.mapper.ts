@@ -5,6 +5,8 @@ import { IComment } from '../../../shared/models/models.comment';
 import {
   TrackLikersResponse,
   TrackLikersResponseDTO,
+  MentionFollowersResponse,
+  MentionFollowersResponseDTO,
   ToggleLikeResponse,
   ToggleLikeResponseDTO,
   TogglePlaylistLikeResponse,
@@ -83,6 +85,19 @@ export class EngagementMapper {
         followersCount: followersCountByUserId[user._id.toString()] ?? 0,
       })),
     });
+  }
+
+  static toMentionFollowersResponse(
+    users: Pick<IUser, '_id' | 'displayName' | 'profileImg' | 'profileLink'>[],
+  ): MentionFollowersResponse {
+    return MentionFollowersResponseDTO.parse(
+      users.map((user) => ({
+        userId: user._id.toString(),
+        displayName: user.displayName,
+        avatarUrl: user.profileImg?.imgLink || undefined,
+        profileLink: user.profileLink,
+      })),
+    );
   }
 
   static toTrackRepostStatusResponse(
@@ -164,8 +179,20 @@ export class EngagementMapper {
   static toCommentEntryResponse(
     comment: IComment & {
       user: Pick<IUser, '_id' | 'displayName' | 'profileImg'>;
+      mentionedUserProfileLink?: string;
     },
+    viewerId?: string,
   ): CommentEntryResponse {
+    const isLikedByUser =
+      viewerId !== undefined
+        ? comment.likedList.some(
+            (likedUserId) => likedUserId.toString() === viewerId,
+          )
+        : false;
+
+    const isOwnComment =
+      viewerId !== undefined ? comment.user._id.toString() === viewerId : false;
+
     return {
       commentId: comment._id.toString(),
       userId: comment.user._id.toString(),
@@ -175,8 +202,9 @@ export class EngagementMapper {
       timestamp: comment.timestampSeconds,
       numLikes: comment.numLikes,
       replyCount: comment.replyList.length,
-      isLikedByUser: false,
-      isOwnComment: false,
+      isLikedByUser,
+      isOwnComment,
+      mentionedUserProfileLink: comment.mentionedUserProfileLink,
       createdAt: comment.createdAt.toISOString(),
     };
   }
@@ -190,13 +218,14 @@ export class EngagementMapper {
     total: number,
     offset: number,
     limit: number,
+    viewerId?: string,
   ): GetTrackCommentsResponse {
     return GetTrackCommentsResponseDTO.parse({
       total,
       offset,
       limit,
       comments: comments.map((comment) =>
-        EngagementMapper.toCommentEntryResponse(comment),
+        EngagementMapper.toCommentEntryResponse(comment, viewerId),
       ),
     });
   }
@@ -210,13 +239,14 @@ export class EngagementMapper {
     total: number,
     offset: number,
     limit: number,
+    viewerId?: string,
   ): GetCommentRepliesResponse {
     return GetCommentRepliesResponseDTO.parse({
       total,
       offset,
       limit,
       replies: replies.map((reply) =>
-        EngagementMapper.toCommentEntryResponse(reply),
+        EngagementMapper.toCommentEntryResponse(reply, viewerId),
       ),
     });
   }
