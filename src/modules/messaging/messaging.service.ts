@@ -12,6 +12,7 @@ import { Types } from 'mongoose';
 import { MessagingMapper } from './dtos/messaging.mapper';
 import logger from '../../shared/logger/logger';
 import emailService from '../../shared/abstractions/email/email.service';
+import { PaginationInfo } from './dtos/messaging.request.query';
 
 export class MessagingService {
   private readonly repository: MessagingRepository;
@@ -90,6 +91,31 @@ export class MessagingService {
 
     await this.repository.archiveChat(userId, chatId);
     return;
+  }
+
+  async getChatsHistory(userId: Types.ObjectId): Promise<any[] | null> {
+    const chatsHistory = await this.repository.getChatsHistory(userId);
+    return MessagingMapper.toChatsHistoryResponse(chatsHistory, userId);
+  }
+
+  async getChatMessages(
+    userId: Types.ObjectId,
+    chatId: Types.ObjectId,
+    paginationInfo: PaginationInfo,
+  ): Promise<any[] | null> {
+    const searchChat = await this.repository.findChatById(chatId);
+
+    if (!searchChat) throw NotFoundError('Chat Not Found');
+
+    if (!searchChat.participants.some((p) => p.equals(userId)))
+      throw ForbiddenError('Forbbiden Access');
+
+    const chatMessages = await this.repository.getChatMessages(
+      chatId,
+      paginationInfo,
+    );
+
+    return chatMessages;
   }
 
   async delete(id: string): Promise<boolean> {

@@ -1,15 +1,20 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 import { PaginationQueryDto } from '../../../shared/dtos/commonDTO';
+import { Types } from 'mongoose';
+import { z } from 'zod';
 
 export const MessagingRoleQueryDto = extendedZod.object({
   role: extendedZod.enum(['user', 'admin']).optional(),
 });
 
-export const ListMessagingsQueryDto = PaginationQueryDto.extend(
-  MessagingRoleQueryDto.shape,
-).extend({
-  // I have added the defualt because, I think every API would need it's default
-  // for example you may fetch 8 comments easily, but not 8 posts, I am giving an example
-  page: extendedZod.string().default('1'),
-  limit: extendedZod.string().default('20'),
+export const ListMessagingsQueryDto = extendedZod.object({
+  before: extendedZod
+    .string()
+    .refine((value) => Types.ObjectId.isValid(value), {
+      message: 'Invalid ObjectId',
+    })
+    .optional(),
+  limit: extendedZod.coerce.number().default(20),
 });
+
+export type PaginationInfo = z.infer<typeof ListMessagingsQueryDto>;
