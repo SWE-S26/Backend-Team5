@@ -132,6 +132,35 @@ export class MessagingRepository {
     }
   }
 
+  async markAsRead(
+    userId: Types.ObjectId,
+    chatId: Types.ObjectId,
+  ): Promise<void> {
+    await Message.updateMany(
+      {
+        chatId,
+        seenBy: { $ne: userId },
+      },
+      {
+        $addToSet: { seenBy: userId },
+      },
+    );
+  }
+
+  async markAsUnRead(
+    userId: Types.ObjectId,
+    messageId: Types.ObjectId,
+  ): Promise<void> {
+    await Message.updateMany(
+      {
+        _id: messageId,
+      },
+      {
+        $pull: { seenBy: userId },
+      },
+    );
+  }
+
   async delete(id: string): Promise<boolean> {
     // TODO: delete from your data source
     return false;

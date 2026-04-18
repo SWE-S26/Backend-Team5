@@ -21,6 +21,14 @@ messagingRouter.get(apiVersions.v1 + '/chat/message/:id', (req, res) =>
   messagingController.getChatMessages(req, res),
 );
 
+messagingRouter.get(apiVersions.v1 + '/chat/read/:id', (req, res) =>
+  messagingController.markAsRead(req, res),
+);
+
+messagingRouter.get(apiVersions.v1 + '/chat/unread/:id', (req, res) =>
+  messagingController.markAsUnRead(req, res),
+);
+
 // messagingRouter.get('/:id',   (req, res) => messagingController.findOne(req, res));
 // messagingRouter.post('/',     (req, res) => messagingController.create(req, res));
 // messagingRouter.put('/:id',   (req, res) => messagingController.replace(req, res));

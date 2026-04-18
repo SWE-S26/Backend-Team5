@@ -6,6 +6,7 @@ import {
   SendNewMessageRequestDTO,
   ArchiveChatRequestDTO,
   GetChatMessagesRequestDTO,
+  MarkChatMessagesRequestDTO,
 } from './dtos/messaging.request';
 import { Types } from 'mongoose';
 
@@ -100,9 +101,36 @@ export class MessagingController {
     });
   }
 
-  async create(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
+  async markAsRead(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(MarkChatMessagesRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const userInfo = this.getUserInfo(req);
+    const chatId = new Types.ObjectId(validatedRequest.data.params.id);
+    const userId = new Types.ObjectId(userInfo.userId);
+    await this.service.markAsRead(userId, chatId);
+    res.json({
+      message: 'Marked As read Successfully',
+    });
+  }
+
+  async markAsUnRead(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(MarkChatMessagesRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const userInfo = this.getUserInfo(req);
+    const chatId = new Types.ObjectId(validatedRequest.data.params.id);
+    const userId = new Types.ObjectId(userInfo.userId);
+    await this.service.markAsUnRead(userId, chatId);
+    res.json({
+      message: 'Marked As Unread Successfully',
+    });
   }
 
   async replace(req: Request, res: Response): Promise<void> {
