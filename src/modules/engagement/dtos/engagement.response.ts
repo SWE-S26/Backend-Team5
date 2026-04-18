@@ -75,6 +75,17 @@ export const TrackLikersResponseDTO = extendedZod.object({
   users: extendedZod.array(TrackLikerUserResponseDTO),
 });
 
+export const MentionFollowerResponseDTO = extendedZod.object({
+  userId: extendedZod.string(),
+  displayName: extendedZod.string(),
+  avatarUrl: extendedZod.string().optional(),
+  profileLink: extendedZod.string(),
+});
+
+export const MentionFollowersResponseDTO = extendedZod.array(
+  MentionFollowerResponseDTO,
+);
+
 export const TrackLikeStatusResponseDTO = extendedZod
   .object({
     liked: extendedZod.boolean(),
@@ -153,6 +164,7 @@ export const CommentEntryResponseDTO = extendedZod
     replyCount: extendedZod.number().int().min(0),
     isLikedByUser: extendedZod.boolean(),
     isOwnComment: extendedZod.boolean(),
+    mentionedUserProfileLink: extendedZod.string().optional(),
     createdAt: extendedZod.string(),
   })
   .openapi('CommentEntry', {
@@ -167,6 +179,7 @@ export const CommentEntryResponseDTO = extendedZod
       replyCount: 2,
       isLikedByUser: false,
       isOwnComment: false,
+      mentionedUserProfileLink: 'jane-smith-ab12c',
       createdAt: '2025-01-15T12:00:00Z',
     },
   });
@@ -225,6 +238,12 @@ export type TogglePlaylistRepostResponse = z.infer<
   typeof TogglePlaylistRepostResponseDTO
 >;
 export type TrackLikersResponse = z.infer<typeof TrackLikersResponseDTO>;
+export type MentionFollowerResponse = z.infer<
+  typeof MentionFollowerResponseDTO
+>;
+export type MentionFollowersResponse = z.infer<
+  typeof MentionFollowersResponseDTO
+>;
 export type TrackLikeStatusResponse = z.infer<
   typeof TrackLikeStatusResponseDTO
 >;

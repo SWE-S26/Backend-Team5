@@ -145,6 +145,32 @@
         $ref: '#/components/responses/ServerError'
     security: []
 
+/api/engagement/mentions/v1/followers:
+  get:
+    tags:
+      - Comments
+    summary: Get mention follower suggestions for authenticated user.
+    description: Returns followers of the authenticated user for mention suggestions.
+    operationId: getMentionFollowers
+    parameters:
+      - $ref: '#/components/parameters/EngagementOffsetParam'
+      - $ref: '#/components/parameters/EngagementLimitParam'
+    responses:
+      200:
+        description: Followers list for mention suggestions.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/MentionFollower'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      500:
+        $ref: '#/components/responses/ServerError'
+    security:
+      - BearerAuth: []
+
 /api/engagement/tracks/v1/{trackId}/like:
   get:
     tags:

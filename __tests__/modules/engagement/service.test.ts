@@ -339,6 +339,7 @@ describe('EngagementService', () => {
       const mockTrack = {
         _id: new Types.ObjectId(trackId),
         posterId: new Types.ObjectId(),
+        durationInSeconds: 180,
       };
 
       const mockComment = {
@@ -353,7 +354,8 @@ describe('EngagementService', () => {
       };
 
       (
-        EngagementRepository.prototype.findTrackById as jest.Mock
+        EngagementRepository.prototype
+          .findTrackByIdForCommentCreation as jest.Mock
       ).mockResolvedValue(mockTrack);
       (
         EngagementRepository.prototype.createComment as jest.Mock
@@ -380,6 +382,7 @@ describe('EngagementService', () => {
         trackId,
         content,
         0,
+        undefined,
       );
       expect(
         EngagementRepository.prototype.addCommentToTrack,
@@ -394,6 +397,7 @@ describe('EngagementService', () => {
       const mockTrack = {
         _id: new Types.ObjectId(trackId),
         posterId: new Types.ObjectId(),
+        durationInSeconds: 180,
       };
 
       const mockComment = {
@@ -405,7 +409,8 @@ describe('EngagementService', () => {
       };
 
       (
-        EngagementRepository.prototype.findTrackById as jest.Mock
+        EngagementRepository.prototype
+          .findTrackByIdForCommentCreation as jest.Mock
       ).mockResolvedValue(mockTrack);
       (
         EngagementRepository.prototype.createComment as jest.Mock
@@ -421,12 +426,14 @@ describe('EngagementService', () => {
         trackId,
         content,
         120,
+        undefined,
       );
     });
 
     it('should throw NotFoundError when track does not exist', async () => {
       (
-        EngagementRepository.prototype.findTrackById as jest.Mock
+        EngagementRepository.prototype
+          .findTrackByIdForCommentCreation as jest.Mock
       ).mockResolvedValue(null);
 
       await expect(
@@ -438,10 +445,12 @@ describe('EngagementService', () => {
       const mockTrack = {
         _id: new Types.ObjectId(trackId),
         posterId: new Types.ObjectId(),
+        durationInSeconds: 180,
       };
 
       (
-        EngagementRepository.prototype.findTrackById as jest.Mock
+        EngagementRepository.prototype
+          .findTrackByIdForCommentCreation as jest.Mock
       ).mockResolvedValue(mockTrack);
       (
         EngagementRepository.prototype.findCommentById as jest.Mock
@@ -460,14 +469,17 @@ describe('EngagementService', () => {
 
     it('should add reply to parent comment when parentCommentId provided', async () => {
       const parentCommentId = '507f1f77bcf86cd799439033';
+      const parentTimestampSeconds = 37;
       const mockTrack = {
         _id: new Types.ObjectId(trackId),
         posterId: new Types.ObjectId(),
+        durationInSeconds: 180,
       };
 
       const mockParentComment = {
         _id: new Types.ObjectId(parentCommentId),
         trackId: new Types.ObjectId(trackId),
+        timestampSeconds: parentTimestampSeconds,
       };
 
       const mockComment = {
@@ -478,7 +490,8 @@ describe('EngagementService', () => {
       };
 
       (
-        EngagementRepository.prototype.findTrackById as jest.Mock
+        EngagementRepository.prototype
+          .findTrackByIdForCommentCreation as jest.Mock
       ).mockResolvedValue(mockTrack);
       (
         EngagementRepository.prototype.findCommentById as jest.Mock
@@ -497,7 +510,7 @@ describe('EngagementService', () => {
         trackId,
         userId,
         content,
-        undefined,
+        999,
         parentCommentId,
       );
 
@@ -508,8 +521,147 @@ describe('EngagementService', () => {
         userId,
         trackId,
         content,
-        0,
+        parentTimestampSeconds,
+        undefined,
       );
+    });
+
+    it('should create a comment with mentioned user', async () => {
+      const mentionedUserId = '507f1f77bcf86cd799439055';
+      const mockTrack = {
+        _id: new Types.ObjectId(trackId),
+        posterId: new Types.ObjectId(),
+        durationInSeconds: 180,
+      };
+      const mockMentionedUser = {
+        _id: new Types.ObjectId(mentionedUserId),
+        profileLink: 'mentioned-user-k8p3x',
+      };
+      const mockComment = {
+        _id: new Types.ObjectId(),
+        userId: new Types.ObjectId(userId),
+        trackId: new Types.ObjectId(trackId),
+        content,
+        timestampSeconds: 0,
+      };
+
+      (
+        EngagementRepository.prototype
+          .findTrackByIdForCommentCreation as jest.Mock
+      ).mockResolvedValue(mockTrack);
+      (
+        EngagementRepository.prototype.findUserById as jest.Mock
+      ).mockResolvedValue(mockMentionedUser);
+      (
+        EngagementRepository.prototype.createComment as jest.Mock
+      ).mockResolvedValue(mockComment);
+      (
+        EngagementRepository.prototype.addCommentToTrack as jest.Mock
+      ).mockResolvedValue(undefined);
+
+      await service.postTrackComment(
+        trackId,
+        userId,
+        content,
+        undefined,
+        undefined,
+        mentionedUserId,
+      );
+
+      expect(EngagementRepository.prototype.findUserById).toHaveBeenCalledWith(
+        mentionedUserId,
+      );
+      expect(EngagementRepository.prototype.createComment).toHaveBeenCalledWith(
+        userId,
+        trackId,
+        content,
+        0,
+        mentionedUserId,
+      );
+    });
+
+    it('should throw when mentioned user does not exist', async () => {
+      const mentionedUserId = '507f1f77bcf86cd799439055';
+      const mockTrack = {
+        _id: new Types.ObjectId(trackId),
+        posterId: new Types.ObjectId(),
+        durationInSeconds: 180,
+      };
+
+      (
+        EngagementRepository.prototype
+          .findTrackByIdForCommentCreation as jest.Mock
+      ).mockResolvedValue(mockTrack);
+      (
+        EngagementRepository.prototype.findUserById as jest.Mock
+      ).mockResolvedValue(null);
+
+      await expect(
+        service.postTrackComment(
+          trackId,
+          userId,
+          content,
+          undefined,
+          undefined,
+          mentionedUserId,
+        ),
+      ).rejects.toThrow();
+
+      expect(
+        EngagementRepository.prototype.createComment,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should throw when mentioning self', async () => {
+      const mockTrack = {
+        _id: new Types.ObjectId(trackId),
+        posterId: new Types.ObjectId(),
+        durationInSeconds: 180,
+      };
+
+      (
+        EngagementRepository.prototype
+          .findTrackByIdForCommentCreation as jest.Mock
+      ).mockResolvedValue(mockTrack);
+
+      await expect(
+        service.postTrackComment(
+          trackId,
+          userId,
+          content,
+          undefined,
+          undefined,
+          userId,
+        ),
+      ).rejects.toThrow();
+
+      expect(
+        EngagementRepository.prototype.findUserById,
+      ).not.toHaveBeenCalled();
+      expect(
+        EngagementRepository.prototype.createComment,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestError when timestamp exceeds track duration', async () => {
+      const mockTrack = {
+        _id: new Types.ObjectId(trackId),
+        posterId: new Types.ObjectId(),
+        durationInSeconds: 120,
+      };
+
+      (
+        EngagementRepository.prototype
+          .findTrackByIdForCommentCreation as jest.Mock
+      ).mockResolvedValue(mockTrack);
+
+      await expect(
+        service.postTrackComment(trackId, userId, content, 121, undefined),
+      ).rejects.toThrow();
+
+      expect(
+        EngagementRepository.prototype.createComment,
+      ).not.toHaveBeenCalled();
     });
   });
 
@@ -651,6 +803,135 @@ describe('EngagementService', () => {
       await expect(
         service.getTrackLikeStatus(trackId, userId),
       ).rejects.toThrow();
+    });
+  });
+
+  describe('getTrackComments', () => {
+    const trackId = '507f1f77bcf86cd799439011';
+    const viewerId = '507f1f77bcf86cd799439022';
+
+    it('should forward viewer id to mapper', async () => {
+      const mockTrack = {
+        _id: new Types.ObjectId(trackId),
+        likedBy: [],
+        numOfLikes: 0,
+      };
+
+      const commentUserId = new Types.ObjectId(viewerId);
+      const mockComments = [
+        {
+          _id: new Types.ObjectId(),
+          userId: commentUserId,
+          trackId: new Types.ObjectId(trackId),
+          content: 'First',
+          numLikes: 1,
+          likedList: [commentUserId],
+          replyList: [],
+          timestampSeconds: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          user: {
+            _id: commentUserId,
+            displayName: 'Viewer',
+            profileImg: {
+              imgLink: 'https://img.test/avatar.jpg',
+              publicId: '',
+            },
+          },
+        },
+      ];
+
+      (
+        EngagementRepository.prototype.findTrackById as jest.Mock
+      ).mockResolvedValue(mockTrack);
+      (
+        EngagementRepository.prototype.getTrackComments as jest.Mock
+      ).mockResolvedValue({ comments: mockComments, total: 1 });
+
+      (EngagementMapper.toTrackCommentsResponse as jest.Mock).mockReturnValue({
+        total: 1,
+        offset: 1,
+        limit: 20,
+        comments: [],
+      });
+
+      await service.getTrackComments(trackId, '1', '20', 'newest', viewerId);
+
+      expect(EngagementMapper.toTrackCommentsResponse).toHaveBeenCalledWith(
+        mockComments,
+        1,
+        1,
+        20,
+        viewerId,
+      );
+    });
+  });
+
+  describe('getCommentReplies', () => {
+    const commentId = '507f1f77bcf86cd799439011';
+    const viewerId = '507f1f77bcf86cd799439022';
+
+    it('should forward viewer id to mapper', async () => {
+      const parentComment = {
+        _id: new Types.ObjectId(commentId),
+        userId: new Types.ObjectId(),
+        trackId: new Types.ObjectId(),
+        content: 'Parent',
+        numLikes: 0,
+        likedList: [],
+        replyList: [],
+        timestampSeconds: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const replyUserId = new Types.ObjectId(viewerId);
+      const replies = [
+        {
+          _id: new Types.ObjectId(),
+          userId: replyUserId,
+          trackId: new Types.ObjectId(),
+          content: 'Reply',
+          numLikes: 1,
+          likedList: [replyUserId],
+          replyList: [],
+          timestampSeconds: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          user: {
+            _id: replyUserId,
+            displayName: 'Viewer',
+            profileImg: {
+              imgLink: 'https://img.test/avatar.jpg',
+              publicId: '',
+            },
+          },
+        },
+      ];
+
+      (
+        EngagementRepository.prototype.findCommentById as jest.Mock
+      ).mockResolvedValue(parentComment);
+      (
+        EngagementRepository.prototype.getCommentReplies as jest.Mock
+      ).mockResolvedValue({ replies, total: 1 });
+
+      (EngagementMapper.toCommentRepliesResponse as jest.Mock).mockReturnValue({
+        total: 1,
+        offset: 1,
+        limit: 20,
+        replies: [],
+      });
+
+      await service.getCommentReplies(commentId, '1', '20', viewerId);
+
+      expect(EngagementMapper.toCommentRepliesResponse).toHaveBeenCalledWith(
+        replies,
+        1,
+        1,
+        20,
+        viewerId,
+      );
     });
   });
 });

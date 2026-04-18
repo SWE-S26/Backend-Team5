@@ -9,11 +9,13 @@ export const CreateCommentRequestBodyDTO = extendedZod
       .max(500),
     timestamp: extendedZod.number().int().min(0),
     parentCommentId: extendedZod.string().optional(),
+    mentionedUserId: extendedZod.mongoId().optional(),
   })
   .openapi('CreateCommentRequest', {
     example: {
       content: 'Great track!',
       timestamp: 42,
+      mentionedUserId: '507f1f77bcf86cd799439012',
     },
   });
 

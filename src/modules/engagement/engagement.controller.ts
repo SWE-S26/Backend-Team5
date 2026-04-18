@@ -20,6 +20,7 @@ import {
   GetTrackCommentsRequestDTO,
   GetCommentRepliesRequestDTO,
   DeleteTrackCommentRequestDTO,
+  GetMentionFollowersRequestDTO,
 } from './dtos/engagement.request';
 
 export class EngagementController {
@@ -239,7 +240,8 @@ export class EngagementController {
     }
 
     const { trackId } = parsed.data!.params;
-    const { content, timestamp, parentCommentId } = parsed.data!.body;
+    const { content, timestamp, parentCommentId, mentionedUserId } =
+      parsed.data!.body;
     const userId = req.userInfo!._id;
 
     const result = await this.service.postTrackComment(
@@ -248,8 +250,26 @@ export class EngagementController {
       content,
       timestamp,
       parentCommentId,
+      mentionedUserId,
     );
     res.status(201).json(result);
+  }
+
+  async getMentionFollowers(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetMentionFollowersRequestDTO, req);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const userId = req.userInfo!._id;
+    const { offset, limit } = parsed.data!.query;
+
+    const result = await this.service.getMentionFollowers(
+      userId,
+      offset,
+      limit,
+    );
+    res.json(result);
   }
 
   async toggleCommentLike(req: Request, res: Response): Promise<void> {
@@ -273,12 +293,14 @@ export class EngagementController {
 
     const { trackId } = parsed.data!.params;
     const { offset, limit, sortBy } = parsed.data!.query;
+    const viewerId = req.userInfo?._id;
 
     const result = await this.service.getTrackComments(
       trackId,
       offset,
       limit,
       sortBy,
+      viewerId,
     );
     res.json(result);
   }
@@ -291,11 +313,13 @@ export class EngagementController {
 
     const { commentId } = parsed.data!.params;
     const { offset, limit } = parsed.data!.query;
+    const viewerId = req.userInfo?._id;
 
     const result = await this.service.getCommentReplies(
       commentId,
       offset,
       limit,
+      viewerId,
     );
     res.json(result);
   }

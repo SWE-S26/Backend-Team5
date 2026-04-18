@@ -8,6 +8,7 @@ export type IComment = {
   _id: Types.ObjectId;
   userId: Types.ObjectId;
   trackId: Types.ObjectId;
+  mentionedUserId?: Types.ObjectId;
   content: string;
   numLikes: number;
   replyList: Types.ObjectId[];
@@ -28,6 +29,11 @@ const commentSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'Track',
       required: true,
+    },
+    mentionedUserId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
     },
     content: {
       type: String,

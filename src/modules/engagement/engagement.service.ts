@@ -8,6 +8,7 @@ import { EngagementRepository } from './engagement.repository';
 import { EngagementMapper } from './dtos/engagement.mapper';
 import {
   TrackLikersResponse,
+  MentionFollowersResponse,
   ToggleLikeResponse,
   TogglePlaylistLikeResponse,
   ToggleRepostResponse,
@@ -245,6 +246,23 @@ export class EngagementService {
     );
   }
 
+  async getMentionFollowers(
+    userId: string,
+    offset = '0',
+    limit = '20',
+  ): Promise<MentionFollowersResponse> {
+    const parsedOffset = Math.max(0, Number.parseInt(offset, 10) || 0);
+    const parsedLimit = Math.max(1, Number.parseInt(limit, 10) || 20);
+
+    const users = await this.repository.findMentionFollowers(
+      userId,
+      parsedOffset,
+      parsedLimit,
+    );
+
+    return EngagementMapper.toMentionFollowersResponse(users);
+  }
+
   async getTrackLikeStatus(
     trackId: string,
     userId: string,
@@ -436,19 +454,34 @@ export class EngagementService {
     content: string,
     timestampSeconds?: number,
     parentCommentId?: string,
+    mentionedUserId?: string,
   ): Promise<PostCommentResponse> {
     const trimmedContent = content.trim();
     if (!trimmedContent) {
       BadRequestError("content can't be empty");
     }
 
-    if (timestampSeconds !== undefined && !Number.isInteger(timestampSeconds)) {
-      BadRequestError('timestamp must be a non-negative integer');
+    const isReply = Boolean(parentCommentId);
+
+    if (!isReply && timestampSeconds !== undefined) {
+      if (!Number.isInteger(timestampSeconds) || timestampSeconds < 0) {
+        BadRequestError('timestamp must be a non-negative integer');
+      }
     }
 
-    const track = await this.repository.findTrackById(trackId);
-
+    const track =
+      await this.repository.findTrackByIdForCommentCreation(trackId);
     if (!track) NotFoundError('Track not found');
+
+    if (
+      !isReply &&
+      timestampSeconds !== undefined &&
+      timestampSeconds > track!.durationInSeconds
+    ) {
+      BadRequestError('timestamp cannot exceed track duration in seconds');
+    }
+
+    let commentTimestampSeconds = timestampSeconds ?? 0;
 
     if (parentCommentId) {
       const parentComment =
@@ -459,13 +492,27 @@ export class EngagementService {
       if (parentComment!.trackId.toString() !== trackId) {
         BadRequestError('Parent comment does not belong to this track');
       }
+
+      commentTimestampSeconds = parentComment!.timestampSeconds;
+    }
+
+    if (mentionedUserId !== undefined) {
+      if (mentionedUserId === userId) {
+        BadRequestError('You cannot mention yourself');
+      }
+
+      const mentionedUser = await this.repository.findUserById(mentionedUserId);
+      if (!mentionedUser) {
+        NotFoundError('Mentioned user not found');
+      }
     }
 
     const comment = await this.repository.createComment(
       userId,
       trackId,
       trimmedContent,
-      parentCommentId ? 0 : (timestampSeconds ?? 0),
+      commentTimestampSeconds,
+      mentionedUserId,
     );
 
     await this.repository.addCommentToTrack(trackId, comment._id.toString());
@@ -543,6 +590,7 @@ export class EngagementService {
     page = '1',
     limit = '20',
     sortBy: 'newest' | 'oldest' | 'trackTime' = 'newest',
+    viewerId?: string,
   ): Promise<GetTrackCommentsResponse> {
     const track = await this.repository.findTrackById(trackId);
 
@@ -563,6 +611,7 @@ export class EngagementService {
       total,
       parsedPage,
       parsedLimit,
+      viewerId,
     );
   }
 
@@ -570,6 +619,7 @@ export class EngagementService {
     commentId: string,
     page = '1',
     limit = '20',
+    viewerId?: string,
   ): Promise<GetCommentRepliesResponse> {
     const comment = await this.repository.findCommentById(commentId);
 
@@ -589,6 +639,7 @@ export class EngagementService {
       total,
       parsedPage,
       parsedLimit,
+      viewerId,
     );
   }
 

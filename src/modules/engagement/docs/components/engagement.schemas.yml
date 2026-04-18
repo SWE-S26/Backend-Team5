@@ -182,6 +182,10 @@ CreateCommentRequest:
       type: string
       description: ID of the parent comment when posting a reply.
       example: 'cmt_001'
+    mentionedUserId:
+      type: string
+      description: Optional mentioned user id.
+      example: '507f1f77bcf86cd799439012'
   required:
     - content
 
@@ -219,6 +223,9 @@ CommentEntry:
     isOwnComment:
       type: boolean
       example: false
+    mentionedUserProfileLink:
+      type: string
+      example: 'jane-smith-ab12c'
     createdAt:
       type: string
       format: date-time
@@ -233,6 +240,27 @@ CommentEntry:
     - isLikedByUser
     - isOwnComment
     - createdAt
+
+MentionFollower:
+  type: object
+  properties:
+    userId:
+      type: string
+      example: 'usr_001'
+    displayName:
+      type: string
+      example: 'Jane Smith'
+    avatarUrl:
+      type: string
+      format: uri
+      example: 'https://cdn.example.com/avatars/usr_001.jpg'
+    profileLink:
+      type: string
+      example: 'jane-smith-ab12c'
+  required:
+    - userId
+    - displayName
+    - profileLink
 
 CommentListResponse:
   type: object

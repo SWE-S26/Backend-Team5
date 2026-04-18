@@ -41,7 +41,7 @@ class JWTService {
   constructor() {
     this.secretKey = process.env.JWT_SECRET!;
     this.refreshSecretKey = process.env.REFRESH_JWT_SECRET!;
-    this.expiresIn = '1h';
+    this.expiresIn = '12h';
     this.refreshExpiresIn = '7d';
   }
 

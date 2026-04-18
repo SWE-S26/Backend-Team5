@@ -3,6 +3,7 @@ import { EngagementController } from './engagement.controller';
 import { EngagementService } from './engagement.service';
 import { EngagementRepository } from './engagement.repository';
 import apiVersions from '../../shared/middleware/apiVersions';
+import { optionalAuth } from '../../shared/middleware/optionalAuth';
 
 const engagementPublicRouter = Router();
 const engagementProtectedRouter = Router();
@@ -28,11 +29,13 @@ engagementPublicRouter.get(
 
 engagementPublicRouter.get(
   '/tracks' + apiVersions.v1 + '/:trackId/comments',
+  optionalAuth,
   (req, res) => engagementController.getTrackComments(req, res),
 );
 
 engagementPublicRouter.get(
   '/comments' + apiVersions.v1 + '/:commentId/replies',
+  optionalAuth,
   (req, res) => engagementController.getCommentReplies(req, res),
 );
 
@@ -89,6 +92,11 @@ engagementProtectedRouter.patch(
 engagementProtectedRouter.post(
   '/tracks' + apiVersions.v1 + '/:trackId/comments',
   (req, res) => engagementController.postTrackComment(req, res),
+);
+
+engagementProtectedRouter.get(
+  '/mentions' + apiVersions.v1 + '/followers',
+  (req, res) => engagementController.getMentionFollowers(req, res),
 );
 
 engagementProtectedRouter.post(
