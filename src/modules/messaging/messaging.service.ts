@@ -118,6 +118,40 @@ export class MessagingService {
     return chatMessages;
   }
 
+  async markAsRead(
+    userId: Types.ObjectId,
+    chatId: Types.ObjectId,
+  ): Promise<void> {
+    const searchChat = await this.repository.findChatById(chatId);
+
+    if (!searchChat) throw NotFoundError("A Chat With this ID Doesn't Exist");
+
+    if (!searchChat.participants.some((p) => p.equals(userId)))
+      throw ForbiddenError(
+        'Cannot Delete A Chat User is not a participant in it',
+      );
+
+    await this.repository.markAsRead(userId, chatId);
+    return;
+  }
+
+  async markAsUnRead(
+    userId: Types.ObjectId,
+    chatId: Types.ObjectId,
+  ): Promise<void> {
+    const searchChat = await this.repository.findChatById(chatId);
+
+    if (!searchChat) throw NotFoundError("A Chat With this ID Doesn't Exist");
+
+    if (!searchChat.participants.some((p) => p.equals(userId)))
+      throw ForbiddenError(
+        'Cannot Delete A Chat User is not a participant in it',
+      );
+
+    await this.repository.markAsUnRead(userId, searchChat.lastMessage._id);
+    return;
+  }
+
   async delete(id: string): Promise<boolean> {
     return this.repository.delete(id);
   }

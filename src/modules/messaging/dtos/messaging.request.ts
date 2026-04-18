@@ -15,6 +15,10 @@ export const GetChatMessagesRequestDTO = extendedZod.object({
   query: ListMessagingsQueryDto,
 });
 
+export const MarkChatMessagesRequestDTO = extendedZod.object({
+  params: MessagingIdParamDTO,
+});
+
 export const ArchiveChatRequestDTO = extendedZod.object({
   body: ArchiveChatRequestBodyDTO,
 });
