@@ -4,6 +4,7 @@ type NotificationActivityType =
   | 'follow'
   | 'like'
   | 'comment'
+  | 'mention'
   | 'repost'
   | 'newTrack';
 
@@ -14,6 +15,7 @@ type INotificationPayload = {
   trackName?: string;
   trackId?: Types.ObjectId;
   commentText?: string;
+  mentionedUserProfileLink?: string;
 };
 
 type INotificationType = {
@@ -45,7 +47,8 @@ type NotificationPayloadField =
   | 'actorId'
   | 'trackName'
   | 'trackId'
-  | 'commentText';
+  | 'commentText'
+  | 'mentionedUserProfileLink';
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === 'string' && value.trim().length > 0;
@@ -58,7 +61,11 @@ const hasObjectIdValue = (value: unknown): boolean => {
 
 const requireStringField = (
   payload: Partial<INotificationPayload>,
-  field: 'actorName' | 'trackName' | 'commentText',
+  field:
+    | 'actorName'
+    | 'trackName'
+    | 'commentText'
+    | 'mentionedUserProfileLink',
   context: NotificationTypeValidatorContext,
 ): void => {
   if (!isNonEmptyString(payload[field])) {
@@ -100,6 +107,12 @@ const getMissingPayloadFieldsByType = (
     requireObjectIdField(payload, 'trackId', context);
   }
 
+  if (type === 'mention') {
+    requireStringField(payload, 'commentText', context);
+    requireObjectIdField(payload, 'trackId', context);
+    requireStringField(payload, 'mentionedUserProfileLink', context);
+  }
+
   return missingFields;
 };
 
@@ -129,6 +142,10 @@ const notificationPayloadSchema = new Schema(
       type: String,
       trim: true,
     },
+    mentionedUserProfileLink: {
+      type: String,
+      trim: true,
+    },
   },
   { _id: false },
 );
@@ -137,7 +154,7 @@ const notificationTypeSchema = new Schema(
   {
     type: {
       type: String,
-      enum: ['follow', 'like', 'comment', 'repost', 'newTrack'],
+      enum: ['follow', 'like', 'comment', 'mention', 'repost', 'newTrack'],
       required: true,
     },
     referenceId: {

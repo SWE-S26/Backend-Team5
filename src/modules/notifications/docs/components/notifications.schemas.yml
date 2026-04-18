@@ -22,12 +22,14 @@ NotificationActivityType:
     Notification activity type.
     - track_liked: someone liked a track
     - track_commented: someone commented on a track
+    - user_mentioned: someone mentioned a user in a comment
     - track_reposted: someone reposted a track
     - user_followed: someone followed a user
     - new_track: a followed user posted a new track
   enum:
     - track_liked
     - track_commented
+    - user_mentioned
     - track_reposted
     - user_followed
     - new_track
@@ -55,7 +57,7 @@ NotificationTargetTrack:
 
 NotificationTargetComment:
   type: object
-  description: Target object for comment notifications.
+  description: Target object for comment and mention notifications.
   properties:
     targetType:
       type: string
@@ -74,6 +76,10 @@ NotificationTargetComment:
       type: string
       description: Comment text payload.
       example: Great track!
+    mentionedUserProfileLink:
+      type: string
+      description: Mentioned user profile link when activityType is user_mentioned.
+      example: jane-smith-ab12c
   required:
     - targetType
     - targetId

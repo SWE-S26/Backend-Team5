@@ -125,6 +125,13 @@ export class NotificationsService {
     return this.repository.createCommentNotification(actorId, commentId);
   }
 
+  async createMentionNotification(
+    actorId: string,
+    commentId: string,
+  ): Promise<NotificationRecord | null> {
+    return this.repository.createMentionNotification(actorId, commentId);
+  }
+
   async createRepostNotification(
     actorId: string,
     trackId: string,

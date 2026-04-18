@@ -14,7 +14,7 @@ export class EngagementRepository {
   async findTrackByIdForCommentCreation(
     trackId: string,
   ): Promise<ITrack | null> {
-    return Track.findById(trackId).select('durationInSeconds');
+    return Track.findById(trackId).select('durationInSeconds posterId');
   }
 
   async findTrackByIdForComments(trackId: string): Promise<ITrack | null> {
