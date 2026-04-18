@@ -5,6 +5,7 @@ import { JWTPayload } from '../../shared/abstractions/jwt.service';
 import {
   SendNewMessageRequestDTO,
   ArchiveChatRequestDTO,
+  GetChatMessagesRequestDTO,
 } from './dtos/messaging.request';
 import { Types } from 'mongoose';
 
@@ -64,6 +65,38 @@ export class MessagingController {
     await this.service.archiveChat(userId, archiveChatDTO);
     res.json({
       message: 'Chat Archived Successfully',
+    });
+  }
+
+  async getChatsHistory(req: Request, res: Response): Promise<void> {
+    const userInfo = this.getUserInfo(req);
+    const userId = new Types.ObjectId(userInfo.userId);
+    const userChatsHistory = await this.service.getChatsHistory(userId);
+    res.json({
+      message: 'Chat History Retrieved Successfully',
+      data: userChatsHistory,
+    });
+  }
+
+  async getChatMessages(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(GetChatMessagesRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const userInfo = this.getUserInfo(req);
+    const userId = new Types.ObjectId(userInfo.userId);
+    const paginationInfo = validatedRequest.data.query;
+    const chatId = new Types.ObjectId(validatedRequest.data.params.id);
+    const userChatMessages = await this.service.getChatMessages(
+      userId,
+      chatId,
+      paginationInfo,
+    );
+    res.json({
+      message: 'Chat Messages Retrieved Successfully',
+      data: userChatMessages,
     });
   }
 

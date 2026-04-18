@@ -9,6 +9,12 @@ import {
 export const SendNewMessageRequestDTO = extendedZod.object({
   body: SendNewMessageRequestBodyDTO,
 });
+
+export const GetChatMessagesRequestDTO = extendedZod.object({
+  params: MessagingIdParamDTO,
+  query: ListMessagingsQueryDto,
+});
+
 export const ArchiveChatRequestDTO = extendedZod.object({
   body: ArchiveChatRequestBodyDTO,
 });

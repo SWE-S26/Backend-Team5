@@ -13,6 +13,14 @@ messagingRouter.patch(apiVersions.v1 + '/archive', (req, res) =>
   messagingController.archiveChat(req, res),
 );
 
+messagingRouter.get(apiVersions.v1 + '/chats', (req, res) =>
+  messagingController.getChatsHistory(req, res),
+);
+
+messagingRouter.get(apiVersions.v1 + '/chat/message/:id', (req, res) =>
+  messagingController.getChatMessages(req, res),
+);
+
 // messagingRouter.get('/:id',   (req, res) => messagingController.findOne(req, res));
 // messagingRouter.post('/',     (req, res) => messagingController.create(req, res));
 // messagingRouter.put('/:id',   (req, res) => messagingController.replace(req, res));

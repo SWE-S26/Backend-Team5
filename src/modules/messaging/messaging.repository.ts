@@ -9,6 +9,7 @@ import Message, { IMessage } from '../../shared/models/models.message';
 import { Types } from 'mongoose';
 import { IConversationPopulated } from './dtos/messaging.response';
 import Settings, { ISettings } from '../../shared/models/models.settings';
+import { PaginationInfo } from './dtos/messaging.request.query';
 
 export class MessagingRepository {
   async findUserById(userId: Types.ObjectId): Promise<IUser | null> {
@@ -109,6 +110,26 @@ export class MessagingRepository {
       .populate('lastMessage', '_id content senderId createdAt seenBy')
       .sort({ updatedAt: -1 })
       .lean<IConversationPopulated[]>();
+  }
+
+  async getChatMessages(
+    chatId: Types.ObjectId,
+    paginationInfo: PaginationInfo,
+  ) {
+    const before = paginationInfo.before;
+    const limit = paginationInfo.limit;
+    if (before) {
+      return await Message.find<IMessage>({
+        chatId,
+        createdAt: { $lt: before },
+      })
+        .sort({ createdAt: -1 })
+        .limit(limit);
+    } else {
+      return await Message.find<IMessage>({ chatId: chatId })
+        .sort({ createdAt: -1 })
+        .limit(limit);
+    }
   }
 
   async delete(id: string): Promise<boolean> {
