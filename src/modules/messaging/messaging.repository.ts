@@ -8,20 +8,25 @@ import Conversation, {
 import Message, { IMessage } from '../../shared/models/models.message';
 import { Types } from 'mongoose';
 import { IConversationPopulated } from './dtos/messaging.response';
+import Settings, { ISettings } from '../../shared/models/models.settings';
 
 export class MessagingRepository {
   async findUserById(userId: Types.ObjectId): Promise<IUser | null> {
     return await User.findById<IUser>(userId);
   }
 
-  async findChatById(chatId: Types.ObjectId): Promise<IConversation | null> {
-    return await Conversation.findById<IConversation>(chatId);
+  async findUserDetailedById(
+    userId: Types.ObjectId,
+  ): Promise<[IUser | null, IBlockedList | null, ISettings | null]> {
+    return await Promise.all([
+      User.findById<IUser>(userId),
+      BlockedList.findOne({ blockerId: userId }),
+      Settings.findOne({ userId: userId }),
+    ]);
   }
 
-  async findUserBlockedList(
-    userId: Types.ObjectId,
-  ): Promise<IBlockedList | null> {
-    return await BlockedList.findOne({ blockerId: userId });
+  async findChatById(chatId: Types.ObjectId): Promise<IConversation | null> {
+    return await Conversation.findById<IConversation>(chatId);
   }
 
   async findArchivedChat(

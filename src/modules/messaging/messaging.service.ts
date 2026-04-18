@@ -11,6 +11,7 @@ import {
 import { Types } from 'mongoose';
 import { MessagingMapper } from './dtos/messaging.mapper';
 import logger from '../../shared/logger/logger';
+import emailService from '../../shared/abstractions/email/email.service';
 
 export class MessagingService {
   private readonly repository: MessagingRepository;
@@ -25,16 +26,14 @@ export class MessagingService {
     // validate Receiver Exists
     const receiverId = new Types.ObjectId(newMessageDTO.receiverId);
     const content = newMessageDTO.content;
-    const receiver = await this.repository.findUserById(receiverId);
+    const [receiver, receiverBlockedList, receiverSettings] =
+      await this.repository.findUserDetailedById(receiverId);
 
     if (!receiver) {
       throw BadRequestError("Receiver ID doesn't exists");
     }
 
-    // validate user is not blocked
-    const blockedList = await this.repository.findUserBlockedList(receiverId);
-
-    if (blockedList?.blockedIds.includes(userId)) {
+    if (receiverBlockedList?.blockedIds.includes(userId)) {
       throw ForbiddenError('User Blocked You Cannot Send to Him');
     }
 
@@ -59,6 +58,16 @@ export class MessagingService {
         receiverId,
         content,
       );
+    }
+
+    if (receiverSettings?.notifications?.newMessage.email) {
+      const sender = await this.repository.findUserById(userId);
+      emailService.sendNewMessageNotification(
+        receiver.email,
+        sender?.displayName as string,
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGexnRPTfFyGgeqSWNR1f279g3khX7QBVftQ&s',
+      );
+      logger.info('Email Sent To User About New Message');
     }
 
     return MessagingMapper.toChatsHistoryResponse(updatedChatsHistory, userId);
