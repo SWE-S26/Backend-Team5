@@ -507,6 +507,11 @@ export class EngagementService {
       }
     }
 
+    const isMentioningTrackOwner =
+      !isReply &&
+      mentionedUserId !== undefined &&
+      track!.posterId?.toString() === mentionedUserId;
+
     const comment = await this.repository.createComment(
       userId,
       trackId,
@@ -527,8 +532,9 @@ export class EngagementService {
     const response = EngagementMapper.toPostCommentResponse(comment);
 
     // (async, don't await)
-    // Only send for top-level comments, not replies
-    if (!parentCommentId) {
+    // Only send track-comment notifications for top-level comments.
+    // If the track owner is explicitly mentioned, send only mention notification.
+    if (!parentCommentId && !isMentioningTrackOwner) {
       this.emailService
         .sendTrackCommentEmail(trackId, userId)
         .catch((err) =>
@@ -536,6 +542,10 @@ export class EngagementService {
         );
 
       this.sendTrackCommentSocketNotification(userId, comment._id.toString());
+    }
+
+    if (mentionedUserId !== undefined) {
+      this.sendCommentMentionSocketNotification(userId, comment._id.toString());
     }
 
     return response;
@@ -557,6 +567,25 @@ export class EngagementService {
       .sendCommentNotification(actorId, commentId)
       .catch((err) =>
         console.error('Failed to send track comment socket notification:', err),
+      );
+  }
+
+  private sendCommentMentionSocketNotification(
+    actorId: string,
+    commentId: string,
+  ): void {
+    let notificationHandler;
+
+    try {
+      notificationHandler = getNotificationSocketHandler();
+    } catch {
+      return;
+    }
+
+    notificationHandler
+      .sendMentionNotification(actorId, commentId)
+      .catch((err) =>
+        console.error('Failed to send mention socket notification:', err),
       );
   }
 

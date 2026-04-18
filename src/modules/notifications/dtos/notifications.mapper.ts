@@ -3,6 +3,7 @@ import { NotificationRecord } from '../notifications.repository';
 type NotificationActivityType =
   | 'track_liked'
   | 'track_commented'
+  | 'user_mentioned'
   | 'track_reposted'
   | 'user_followed'
   | 'new_track';
@@ -25,6 +26,7 @@ export type NotificationResponseDTOType = {
     title?: string;
     trackId?: string;
     commentText?: string;
+    mentionedUserProfileLink?: string;
   };
   createdAt: string;
 };
@@ -77,6 +79,8 @@ export class NotificationsMapper {
         return 'track_liked';
       case 'comment':
         return 'track_commented';
+      case 'mention':
+        return 'user_mentioned';
       case 'repost':
         return 'track_reposted';
       case 'follow':
@@ -101,12 +105,14 @@ export class NotificationsMapper {
       };
     }
 
-    if (entity.type.type === 'comment') {
+    if (entity.type.type === 'comment' || entity.type.type === 'mention') {
       return {
         targetType: 'comment',
         targetId: referenceId,
         trackId,
         commentText: entity.type.payload.commentText,
+        mentionedUserProfileLink:
+          entity.type.payload.mentionedUserProfileLink,
       };
     }
 

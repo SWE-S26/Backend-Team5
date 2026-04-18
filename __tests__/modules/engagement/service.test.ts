@@ -663,6 +663,123 @@ describe('EngagementService', () => {
         EngagementRepository.prototype.createComment,
       ).not.toHaveBeenCalled();
     });
+
+    it('should send mention notification for replies with mentionedUserId', async () => {
+      const parentCommentId = '507f1f77bcf86cd799439033';
+      const mentionedUserId = '507f1f77bcf86cd799439055';
+      const mockTrack = {
+        _id: new Types.ObjectId(trackId),
+        posterId: new Types.ObjectId(),
+        durationInSeconds: 180,
+      };
+      const mockParentComment = {
+        _id: new Types.ObjectId(parentCommentId),
+        trackId: new Types.ObjectId(trackId),
+        timestampSeconds: 20,
+      };
+      const mockMentionedUser = {
+        _id: new Types.ObjectId(mentionedUserId),
+        profileLink: 'mentioned-user-k8p3x',
+      };
+      const mockComment = {
+        _id: new Types.ObjectId(),
+        userId: new Types.ObjectId(userId),
+        trackId: new Types.ObjectId(trackId),
+        content,
+      };
+
+      const mentionSpy = jest
+        .spyOn(service as any, 'sendCommentMentionSocketNotification')
+        .mockImplementation(() => undefined);
+      const commentSpy = jest
+        .spyOn(service as any, 'sendTrackCommentSocketNotification')
+        .mockImplementation(() => undefined);
+
+      (
+        EngagementRepository.prototype
+          .findTrackByIdForCommentCreation as jest.Mock
+      ).mockResolvedValue(mockTrack);
+      (
+        EngagementRepository.prototype.findCommentById as jest.Mock
+      ).mockResolvedValue(mockParentComment);
+      (
+        EngagementRepository.prototype.findUserById as jest.Mock
+      ).mockResolvedValue(mockMentionedUser);
+      (
+        EngagementRepository.prototype.createComment as jest.Mock
+      ).mockResolvedValue(mockComment);
+      (
+        EngagementRepository.prototype.addCommentToTrack as jest.Mock
+      ).mockResolvedValue(undefined);
+      (
+        EngagementRepository.prototype.addReplyToComment as jest.Mock
+      ).mockResolvedValue(undefined);
+
+      await service.postTrackComment(
+        trackId,
+        userId,
+        content,
+        10,
+        parentCommentId,
+        mentionedUserId,
+      );
+
+      expect(mentionSpy).toHaveBeenCalledWith(userId, mockComment._id.toString());
+      expect(commentSpy).not.toHaveBeenCalled();
+    });
+
+    it('should suppress top-level comment notification when owner is mentioned', async () => {
+      const mentionedUserId = '507f1f77bcf86cd799439055';
+      const ownerObjectId = new Types.ObjectId(mentionedUserId);
+      const mockTrack = {
+        _id: new Types.ObjectId(trackId),
+        posterId: ownerObjectId,
+        durationInSeconds: 180,
+      };
+      const mockMentionedUser = {
+        _id: ownerObjectId,
+        profileLink: 'owner-profile-link',
+      };
+      const mockComment = {
+        _id: new Types.ObjectId(),
+        userId: new Types.ObjectId(userId),
+        trackId: new Types.ObjectId(trackId),
+        content,
+      };
+
+      const mentionSpy = jest
+        .spyOn(service as any, 'sendCommentMentionSocketNotification')
+        .mockImplementation(() => undefined);
+      const commentSpy = jest
+        .spyOn(service as any, 'sendTrackCommentSocketNotification')
+        .mockImplementation(() => undefined);
+
+      (
+        EngagementRepository.prototype
+          .findTrackByIdForCommentCreation as jest.Mock
+      ).mockResolvedValue(mockTrack);
+      (
+        EngagementRepository.prototype.findUserById as jest.Mock
+      ).mockResolvedValue(mockMentionedUser);
+      (
+        EngagementRepository.prototype.createComment as jest.Mock
+      ).mockResolvedValue(mockComment);
+      (
+        EngagementRepository.prototype.addCommentToTrack as jest.Mock
+      ).mockResolvedValue(undefined);
+
+      await service.postTrackComment(
+        trackId,
+        userId,
+        content,
+        30,
+        undefined,
+        mentionedUserId,
+      );
+
+      expect(mentionSpy).toHaveBeenCalledWith(userId, mockComment._id.toString());
+      expect(commentSpy).not.toHaveBeenCalled();
+    });
   });
 
   describe('toggleCommentLike', () => {

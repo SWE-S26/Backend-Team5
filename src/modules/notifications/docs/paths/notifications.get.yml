@@ -91,6 +91,24 @@
                     trackId: trk_456
                     commentText: Great track!
                   createdAt: 2025-01-15T12:05:00Z
+              userMentioned:
+                summary: User mentioned notification
+                value:
+                  notificationId: ntf_mention_001
+                  to: usr_001
+                  read: false
+                  activityType: user_mentioned
+                  actor:
+                    userId: usr_021
+                    displayName: Beat Maker
+                    avatarUrl: https://cdn.example.com/avatars/usr_021.jpg
+                  target:
+                    targetType: comment
+                    targetId: cmt_456
+                    trackId: trk_456
+                    commentText: '@Jane this drop is for you!'
+                    mentionedUserProfileLink: jane-smith-ab12c
+                  createdAt: 2025-01-15T12:07:00Z
               trackReposted:
                 summary: Track reposted notification
                 value:

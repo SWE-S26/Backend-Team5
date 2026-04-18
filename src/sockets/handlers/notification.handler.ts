@@ -12,6 +12,7 @@ import { SocketService } from '../socket.service';
 type NotificationActivityType =
   | 'track_liked'
   | 'track_commented'
+  | 'user_mentioned'
   | 'track_reposted'
   | 'user_followed'
   | 'new_track';
@@ -42,6 +43,7 @@ export type NotificationReceivePayload = {
     title?: string;
     trackId?: string;
     commentText?: string;
+    mentionedUserProfileLink?: string;
   };
   createdAt: string;
 };
@@ -72,6 +74,19 @@ export class NotificationSocketHandler {
   ): Promise<NotificationReceivePayload | null> {
     const notification =
       await this.notificationsService.createCommentNotification(
+        actorId,
+        commentId,
+      );
+    if (!notification) return null;
+    return this.emitNotification(notification);
+  }
+
+  async sendMentionNotification(
+    actorId: string,
+    commentId: string,
+  ): Promise<NotificationReceivePayload | null> {
+    const notification =
+      await this.notificationsService.createMentionNotification(
         actorId,
         commentId,
       );
@@ -175,6 +190,8 @@ export class NotificationSocketHandler {
         return 'likesAndPlaysOnYourPost';
       case 'comment':
         return 'commentOnYourPost';
+      case 'mention':
+        return 'commentOnYourPost';
       case 'repost':
         return 'repostOfYourPost';
       case 'follow':
@@ -214,6 +231,8 @@ export class NotificationSocketHandler {
         return 'track_liked';
       case 'comment':
         return 'track_commented';
+      case 'mention':
+        return 'user_mentioned';
       case 'repost':
         return 'track_reposted';
       case 'follow':
@@ -240,12 +259,17 @@ export class NotificationSocketHandler {
       };
     }
 
-    if (notification.type.type === 'comment') {
+    if (
+      notification.type.type === 'comment' ||
+      notification.type.type === 'mention'
+    ) {
       return {
         targetType: 'comment',
         targetId: referenceId,
         trackId: payloadTrackId,
         commentText: notification.type.payload.commentText,
+        mentionedUserProfileLink:
+          notification.type.payload.mentionedUserProfileLink,
       };
     }
 

@@ -21,6 +21,7 @@ export const NotificationTargetResponseDTO = extendedZod
     title: extendedZod.string().optional(),
     trackId: extendedZod.string().optional(),
     commentText: extendedZod.string().optional(),
+    mentionedUserProfileLink: extendedZod.string().optional(),
   })
   .openapi('NotificationTargetResponse', {
     example: {
@@ -38,6 +39,7 @@ export const NotificationResponseDTO = extendedZod
     activityType: extendedZod.enum([
       'track_liked',
       'track_commented',
+      'user_mentioned',
       'track_reposted',
       'user_followed',
       'new_track',
@@ -70,6 +72,7 @@ export const NotificationTypeExamplesResponseDTO = extendedZod
   .object({
     like: NotificationResponseDTO,
     comment: NotificationResponseDTO,
+    mention: NotificationResponseDTO,
     repost: NotificationResponseDTO,
     follow: NotificationResponseDTO,
     newTrack: NotificationResponseDTO,
@@ -109,6 +112,24 @@ export const NotificationTypeExamplesResponseDTO = extendedZod
           commentText: 'Great track!',
         },
         createdAt: '2025-01-15T12:05:00Z',
+      },
+      mention: {
+        notificationId: 'ntf_mention_001',
+        to: 'usr_001',
+        read: false,
+        activityType: 'user_mentioned',
+        actor: {
+          userId: 'usr_020',
+          displayName: 'Huda Beat',
+        },
+        target: {
+          targetType: 'comment',
+          targetId: 'cmt_988',
+          trackId: 'trk_456',
+          commentText: '@Jane check this part!',
+          mentionedUserProfileLink: 'jane-smith-ab12c',
+        },
+        createdAt: '2025-01-15T12:07:00Z',
       },
       repost: {
         notificationId: 'ntf_repost_001',

@@ -34,6 +34,12 @@ type CommentDoc = {
   _id: Types.ObjectId;
   trackId: Types.ObjectId;
   content: string;
+  mentionedUserId?: Types.ObjectId;
+};
+
+type MentionedUserDoc = {
+  _id: Types.ObjectId;
+  profileLink: string;
 };
 
 type FollowersDoc = {
@@ -303,6 +309,80 @@ export class NotificationsRepository {
           avatarURL: actorDoc.profileImg?.imgLink,
           commentText: commentTextValue,
           trackId: commentDoc.trackId,
+        },
+      },
+      read: false,
+    });
+
+    return this.toNotificationRecord(created);
+  }
+
+  async createMentionNotification(
+    actorId: string,
+    commentId: string,
+  ): Promise<NotificationRecord | null> {
+    const actorObjectId = this.parseObjectId(actorId, 'actor id');
+    const commentObjectId = this.parseObjectId(commentId, 'comment id');
+
+    const [actor, comment] = await Promise.all([
+      User.findById(actorObjectId)
+        .select('_id displayName profileImg.imgLink')
+        .lean<UserNameDoc | null>(),
+      Comment.findById(commentObjectId)
+        .select('_id trackId content mentionedUserId')
+        .lean<CommentDoc | null>(),
+    ]);
+
+    if (!actor) NotFoundError('Actor not found');
+    if (!comment) NotFoundError('Comment not found');
+
+    const actorDoc = this.requireFound(actor, 'Actor not found');
+    const commentDoc = this.requireFound(comment, 'Comment not found');
+
+    if (!commentDoc.mentionedUserId) {
+      return null;
+    }
+
+    if (actorDoc._id.equals(commentDoc.mentionedUserId)) {
+      return null;
+    }
+
+    const commentText = commentDoc.content?.trim();
+    if (!commentText) {
+      BadRequestError('Comment text is missing');
+    }
+    const commentTextValue = commentText ?? '';
+
+    const [track, mentionedUser] = await Promise.all([
+      Track.findById(commentDoc.trackId)
+        .select('_id')
+        .lean<{ _id: Types.ObjectId } | null>(),
+      User.findById(commentDoc.mentionedUserId)
+        .select('_id profileLink')
+        .lean<MentionedUserDoc | null>(),
+    ]);
+
+    if (!track) NotFoundError('Track not found');
+
+    const trackDoc = this.requireFound(track, 'Track not found');
+
+    if (!mentionedUser) {
+      return null;
+    }
+
+    const created = await Notification.create({
+      to: mentionedUser._id,
+      from: actorDoc._id,
+      type: {
+        type: 'mention',
+        referenceId: commentDoc._id,
+        payload: {
+          actorName: actorDoc.displayName,
+          actorId: actorDoc._id,
+          avatarURL: actorDoc.profileImg?.imgLink,
+          commentText: commentTextValue,
+          trackId: trackDoc._id,
+          mentionedUserProfileLink: mentionedUser.profileLink,
         },
       },
       read: false,
