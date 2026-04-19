@@ -202,6 +202,72 @@
       '500':
         $ref: '#/components/responses/ServerError'
 
+/api/payment/public/v1/plans:
+  get:
+    tags:
+      - Payment
+    summary: Get available payment plans
+    description: Retrieves all available subscription plans with their Stripe price IDs and amounts.
+
+    security:
+      - bearerAuth: []
+
+    responses:
+      '200':
+        description: Payment plans retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                success:
+                  type: boolean
+                  example: true
+                message:
+                  type: string
+                  example: Payment plans retrieved successfully
+                data:
+                  type: object
+                  properties:
+                    pro_monthly:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: Pro Monthly
+                        priceId:
+                          type: string
+                          example: price_1TGQ4EKiCVlMQgBUJwZCK3um
+                        amount:
+                          type: number
+                          example: 9.99
+                    pro_yearly:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: Pro Yearly
+                        priceId:
+                          type: string
+                          example: price_1TGj1nKiCVlMQgBU9j8T38Fr
+                        amount:
+                          type: number
+                          example: 99.99
+            example:
+              success: true
+              message: Payment plans retrieved successfully
+              data:
+                pro_monthly:
+                  name: Pro Monthly
+                  priceId: price_1TGQ4EKiCVlMQgBUJwZCK3um
+                  amount: 9.99
+                pro_yearly:
+                  name: Pro Yearly
+                  priceId: price_1TGj1nKiCVlMQgBU9j8T38Fr
+                  amount: 99.99
+      '500':
+        $ref: '#/components/responses/ServerError'
+
 /api/payment/v1/subscriptions:
   get:
     tags:
