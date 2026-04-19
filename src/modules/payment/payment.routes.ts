@@ -11,6 +11,11 @@ paymentPublicRouter.post(
   paymentController.handleWebhook.bind(paymentController),
 );
 
+paymentPublicRouter.get(
+  apiVersions.v1 + '/plans',
+  paymentController.getPaymentPlans.bind(paymentController),
+);
+
 paymentRouter.get(
   apiVersions.v1 + '/plans',
   paymentController.getPaymentPlans.bind(paymentController),
