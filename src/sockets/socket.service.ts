@@ -6,6 +6,7 @@ export class SocketService {
 
   private userToSocket = new Map<string, string>();
   private socketToUser = new Map<string, string>();
+  private userToChats = new Map<string, Set<string>>();
 
   constructor(io: Server) {
     this.io = io;
@@ -75,5 +76,24 @@ export class SocketService {
 
   leaveRoom(socket: Socket, room: string): void {
     socket.leave(room);
+  }
+
+  addToUserChats(userId: string, chatId: string) {
+    if (!this.userToChats.get(userId)) {
+      this.userToChats.set(userId, new Set());
+    }
+    this.userToChats.get(userId)!.add(chatId);
+  }
+
+  removeFromUserChats(userId: string, chatId: string) {
+    this.userToChats.get(userId)?.delete(chatId);
+  }
+
+  isUserInChat(userId: string, chatId: string) {
+    const userChats = this.userToChats.get(userId);
+
+    if (userChats?.has(chatId)) return true;
+
+    return false;
   }
 }

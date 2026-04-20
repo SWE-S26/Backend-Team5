@@ -161,8 +161,27 @@ export class MessagingRepository {
     );
   }
 
-  async delete(id: string): Promise<boolean> {
-    // TODO: delete from your data source
-    return false;
+  async sendMessage(
+    userId: Types.ObjectId,
+    chatId: Types.ObjectId,
+    content: string,
+  ): Promise<IMessage | null> {
+    const newMessage = await Message.create({
+      chatId: chatId,
+      senderId: userId,
+      content: content,
+      seenBy: [userId],
+    });
+    const updatedConversation = await Conversation.findOneAndUpdate(
+      {
+        _id: chatId,
+      },
+      {
+        $set: {
+          lastMessage: newMessage._id,
+        },
+      },
+    );
+    return newMessage;
   }
 }

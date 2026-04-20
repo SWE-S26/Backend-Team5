@@ -5,6 +5,8 @@ import { SocketService } from './socket.service';
 import { SocketEvents } from './socket.events';
 import { registerTestHandlers } from './handlers/test.handler';
 import { initializeNotificationSocketHandler } from './handlers/notification.handler';
+import { RegisterMessageSocketHandlers } from './handlers/message.handler';
+import { MessagingService } from '../modules/messaging/messaging.service';
 
 declare module 'socket.io' {
   interface SocketData {
@@ -88,6 +90,11 @@ export function initSocket(io: Server): SocketService {
 
     registerTestHandlers(socket, socketService);
     // future: registerChatHandlers(socket, socketService);
+    RegisterMessageSocketHandlers(
+      socket,
+      socketService,
+      new MessagingService(),
+    );
 
     socket.on('disconnect', (reason) => {
       socketService.unregisterSocket(socket.id);
