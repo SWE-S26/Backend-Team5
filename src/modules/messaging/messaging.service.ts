@@ -24,22 +24,24 @@ export class MessagingService {
     userId: Types.ObjectId,
     newMessageDTO: SendNewMessageDTO,
   ): Promise<any[] | null> {
-    // validate Receiver Exists
     const receiverId = new Types.ObjectId(newMessageDTO.receiverId);
     const content = newMessageDTO.content;
     const [receiver, receiverBlockedList, receiverSettings] =
       await this.repository.findUserDetailedById(receiverId);
 
+    // validate Receiver Exists
     if (!receiver) {
+      logger.warn('[message]: Invalid receiver ID is sent');
       throw BadRequestError("Receiver ID doesn't exists");
     }
 
+    // if receiver blocked this user can't send message to him
     if (receiverBlockedList?.blockedIds.includes(userId)) {
+      logger.warn('[message]: Receiver is blocking user trying to send');
       throw ForbiddenError('User Blocked You Cannot Send to Him');
     }
 
     // search if chat exits with these two participents first
-    logger.info('Searching For Archived Chat');
     const archivedChat = await this.repository.findArchivedChat(
       userId,
       receiverId,
@@ -47,13 +49,14 @@ export class MessagingService {
 
     let updatedChatsHistory = null;
     if (archivedChat) {
+      logger.info('[message]: Activating archived chat');
       updatedChatsHistory = await this.repository.activateChat(
         userId,
         archivedChat._id,
         content,
       );
     } else {
-      logger.info('Hello I am Creating New Chat');
+      logger.info('[message]: Creating new chat');
       updatedChatsHistory = await this.repository.createNewChat(
         userId,
         receiverId,
@@ -68,7 +71,7 @@ export class MessagingService {
         sender?.displayName as string,
         'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGexnRPTfFyGgeqSWNR1f279g3khX7QBVftQ&s',
       );
-      logger.info('Email Sent To User About New Message');
+      logger.info('[message] : Email sent to receiver about new message');
     }
 
     return MessagingMapper.toChatsHistoryResponse(updatedChatsHistory, userId);
@@ -78,10 +81,10 @@ export class MessagingService {
     userId: Types.ObjectId,
     archiveChatDTO: ArchiveChatDTO,
   ): Promise<void> {
-    // check if chat exists
     const chatId = new Types.ObjectId(archiveChatDTO.chatId);
     const searchChat = await this.repository.findChatById(chatId);
 
+    // check if chat exists
     if (!searchChat) throw NotFoundError("A Chat With this ID Doesn't Exist");
 
     if (!searchChat.participants.some((p) => p.equals(userId)))
