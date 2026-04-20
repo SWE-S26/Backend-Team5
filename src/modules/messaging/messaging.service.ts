@@ -152,7 +152,24 @@ export class MessagingService {
     return;
   }
 
-  async delete(id: string): Promise<boolean> {
-    return this.repository.delete(id);
+  async findChatById(chatId: string) {
+    return await this.repository.findChatById(new Types.ObjectId(chatId));
+  }
+
+  async sendMessage(userId: string, chatId: string, content: string) {
+    const searchChat = await this.repository.findChatById(
+      new Types.ObjectId(chatId),
+    );
+
+    if (!searchChat) throw NotFoundError('Chat Not Found');
+
+    if (!searchChat.participants.some((p) => p.equals(userId)))
+      throw ForbiddenError('Forbbiden Access');
+
+    return await this.repository.sendMessage(
+      new Types.ObjectId(userId),
+      new Types.ObjectId(chatId),
+      content,
+    );
   }
 }
