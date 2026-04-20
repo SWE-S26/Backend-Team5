@@ -1,26 +1,56 @@
+import { Types } from 'mongoose';
+import Playlist, { IPlaylist } from '../../shared/models/models.playlist';
+import Track from '../../shared/models/models.track';
 export class PlaylistsRepository {
-  async findAll(): Promise<any[]> {
-    // TODO: query your data source
-    return [];
+  async findAll(limit: number, offset: number): Promise<IPlaylist[]> {
+    return await Playlist.find().skip(offset).limit(limit).lean().exec();
   }
 
-  async findById(id: string): Promise<any | null> {
-    // TODO: query your data source
-    return null;
+  async findById(id: string): Promise<IPlaylist | null> {
+    return await Playlist.findByIdCached(id);
   }
 
-  async create(data: any): Promise<any> {
-    // TODO: insert into your data source
-    return data;
+  async findTrackLengthesByIds(ids: string[]): Promise<number | Error> {
+    const objectIds = ids.map((id) => new Types.ObjectId(id));
+    const tracks = await Track.find({ _id: { $in: objectIds } })
+      .select('durationInSeconds')
+      .lean()
+      .exec();
+    if (tracks.length !== ids.length) {
+      return new Error('One or more tracks not found');
+    }
+    return tracks.reduce((total, track) => total + track.durationInSeconds, 0);
   }
 
-  async update(id: string, data: any): Promise<any | null> {
-    // TODO: update in your data source
-    return null;
+  async findTracksOfPlaylist(
+    ids: string[],
+  ): Promise<{ _id: Types.ObjectId; durationInSeconds: number }[]> {
+    const objectIds = ids.map((id) => new Types.ObjectId(id));
+    return await Track.find({ _id: { $in: objectIds } })
+      .select('_id durationInSeconds')
+      .lean()
+      .exec();
   }
 
-  async delete(id: string): Promise<boolean> {
-    // TODO: delete from your data source
-    return false;
+  async create(
+    playlistName: string,
+    artistId: string,
+    tracks: Types.ObjectId[],
+    isPrivate: boolean,
+    playlistDuration: number,
+  ): Promise<IPlaylist> {
+    const playlist = new Playlist({
+      title: playlistName,
+      artistId,
+      listOfTracks: tracks,
+      isPrivate,
+      playlistLengthInSeconds: playlistDuration,
+    });
+    return (await playlist.save()).toObject() as IPlaylist;
+  }
+
+  async delete(playlistId: string): Promise<boolean> {
+    const deleted = await Playlist.findByIdAndDelete(playlistId).exec();
+    return deleted !== null;
   }
 }

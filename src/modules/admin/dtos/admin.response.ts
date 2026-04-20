@@ -5,7 +5,7 @@ export const AdminUserSnippetResponseDTO = extendedZod
     userId: extendedZod.string(),
     displayName: extendedZod.string(),
     email: extendedZod.string().email(),
-    role: extendedZod.enum(['user', 'artist', 'admin']),
+    role: extendedZod.enum(['user', 'admin']),
     subscriptionType: extendedZod.enum(['free', 'pro']).optional(),
     suspended: extendedZod.boolean(),
     createdAt: extendedZod.string().datetime(),

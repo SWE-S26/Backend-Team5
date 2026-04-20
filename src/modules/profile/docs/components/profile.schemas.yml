@@ -38,7 +38,7 @@ Profile:
       format: uri
     role:
       type: string
-      enum: ['Listener', 'Artist', 'Pro', 'Admin']
+      enum: ['Listener', 'Pro', 'Admin']
     isPaid:
       type: boolean
       description: Indicates if the user is a paid/pro user
@@ -54,12 +54,12 @@ Profile:
       type: integer
     trackCount:
       type: integer
-    isBlocked: 
+    isBlocked:
       type: boolean
-    isFollowed: 
+    isFollowed:
       type: boolean
-    blockingMe: 
-      type: boolean      
+    blockingMe:
+      type: boolean
 
 ProfileUpdate:
   type: object

@@ -5,7 +5,7 @@ export const UserCredientialsResponseDto = extendedZod
   .object({
     id: extendedZod.string(),
     displayName: extendedZod.string(),
-    role: extendedZod.enum(['Listener', 'Artist', 'Pro', 'Admin']),
+    role: extendedZod.enum(['Listener', 'Pro', 'Admin']),
     profileLink: extendedZod.string(),
     profileImg: extendedZod.object({
       imgLink: extendedZod.string(),
