@@ -31,7 +31,7 @@ export type IUser = {
   email: string;
   password?: string;
   googleId?: string;
-  role: 'Listener' | 'Artist' | 'Pro' | 'Admin';
+  role: 'Listener' | 'Pro' | 'Admin';
   displayName: string;
   firstName: string;
   lastName: string;
@@ -177,7 +177,7 @@ const userSchema = new Schema(
     },
     role: {
       type: String,
-      enum: ['Listener', 'Artist', 'Pro', 'Admin'],
+      enum: ['Listener', 'Pro', 'Admin'],
       required: true,
       default: 'Listener',
     },

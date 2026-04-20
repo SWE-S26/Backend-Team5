@@ -3,11 +3,6 @@ import Transaction, {
   ITransaction,
   TransactionType,
 } from '../../shared/models/models.transaction';
-import {
-  RedisObjectType,
-  redisRepoCacher,
-} from '../../shared/abstractions/redis/redisRepoCacher';
-
 export interface PaymentUpdateFields {
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;
@@ -63,8 +58,6 @@ export class PaymentRepository {
     if (unset && Object.keys(unset).length) {
       update.$unset = unset;
     }
-
-    redisRepoCacher.invalidateCache(RedisObjectType.USER, userId);
 
     return User.findByIdAndUpdate(userId, update, { new: true }).lean();
   }

@@ -1,14 +1,31 @@
 import { Router } from 'express';
 import { PlaylistsController } from './playlists.controller';
+import apiVersions from '../../shared/middleware/apiVersions';
 
-const router = Router();
-//TODO: const playlistsController = new PlaylistsController(/* TODO: inject service */);
+const playlistsPrivateRouter = Router();
+const playlistsPublicRouter = Router();
+const playlistsController = new PlaylistsController();
 
-// playlistsRouter.get('/',      (req, res) => playlistsController.findAll(req, res));
-// playlistsRouter.get('/:id',   (req, res) => playlistsController.findOne(req, res));
-// playlistsRouter.post('/',     (req, res) => playlistsController.create(req, res));
-// playlistsRouter.put('/:id',   (req, res) => playlistsController.replace(req, res));
-// playlistsRouter.patch('/:id', (req, res) => playlistsController.update(req, res));
-// playlistsRouter.delete('/:id',(req, res) => playlistsController.remove(req, res));
+playlistsPrivateRouter.post(
+  apiVersions.v1,
+  playlistsController.create.bind(playlistsController),
+);
 
-export default router;
+playlistsPrivateRouter.delete(
+  apiVersions.v1 + '/:id',
+  playlistsController.delete.bind(playlistsController),
+);
+
+playlistsPublicRouter.get(
+  apiVersions.v1,
+  playlistsController.findAll.bind(playlistsController),
+);
+
+playlistsPublicRouter.get(
+  apiVersions.v1 + '/:id',
+  playlistsController.findOne.bind(playlistsController),
+);
+
+export { playlistsPublicRouter };
+
+export default playlistsPrivateRouter;
