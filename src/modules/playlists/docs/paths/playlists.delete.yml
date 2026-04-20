@@ -1,4 +1,4 @@
-/api/playlists/myPlaylists/{playlistId}:
+/api/playlists/v1/{playlistId}:
   delete:
     tags:
       - Playlist Management
@@ -24,8 +24,15 @@
                 message:
                   type: string
                   example: 'Deleted successfully'
+                data:
+                  type: object
+                  properties:
+                    deleted:
+                      type: boolean
+                      example: true
               required:
                 - message
+                - data
 
       '400':
         $ref: '#/components/responses/InvalidParameters'

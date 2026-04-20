@@ -1,4 +1,4 @@
-/api/playlists:
+/api/v1/playlists:
   post:
     tags:
       - Playlist Management
@@ -36,11 +36,16 @@
                 message:
                   type: string
                   example: 'Created successfully'
-                id:
-                  type: string
-                  example: 'playlist_id'
+                data:
+                  type: object
+                  properties:
+                    playlists:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Playlist'
               required:
                 - message
+                - data
 
       '400':
         $ref: '#/components/responses/InvalidParameters'
@@ -48,8 +53,8 @@
       '401':
         $ref: '#/components/responses/Unauthorized'
 
-      '404':
-        $ref: '#/components/responses/NotFound'
+      '403':
+        $ref: '#/components/responses/Forbidden'
 
       '500':
         $ref: '#/components/responses/ServerError'

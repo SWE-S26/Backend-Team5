@@ -1,1 +1,203 @@
 # OpenAPI parameter definitions for the playlists module, starting writing normally like paths
+
+Playlist:
+  type: object
+  properties:
+    _id:
+      type: string
+      example: '69e6426d97e2cc4299dc53f1'
+    artistId:
+      type: string
+      example: '69bc1964148a2e47017de175'
+    title:
+      type: string
+      example: 'S3RL playlist'
+    description:
+      type: string
+      example: ''
+    genre:
+      type: string
+      example: 'None'
+    listOfTracks:
+      type: array
+      items:
+        type: string
+      example:
+        - '69e5fed88be86826c84f5a90'
+        - '69e5ffbe8be86826c84f5be0'
+    additionalTags:
+      type: array
+      items:
+        type: string
+      example: []
+    type:
+      type: string
+      enum: [public, private]
+      example: public
+    numOfLikes:
+      type: integer
+      example: 2
+    numOfReposts:
+      type: integer
+      example: 2
+    playlistType:
+      type: string
+      example: playlist
+    playlistLengthInSeconds:
+      type: integer
+      example: 421
+    likedUser:
+      type: array
+      items:
+        type: string
+      example:
+        - '69bc1964148a2e47017de175'
+    isLiked:
+      type: boolean
+      example: false
+    isReposted:
+      type: boolean
+      example: false
+    image:
+      type: object
+      properties:
+        imgLink:
+          type: string
+          example: 'https://res.cloudinary.com/...'
+        publicId:
+          type: string
+          example: 'playlist/file_bh81hj'
+    createdAt:
+      type: string
+      format: date-time
+      example: '2026-04-20T15:12:45.273Z'
+    updatedAt:
+      type: string
+      format: date-time
+      example: '2026-04-20T18:04:13.650Z'
+
+TrackInPlaylist:
+  type: object
+  properties:
+    _id:
+      type: string
+      example: '69e5fed88be86826c84f5a90'
+    basicInfo:
+      type: object
+      properties:
+        title:
+          type: string
+          example: 'Better Off Alone S3RL feat Tamika'
+        permalink:
+          type: string
+          example: 'better-off-alone-s3rl-feat-tamika'
+        mainArtists:
+          type: array
+          items:
+            type: string
+          example: ['S3RL']
+    audio:
+      type: object
+      properties:
+        audioLink:
+          type: string
+          example: 'https://...mp3'
+        id:
+          type: string
+          example: '2ylkgMJe'
+    image:
+      type: object
+      properties:
+        imgLink:
+          type: string
+          example: 'https://...jpg'
+        publicId:
+          type: string
+          example: 'audio/file_ech8r3'
+    durationInSeconds:
+      type: integer
+      example: 236
+    numOfPlays:
+      type: integer
+      example: 0
+    numOfLikes:
+      type: integer
+      example: 1
+    permissions:
+      type: object
+      properties:
+        enableDirectDownload:
+          type: boolean
+        offlineListening:
+          type: boolean
+        includeInRssFeed:
+          type: boolean
+        displayedEmbedCode:
+          type: boolean
+        enableAppPlayback:
+          type: boolean
+    poster:
+      type: object
+      properties:
+        _id:
+          type: string
+        displayName:
+          type: string
+        profileLink:
+          type: string
+    isLiked:
+      type: boolean
+      example: true
+    isReposted:
+      type: boolean
+      example: true
+
+PlaylistDetails:
+  allOf:
+    - $ref: '#/components/schemas/Playlist'
+    - type: object
+      properties:
+        totalTracks:
+          type: integer
+          example: 2
+        totalPages:
+          type: integer
+          example: 1
+        page:
+          type: integer
+          example: 1
+        isLiked:
+          type: boolean
+          example: true
+        isReposted:
+          type: boolean
+          example: true
+        tracks:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrackInPlaylist'
+
+Artist:
+  type: object
+  properties:
+    displayName:
+      type: string
+      example: Back Bone
+    profileLink:
+      type: string
+      example: naaauuuh-this-is-too-much-1773934948462
+    profileImage:
+      type: object
+      properties:
+        imgLink:
+          type: string
+          example: https://res.cloudinary.com/dr1sqiouu/image/upload/v1776680970/profile/file_ovhw2p.png
+        publicId:
+          type: string
+          example: profile/file_ovhw2p
+    followersCount:
+      type: integer
+      example: 3
+    isFollowed:
+      type: boolean
+      example: false
