@@ -25,7 +25,7 @@ tags:
   - name: Track Management
     description: All endpoints related to track management
   - name: Playlist Management
-    description: All endpoints related to playlist management
+    description: All endpoints related to playlist management IF YOU SEE A PUBLIC API AND ITS TWIN, CALL THE NON-PUBLIC ONE IF THE USER IS LOGGED IN TO HANDLE BLOCKED LISTS PLEASE
   - name: Playback
     description: All endpoints related to playback functionality, like listening history.
   - name: Feed

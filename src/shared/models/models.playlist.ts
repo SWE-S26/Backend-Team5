@@ -16,7 +16,10 @@ export type IPlaylist = {
   artistId: Types.ObjectId;
   title: string;
   image: { url: string; publicId: string };
+  description: string;
+  genre: string;
   listOfTracks: Types.ObjectId[];
+  additionalTags: string[];
   releaseDate: Date;
   type: 'public' | 'private';
   numOfLikes: number;
@@ -26,6 +29,8 @@ export type IPlaylist = {
   likedUser: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
+  rssFeedLink?: string;
+  recordLabel?: string;
 };
 
 interface IPlaylistModel extends Model<IPlaylist> {
@@ -45,6 +50,8 @@ const playlistSchema = new Schema<IPlaylist, IPlaylistModel>(
         publicId: DEFAULT_PLAYLIST_IMAGE.publicId,
       }),
     },
+    description: { type: String, maxlength: 500, default: '' },
+    genre: { type: String, maxlength: 50, default: 'None' },
     listOfTracks: {
       type: [{ type: Schema.Types.ObjectId, ref: 'Track' }],
       validate: [
@@ -54,6 +61,7 @@ const playlistSchema = new Schema<IPlaylist, IPlaylistModel>(
         },
       ],
     },
+    additionalTags: { type: [{ type: String, maxlength: 30 }], default: [] },
     releaseDate: { type: Date, min: new Date('1950-01-01') },
     type: { type: String, enum: ['public', 'private'], default: 'public' },
     numOfLikes: { type: Number, default: 0, min: 0 },
@@ -65,11 +73,11 @@ const playlistSchema = new Schema<IPlaylist, IPlaylistModel>(
     },
     playlistLengthInSeconds: { type: Number, default: 0, min: 0 },
     likedUser: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    rssFeedLink: { type: String, default: '' },
+    recordLabel: { type: String, maxlength: 100, default: '' },
   },
   { timestamps: true },
 );
-
-// ─── Cache Invalidation Helpers ───────────────────────────────────────────────
 
 async function invalidatePlaylistCache(id: Types.ObjectId): Promise<void> {
   await redisRepoCacher.invalidateCache(
