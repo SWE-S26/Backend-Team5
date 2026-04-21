@@ -39,7 +39,7 @@ export class MessagingMapper {
     return {
       _id: chat._id,
       lastMessage: chat.lastMessage,
-      receiver: {
+      sender: {
         displayName: sender.displayName,
         photoUrl: sender.profileImg?.imgLink,
       },
