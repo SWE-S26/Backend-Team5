@@ -1,5 +1,6 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 import { Types } from 'mongoose';
+import { IMessage } from '../../../shared/models/models.message';
 
 export const MessagingResponseDto = extendedZod
   .object({
@@ -37,4 +38,9 @@ export type IConversationPopulated = {
   } | null;
   createdAt: Date;
   updatedAt: Date;
+};
+
+export type ChatMessagesResponseDTO = {
+  messages: IMessage[];
+  isReceiverBlocked: boolean;
 };
