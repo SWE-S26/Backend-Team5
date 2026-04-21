@@ -139,69 +139,76 @@ export function RegisterMessageSocketHandlers(
   });
 
   socket.on(SocketEvents.SEND_MSG, async (payload: any) => {
-    const validatedPayload = MessagePayloadSchema.safeParse(payload);
-    if (!validatedPayload.success) {
-      logger.warn(`[${SocketEvents.SEND_MSG}]: Invalid Payload`);
-      socket.emit(SocketEvents.ERROR, { message: 'invalid schema sent' });
-      return;
-    }
+    try {
+      const validatedPayload = MessagePayloadSchema.safeParse(payload);
+      if (!validatedPayload.success) {
+        logger.warn(`[${SocketEvents.SEND_MSG}]: Invalid Payload`);
+        socket.emit(SocketEvents.ERROR, { message: 'invalid schema sent' });
+        return;
+      }
 
-    const isValidatedIDs = validateIds(payload.chatId, socket.data.userId);
-    if (!isValidatedIDs) {
-      socket.emit(SocketEvents.ERROR, { message: 'invalid ids are sent' });
-      return;
-    }
+      const isValidatedIDs = validateIds(payload.chatId, socket.data.userId);
+      if (!isValidatedIDs) {
+        socket.emit(SocketEvents.ERROR, { message: 'invalid ids are sent' });
+        logger.warn(`[${SocketEvents.SEND_MSG}]: Not Valid Ids`);
+        return;
+      }
 
-    const userId = new Types.ObjectId(socket.data.userId);
-    const chatId = new Types.ObjectId(payload.chatId);
+      const userId = new Types.ObjectId(socket.data.userId);
+      const chatId = new Types.ObjectId(payload.chatId);
 
-    const searchChat = await validateChatAccessRules(
-      chatId,
-      userId,
-      messageService,
-    );
-    if (!searchChat) {
-      socket.emit(SocketEvents.ERROR, {
-        message: "chat with this id doesn't exists",
-      });
-      return;
-    }
+      const searchChat = await validateChatAccessRules(
+        chatId,
+        userId,
+        messageService,
+      );
+      if (!searchChat) {
+        socket.emit(SocketEvents.ERROR, {
+          message: "chat with this id doesn't exists",
+        });
+        return;
+      }
 
-    const result = await messageService.sendMessage(
-      userId,
-      searchChat,
-      payload.content,
-    );
-
-    if (!result) {
-      socket.emit(SocketEvents.ERROR, {
-        message: 'Failed to send message due to privacy issues',
-      });
-      return;
-    }
-
-    const { updatedConversation, receiverSettings } = result;
-
-    socket
-      .to(chatId.toString())
-      .emit(SocketEvents.SEND_MSG, updatedConversation);
-
-    for (const receiverId of searchChat?.participants) {
-      if (receiverId === userId) continue; // skip sender
-
-      const isActive = socketService.isUserInChat(
-        receiverId.toString(),
-        payload.chatId,
+      const result = await messageService.sendMessage(
+        userId,
+        searchChat,
+        payload.content,
       );
 
-      if (!isActive) {
-        messageService.handlePushNotification(
-          receiverSettings,
-          userId,
-          receiverId,
-          updatedConversation as IConversationPopulated,
-        );
+      console.log(result);
+      if (!result) {
+        socket.emit(SocketEvents.ERROR, {
+          message: 'Failed to send message due to privacy issues',
+        });
+        return;
       }
+
+      const { updatedConversation, receiverSettings } = result;
+
+      socket
+        .to(chatId.toString())
+        .emit(SocketEvents.SEND_MSG, updatedConversation);
+
+      for (const receiverId of searchChat?.participants) {
+        if (receiverId === userId) continue; // skip sender
+
+        const isActive = socketService.isUserInChat(
+          receiverId.toString(),
+          payload.chatId,
+        );
+
+        if (!isActive) {
+          messageService.handlePushNotification(
+            receiverSettings,
+            userId,
+            receiverId,
+            updatedConversation as IConversationPopulated,
+          );
+        }
+      }
+    } catch (err) {
+      logger.error(err);
+      socket.emit(SocketEvents.ERROR, { message: 'Something went wrong' });
     }
   });
 }

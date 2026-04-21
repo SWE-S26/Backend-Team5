@@ -59,7 +59,7 @@ export class MessagingRepository {
       {
         $addToSet: { archivedBy: userId },
       },
-      { new: true },
+      { returnDocument: 'after' },
     );
   }
 
@@ -115,7 +115,7 @@ export class MessagingRepository {
           lastMessage: newMessage._id,
         },
       },
-      { new: true },
+      { returnDocument: 'after' },
     )
       .populate('participants', 'displayName profileImg')
       .populate('lastMessage', '_id content senderId createdAt seenBy')
@@ -145,7 +145,7 @@ export class MessagingRepository {
     if (before) {
       return await Message.find<IMessage>({
         chatId,
-        createdAt: { $lt: before },
+        _id: { $lt: before },
       })
         .sort({ createdAt: -1 })
         .limit(limit);
@@ -203,8 +203,10 @@ export class MessagingRepository {
       {
         $set: {
           lastMessage: newMessage._id,
+          archivedBy: [],
         },
       },
+      { returnDocument: 'after' },
     )
       .populate('participants', 'displayName profileImg')
       .populate('lastMessage', '_id content senderId createdAt seenBy')

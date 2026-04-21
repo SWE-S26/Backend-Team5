@@ -56,10 +56,7 @@ export class MessagingService {
     userId: Types.ObjectId,
     receiverId: Types.ObjectId,
   ) {
-    if (
-      receiverSettings?.privacy.allowMessagesAnyone ||
-      receiverSettings?.privacy.allowMessagesAnyone == false
-    ) {
+    if (receiverSettings?.privacy.allowMessagesAnyone == false) {
       const receiverFollowing =
         await this.repository.findUserFollowedList(receiverId);
       if (!receiverFollowing) {
@@ -335,10 +332,7 @@ export class MessagingService {
       return null;
     }
 
-    if (
-      receiverSettings?.privacy.allowMessagesAnyone ||
-      receiverSettings?.privacy.allowMessagesAnyone == false
-    ) {
+    if (receiverSettings?.privacy.allowMessagesAnyone == false) {
       const receiverFollowing = await this.repository.findUserFollowedList(
         receiverId as Types.ObjectId,
       );
