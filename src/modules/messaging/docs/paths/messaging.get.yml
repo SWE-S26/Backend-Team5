@@ -1,0 +1,168 @@
+/api/messages/v1/chats:
+  get:
+    summary: Get Chat History
+    description: |
+      Retrieves all active (non-archived) conversations for the authenticated user.
+      Intended to be called when the user opens the chat panel to populate the 
+      conversation list on the left side. Each conversation includes the last message 
+      preview and the receiver's display information (name and avatar) to render 
+      the chat list UI. Archived conversations are excluded from the results.
+      Supports an optional limit parameter to control the number of conversations returned.
+    tags:
+      - Message
+    security:
+      - cookieAuth: []
+    parameters:
+      - in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+          default: 20
+        description: Maximum number of conversations to return
+    responses:
+      '200':
+        description: Chat history retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Chat History Retrieved Successfully
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: 69e69a358352c5b3bb1c8fa4
+                      lastMessage:
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                            example: 69e7d73ae2f073d6e865edc1
+                          senderId:
+                            type: string
+                            example: 69beeb8046a92874acec2764
+                          content:
+                            type: string
+                            example: hello from my other side
+                          seenBy:
+                            type: array
+                            items:
+                              type: string
+                            example: ["69beeb8046a92874acec2764"]
+                          createdAt:
+                            type: string
+                            format: date-time
+                            example: 2026-04-21T19:59:54.823Z
+                      receiver:
+                        type: object
+                        properties:
+                          displayName:
+                            type: string
+                            example: engseifmohamed2004
+                          photoUrl:
+                            type: string
+                            format: uri
+                            example: https://res.cloudinary.com/example/image/upload/profile.png
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
+
+/api/messages/v1/chat/message/{id}:
+  get:
+    summary: Get Chat Messages
+    description: |
+      Retrieves paginated messages for a specific conversation, intended to be called 
+      when the user opens a chat window to load the message history. Messages are 
+      returned in descending order (newest first). Supports cursor-based pagination 
+      via the `before` parameter — pass the oldest message ID currently loaded to 
+      fetch the next batch of older messages. This allows infinite scroll or 
+      "load more" functionality. Also returns `isReceiverBlocked` to allow the UI 
+      to disable the message input if the receiver has been blocked.
+    tags:
+      - Message
+    security:
+      - cookieAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: false
+        schema:
+          type: string
+        description: Conversation (chat) ID
+        example: 69e6977c88827a9c11d55b31
+      - in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+          default: 20
+        description: Maximum number of messages to return
+      - in: query
+        name: before
+        required: false
+        schema:
+          type: string
+        description: Message ObjectId cursor — returns messages before this ID (for pagination)
+        example: 69e6977c88827a9c11d55b33
+    responses:
+      '200':
+        description: Chat messages retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Chat Messages Retrieved Successfully
+                data:
+                  type: object
+                  properties:
+                    messages:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                            example: 69e6c044a0e4b1ab766e74f1
+                          chatId:
+                            type: string
+                            example: 69e6977c88827a9c11d55b31
+                          senderId:
+                            type: string
+                            example: 69beeb8046a92874acec2764
+                          content:
+                            type: string
+                            example: Loreum Ipsum!
+                          seenBy:
+                            type: array
+                            items:
+                              type: string
+                            example: ["69beeb8046a92874acec2764"]
+                          createdAt:
+                            type: string
+                            format: date-time
+                            example: 2026-04-21T00:09:40.065Z
+                          __v:
+                            type: integer
+                            example: 0
+                    isReceiverBlocked:
+                      type: boolean
+                      example: false
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'

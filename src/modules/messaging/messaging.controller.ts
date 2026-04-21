@@ -117,7 +117,7 @@ export class MessagingController {
     }
 
     const userInfo = this.getUserInfo(req);
-    const chatId = new Types.ObjectId(validatedRequest.data.params.id);
+    const chatId = new Types.ObjectId(validatedRequest.data.body.id);
     const userId = new Types.ObjectId(userInfo.userId);
     await this.service.markAsRead(userId, chatId);
     res.json({
@@ -133,26 +133,11 @@ export class MessagingController {
     }
 
     const userInfo = this.getUserInfo(req);
-    const chatId = new Types.ObjectId(validatedRequest.data.params.id);
+    const chatId = new Types.ObjectId(validatedRequest.data.body.id);
     const userId = new Types.ObjectId(userInfo.userId);
     await this.service.markAsUnRead(userId, chatId);
     res.json({
       message: 'Marked As Unread Successfully',
     });
-  }
-
-  async replace(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
-
-  async update(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
-
-  async remove(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
   }
 }

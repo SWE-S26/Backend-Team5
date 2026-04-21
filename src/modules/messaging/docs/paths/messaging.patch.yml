@@ -1,0 +1,149 @@
+/api/messages/v1/chat/read/:
+  patch:
+    summary: Mark Conversation as Read
+    description: |
+      Marks all unread messages in a specific conversation as read by the authenticated user.
+      Intended to be called when the user opens a chat window, so the unread message 
+      indicator and badge count are cleared from the chat side panel. Only marks messages 
+      as read for the requesting user — the other participant's read state is unaffected.
+    tags:
+      - Message
+    security:
+      - cookieAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        description: Conversation (chat) ID
+        example: 69e6977c88827a9c11d55b31
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - chatId
+            properties:
+              chatId:
+                type: string
+                description: Conversation (chat) ID
+                example: 69e6977c88827a9c11d55b31
+    responses:
+      "200":
+        description: Conversation marked as read successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Marked As read Successfully
+      "401":
+        $ref: '#/components/responses/Unauthorized'
+      "404":
+        $ref: '#/components/responses/NotFound'
+      "500":
+        $ref: '#/components/responses/ServerError'
+
+/api/messages/v1/chat/unread/:
+  patch:
+    summary: Mark Conversation as Unread
+    description: |
+      Marks a conversation as unread for the authenticated user, restoring the unread 
+      indicator on the chat side panel. Intended to be used when the user wants to 
+      remind themselves to revisit a conversation later — similar to "mark as unread" 
+      functionality in email clients. Only affects the requesting user's read state, 
+      the other participant is unaffected.
+    tags:
+      - Message
+    security:
+      - cookieAuth: []
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        description: Conversation (chat) ID
+        example: 69e6977c88827a9c11d55b31
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - chatId
+            properties:
+              chatId:
+                type: string
+                description: Conversation (chat) ID
+                example: 69e6977c88827a9c11d55b31
+    responses:
+      "200":
+        description: Conversation marked as unread successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Marked As Unread Successfully
+      "401":
+        $ref: '#/components/responses/Unauthorized'
+      "404":
+        $ref: '#/components/responses/NotFound'
+      "500":
+        $ref: '#/components/responses/ServerError'
+
+/api/messages/v1/archive:
+  patch:
+    summary: Archive a Conversation
+    description: |
+      Archives a specific conversation for the authenticated user, hiding it from 
+      the main chat side panel without deleting it. Intended to be used when the user 
+      wants to declutter their chat list by moving inactive or less important conversations 
+      out of view. Archived conversations are excluded from the chat history endpoint 
+      but remain accessible if an archived chats view is implemented. Only affects 
+      the requesting user — the other participant's chat list is unaffected
+    tags:
+      - Message
+    security:
+      - cookieAuth: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - chatId
+            properties:
+              chatId:
+                type: string
+                description: Conversation (chat) ID to archive
+                example: 69e6977c88827a9c11d55b31
+          example:
+            chatId: 69e6977c88827a9c11d55b31
+    responses:
+      "200":
+        description: Chat archived successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Chat Archived Successfully
+      "401":
+        $ref: '#/components/responses/Unauthorized'
+      "404":
+        $ref: '#/components/responses/NotFound'
+      "500":
+        $ref: '#/components/responses/ServerError'

@@ -21,11 +21,11 @@ messagingRouter.get(apiVersions.v1 + '/chat/message/:id', (req, res) =>
   messagingController.getChatMessages(req, res),
 );
 
-messagingRouter.patch(apiVersions.v1 + '/chat/read/:id', (req, res) =>
+messagingRouter.patch(apiVersions.v1 + '/chat/read/', (req, res) =>
   messagingController.markAsRead(req, res),
 );
 
-messagingRouter.patch(apiVersions.v1 + '/chat/unread/:id', (req, res) =>
+messagingRouter.patch(apiVersions.v1 + '/chat/unread/', (req, res) =>
   messagingController.markAsUnRead(req, res),
 );
 
