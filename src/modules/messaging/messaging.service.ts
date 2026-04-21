@@ -353,7 +353,10 @@ export class MessagingService {
       content,
     );
     return {
-      updatedConversation,
+      updatedConversation: MessagingMapper.toChatHistoryReceiverResponse(
+        updatedConversation,
+        userId,
+      ),
       receiverSettings,
     };
   }
