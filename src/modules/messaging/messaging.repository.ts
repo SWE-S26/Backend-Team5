@@ -26,6 +26,12 @@ export class MessagingRepository {
     ]);
   }
 
+  async findUserBlockedList(
+    userId: Types.ObjectId,
+  ): Promise<IBlockedList | null> {
+    return await BlockedList.findOne({ blockerId: userId });
+  }
+
   async findChatById(chatId: Types.ObjectId): Promise<IConversation | null> {
     return await Conversation.findById<IConversation>(chatId);
   }
@@ -56,7 +62,7 @@ export class MessagingRepository {
     userId: Types.ObjectId,
     receiverId: Types.ObjectId,
     content: string,
-  ): Promise<IConversationPopulated[] | null> {
+  ): Promise<IConversationPopulated | null> {
     const newConversation = await Conversation.create({
       participants: [userId, receiverId],
     });
@@ -67,18 +73,27 @@ export class MessagingRepository {
       seenBy: [userId],
     });
 
-    await Conversation.findByIdAndUpdate(newConversation._id, {
-      lastMessage: newMessage._id,
-    });
+    const updatedConversation = await Conversation.findByIdAndUpdate(
+      newConversation._id,
+      {
+        lastMessage: newMessage._id,
+      },
+      {
+        new: true,
+      },
+    )
+      .populate('participants', 'displayName profileImg')
+      .populate('lastMessage', '_id content senderId createdAt seenBy')
+      .lean<IConversationPopulated>();
 
-    return await this.getChatsHistory(userId);
+    return updatedConversation;
   }
 
   async activateChat(
     userId: Types.ObjectId,
     chatId: Types.ObjectId,
     content: string,
-  ): Promise<IConversationPopulated[] | null> {
+  ): Promise<IConversationPopulated | null> {
     const newMessage = await Message.create({
       chatId: chatId,
       senderId: userId,
@@ -95,8 +110,12 @@ export class MessagingRepository {
           lastMessage: newMessage._id,
         },
       },
-    );
-    return await this.getChatsHistory(userId);
+      { new: true },
+    )
+      .populate('participants', 'displayName profileImg')
+      .populate('lastMessage', '_id content senderId createdAt seenBy')
+      .lean<IConversationPopulated>();
+    return updatedConversation;
   }
 
   async getChatsHistory(
@@ -165,7 +184,7 @@ export class MessagingRepository {
     userId: Types.ObjectId,
     chatId: Types.ObjectId,
     content: string,
-  ): Promise<IMessage | null> {
+  ): Promise<IConversationPopulated | null> {
     const newMessage = await Message.create({
       chatId: chatId,
       senderId: userId,
@@ -181,7 +200,10 @@ export class MessagingRepository {
           lastMessage: newMessage._id,
         },
       },
-    );
-    return newMessage;
+    )
+      .populate('participants', 'displayName profileImg')
+      .populate('lastMessage', '_id content senderId createdAt seenBy')
+      .lean<IConversationPopulated>();
+    return updatedConversation;
   }
 }

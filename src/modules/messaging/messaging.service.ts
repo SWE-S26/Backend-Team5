@@ -13,6 +13,12 @@ import { MessagingMapper } from './dtos/messaging.mapper';
 import logger from '../../shared/logger/logger';
 import emailService from '../../shared/abstractions/email/email.service';
 import { PaginationInfo } from './dtos/messaging.request.query';
+import { ChatMessagesResponseDTO } from './dtos/messaging.response';
+import { IConversation } from '../../shared/models/models.conversation';
+import {
+  getMessageNotifyhandler,
+  MessageNotifyHandler,
+} from '../../sockets/handlers/message.notify';
 
 export class MessagingService {
   private readonly repository: MessagingRepository;
@@ -20,10 +26,29 @@ export class MessagingService {
     this.repository = new MessagingRepository();
   }
 
+  private validateChatExists(chat: IConversation | null) {
+    if (!chat) {
+      logger.warn('[message]: Invalid chat ID is sent');
+      throw NotFoundError('Chat Not Found');
+    }
+  }
+
+  private validateUserIsParticipantInChat(
+    chat: IConversation,
+    userId: Types.ObjectId,
+  ) {
+    if (!chat.participants.some((p) => p.equals(userId))) {
+      logger.warn(`[message]: User ${userId} tried to join unauthorized chat`);
+      throw ForbiddenError(
+        'Cannot Delete A Chat User is not a participant in it',
+      );
+    }
+  }
+
   async sendNewMessage(
     userId: Types.ObjectId,
     newMessageDTO: SendNewMessageDTO,
-  ): Promise<any[] | null> {
+  ): Promise<any | null> {
     const receiverId = new Types.ObjectId(newMessageDTO.receiverId);
     const content = newMessageDTO.content;
     const [receiver, receiverBlockedList, receiverSettings] =
@@ -74,7 +99,14 @@ export class MessagingService {
       logger.info('[message] : Email sent to receiver about new message');
     }
 
-    return MessagingMapper.toChatsHistoryResponse(updatedChatsHistory, userId);
+    let messageNotifyHandler;
+    try {
+      messageNotifyHandler = getMessageNotifyhandler();
+    } catch {
+      logger.info('[message] : Message Notify not working');
+    }
+
+    return MessagingMapper.toChatHistoryResponse(updatedChatsHistory, userId);
   }
 
   async archiveChat(
@@ -85,40 +117,59 @@ export class MessagingService {
     const searchChat = await this.repository.findChatById(chatId);
 
     // check if chat exists
-    if (!searchChat) throw NotFoundError("A Chat With this ID Doesn't Exist");
+    this.validateChatExists(searchChat);
 
-    if (!searchChat.participants.some((p) => p.equals(userId)))
-      throw ForbiddenError(
-        'Cannot Delete A Chat User is not a participant in it',
-      );
+    // check if user is a participant of the chat
+    this.validateUserIsParticipantInChat(searchChat as IConversation, userId);
 
     await this.repository.archiveChat(userId, chatId);
+    logger.info(`[message]: chat ${chatId} is archived by user ${userId}`);
     return;
   }
 
   async getChatsHistory(userId: Types.ObjectId): Promise<any[] | null> {
     const chatsHistory = await this.repository.getChatsHistory(userId);
-    return MessagingMapper.toChatsHistoryResponse(chatsHistory, userId);
+    logger.info(`[message]: fetched Chats history for user with id: ${userId}`);
+    return MessagingMapper.toChatHistoryListResponse(chatsHistory, userId);
   }
 
   async getChatMessages(
     userId: Types.ObjectId,
     chatId: Types.ObjectId,
     paginationInfo: PaginationInfo,
-  ): Promise<any[] | null> {
-    const searchChat = await this.repository.findChatById(chatId);
+  ): Promise<ChatMessagesResponseDTO | null> {
+    const [searchChat, blocklist] = await Promise.all([
+      this.repository.findChatById(chatId),
+      this.repository.findUserBlockedList(userId),
+    ]);
 
-    if (!searchChat) throw NotFoundError('Chat Not Found');
+    // check if chat exists
+    this.validateChatExists(searchChat);
 
-    if (!searchChat.participants.some((p) => p.equals(userId)))
-      throw ForbiddenError('Forbbiden Access');
+    // check if user is a participant of the chat
+    this.validateUserIsParticipantInChat(searchChat as IConversation, userId);
+
+    // get receiver Id
+    const receiverId = (searchChat as IConversation).participants.find((id) => {
+      return id.toString() !== userId.toString();
+    });
+
+    // check if user blocked the receiver or not
+    const isReceiverBlocked =
+      blocklist?.blockedIds.some((p) => p.equals(receiverId)) ?? false;
 
     const chatMessages = await this.repository.getChatMessages(
       chatId,
       paginationInfo,
     );
 
-    return chatMessages;
+    logger.info(
+      `[message]: fetched messages of chat ${chatId} for user ${userId} - limit ${paginationInfo.limit} - before: ${paginationInfo.before}`,
+    );
+    return {
+      messages: chatMessages,
+      isReceiverBlocked,
+    };
   }
 
   async markAsRead(
@@ -127,14 +178,16 @@ export class MessagingService {
   ): Promise<void> {
     const searchChat = await this.repository.findChatById(chatId);
 
-    if (!searchChat) throw NotFoundError("A Chat With this ID Doesn't Exist");
+    // check if chat exists
+    this.validateChatExists(searchChat);
 
-    if (!searchChat.participants.some((p) => p.equals(userId)))
-      throw ForbiddenError(
-        'Cannot Delete A Chat User is not a participant in it',
-      );
+    // check if user is a participant of the chat
+    this.validateUserIsParticipantInChat(searchChat as IConversation, userId);
 
     await this.repository.markAsRead(userId, chatId);
+    logger.info(
+      `[message]: All messages in chat ${chatId} is marked read by user ${userId}`,
+    );
     return;
   }
 
@@ -144,35 +197,36 @@ export class MessagingService {
   ): Promise<void> {
     const searchChat = await this.repository.findChatById(chatId);
 
-    if (!searchChat) throw NotFoundError("A Chat With this ID Doesn't Exist");
+    // check if chat exists
+    this.validateChatExists(searchChat);
 
-    if (!searchChat.participants.some((p) => p.equals(userId)))
-      throw ForbiddenError(
-        'Cannot Delete A Chat User is not a participant in it',
-      );
+    // check if user is a participant of the chat
+    this.validateUserIsParticipantInChat(searchChat as IConversation, userId);
 
-    await this.repository.markAsUnRead(userId, searchChat.lastMessage._id);
+    await this.repository.markAsUnRead(
+      userId,
+      (searchChat as IConversation).lastMessage._id,
+    );
+    logger.info(
+      `[message]: last message in chat ${chatId} is marked unread by user ${userId}`,
+    );
     return;
   }
 
-  async findChatById(chatId: string) {
+  async findChatById(chatId: Types.ObjectId) {
     return await this.repository.findChatById(new Types.ObjectId(chatId));
   }
 
-  async sendMessage(userId: string, chatId: string, content: string) {
-    const searchChat = await this.repository.findChatById(
-      new Types.ObjectId(chatId),
-    );
-
-    if (!searchChat) throw NotFoundError('Chat Not Found');
-
-    if (!searchChat.participants.some((p) => p.equals(userId)))
-      throw ForbiddenError('Forbbiden Access');
-
-    return await this.repository.sendMessage(
+  async sendMessage(
+    userId: Types.ObjectId,
+    chatId: Types.ObjectId,
+    content: string,
+  ) {
+    const updatedConversation = await this.repository.sendMessage(
       new Types.ObjectId(userId),
       new Types.ObjectId(chatId),
       content,
     );
+    return MessagingMapper.toChatHistoryResponse(updatedConversation, userId);
   }
 }
