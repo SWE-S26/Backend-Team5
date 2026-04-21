@@ -2,7 +2,11 @@ import extendedZod from '../../../shared/docs/dtoDocumenter';
 
 export const SuspendRequestBodyDTO = extendedZod
   .object({
-    reason: extendedZod.string().max(500).optional(),
+    reason: extendedZod
+      .string()
+      .min(1, 'a Reason must be provided')
+      .max(500)
+      .trim(),
   })
   .openapi('SuspendRequest', {
     example: {
@@ -46,7 +50,11 @@ export const UpdateReportStatusRequestBodyDTO = extendedZod
 
 export const AdminActionReasonRequestBodyDTO = extendedZod
   .object({
-    reason: extendedZod.string().max(500).optional(),
+    reason: extendedZod
+      .string()
+      .min(1, 'A reason must be provided')
+      .max(500)
+      .trim(),
   })
   .openapi('AdminActionReasonRequest', {
     example: {

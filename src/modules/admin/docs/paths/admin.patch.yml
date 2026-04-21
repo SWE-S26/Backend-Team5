@@ -1,37 +1,37 @@
 # PATCH paths for admin module
 
-/api/admin/users/{userId}/suspend:
+/api/admin/v1/users/{userId}/suspend:
   patch:
     tags:
       - Admin Users
     summary: Suspend a user account.
-    description: Suspends the user account, preventing login and all platform activity. An optional reason can be provided. Admin only.
+    description: Suspends the user account, preventing login and all platform activity. A reason must be provided. Admin only.
     operationId: adminSuspendUser
     parameters:
-      - $ref: "#/components/parameters/AdminUserIdParam"
+      - $ref: '#/components/parameters/AdminUserIdParam'
     requestBody:
-      required: false
+      required: true
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/SuspendRequest"
+            $ref: '#/components/schemas/SuspendRequest'
     responses:
       200:
         description: User account suspended.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AdminUserSnippet"
+              $ref: '#/components/schemas/AdminUserSnippet'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       403:
-        $ref: "#/components/responses/Forbidden"
+        $ref: '#/components/responses/Forbidden'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
-/api/admin/users/{userId}/unsuspend:
+/api/admin/v1/users/{userId}/unsuspend:
   patch:
     tags:
       - Admin Users
@@ -39,22 +39,22 @@
     description: Restores a previously suspended user account, re-enabling login and platform access. Admin only.
     operationId: adminUnsuspendUser
     parameters:
-      - $ref: "#/components/parameters/AdminUserIdParam"
+      - $ref: '#/components/parameters/AdminUserIdParam'
     responses:
       200:
         description: User account unsuspended.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AdminUserSnippet"
+              $ref: '#/components/schemas/AdminUserSnippet'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       403:
-        $ref: "#/components/responses/Forbidden"
+        $ref: '#/components/responses/Forbidden'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
 /api/admin/reports/{reportId}/status:
   patch:
@@ -64,30 +64,30 @@
     description: Updates the resolution status of a report to either resolved or dismissed. An optional admin note can be attached. Admin only.
     operationId: adminUpdateReportStatus
     parameters:
-      - $ref: "#/components/parameters/AdminReportIdParam"
+      - $ref: '#/components/parameters/AdminReportIdParam'
     requestBody:
       required: true
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/UpdateReportStatusRequest"
+            $ref: '#/components/schemas/UpdateReportStatusRequest'
     responses:
       200:
         description: Report status updated.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Report"
+              $ref: '#/components/schemas/Report'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       403:
-        $ref: "#/components/responses/Forbidden"
+        $ref: '#/components/responses/Forbidden'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       422:
-        $ref: "#/components/responses/InvalidParameters"
+        $ref: '#/components/responses/InvalidParameters'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
 /api/admin/tracks/{trackId}/hide:
   patch:
@@ -97,28 +97,28 @@
     description: Hides a track from all public-facing surfaces (search, feeds, profiles) while keeping it accessible in the artist's admin dashboard. Admin only.
     operationId: adminHideTrack
     parameters:
-      - $ref: "#/components/parameters/AdminTrackIdParam"
+      - $ref: '#/components/parameters/AdminTrackIdParam'
     requestBody:
       required: false
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/AdminActionReasonRequest"
+            $ref: '#/components/schemas/AdminActionReasonRequest'
     responses:
       200:
         description: Track hidden.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AdminTrackSnippet"
+              $ref: '#/components/schemas/AdminTrackSnippet'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       403:
-        $ref: "#/components/responses/Forbidden"
+        $ref: '#/components/responses/Forbidden'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
 /api/admin/tracks/{trackId}/unhide:
   patch:
@@ -128,19 +128,19 @@
     description: Restores a previously hidden track back to public visibility. Admin only.
     operationId: adminUnhideTrack
     parameters:
-      - $ref: "#/components/parameters/AdminTrackIdParam"
+      - $ref: '#/components/parameters/AdminTrackIdParam'
     responses:
       200:
         description: Track restored to public visibility.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AdminTrackSnippet"
+              $ref: '#/components/schemas/AdminTrackSnippet'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       403:
-        $ref: "#/components/responses/Forbidden"
+        $ref: '#/components/responses/Forbidden'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'

@@ -1,42 +1,31 @@
 # GET paths for admin module
 
-/api/admin/users:
+/api/admin/v1/users:
   get:
     tags:
       - Admin Users
     summary: List all users.
-    description: Returns a paginated list of all registered users. Supports filtering by role, subscription type, and suspended state. Admin only.
+    description: Returns a paginated list of users for admins. Supports filtering by role, suspended state, and a single search query that matches displayName or email.
     operationId: adminListUsers
     parameters:
-      - $ref: "#/components/parameters/AdminOffsetParam"
-      - $ref: "#/components/parameters/AdminLimitParam"
-      - name: role
-        in: query
-        required: false
-        schema:
-          type: string
-          enum:
-            - user
-            - artist
-            - admin
-      - name: suspended
-        in: query
-        required: false
-        schema:
-          type: boolean
+      - $ref: '#/components/parameters/AdminOffsetParam'
+      - $ref: '#/components/parameters/AdminLimitParam'
+      - $ref: '#/components/parameters/AdminUserRoleParam'
+      - $ref: '#/components/parameters/AdminSuspendedParam'
+      - $ref: '#/components/parameters/AdminUserSearchQueryParam'
     responses:
       200:
         description: Paginated list of users.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AdminUserListResponse"
+              $ref: '#/components/schemas/AdminUserListResponse'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       403:
-        $ref: "#/components/responses/Forbidden"
+        $ref: '#/components/responses/Forbidden'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
 /api/admin/reports:
   get:
@@ -46,8 +35,8 @@
     description: Returns a paginated list of all submitted reports. Supports filtering by status, complaint type, and violator type. Admin only.
     operationId: adminListReports
     parameters:
-      - $ref: "#/components/parameters/AdminOffsetParam"
-      - $ref: "#/components/parameters/AdminLimitParam"
+      - $ref: '#/components/parameters/AdminOffsetParam'
+      - $ref: '#/components/parameters/AdminLimitParam'
       - name: status
         in: query
         required: false
@@ -68,13 +57,13 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ReportListResponse"
+              $ref: '#/components/schemas/ReportListResponse'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       403:
-        $ref: "#/components/responses/Forbidden"
+        $ref: '#/components/responses/Forbidden'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
 /api/admin/reports/{reportId}:
   get:
@@ -84,22 +73,22 @@
     description: Returns the full detail of a specific report. Admin only.
     operationId: adminGetReport
     parameters:
-      - $ref: "#/components/parameters/AdminReportIdParam"
+      - $ref: '#/components/parameters/AdminReportIdParam'
     responses:
       200:
         description: Report details.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Report"
+              $ref: '#/components/schemas/Report'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       403:
-        $ref: "#/components/responses/Forbidden"
+        $ref: '#/components/responses/Forbidden'
       404:
-        $ref: "#/components/responses/NotFound"
+        $ref: '#/components/responses/NotFound'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
 /api/admin/tracks:
   get:
@@ -109,8 +98,8 @@
     description: Returns a paginated list of all tracks on the platform. Supports filtering by visibility state and genre. Admin only.
     operationId: adminListTracks
     parameters:
-      - $ref: "#/components/parameters/AdminOffsetParam"
-      - $ref: "#/components/parameters/AdminLimitParam"
+      - $ref: '#/components/parameters/AdminOffsetParam'
+      - $ref: '#/components/parameters/AdminLimitParam'
       - name: hidden
         in: query
         required: false
@@ -127,13 +116,13 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AdminTrackListResponse"
+              $ref: '#/components/schemas/AdminTrackListResponse'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       403:
-        $ref: "#/components/responses/Forbidden"
+        $ref: '#/components/responses/Forbidden'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
 /api/artist/analytics/overview:
   get:
@@ -149,20 +138,20 @@
         description: Time period for the stats (e.g., last_7_days, last_30_days, all_time).
         schema:
           type: string
-          example: "last_30_days"
+          example: 'last_30_days'
     responses:
       200:
         description: Artist analytics overview.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ArtistAnalyticsOverviewResponse"
+              $ref: '#/components/schemas/ArtistAnalyticsOverviewResponse'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       403:
-        $ref: "#/components/responses/Forbidden"
+        $ref: '#/components/responses/Forbidden'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
 /api/artist/analytics/play-through-rate:
   get:
@@ -177,13 +166,13 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ArtistPlaythroughRateResponse"
+              $ref: '#/components/schemas/ArtistPlaythroughRateResponse'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       403:
-        $ref: "#/components/responses/Forbidden"
+        $ref: '#/components/responses/Forbidden'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
 
 /api/artist/analytics/storage:
   get:
@@ -198,10 +187,10 @@
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ArtistStorageResponse"
+              $ref: '#/components/schemas/ArtistStorageResponse'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       403:
-        $ref: "#/components/responses/Forbidden"
+        $ref: '#/components/responses/Forbidden'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'

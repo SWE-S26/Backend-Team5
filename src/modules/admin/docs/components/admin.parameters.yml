@@ -5,7 +5,7 @@ AdminUserIdParam:
   description: The unique identifier of the user.
   schema:
     type: string
-    example: "usr_001"
+    example: 'usr_001'
 
 AdminTrackIdParam:
   name: trackId
@@ -14,7 +14,7 @@ AdminTrackIdParam:
   description: The unique identifier of the track.
   schema:
     type: string
-    example: "trk_456"
+    example: 'trk_456'
 
 AdminReportIdParam:
   name: reportId
@@ -23,18 +23,18 @@ AdminReportIdParam:
   description: The unique identifier of the report.
   schema:
     type: string
-    example: "rep_123"
+    example: 'rep_123'
 
 AdminOffsetParam:
   name: offset
   in: query
   required: false
-  description: Number of items to skip before returning results.
+  description: 1-based offset page index. Use 1 for the first page.
   schema:
     type: integer
-    minimum: 0
-    default: 0
-    example: 0
+    minimum: 1
+    default: 1
+    example: 1
 
 AdminLimitParam:
   name: limit
@@ -47,3 +47,35 @@ AdminLimitParam:
     maximum: 100
     default: 20
     example: 20
+
+AdminUserRoleParam:
+  name: role
+  in: query
+  required: false
+  description: Filter users by role.
+  schema:
+    type: string
+    enum:
+      - Listener
+      - Artist
+      - Pro
+      - Admin
+    example: Artist
+
+AdminSuspendedParam:
+  name: suspended
+  in: query
+  required: false
+  description: Filter by suspension status.
+  schema:
+    type: boolean
+    example: false
+
+AdminUserSearchQueryParam:
+  name: query
+  in: query
+  required: false
+  description: Case-insensitive text search on user displayName or email.
+  schema:
+    type: string
+    example: john

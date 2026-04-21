@@ -5,20 +5,49 @@ export const AdminUserSnippetResponseDTO = extendedZod
     userId: extendedZod.string(),
     displayName: extendedZod.string(),
     email: extendedZod.string().email(),
-    role: extendedZod.enum(['user', 'artist', 'admin']),
-    subscriptionType: extendedZod.enum(['free', 'pro']).optional(),
+    role: extendedZod.enum(['Listener', 'Artist', 'Pro', 'Admin']),
     suspended: extendedZod.boolean(),
     createdAt: extendedZod.string().datetime(),
+    uploadedTracksCount: extendedZod.number().int().min(0),
+    followersCount: extendedZod.number().int().min(0),
   })
   .openapi('AdminUserSnippet', {
     example: {
       userId: 'usr_001',
       displayName: 'John Doe',
       email: 'john.doe@example.com',
-      role: 'user',
-      subscriptionType: 'free',
+      role: 'Listener',
       suspended: false,
       createdAt: '2025-01-10T09:00:00Z',
+      uploadedTracksCount: 12,
+      followersCount: 95,
+    },
+  });
+
+export const AdminUserListResponseDTO = extendedZod
+  .object({
+    total: extendedZod.number().int().min(0),
+    offset: extendedZod.number().int().min(1),
+    limit: extendedZod.number().int().min(1),
+    users: extendedZod.array(AdminUserSnippetResponseDTO),
+  })
+  .openapi('AdminUserListResponse', {
+    example: {
+      total: 2,
+      offset: 1,
+      limit: 20,
+      users: [
+        {
+          userId: 'usr_001',
+          displayName: 'John Doe',
+          email: 'john.doe@example.com',
+          role: 'Artist',
+          suspended: false,
+          createdAt: '2025-01-10T09:00:00Z',
+          uploadedTracksCount: 12,
+          followersCount: 95,
+        },
+      ],
     },
   });
 
