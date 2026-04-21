@@ -1,6 +1,9 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 import { MessagingIdParamDTO } from './messaging.request.params';
-import { ListMessagingsQueryDto } from './messaging.request.query';
+import {
+  ListMessagingsQueryDto,
+  ListChatsQueryDto,
+} from './messaging.request.query';
 import {
   SendNewMessageRequestBodyDTO,
   ArchiveChatRequestBodyDTO,
@@ -17,6 +20,10 @@ export const GetChatMessagesRequestDTO = extendedZod.object({
 
 export const MarkChatMessagesRequestDTO = extendedZod.object({
   params: MessagingIdParamDTO,
+});
+
+export const UserChatsRequestDTO = extendedZod.object({
+  query: ListChatsQueryDto,
 });
 
 export const ArchiveChatRequestDTO = extendedZod.object({

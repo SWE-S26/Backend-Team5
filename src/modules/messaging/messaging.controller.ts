@@ -7,6 +7,7 @@ import {
   ArchiveChatRequestDTO,
   GetChatMessagesRequestDTO,
   MarkChatMessagesRequestDTO,
+  UserChatsRequestDTO,
 } from './dtos/messaging.request';
 import { Types } from 'mongoose';
 
@@ -70,9 +71,16 @@ export class MessagingController {
   }
 
   async getChatsHistory(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(UserChatsRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
     const userInfo = this.getUserInfo(req);
+    const limit = validatedRequest.data.query.limit;
     const userId = new Types.ObjectId(userInfo.userId);
-    const userChatsHistory = await this.service.getChatsHistory(userId);
+    const userChatsHistory = await this.service.getChatsHistory(userId, limit);
     res.json({
       message: 'Chat History Retrieved Successfully',
       data: userChatsHistory,
