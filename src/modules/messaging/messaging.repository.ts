@@ -125,15 +125,28 @@ export class MessagingRepository {
 
   async getChatsHistory(
     userId: Types.ObjectId,
+    limit: number | undefined,
   ): Promise<IConversationPopulated[] | null> {
-    return await Conversation.find({
-      participants: userId,
-      archivedBy: { $ne: userId },
-    })
-      .populate('participants', 'displayName profileImg')
-      .populate('lastMessage', '_id content senderId createdAt seenBy')
-      .sort({ updatedAt: -1 })
-      .lean<IConversationPopulated[]>();
+    if (!limit) {
+      return await Conversation.find({
+        participants: userId,
+        archivedBy: { $ne: userId },
+      })
+        .populate('participants', 'displayName profileImg')
+        .populate('lastMessage', '_id content senderId createdAt seenBy')
+        .sort({ updatedAt: -1 })
+        .lean<IConversationPopulated[]>();
+    } else {
+      return await Conversation.find({
+        participants: userId,
+        archivedBy: { $ne: userId },
+      })
+        .limit(limit)
+        .populate('participants', 'displayName profileImg')
+        .populate('lastMessage', '_id content senderId createdAt seenBy')
+        .sort({ updatedAt: -1 })
+        .lean<IConversationPopulated[]>();
+    }
   }
 
   async getChatMessages(

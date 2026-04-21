@@ -17,4 +17,8 @@ export const ListMessagingsQueryDto = extendedZod.object({
   limit: extendedZod.coerce.number().default(20),
 });
 
+export const ListChatsQueryDto = extendedZod.object({
+  limit: extendedZod.coerce.number().default(20).optional(),
+});
+
 export type PaginationInfo = z.infer<typeof ListMessagingsQueryDto>;

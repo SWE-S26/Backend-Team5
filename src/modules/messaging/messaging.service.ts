@@ -218,8 +218,11 @@ export class MessagingService {
     return;
   }
 
-  async getChatsHistory(userId: Types.ObjectId): Promise<any[] | null> {
-    const chatsHistory = await this.repository.getChatsHistory(userId);
+  async getChatsHistory(
+    userId: Types.ObjectId,
+    limit: number | undefined,
+  ): Promise<any[] | null> {
+    const chatsHistory = await this.repository.getChatsHistory(userId, limit);
     logger.info(`[message]: fetched Chats history for user with id: ${userId}`);
     return MessagingMapper.toChatHistoryListResponse(chatsHistory, userId);
   }
