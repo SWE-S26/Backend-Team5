@@ -6,7 +6,7 @@ import multer from 'multer';
 
 const uploadTrackLimiter = rateLimit({
   windowMs: 24 * 60 * 60 * 1000,
-  max: 1,
+  max: 10,
   keyGenerator: (req) => String(req.userInfo!._id),
   message: 'You can only upload one track every 24 hours.',
 });

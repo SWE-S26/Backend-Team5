@@ -11,8 +11,29 @@ export type PublitioUploadResult = {
 };
 
 class PublitioMediaStorage {
-  private readonly PUBLITO_KEY = process.env.PUBLITO_KEY;
-  private readonly PUBLITO_SECRET = process.env.PUBLITO_SECRET;
+  private readonly PUBLITO_KEYS = [
+    process.env.PUBLITO_KEY,
+    process.env.PUBLITO_KEY2,
+    process.env.PUBLITO_KEY3,
+    process.env.PUBLITO_KEY4,
+  ];
+  private readonly PUBLITO_SECRETS = [
+    process.env.PUBLITO_SECRET,
+    process.env.PUBLITO_SECRET2,
+    process.env.PUBLITO_SECRET3,
+    process.env.PUBLITO_SECRET4,
+  ];
+  private CLOUD_NUM: number = 0;
+
+  private getNextKey(): { apiKey: string; secret: string } {
+    const index = this.CLOUD_NUM;
+    this.CLOUD_NUM = (this.CLOUD_NUM + 1) % this.PUBLITO_KEYS.length;
+
+    return {
+      apiKey: this.PUBLITO_KEYS[index] as string,
+      secret: this.PUBLITO_SECRETS[index] as string,
+    };
+  }
 
   private generateAPINonce() {
     const MIN = 10000000;
@@ -25,18 +46,23 @@ class PublitioMediaStorage {
     return Math.floor(Date.now() / 1000).toString();
   }
 
-  private generateAPISignature(publitioNonce: string, unixTimestamp: string) {
-    const encrypt = unixTimestamp + publitioNonce + this.PUBLITO_SECRET;
+  private generateAPISignature(
+    publitioNonce: string,
+    unixTimestamp: string,
+    PUBLITO_SECRET: string,
+  ) {
+    const encrypt = unixTimestamp + publitioNonce + PUBLITO_SECRET;
     const signature = crypto.createHash('sha1').update(encrypt).digest('hex');
     return signature;
   }
 
   private generateReqAuthHeaders() {
+    const { apiKey, secret } = this.getNextKey();
     const nonce = this.generateAPINonce();
     const timestamp = this.generateUNIXTimestamp();
-    const signature = this.generateAPISignature(nonce, timestamp);
+    const signature = this.generateAPISignature(nonce, timestamp, secret);
     return {
-      api_key: this.PUBLITO_KEY,
+      api_key: apiKey,
       api_nonce: nonce,
       api_timestamp: timestamp,
       api_signature: signature,

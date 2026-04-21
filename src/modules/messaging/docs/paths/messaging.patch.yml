@@ -32,7 +32,7 @@
                 description: Conversation (chat) ID
                 example: 69e6977c88827a9c11d55b31
     responses:
-      "200":
+      '200':
         description: Conversation marked as read successfully
         content:
           application/json:
@@ -42,11 +42,11 @@
                 message:
                   type: string
                   example: Marked As read Successfully
-      "401":
+      '401':
         $ref: '#/components/responses/Unauthorized'
-      "404":
+      '404':
         $ref: '#/components/responses/NotFound'
-      "500":
+      '500':
         $ref: '#/components/responses/ServerError'
 
 /api/messages/v1/chat/unread/:
@@ -84,7 +84,7 @@
                 description: Conversation (chat) ID
                 example: 69e6977c88827a9c11d55b31
     responses:
-      "200":
+      '200':
         description: Conversation marked as unread successfully
         content:
           application/json:
@@ -94,11 +94,11 @@
                 message:
                   type: string
                   example: Marked As Unread Successfully
-      "401":
+      '401':
         $ref: '#/components/responses/Unauthorized'
-      "404":
+      '404':
         $ref: '#/components/responses/NotFound'
-      "500":
+      '500':
         $ref: '#/components/responses/ServerError'
 
 /api/messages/v1/archive:
@@ -131,7 +131,7 @@
           example:
             chatId: 69e6977c88827a9c11d55b31
     responses:
-      "200":
+      '200':
         description: Chat archived successfully
         content:
           application/json:
@@ -141,9 +141,9 @@
                 message:
                   type: string
                   example: Chat Archived Successfully
-      "401":
+      '401':
         $ref: '#/components/responses/Unauthorized'
-      "404":
+      '404':
         $ref: '#/components/responses/NotFound'
-      "500":
+      '500':
         $ref: '#/components/responses/ServerError'
