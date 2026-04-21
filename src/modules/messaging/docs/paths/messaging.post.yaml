@@ -1,18 +1,19 @@
-# POST
-/api/message/send:
+/api/messages/v1/send:
   post:
+    summary: Send a New Message
+    description: |
+      Sends a new message to another user and returns the updated conversation object.
+      Intended to be triggered from two entry points: the message button on another 
+      user's profile page, or the "New Message" button on the messages page.
+      If a conversation between the two users already exists, the message is appended 
+      to the existing conversation. If no conversation exists, a new one is created.
+      If the conversation was previously archived by either party, it is automatically 
+      reactivated and removed from the archived state for both participants, restoring 
+      it to the main chat side panel.
     tags:
       - Message
-    summary: Send a message to another user
-    description: |
-      Allows an authenticated user to send a message to another user.
-      The message is stored in the database and associated with both
-      the sender and the receiver. Authentication is required and the
-      sender is identified from the JWT stored in the HTTP-only cookie.
-
     security:
-      - bearerAuth: []
-
+      - cookieAuth: []
     requestBody:
       required: true
       content:
@@ -25,105 +26,78 @@
             properties:
               receiverId:
                 type: string
-                description: Unique identifier of the user who will receive the message
-                example: user_456
+                description: The ObjectId of the user to send the message to
+                example: 69e6977c88827a9c11d55b31
               content:
                 type: string
-                description: The message text to be sent
-                example: Hello, how are you?
-
+                description: Message content (1-2000 characters)
+                minLength: 1
+                maxLength: 2000
+                example: Fire Tornado
+          example:
+            receiverId: 69e6977c88827a9c11d55b31
+            content: Fire Tornado
     responses:
-      "201":
+      "200":
         description: Message sent successfully
         content:
           application/json:
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: true
                 message:
                   type: string
-                  example: Message sent successfully
+                  example: message sent sucessfully
                 data:
                   type: object
                   properties:
-                    messageId:
+                    _id:
                       type: string
-                      description: Unique identifier of the created message
-                  nullable: true
-            example:
-              success: true
-              message: Message sent successfully
-              data:
-                messageId: msg_12345
-
+                      example: 69e69a358352c5b3bb1c8fa4
+                    lastMessage:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                          example: 69e7d0c5fa5cd81557898d2d
+                        senderId:
+                          type: string
+                          example: 69beeb8046a92874acec2764
+                        content:
+                          type: string
+                          example: Fire Tornado
+                        seenBy:
+                          type: array
+                          items:
+                            type: string
+                          example: ["69beeb8046a92874acec2764"]
+                        createdAt:
+                          type: string
+                          format: date-time
+                          example: 2026-04-21T19:32:21.820Z
+                    receiver:
+                      type: object
+                      properties:
+                        displayName:
+                          type: string
+                          example: engseifmohamed2004
+                        photoUrl:
+                          type: string
+                          format: uri
+                          example: https://res.cloudinary.com/dr1sqiouu/image/upload/v1776357570/profile/file_ud25rn.png
       "400":
-        description: Bad Request – required fields are missing or invalid
+        description: Invalid request body
         content:
           application/json:
             schema:
               type: object
               properties:
-                success:
-                  type: boolean
-                  example: false
                 message:
                   type: string
-                  example: receiverId and content are required
-                data:
-                  type: object
-                  nullable: true
-            example:
-              success: false
-              message: receiverId and content are required
-              data: null
-
+                  example: Invalid ObjectId
       "401":
         $ref: '#/components/responses/Unauthorized'
-
       "404":
-        description: Receiver not found
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: false
-                message:
-                  type: string
-                  example: Receiver user not found
-                data:
-                  type: object
-                  nullable: true
-            example:
-              success: false
-              message: Receiver user not found
-              data: null
-
-      "429":
-        description: Too Many Requests – rate limit exceeded
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                success:
-                  type: boolean
-                  example: false
-                message:
-                  type: string
-                  example: Too many messages sent, try again later
-                data:
-                  type: object
-                  nullable: true
-            example:
-              success: false
-              message: Too many messages sent, try again later
-              data: null
-
+        $ref: '#/components/responses/NotFound'
       "500":
         $ref: '#/components/responses/ServerError'

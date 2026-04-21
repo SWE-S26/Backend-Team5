@@ -19,7 +19,7 @@ export const GetChatMessagesRequestDTO = extendedZod.object({
 });
 
 export const MarkChatMessagesRequestDTO = extendedZod.object({
-  params: MessagingIdParamDTO,
+  body: MessagingIdParamDTO,
 });
 
 export const UserChatsRequestDTO = extendedZod.object({
