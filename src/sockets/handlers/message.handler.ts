@@ -5,6 +5,7 @@ import { SocketEvents } from '../socket.events';
 import logger from '../../shared/logger/logger';
 import { MessagingService } from '../../modules/messaging/messaging.service';
 import extendedZod from '../../shared/docs/dtoDocumenter';
+import { IConversationPopulated } from '../../modules/messaging/dtos/messaging.response';
 
 export const ChatPayloadSchema = extendedZod.object({
   chatId: extendedZod.string().min(1),
@@ -61,12 +62,16 @@ export function RegisterMessageSocketHandlers(
   socket.on(SocketEvents.JOIN_CHAT, async (payload: any) => {
     const validatedPayload = ChatPayloadSchema.safeParse(payload);
     if (!validatedPayload.success) {
+      socket.emit(SocketEvents.ERROR, { message: 'invalid schema sent' });
       logger.warn(`[${SocketEvents.JOIN_CHAT}]: Invalid Payload`);
       return;
     }
 
     const isValidatedIDs = validateIds(payload.chatId, socket.data.userId);
-    if (!isValidatedIDs) return;
+    if (!isValidatedIDs) {
+      socket.emit(SocketEvents.ERROR, { message: 'invalid ids are sent' });
+      return;
+    }
 
     const userId = new Types.ObjectId(socket.data.userId);
     const chatId = new Types.ObjectId(payload.chatId);
@@ -76,7 +81,12 @@ export function RegisterMessageSocketHandlers(
       userId,
       messageService,
     );
-    if (!searchChat) return;
+    if (!searchChat) {
+      socket.emit(SocketEvents.ERROR, {
+        message: "chat with this id doesn't exists",
+      });
+      return;
+    }
 
     // user joins socket room
     socketService.joinRoom(socket, payload.chatId);
@@ -93,11 +103,15 @@ export function RegisterMessageSocketHandlers(
     const validatedPayload = ChatPayloadSchema.safeParse(payload);
     if (!validatedPayload.success) {
       logger.warn(`[${SocketEvents.LEAVE_CHAT}]: Invalid Payload`);
+      socket.emit(SocketEvents.ERROR, { message: 'invalid schema sent' });
       return;
     }
 
     const isValidatedIDs = validateIds(payload.chatId, socket.data.userId);
-    if (!isValidatedIDs) return;
+    if (!isValidatedIDs) {
+      socket.emit(SocketEvents.ERROR, { message: 'invalid ids are sent' });
+      return;
+    }
 
     const userId = new Types.ObjectId(socket.data.userId);
     const chatId = new Types.ObjectId(payload.chatId);
@@ -107,7 +121,12 @@ export function RegisterMessageSocketHandlers(
       userId,
       messageService,
     );
-    if (!searchChat) return;
+    if (!searchChat) {
+      socket.emit(SocketEvents.ERROR, {
+        message: "chat with this id doesn't exists",
+      });
+      return;
+    }
 
     // remove user join room for this device
     socketService.removeFromUserChats(socket.data.userId, payload.chatId);
@@ -123,11 +142,15 @@ export function RegisterMessageSocketHandlers(
     const validatedPayload = MessagePayloadSchema.safeParse(payload);
     if (!validatedPayload.success) {
       logger.warn(`[${SocketEvents.SEND_MSG}]: Invalid Payload`);
+      socket.emit(SocketEvents.ERROR, { message: 'invalid schema sent' });
       return;
     }
 
     const isValidatedIDs = validateIds(payload.chatId, socket.data.userId);
-    if (!isValidatedIDs) return;
+    if (!isValidatedIDs) {
+      socket.emit(SocketEvents.ERROR, { message: 'invalid ids are sent' });
+      return;
+    }
 
     const userId = new Types.ObjectId(socket.data.userId);
     const chatId = new Types.ObjectId(payload.chatId);
@@ -137,29 +160,46 @@ export function RegisterMessageSocketHandlers(
       userId,
       messageService,
     );
-    if (!searchChat) return;
+    if (!searchChat) {
+      socket.emit(SocketEvents.ERROR, {
+        message: "chat with this id doesn't exists",
+      });
+      return;
+    }
 
-    const sentMessage = await messageService.sendMessage(
+    const result = await messageService.sendMessage(
       userId,
-      chatId,
+      searchChat,
       payload.content,
     );
 
-    socket.to(chatId.toString()).emit(SocketEvents.SEND_MSG, sentMessage);
+    if (!result) {
+      socket.emit(SocketEvents.ERROR, {
+        message: 'Failed to send message due to privacy issues',
+      });
+      return;
+    }
 
-    for (const participantId of searchChat?.participants) {
-      if (participantId === userId) continue; // skip sender
+    const { updatedConversation, receiverSettings } = result;
+
+    socket
+      .to(chatId.toString())
+      .emit(SocketEvents.SEND_MSG, updatedConversation);
+
+    for (const receiverId of searchChat?.participants) {
+      if (receiverId === userId) continue; // skip sender
 
       const isActive = socketService.isUserInChat(
-        participantId.toString(),
+        receiverId.toString(),
         payload.chatId,
       );
 
       if (!isActive) {
-        socketService.sendToUser(
-          participantId.toString(),
-          SocketEvents.MSG_NOTIFY,
-          sentMessage,
+        messageService.handlePushNotification(
+          receiverSettings,
+          userId,
+          receiverId,
+          updatedConversation as IConversationPopulated,
         );
       }
     }

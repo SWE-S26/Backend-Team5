@@ -10,8 +10,13 @@ import { Types } from 'mongoose';
 import { IConversationPopulated } from './dtos/messaging.response';
 import Settings, { ISettings } from '../../shared/models/models.settings';
 import { PaginationInfo } from './dtos/messaging.request.query';
+import Following, { IFollowing } from '../../shared/models/models.following';
 
 export class MessagingRepository {
+  async getUserSettingsInfo(userId: Types.ObjectId): Promise<ISettings | null> {
+    return await Settings.findById<ISettings>({ userId: userId });
+  }
+
   async findUserById(userId: Types.ObjectId): Promise<IUser | null> {
     return await User.findById<IUser>(userId);
   }
@@ -205,5 +210,11 @@ export class MessagingRepository {
       .populate('lastMessage', '_id content senderId createdAt seenBy')
       .lean<IConversationPopulated>();
     return updatedConversation;
+  }
+
+  async findUserFollowedList(
+    userId: Types.ObjectId,
+  ): Promise<IFollowing | null> {
+    return await Following.findOne<IFollowing>({ userId: userId });
   }
 }

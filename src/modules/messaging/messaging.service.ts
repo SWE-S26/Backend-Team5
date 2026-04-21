@@ -13,12 +13,18 @@ import { MessagingMapper } from './dtos/messaging.mapper';
 import logger from '../../shared/logger/logger';
 import emailService from '../../shared/abstractions/email/email.service';
 import { PaginationInfo } from './dtos/messaging.request.query';
-import { ChatMessagesResponseDTO } from './dtos/messaging.response';
+import {
+  ChatMessagesResponseDTO,
+  IConversationPopulated,
+} from './dtos/messaging.response';
 import { IConversation } from '../../shared/models/models.conversation';
 import {
   getMessageNotifyhandler,
   MessageNotifyHandler,
 } from '../../sockets/handlers/message.notify';
+import { ISettings } from '../../shared/models/models.settings';
+import { Type } from 'typescript';
+import { IUser } from '../../shared/models/models.user';
 
 export class MessagingService {
   private readonly repository: MessagingRepository;
@@ -45,27 +51,31 @@ export class MessagingService {
     }
   }
 
-  async sendNewMessage(
+  private async validateUserPrivacySettings(
+    receiverSettings: ISettings | null,
     userId: Types.ObjectId,
-    newMessageDTO: SendNewMessageDTO,
-  ): Promise<any | null> {
-    const receiverId = new Types.ObjectId(newMessageDTO.receiverId);
-    const content = newMessageDTO.content;
-    const [receiver, receiverBlockedList, receiverSettings] =
-      await this.repository.findUserDetailedById(receiverId);
-
-    // validate Receiver Exists
-    if (!receiver) {
-      logger.warn('[message]: Invalid receiver ID is sent');
-      throw BadRequestError("Receiver ID doesn't exists");
+    receiverId: Types.ObjectId,
+  ) {
+    if (
+      receiverSettings?.privacy.allowMessagesAnyone ||
+      receiverSettings?.privacy.allowMessagesAnyone == false
+    ) {
+      const receiverFollowing =
+        await this.repository.findUserFollowedList(receiverId);
+      if (!receiverFollowing) {
+        throw ForbiddenError('User Privacy and settings');
+      }
+      if (!receiverFollowing.followed.some((f) => f.equals(userId))) {
+        throw ForbiddenError('User Privacy and settings');
+      }
     }
+  }
 
-    // if receiver blocked this user can't send message to him
-    if (receiverBlockedList?.blockedIds.includes(userId)) {
-      logger.warn('[message]: Receiver is blocking user trying to send');
-      throw ForbiddenError('User Blocked You Cannot Send to Him');
-    }
-
+  private async handleChatCreationOrReactivation(
+    userId: Types.ObjectId,
+    receiverId: Types.ObjectId,
+    content: string,
+  ) {
     // search if chat exits with these two participents first
     const archivedChat = await this.repository.findArchivedChat(
       userId,
@@ -88,7 +98,14 @@ export class MessagingService {
         content,
       );
     }
+    return updatedChatsHistory;
+  }
 
+  private async handleEmailSentToReceiver(
+    receiverSettings: ISettings | null,
+    userId: Types.ObjectId,
+    receiver: IUser,
+  ) {
     if (receiverSettings?.notifications?.newMessage.email) {
       const sender = await this.repository.findUserById(userId);
       emailService.sendNewMessageNotification(
@@ -98,15 +115,92 @@ export class MessagingService {
       );
       logger.info('[message] : Email sent to receiver about new message');
     }
+  }
 
-    let messageNotifyHandler;
+  async handlePushNotification(
+    receiverSettings: ISettings | null,
+    userId: Types.ObjectId,
+    receiverId: Types.ObjectId,
+    updatedChatHistory: IConversationPopulated,
+  ) {
     try {
-      messageNotifyHandler = getMessageNotifyhandler();
+      let messageNotifyHandler = getMessageNotifyhandler();
+      const messageNotifyType =
+        receiverSettings?.notifications?.newMessage.devices;
+      switch (messageNotifyType) {
+        case 'off':
+          logger.info('[message] : user has notify setting off');
+          return;
+        case 'followed':
+          const receiverFollowing =
+            await this.repository.findUserFollowedList(receiverId);
+          if (!receiverFollowing) {
+            throw ForbiddenError('User Privacy and settings');
+          }
+          if (!receiverFollowing.followed.some((f) => f.equals(userId))) {
+            throw ForbiddenError('User Privacy and settings');
+          }
+
+          return;
+        case 'everyone':
+          messageNotifyHandler.sendMessageNotification(
+            receiverId.toString(),
+            updatedChatHistory,
+          );
+      }
     } catch {
       logger.info('[message] : Message Notify not working');
     }
+  }
 
-    return MessagingMapper.toChatHistoryResponse(updatedChatsHistory, userId);
+  async sendNewMessage(
+    userId: Types.ObjectId,
+    newMessageDTO: SendNewMessageDTO,
+  ): Promise<any | null> {
+    const receiverId = new Types.ObjectId(newMessageDTO.receiverId);
+    const content = newMessageDTO.content;
+    const [receiver, receiverBlockedList, receiverSettings] =
+      await this.repository.findUserDetailedById(receiverId);
+
+    // validate Receiver Exists
+    if (!receiver) {
+      logger.warn('[message]: Invalid receiver ID is sent');
+      throw BadRequestError("Receiver ID doesn't exists");
+    }
+
+    // if receiver blocked this user can't send message to him
+    if (receiverBlockedList?.blockedIds.includes(userId)) {
+      logger.warn('[message]: Receiver is blocking user trying to send');
+      throw ForbiddenError('User Blocked You Cannot Send to Him');
+    }
+
+    await this.validateUserPrivacySettings(
+      receiverSettings,
+      userId,
+      receiverId,
+    );
+    const updatedChatHistory = await this.handleChatCreationOrReactivation(
+      userId,
+      receiverId,
+      content,
+    );
+    await this.handleEmailSentToReceiver(
+      receiverSettings,
+      userId,
+      receiver as IUser,
+    );
+
+    await this.handlePushNotification(
+      receiverSettings,
+      userId,
+      receiverId,
+      MessagingMapper.toChatHistoryReceiverResponse(updatedChatHistory, userId),
+    );
+
+    return MessagingMapper.toChatHistorySenderResponse(
+      updatedChatHistory,
+      userId,
+    );
   }
 
   async archiveChat(
@@ -219,14 +313,55 @@ export class MessagingService {
 
   async sendMessage(
     userId: Types.ObjectId,
-    chatId: Types.ObjectId,
+    chat: IConversation,
     content: string,
   ) {
+    const receiverId = chat.participants.find(
+      (id) => id.toString() !== userId.toString(),
+    );
+
+    const [receiver, receiverBlockedList, receiverSettings] =
+      await this.repository.findUserDetailedById(receiverId as Types.ObjectId);
+
+    // validate Receiver Exists
+    if (!receiver) {
+      logger.warn('[message]: Invalid receiver ID is sent');
+      return null;
+    }
+
+    // if receiver blocked this user can't send message to him
+    if (receiverBlockedList?.blockedIds.includes(userId)) {
+      logger.warn('[message]: Receiver is blocking user trying to send');
+      return null;
+    }
+
+    if (
+      receiverSettings?.privacy.allowMessagesAnyone ||
+      receiverSettings?.privacy.allowMessagesAnyone == false
+    ) {
+      const receiverFollowing = await this.repository.findUserFollowedList(
+        receiverId as Types.ObjectId,
+      );
+      if (!receiverFollowing) {
+        return null;
+      }
+      if (!receiverFollowing.followed.some((f) => f.equals(userId))) {
+        return null;
+      }
+    }
+
     const updatedConversation = await this.repository.sendMessage(
-      new Types.ObjectId(userId),
-      new Types.ObjectId(chatId),
+      userId,
+      chat._id,
       content,
     );
-    return MessagingMapper.toChatHistoryResponse(updatedConversation, userId);
+    return {
+      updatedConversation,
+      receiverSettings,
+    };
+  }
+
+  async getUserSettings(userId: Types.ObjectId) {
+    return await this.repository.getUserSettingsInfo(userId);
   }
 }
