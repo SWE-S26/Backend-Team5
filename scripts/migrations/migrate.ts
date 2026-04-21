@@ -8,7 +8,7 @@ import { cleanUpDeletedUsers } from './cleanUpDeletedUsersSettings';
 import { deleteStaleUnverifiedUsers } from './cleanUpUnverifiedUsers';
 import { changeTracksImages } from './changeAudioImages';
 import { changeProfileImages } from './changeProfileImages';
-import { cleanUpBelalMess } from './cleanUpBelalMess';
+// import { cleanUpBelalMess } from './cleanUpBelalMess';
 import { backupDatabase } from './backupDb';
 import { deleteTracksWithoutDuration } from './cleanUpWithoutDurationTracks';
 
@@ -19,7 +19,7 @@ const runMigrations = async () => {
     await changeTracksImages();
     await changeProfileImages();
     await deleteTracksWithoutDuration();
-    await cleanUpBelalMess();
+    // await cleanUpBelalMess();
   } catch (e) {
     if (e instanceof Error) {
       logger.error(`Error during migration execution: ${e.message}`);
