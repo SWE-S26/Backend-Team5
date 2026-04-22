@@ -31,6 +31,8 @@ export type ITrack = {
   audio: {
     url: string;
     id: string;
+    cloudIndex: number;
+    downloadLinl: string;
   };
   posterId: Types.ObjectId;
   image: {
@@ -61,8 +63,28 @@ export type ITrack = {
   releaseTitle: string;
   hidden: boolean;
   createdAt: Date;
+  audioClip?: {
+    start: number;
+    end: number;
+  };
   updatedAt: Date;
 };
+
+const audioClipSchema = new Schema(
+  {
+    start: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    end: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+  },
+  { _id: false },
+);
 
 const permissionsSchema = new Schema(
   {
@@ -224,6 +246,9 @@ const trackSchema = new Schema(
     hidden: {
       type: Boolean,
       default: false,
+    },
+    audioClip: {
+      type: audioClipSchema,
     },
   },
   { timestamps: true },
