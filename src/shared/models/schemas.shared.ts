@@ -1,4 +1,5 @@
 import { Schema } from 'mongoose';
+import { number } from 'zod';
 
 export const imgSchema = new Schema(
   {
@@ -21,6 +22,14 @@ export const audioSchema = new Schema(
       required: true,
     },
     id: {
+      type: String,
+      required: true,
+    },
+    cloudIndex: {
+      type: number,
+      required: true,
+    },
+    downloadLink: {
       type: String,
       required: true,
     },

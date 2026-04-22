@@ -10,28 +10,8 @@ export type IAdvancedAudioDetails = {
   iswc?: string;
   explicitContent?: boolean;
   pLine?: string;
-  audioClip?: {
-    start: number;
-    end: number;
-  };
   albumTitle?: string;
 };
-
-const audioClipSchema = new Schema(
-  {
-    start: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    end: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-  },
-  { _id: false },
-);
 
 const advancedAudioDetailsSchema = new Schema(
   {
@@ -70,9 +50,6 @@ const advancedAudioDetailsSchema = new Schema(
     pLine: {
       type: String,
       default: '',
-    },
-    audioClip: {
-      type: audioClipSchema,
     },
     iswc: {
       type: String,

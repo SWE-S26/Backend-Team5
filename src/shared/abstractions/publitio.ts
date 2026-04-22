@@ -4,10 +4,13 @@ import crypto from 'crypto';
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
+import logger from '../logger/logger';
 
 export type PublitioUploadResult = {
   audioLink: string;
   id: string;
+  cloudIndex: number;
+  downloadLink: string;
 };
 
 class PublitioMediaStorage {
@@ -25,13 +28,14 @@ class PublitioMediaStorage {
   ];
   private CLOUD_NUM: number = 0;
 
-  private getNextKey(): { apiKey: string; secret: string } {
+  private getNextKey(): { apiKey: string; secret: string; index: number } {
     const index = this.CLOUD_NUM;
     this.CLOUD_NUM = (this.CLOUD_NUM + 1) % this.PUBLITO_KEYS.length;
 
     return {
       apiKey: this.PUBLITO_KEYS[index] as string,
       secret: this.PUBLITO_SECRETS[index] as string,
+      index: index,
     };
   }
 
@@ -57,12 +61,31 @@ class PublitioMediaStorage {
   }
 
   private generateReqAuthHeaders() {
-    const { apiKey, secret } = this.getNextKey();
+    const { index, apiKey, secret } = this.getNextKey();
     const nonce = this.generateAPINonce();
     const timestamp = this.generateUNIXTimestamp();
     const signature = this.generateAPISignature(nonce, timestamp, secret);
     return {
-      api_key: apiKey,
+      authParams: {
+        api_key: apiKey,
+        api_nonce: nonce,
+        api_timestamp: timestamp,
+        api_signature: signature,
+      },
+      index,
+    };
+  }
+
+  private generateReqAuthHeadersWithIndex(index: number) {
+    const nonce = this.generateAPINonce();
+    const timestamp = this.generateUNIXTimestamp();
+    const signature = this.generateAPISignature(
+      nonce,
+      timestamp,
+      this.PUBLITO_SECRETS[index] as string,
+    );
+    return {
+      api_key: this.PUBLITO_KEYS[index],
       api_nonce: nonce,
       api_timestamp: timestamp,
       api_signature: signature,
@@ -71,7 +94,7 @@ class PublitioMediaStorage {
 
   async uploadAudioTrack(audioFile: Express.Multer.File) {
     const formData = new FormData();
-    const authParams = this.generateReqAuthHeaders();
+    const { index, authParams } = this.generateReqAuthHeaders();
 
     formData.append('file', audioFile.buffer, {
       filename: audioFile.originalname,
@@ -88,18 +111,31 @@ class PublitioMediaStorage {
       },
     );
 
-    const { id, url_preview } = res.data as { id: string; url_preview: string };
+    console.log(`status ${res.status}`);
+    console.log(`sucess ${res.data.success}`);
+    if (!res.status.toString().startsWith('2') || !res.data.success) {
+      logger.error('[media]: track upload service publitio not available');
+      throw new Error(`track upload service publitio not available`);
+    }
+
+    const { id, url_preview, url_download } = res.data as {
+      id: string;
+      url_preview: string;
+      url_download: string;
+    };
 
     const audioInfo: PublitioUploadResult = {
       id: id,
       audioLink: url_preview,
+      cloudIndex: index,
+      downloadLink: url_download,
     };
 
     return audioInfo;
   }
 
-  async deleteAudioTrack(audioId: string) {
-    const authParams = this.generateReqAuthHeaders();
+  async deleteAudioTrack(audioId: string, index: number) {
+    const authParams = this.generateReqAuthHeadersWithIndex(index);
     const res = await axios.delete(
       `https://api.publit.io/v1/files/delete/${audioId}`,
       {
@@ -137,10 +173,13 @@ class PublitioMediaStorage {
     }
   }
 
-  async testDelete(audioId: string) {
+  async testDelete(audioId: string, index: number) {
     try {
       // delete from Publitio
-      const result = await publitioMediaStorage.deleteAudioTrack(audioId);
+      const result = await publitioMediaStorage.deleteAudioTrack(
+        audioId,
+        index,
+      );
       console.log('Publitio response:', result);
     } catch (err: any) {
       console.error('Error deleting file:', err.message);
