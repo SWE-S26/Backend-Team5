@@ -54,6 +54,7 @@ playlistsPrivateRouter.get(
 
 playlistsPublicRouter.get(
   apiVersions.v1 + '/permalink/:permalink',
+  optionalAuth,
   playlistsController.getPlaylistByPermalink.bind(playlistsController),
 );
 
