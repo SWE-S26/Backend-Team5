@@ -6,6 +6,33 @@ import fs from 'fs';
 import path from 'path';
 import logger from '../logger/logger';
 
+interface PublitioResponse {
+  success: boolean;
+  code: number;
+  id: string;
+  public_id: string | null;
+  title: string;
+  description: string;
+  tags: string;
+  type: string;
+  extension: string;
+  size: number;
+  width: number;
+  height: number;
+  privacy: string;
+  option_download: string;
+  option_ad: string;
+  option_transform: string;
+  wm_id: string | null;
+  url_preview: string;
+  url_thumbnail: string;
+  url_download: string;
+  versions: number;
+  hits: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export type PublitioUploadResult = {
   audioLink: string;
   id: string;
@@ -103,7 +130,7 @@ class PublitioMediaStorage {
       formData.append(key, value);
     }
 
-    const res = await axios.post(
+    const res = await axios.post<PublitioResponse>(
       'https://api.publit.io/v1/files/create',
       formData,
       {
@@ -111,9 +138,7 @@ class PublitioMediaStorage {
       },
     );
 
-    console.log(`status ${res.status}`);
-    console.log(`sucess ${res.data.success}`);
-    if (!res.status.toString().startsWith('2') || !res.data.success) {
+    if (!res.data.success) {
       logger.error('[media]: track upload service publitio not available');
       throw new Error(`track upload service publitio not available`);
     }
