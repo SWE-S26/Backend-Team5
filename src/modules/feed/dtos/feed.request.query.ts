@@ -1,15 +1,32 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
-import { PaginationQueryDto } from '../../../shared/dtos/commonDTO';
 
-export const FeedRoleQueryDto = extendedZod.object({
-  role: extendedZod.enum(['user', 'admin']).optional(),
+export const PaginationQueryDTO = extendedZod.object({
+  offset: extendedZod.number().min(0).optional(),
+  limit: extendedZod.number().min(1).max(50).optional(),
 });
 
-export const ListFeedsQueryDto = PaginationQueryDto.extend(
-  FeedRoleQueryDto.shape,
-).extend({
-  // I have added the defualt because, I think every API would need it's default
-  // for example you may fetch 8 comments easily, but not 8 posts, I am giving an example
-  page: extendedZod.string().default('1'),
-  limit: extendedZod.string().default('20'),
+export const FeedQueryDTO = PaginationQueryDTO.extend({
+  includeReposts: extendedZod.boolean().optional(),
+});
+
+export const SearchQueryDTO = PaginationQueryDTO.extend({
+  q: extendedZod.string().min(1),
+  type: extendedZod
+    .enum(['everything', 'tracks', 'users', 'playlists', 'albums'])
+    .optional(),
+  dateRange: extendedZod
+    .enum(['hour', 'day', 'week', 'month', 'year', 'all'])
+    .optional(),
+  duration: extendedZod
+    .enum(['lt2', '2to10', '10to30', 'gt30', 'all'])
+    .optional(),
+  usage: extendedZod
+    .enum(['commercial', 'modify', 'share', 'listen'])
+    .optional(),
+  tag: extendedZod.string().optional(),
+  location: extendedZod.string().optional(),
+});
+
+export const SuggestionsQueryDTO = extendedZod.object({
+  q: extendedZod.string().min(1),
 });
