@@ -53,7 +53,7 @@ class PublitioMediaStorage {
     process.env.PUBLITO_SECRET3,
     process.env.PUBLITO_SECRET4,
   ];
-  private CLOUD_NUM: number = 0;
+  private CLOUD_NUM: number = 3;
 
   private getNextKey(): { apiKey: string; secret: string; index: number } {
     const index = this.CLOUD_NUM;
@@ -155,7 +155,7 @@ class PublitioMediaStorage {
       cloudIndex: index,
       downloadLink: url_download,
     };
-
+    logger.info('[track]: Audio Uploaded To Cloud');
     return audioInfo;
   }
 

@@ -58,11 +58,12 @@ export class TracksController {
   }
 
   private parseFormDataToJson(req: Request) {
-    if (req.body.basicInfo) req.body.basicInfo = JSON.parse(req.body.basicInfo);
-    if (req.body.permissions)
-      req.body.permissions = JSON.parse(req.body.permissions);
-    if (req.body.license) req.body.license = JSON.parse(req.body.license);
-    if (req.body.advanced) req.body.advanced = JSON.parse(req.body.advanced);
+    const fields = ['basicInfo', 'permissions', 'license', 'advanced'];
+    for (const field of fields) {
+      if (req.body[field]) {
+        req.body[field] = JSON.parse(req.body[field]);
+      }
+    }
   }
 
   async deleteTrackById(req: Request, res: Response): Promise<void> {

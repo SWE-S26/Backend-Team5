@@ -19,11 +19,15 @@ export class TracksMapper {
     imgInfo: ImageInfo | null,
     posterId: Types.ObjectId,
     duration: number,
+    waveformLink: string,
   ): TrackInput {
     return {
       trackInfo: {
         basicInfo: track.basicInfo,
-        audio: audioInfo,
+        audio: {
+          waveformLink: waveformLink,
+          ...audioInfo,
+        },
         ...(imgInfo && { image: imgInfo }),
         posterId: posterId,
         numOfPlays: 0,
@@ -35,6 +39,10 @@ export class TracksMapper {
         permissions: track.permissions,
         license: track.license,
         composer: track.advanced.composer ?? '',
+        audioClip: {
+          start: track.advanced.audioClipStart ?? 0,
+          end: track.advanced.audioClipEnd ?? 0,
+        },
         releaseTitle: track.advanced.releaseTitle ?? '',
         hidden: false,
       },
@@ -47,10 +55,6 @@ export class TracksMapper {
         iswc: track.advanced.ISWC ?? '',
         explicitContent: track.advanced.explicitContent,
         pLine: track.advanced.pLine ?? '',
-        audioClip: {
-          start: track.advanced.audioClipStart ?? 0,
-          end: track.advanced.audioClipEnd ?? 0,
-        },
         albumTitle: track.advanced.albumTitle ?? '',
       },
     };
