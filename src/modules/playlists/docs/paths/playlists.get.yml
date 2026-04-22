@@ -294,6 +294,8 @@
     parameters:
       - $ref: '#/components/parameters/PlaylistIdPathParam'
       - $ref: '#/components/parameters/ArtistIdPathParam'
+      - $ref: '#/components/parameters/Playlistlimit'
+      - $ref: '#/components/parameters/Playlistoffset'
     responses:
       '200':
         description: Playlists retrieved successfully
@@ -332,6 +334,8 @@
     parameters:
       - $ref: '#/components/parameters/PlaylistIdPathParam'
       - $ref: '#/components/parameters/ArtistIdPathParam'
+      - $ref: '#/components/parameters/Playlistlimit'
+      - $ref: '#/components/parameters/Playlistoffset'
     responses:
       '200':
         description: Artist details retrieved successfully
@@ -352,6 +356,90 @@
         $ref: '#/components/responses/InvalidParameters'
       '401':
         $ref: '#/components/responses/Unauthorized'
+      '404':
+        $ref: '#/components/responses/NotFound'
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/public/playlists/v1/creator/{artistId}/albums:
+  get:
+    tags:
+      - Playlist Management
+    summary: Get albums from an artist
+    description: Get albums from an artist
+    parameters:
+      - $ref: '#/components/parameters/ArtistIdPathParam'
+      - $ref: '#/components/parameters/Playlistlimit'
+      - $ref: '#/components/parameters/Playlistoffset'
+    responses:
+      '200':
+        description: Playlists retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Playlists retrieved successfully
+                data:
+                  type: object
+                  properties:
+                    playlists:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Playlist'
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
+      '404':
+        $ref: '#/components/responses/NotFound'
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/public/playlists/v1/permalink/{permalink}:
+  get:
+    tags:
+      - Playlist Management
+    summary: Get playlist with tracks by permalink
+    description: Get playlist with tracks by permalink
+    parameters:
+      - name: permalink
+        in: path
+        required: true
+        description: Unique permalink of the playlist
+        schema:
+          type: string
+          example: '64b8f0c2e4b0a1a2b3c4d5e'
+      - $ref: '#/components/parameters/Playlistlimit'
+      - $ref: '#/components/parameters/Playlistoffset'
+    responses:
+      '200':
+        description: Playlists retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Playlists retrieved successfully
+                data:
+                  type: object
+                  properties:
+                    playlists:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Playlist'
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
       '404':
         $ref: '#/components/responses/NotFound'
       '500':

@@ -5,6 +5,15 @@ import User, { IUser } from '../../shared/models/models.user';
 import BlockedList from '../../shared/models/models.blocked-list';
 import Following from '../../shared/models/models.following';
 import { PlaylistArtistDetailsDTOType } from './dtos/playlists.response';
+import { UpdatePlaylistInfoInput } from './dtos/playlists.request';
+import {
+  redisRepoCacher,
+  RedisObjectType,
+} from '../../shared/abstractions/redis/redisRepoCacher';
+import {
+  ForbiddenError,
+  NotFoundError,
+} from '../../shared/errors/responseErrors';
 
 export type TrackInPlaylist = Omit<ITrack, 'likedBy'> & {
   poster: Pick<IUser, 'displayName' | 'profileLink'> | null;
@@ -24,6 +33,19 @@ export type PlaylistWithTracks = Omit<IPlaylist, 'listOfTracks'> & {
 const TRACKS_PER_PAGE = 20;
 
 export class PlaylistsRepository {
+  private validateEditingUser(
+    playlist: IPlaylist | null,
+    userId: string,
+  ): Error | void {
+    if (!playlist) {
+      throw NotFoundError('Playlist not found');
+    }
+
+    if (playlist.artistId.toString() !== userId) {
+      throw ForbiddenError('This is not your playlist, you cannot edit it');
+    }
+  }
+
   async findAll(
     limit: number,
     offset: number = 1,
@@ -175,16 +197,6 @@ export class PlaylistsRepository {
       return new Error('One or more tracks not found');
     }
     return tracks.reduce((total, track) => total + track.durationInSeconds, 0);
-  }
-
-  async findTracksOfPlaylist(
-    ids: string[],
-  ): Promise<{ _id: Types.ObjectId; durationInSeconds: number }[]> {
-    const objectIds = ids.map((id) => new Types.ObjectId(id));
-    return await Track.find({ _id: { $in: objectIds } })
-      .select('_id durationInSeconds')
-      .lean()
-      .exec();
   }
 
   /**
@@ -426,6 +438,12 @@ export class PlaylistsRepository {
   ): Promise<IPlaylist> {
     const playlist = new Playlist({
       title: playlistName,
+      permaLink: playlistName
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-'),
       artistId,
       listOfTracks: tracks,
       type: isPrivate ? 'private' : 'public',
@@ -434,11 +452,43 @@ export class PlaylistsRepository {
     return (await playlist.save()).toObject() as IPlaylist;
   }
 
+  async addTrackToEndOfPlaylist(
+    trackId: string,
+    playlistId: string,
+    userId: string,
+  ): Promise<Error | void> {
+    const playlist = await this.findById(playlistId);
+
+    this.validateEditingUser(playlist, userId);
+
+    const track = await Track.findById(trackId).exec();
+    if (!track) {
+      return new Error('Track not found');
+    }
+
+    if (playlist!.listOfTracks.some((t) => t.toString() === trackId)) {
+      return new Error('Track already exists in the playlist');
+    }
+
+    await Playlist.findByIdAndUpdate(
+      { _id: playlistId },
+      {
+        $push: { listOfTracks: track._id },
+        $inc: { playlistLengthInSeconds: track.durationInSeconds },
+      },
+      { new: true },
+    ).exec();
+  }
+
   async updateImage(
     playlistId: string,
     publicUrl: string,
     publicId: string,
+    userId: string,
   ): Promise<IPlaylist> {
+    const playlist = await this.findById(playlistId);
+    this.validateEditingUser(playlist, userId);
+
     const updatedPlaylist = await Playlist.findByIdAndUpdate(
       playlistId,
       {
@@ -448,10 +498,127 @@ export class PlaylistsRepository {
     ).lean();
 
     if (!updatedPlaylist) {
-      throw new Error('Playlist not found');
+      throw NotFoundError('Playlist not found');
     }
 
     return updatedPlaylist as IPlaylist;
+  }
+
+  async updateOrderOfSignleTrack(
+    playlistId: string,
+    trackId: string,
+    oldPosition: number,
+    newPosition: number,
+    userId: string,
+  ): Promise<Error | boolean> {
+    const playlist = await this.findById(playlistId);
+
+    if (!playlist) {
+      return new Error('Playlist not found');
+    }
+
+    this.validateEditingUser(playlist, userId);
+
+    const tracks = playlist.listOfTracks;
+    const length = tracks.length;
+
+    if (oldPosition < 0 || oldPosition >= length) {
+      return new Error('Old position is out of bounds');
+    }
+
+    if (newPosition < 0 || newPosition >= length) {
+      return new Error('New position is out of bounds');
+    }
+
+    if (oldPosition === newPosition) {
+      return true;
+    }
+
+    const targetTrackId = tracks[oldPosition];
+
+    if (!targetTrackId || trackId.toString() !== targetTrackId.toString()) {
+      return new Error(
+        'Track not found in the old position given in the playlist',
+      );
+    }
+
+    const [movedTrack] = tracks.splice(oldPosition, 1);
+    tracks.splice(newPosition, 0, movedTrack);
+
+    await Playlist.findByIdAndUpdate(playlistId, {
+      listOfTracks: tracks,
+    }).exec();
+
+    return true;
+  }
+
+  async findByPermalink(
+    permalink: string,
+    userId: string | null,
+  ): Promise<PlaylistWithTracks | Error | null> {
+    const playlist = await Playlist.findOne({ permaLink: permalink })
+      .lean()
+      .exec();
+
+    if (!playlist) {
+      return null;
+    }
+
+    const playlistPro = await this.findByIdWithTracks(
+      playlist._id.toString(),
+      userId,
+    );
+
+    return playlistPro;
+  }
+
+  async updatePlaylist(
+    playlist: UpdatePlaylistInfoInput,
+  ): Promise<Error | boolean> {
+    const { id } = playlist.params;
+    const { body } = playlist;
+
+    const objectIds = body.listOfTracks.map((id) => new Types.ObjectId(id));
+    const [result] = await Track.aggregate([
+      { $match: { _id: { $in: objectIds } } },
+      {
+        $group: {
+          _id: null,
+          count: { $sum: 1 },
+          totalDuration: { $sum: '$durationInSeconds' },
+        },
+      },
+    ]);
+
+    if (!result || result.count !== body.listOfTracks.length) {
+      return new Error('One or more tracks not found');
+    }
+
+    const existingPlaylist = await Playlist.find({
+      permaLink: body.permalink,
+      _id: { $ne: id },
+    });
+
+    if (existingPlaylist.length > 0) {
+      return new Error('A playlist with this permalink already exists');
+    }
+
+    const { totalDuration } = result;
+
+    await Playlist.findByIdAndUpdate(id, {
+      title: body.title,
+      description: body.description,
+      genre: body.genre,
+      additionalTags: body.additionalTags,
+      releaseDate: body.releaseDate,
+      listOfTracks: body.listOfTracks,
+      type: body.type,
+      playlistType: body.playlistType,
+      recordLabel: body.recordLabel,
+      playlistLengthInSeconds: totalDuration,
+    }).exec();
+
+    return true;
   }
 
   async getArtistDetails(
@@ -499,16 +666,35 @@ export class PlaylistsRepository {
   async getMorePlaylistsFromSameArtist(
     artistId: string,
     excludePlaylistId: string,
-    limit: number = 5,
-  ): Promise<IPlaylist[]> {
-    return await Playlist.find({
+    userId: string | null = null,
+  ): Promise<IPlaylist[] | Error> {
+    if (userId) {
+      const isUserBlocked = await this.isUserBlocked(artistId, userId);
+
+      if (isUserBlocked) {
+        return new Error('You are blocked from accessing this artist');
+      }
+    }
+
+    const playlists = await Playlist.find({
       artistId,
       _id: { $ne: new Types.ObjectId(excludePlaylistId) },
       type: 'public',
     })
-      .limit(limit)
+      .limit(5)
       .lean()
       .exec();
+
+    await Promise.all(
+      playlists.map((p) =>
+        redisRepoCacher.cacheObject(
+          RedisObjectType.PLAYLIST,
+          p._id.toString(),
+          p,
+        ),
+      ),
+    );
+    return playlists;
   }
 
   async getMyPlaylists(
@@ -528,6 +714,7 @@ export class PlaylistsRepository {
     offset: number = 1,
     limit: number = 5,
     userId: string | null,
+    getAlbums: boolean = false,
   ): Promise<IPlaylist[] | Error> {
     if (userId) {
       const isUserBlocked = await this.isUserBlocked(artistId, userId);
@@ -540,6 +727,7 @@ export class PlaylistsRepository {
     return await Playlist.find({
       artistId,
       type: 'public',
+      ...(getAlbums ? { playlistType: 'album' } : {}),
     })
       .skip((offset - 1) * limit)
       .limit(limit)
@@ -547,7 +735,15 @@ export class PlaylistsRepository {
       .exec();
   }
 
-  async delete(playlistId: string): Promise<boolean> {
+  async delete(playlistId: string, userId: string): Promise<boolean | Error> {
+    const playlist = await this.findById(playlistId);
+
+    if (!playlist) {
+      return false;
+    }
+
+    this.validateEditingUser(playlist, userId);
+
     const deleted = await Playlist.findByIdAndDelete(playlistId).exec();
     return deleted !== null;
   }

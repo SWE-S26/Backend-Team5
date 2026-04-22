@@ -30,6 +30,9 @@ Playlist:
       items:
         type: string
       example: []
+    permalink:
+      type: string
+      example: 'better-off-alone-s3rl-feat-tamika'
     type:
       type: string
       enum: [public, private]
