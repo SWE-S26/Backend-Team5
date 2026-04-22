@@ -32,7 +32,7 @@ export type ITrack = {
     url: string;
     id: string;
     cloudIndex: number;
-    downloadLinl: string;
+    downloadLink: string;
   };
   posterId: Types.ObjectId;
   image: {
