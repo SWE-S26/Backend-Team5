@@ -33,6 +33,10 @@ export const audioSchema = new Schema(
       type: String,
       required: true,
     },
+    waveformLink: {
+      type: String,
+      required: true,
+    },
   },
   { _id: false },
 );

@@ -33,6 +33,7 @@ export type ITrack = {
     id: string;
     cloudIndex: number;
     downloadLink: string;
+    waveformLink: string;
   };
   posterId: Types.ObjectId;
   image: {
