@@ -1,2 +1,7 @@
-import { idParamDto } from '../../../shared/dtos/commonDTO';
-export const FeedIdParamDTO = idParamDto.extend({});
+import extendedZod from '../../../shared/docs/dtoDocumenter';
+
+export const HistoryIdParamDTO = extendedZod.object({
+  params: extendedZod.object({
+    historyId: extendedZod.mongoId(),
+  }),
+});
