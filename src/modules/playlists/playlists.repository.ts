@@ -5,6 +5,7 @@ import User, { IUser } from '../../shared/models/models.user';
 import BlockedList from '../../shared/models/models.blocked-list';
 import Following from '../../shared/models/models.following';
 import { PlaylistArtistDetailsDTOType } from './dtos/playlists.response';
+import { NotFoundError } from '../../shared/errors/responseErrors';
 
 export type TrackInPlaylist = Omit<ITrack, 'likedBy'> & {
   poster: Pick<IUser, 'displayName' | 'profileLink'> | null;
@@ -452,6 +453,56 @@ export class PlaylistsRepository {
     }
 
     return updatedPlaylist as IPlaylist;
+  }
+
+  async updateOrderOfSignleTrack(
+    playlistId: string,
+    trackId: string,
+    oldPosition: number,
+    newPosition: number,
+    userId: string,
+  ): Promise<Error | boolean> {
+    const playlist = await Playlist.findByIdCached(playlistId);
+
+    if (!playlist) {
+      return new Error('Playlist not found');
+    }
+
+    if (playlist.artistId.toString() !== userId) {
+      return new Error('This is not your playlist, you cannot update it');
+    }
+
+    const tracks = playlist.listOfTracks;
+    const length = tracks.length;
+
+    if (oldPosition < 0 || oldPosition >= length) {
+      return new Error('Old position is out of bounds');
+    }
+
+    if (newPosition < 0 || newPosition >= length) {
+      return new Error('New position is out of bounds');
+    }
+
+    if (oldPosition === newPosition) {
+      return true;
+    }
+
+    const targetTrackId = tracks[oldPosition];
+
+    if (!targetTrackId || trackId.toString() !== targetTrackId.toString()) {
+      return new Error(
+        'Track not found in the old position given in the playlist',
+      );
+    }
+
+    const [movedTrack] = tracks.splice(oldPosition, 1);
+    tracks.splice(newPosition, 0, movedTrack);
+
+    await Playlist.findByIdAndUpdate(playlistId, {
+      listOfTracks: tracks,
+    }).exec();
+
+    return true;
   }
 
   async getArtistDetails(

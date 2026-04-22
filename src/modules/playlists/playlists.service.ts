@@ -198,6 +198,35 @@ export class PlaylistsService {
     return playlists;
   }
 
+  async updateOrderOfSingleTrack(
+    playlistId: string,
+    trackId: string,
+    oldPosition: number,
+    newPosition: number,
+    userId: string,
+  ): Promise<boolean> {
+    const result = await this.repository.updateOrderOfSignleTrack(
+      playlistId,
+      trackId,
+      oldPosition,
+      newPosition,
+      userId,
+    );
+
+    if (result instanceof Error) {
+      if (
+        result.message ===
+        'You are not the owner of this playlist, you cannot update it'
+      ) {
+        throw ForbiddenError(result.message);
+      } else {
+        throw BadRequestError(result.message);
+      }
+    }
+
+    return result;
+  }
+
   async delete(id: string): Promise<boolean> {
     return this.repository.delete(id);
   }

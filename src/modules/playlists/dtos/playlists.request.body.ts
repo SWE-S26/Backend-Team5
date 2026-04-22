@@ -12,3 +12,9 @@ export const CreatePlaylistsRequestBodyDTO = extendedZod
       isPrivate: false,
     },
   });
+
+export const UpdatePlaylistSingleTrackOrderRequestBodyDTO = extendedZod.object({
+  trackId: extendedZod.mongoId(),
+  oldPosition: extendedZod.number().min(0).max(150),
+  newPosition: extendedZod.number().min(0).max(150),
+});

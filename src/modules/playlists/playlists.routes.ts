@@ -25,6 +25,11 @@ playlistsPrivateRouter.patch(
   playlistsController.updatePlaylistPicture.bind(playlistsController),
 );
 
+playlistsPrivateRouter.patch(
+  apiVersions.v1 + '/:id/tracks/order',
+  playlistsController.updatePlaylistSingleTrackOrder.bind(playlistsController),
+);
+
 playlistsPublicRouter.get(
   apiVersions.v1,
   playlistsController.findAll.bind(playlistsController),

@@ -8,6 +8,7 @@ import {
   DeletePlaylistDTO,
   GetArtistDetailsDTO,
   GetMorePlaylistsFromArtistDTO,
+  UpdatePlaylistSingleTrackOrderDTO,
 } from './dtos/playlists.request';
 import { BadRequestError } from '../../shared/errors/responseErrors';
 
@@ -133,6 +134,36 @@ export class PlaylistsController {
     res.json({
       message: 'Playlist picture updated successfully',
       data: { playlist: updatedPlaylist },
+    });
+  }
+
+  async updatePlaylistSingleTrackOrder(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const validatedRequest = parseRequest(
+      UpdatePlaylistSingleTrackOrderDTO,
+      req,
+    );
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const { id } = validatedRequest.data.params;
+    const { trackId, oldPosition, newPosition } = validatedRequest.data.body;
+    const userId = req.userInfo!._id;
+
+    await this.service.updateOrderOfSingleTrack(
+      id,
+      trackId,
+      oldPosition,
+      newPosition,
+      userId,
+    );
+
+    res.json({
+      message: 'Updated Playlist track order successfully.',
     });
   }
 

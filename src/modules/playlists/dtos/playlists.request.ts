@@ -4,7 +4,10 @@ import {
   PlaylistsIdParamDTO,
 } from './playlists.request.params';
 import { findAllPlaylistsQueryDto } from './playlists.request.query';
-import { CreatePlaylistsRequestBodyDTO } from './playlists.request.body';
+import {
+  CreatePlaylistsRequestBodyDTO,
+  UpdatePlaylistSingleTrackOrderRequestBodyDTO,
+} from './playlists.request.body';
 import { z } from 'zod';
 
 export const FindAllPlaylistsDTO = extendedZod.object({
@@ -32,6 +35,11 @@ export const GetMorePlaylistsFromArtistDTO = extendedZod.object({
   params: GetMorePlaylistsFromArtistParamsDTO,
 });
 
+export const UpdatePlaylistSingleTrackOrderDTO = extendedZod.object({
+  params: PlaylistsIdParamDTO,
+  body: UpdatePlaylistSingleTrackOrderRequestBodyDTO,
+});
+
 export type FindAllPlaylistsInput = z.infer<typeof FindAllPlaylistsDTO>;
 export type FindOnePlaylistInput = z.infer<typeof FindOnePlaylistDTO>;
 export type CreatePlaylistInput = z.infer<typeof CreatePlaylistDTO>;
@@ -39,4 +47,7 @@ export type DeletePlaylistInput = z.infer<typeof DeletePlaylistDTO>;
 export type GetArtistDetailsInput = z.infer<typeof GetArtistDetailsDTO>;
 export type GetMorePlaylistsFromArtistInput = z.infer<
   typeof GetMorePlaylistsFromArtistDTO
+>;
+export type UpdatePlaylistSingleTrackOrderInput = z.infer<
+  typeof UpdatePlaylistSingleTrackOrderDTO
 >;
