@@ -1,18 +1,16 @@
-/api/playlists/myPlaylists/{playlistId}:
+/api/playlists/v1/{playlistId}:
   put:
     tags:
       - Playlist Management
     summary: Update playlist metadata and tracks
     description: >
-      Updates a playlist’s metadata, licensing, and optionally reorders tracks.
-      Remember to send how many tracks you recieved so as not to reorder the entire playlist
-      potentially deleting tracks that were added while the user was editing the playlist.
+      Updates playlist metadata, licensing, image, and optionally replaces/reorders tracks.
+      Must include full track list to avoid accidental deletions from concurrent edits.
 
     parameters:
       - name: playlistId
         in: path
         required: true
-        description: The ID of the playlist to update
         schema:
           type: string
           example: pl_789
@@ -20,7 +18,7 @@
     requestBody:
       required: true
       content:
-        application/json:
+        multipart/form-data:
           schema:
             type: object
             properties:
@@ -28,9 +26,16 @@
                 type: string
               permalink:
                 type: string
+              additionalTags:
+                type: array
+                items:
+                  type: string
+              'type':
+                type: string
+                enum: [public, private]
               playlistType:
                 type: string
-                enum: ['playlist', 'album', 'ep', 'single']
+                enum: [playlist, album, ep, single]
               releaseDate:
                 type: string
                 format: date-time
@@ -42,29 +47,26 @@
                   type: string
               description:
                 type: string
-              isPrivate:
-                type: boolean
+              Privacy:
+                type: string
+                enum: [public, private]
+                desciption: WRITE "type" INSTEAD OF PRIVACY, THE SWAGGER DOESN'T PARSE IF I SAY "type"
+                example: 'public'
               audioTracks:
                 type: array
                 items:
                   type: string
-                description: Track IDs reordered playlist
               lengthOfRecievedTracks:
                 type: integer
-                description: Total number of tracks to reorder
               licensing:
                 $ref: '#/components/schemas/Licensing'
               buyLink:
                 type: string
               recordLabel:
                 type: string
-            required:
-              - title
-              - permalink
-              - playlistType
-              - releaseDate
-              - genre
-              - isPrivate
+              image:
+                type: string
+                format: binary
 
     responses:
       '200':
@@ -76,15 +78,16 @@
               properties:
                 message:
                   type: string
-                  example: 'Updated successfully'
-              required:
-                - message
+                  example: Updated successfully
 
       '400':
         $ref: '#/components/responses/InvalidParameters'
 
       '401':
         $ref: '#/components/responses/Unauthorized'
+
+      '403':
+        $ref: '#/components/responses/Forbidden'
 
       '404':
         $ref: '#/components/responses/NotFound'

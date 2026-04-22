@@ -18,6 +18,15 @@ ArtistIdPathParam:
     type: string
     example: '64b8f0c2e4b0a1a2b3c4d5e'
 
+TrackIdPathParam:
+  name: trackId
+  in: path
+  required: true
+  description: Unique identifier of the track
+  schema:
+    type: string
+    example: '64b8f0c2e4b0a1a2b3c4d5e'
+
 Playlistlimit:
   name: limit
   in: query

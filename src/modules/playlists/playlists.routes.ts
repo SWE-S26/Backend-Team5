@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { PlaylistsController } from './playlists.controller';
 import apiVersions from '../../shared/middleware/apiVersions';
 import multer from 'multer';
+import { optionalAuth } from '../../shared/middleware/optionalAuth';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -19,10 +20,21 @@ playlistsPrivateRouter.delete(
   playlistsController.delete.bind(playlistsController),
 );
 
+playlistsPrivateRouter.put(
+  apiVersions.v1 + '/:id',
+  upload.fields([{ name: 'image', maxCount: 1 }]),
+  playlistsController.updatePlaylist.bind(playlistsController),
+);
+
 playlistsPrivateRouter.patch(
   apiVersions.v1 + '/:id/image',
   upload.fields([{ name: 'image', maxCount: 1 }]),
   playlistsController.updatePlaylistPicture.bind(playlistsController),
+);
+
+playlistsPrivateRouter.patch(
+  apiVersions.v1 + '/:id/tracks/:trackId',
+  playlistsController.addTrackToPlaylist.bind(playlistsController),
 );
 
 playlistsPrivateRouter.patch(
@@ -40,6 +52,11 @@ playlistsPrivateRouter.get(
   playlistsController.findAll.bind(playlistsController),
 );
 
+playlistsPublicRouter.get(
+  apiVersions.v1 + '/permalink/:permalink',
+  playlistsController.getPlaylistByPermalink.bind(playlistsController),
+);
+
 playlistsPrivateRouter.get(
   apiVersions.v1 + '/my-playlists',
   playlistsController.getMyPlaylists.bind(playlistsController),
@@ -53,6 +70,12 @@ playlistsPrivateRouter.get(
 playlistsPublicRouter.get(
   apiVersions.v1 + '/playlists/:id',
   playlistsController.getPlaylistsForArtist.bind(playlistsController),
+);
+
+playlistsPublicRouter.get(
+  apiVersions.v1 + '/creator/:id/albums',
+  optionalAuth,
+  playlistsController.getAlbumsOfAnArtist.bind(playlistsController),
 );
 
 playlistsPublicRouter.get(

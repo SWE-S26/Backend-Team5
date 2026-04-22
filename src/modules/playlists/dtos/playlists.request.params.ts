@@ -4,6 +4,10 @@ import { idParamDto } from '../../../shared/dtos/commonDTO';
 
 export const PlaylistsIdParamDTO = idParamDto.extend({});
 
+export const AddTrackToPlaylistParamsDTO = idParamDto.extend({
+  trackId: extendedZod.mongoId(),
+});
+
 export const GetMorePlaylistsFromArtistParamsDTO = extendedZod
   .object({
     playlistId: extendedZod.mongoId(),
@@ -13,6 +17,16 @@ export const GetMorePlaylistsFromArtistParamsDTO = extendedZod
     example: {
       playlistId: '60c72b2f9b1d4c0015b8e8f0',
       artistId: '60c72b2f9b1d4c0015b8e8f1',
+    },
+  });
+
+export const GetPlaylistByPermalinkParamsDTO = extendedZod
+  .object({
+    permalink: extendedZod.string().min(1).max(100),
+  })
+  .openapi('GetPlaylistByPermalinkParams', {
+    example: {
+      permalink: 'my-awesome-playlist',
     },
   });
 

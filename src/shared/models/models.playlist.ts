@@ -15,6 +15,7 @@ export type IPlaylist = {
   _id: Types.ObjectId;
   artistId: Types.ObjectId;
   title: string;
+  permaLink: string;
   image: { url: string; publicId: string };
   description: string;
   genre: string;
@@ -43,6 +44,7 @@ const playlistSchema = new Schema<IPlaylist, IPlaylistModel>(
   {
     artistId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     title: { type: String, required: true, minlength: 1, maxlength: 100 },
+    permaLink: { type: String, required: true, minlength: 1, maxlength: 100 },
     image: {
       type: imgSchema,
       default: () => ({
