@@ -97,7 +97,7 @@ jobs:
                 echo "PUBLITO_KEY2=${PUBLITO_KEY2}"
                 echo "PUBLITO_SECRET2=${PUBLITO_SECRET2}"
                 echo "PUBLITO_KEY3=${PUBLITO_KEY3}"
-                echo "PUBLITO_SECRET3=${PUBLITO_SECRET3}"`
+                echo "PUBLITO_SECRET3=${PUBLITO_SECRET3}"
                 echo "PUBLITO_KEY4=${PUBLITO_KEY4}"
                 echo "PUBLITO_SECRET4=${PUBLITO_SECRET4}"
                 echo "CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}"
