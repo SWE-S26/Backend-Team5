@@ -17,6 +17,13 @@ type ListUsersOptions = {
   query?: string;
 };
 
+type ListMediaOptions = {
+  requesterRole?: string;
+  offset: number;
+  limit: number;
+  query?: string;
+};
+
 export class AdminService {
   constructor(
     private readonly repository: AdminRepository,
@@ -40,6 +47,23 @@ export class AdminService {
     });
 
     return AdminMapper.toListResponse(users, total, offset, limit);
+  }
+
+  async listMedia(options: ListMediaOptions) {
+    if (options.requesterRole !== 'Admin') {
+      throw ForbiddenError('Only admins can access this resource');
+    }
+
+    const offset = Math.max(1, options.offset || 1);
+    const limit = Math.max(1, options.limit || 20);
+
+    const { items, total } = await this.repository.findAllMedia({
+      offset,
+      limit,
+      query: options.query,
+    });
+
+    return AdminMapper.toMediaListResponse(items, total, offset, limit);
   }
 
   async suspend(userId: string, reason: string, requesterRole?: string) {
@@ -113,6 +137,76 @@ export class AdminService {
 
     return {
       message: 'User account permanently deleted.',
+    };
+  }
+
+  async banTrack(trackId: string, reason: string, requesterRole?: string) {
+    if (requesterRole !== 'Admin') {
+      throw ForbiddenError('Only admins can access this resource');
+    }
+
+    const track = await this.repository.findTrackById(trackId);
+
+    if (!track) {
+      throw NotFoundError('track not found');
+    }
+
+    if (track.hidden) {
+      throw BadRequestError('Track is already banned');
+    }
+
+    await this.repository.banTrack(trackId, reason);
+
+    const row = await this.repository.findAdminMediaTrackRowById(trackId);
+
+    if (!row) {
+      throw NotFoundError('track not found');
+    }
+
+    return AdminMapper.toMediaResponse(row);
+  }
+
+  async unbanTrack(trackId: string, requesterRole?: string) {
+    if (requesterRole !== 'Admin') {
+      throw ForbiddenError('Only admins can access this resource');
+    }
+
+    const track = await this.repository.findTrackById(trackId);
+
+    if (!track) {
+      throw NotFoundError('track not found');
+    }
+
+    if (!track.hidden) {
+      throw BadRequestError('Track is not banned');
+    }
+
+    await this.repository.unbanTrack(trackId);
+
+    const row = await this.repository.findAdminMediaTrackRowById(trackId);
+
+    if (!row) {
+      throw NotFoundError('track not found');
+    }
+
+    return AdminMapper.toMediaResponse(row);
+  }
+
+  async deleteTrack(trackId: string, requesterRole?: string) {
+    if (requesterRole !== 'Admin') {
+      throw ForbiddenError('Only admins can access this resource');
+    }
+
+    const track = await this.repository.findTrackById(trackId);
+
+    if (!track) {
+      throw NotFoundError('track not found');
+    }
+
+    await this.repository.deleteTrackById(trackId);
+
+    return {
+      message: 'Track permanently deleted.',
     };
   }
 

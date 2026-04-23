@@ -29,10 +29,10 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/admin/tracks/{trackId}:
+/api/admin/v1/tracks/{trackId}:
   delete:
     tags:
-      - Admin Tracks
+      - Admin Media
     summary: Permanently delete a track.
     description: Hard-deletes a track and all associated data (comments, likes, reposts). This operation is irreversible. Admin only.
     operationId: adminDeleteTrack

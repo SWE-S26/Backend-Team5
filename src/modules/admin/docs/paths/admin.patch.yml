@@ -89,13 +89,13 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/admin/tracks/{trackId}/hide:
+/api/admin/v1/tracks/{trackId}/ban:
   patch:
     tags:
-      - Admin Tracks
-    summary: Hide a track.
-    description: Hides a track from all public-facing surfaces (search, feeds, profiles) while keeping it accessible in the artist's admin dashboard. Admin only.
-    operationId: adminHideTrack
+      - Admin Media
+    summary: Ban a track.
+    description: Bans a track from all public-facing surfaces (search, feeds, profiles) while keeping it accessible in the artist's admin dashboard. Admin only.
+    operationId: adminBanTrack
     parameters:
       - $ref: '#/components/parameters/AdminTrackIdParam'
     requestBody:
@@ -106,7 +106,7 @@
             $ref: '#/components/schemas/AdminActionReasonRequest'
     responses:
       200:
-        description: Track hidden.
+        description: Track banned.
         content:
           application/json:
             schema:
@@ -120,18 +120,18 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/admin/tracks/{trackId}/unhide:
+/api/admin/v1/tracks/{trackId}/unban:
   patch:
     tags:
-      - Admin Tracks
-    summary: Unhide a track.
-    description: Restores a previously hidden track back to public visibility. Admin only.
-    operationId: adminUnhideTrack
+      - Admin Media
+    summary: Unban a track.
+    description: Restores a previously banned track back to public visibility. Admin only.
+    operationId: adminUnbanTrack
     parameters:
       - $ref: '#/components/parameters/AdminTrackIdParam'
     responses:
       200:
-        description: Track restored to public visibility.
+        description: Track unbanned.
         content:
           application/json:
             schema:

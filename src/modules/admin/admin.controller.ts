@@ -2,9 +2,13 @@ import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { AdminService } from './admin.service';
 import {
+  BanTrackRequestDTO,
+  DeleteAdminTrackRequestDTO,
   DeleteAdminUserRequestDTO,
+  GetAdminMediaRequestDTO,
   GetAdminUsersRequestDTO,
   SuspendUserRequestDTO,
+  UnbanTrackRequestDTO,
   UnsuspendUserRequestDTO,
 } from './dtos/admin.request';
 
@@ -19,6 +23,21 @@ export class AdminController {
     }
 
     const result = await this.service.findAll({
+      requesterRole: req.userInfo?.role,
+      ...parsed.data.query,
+    });
+
+    res.json(result);
+  }
+
+  async listMedia(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetAdminMediaRequestDTO, req);
+
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const result = await this.service.listMedia({
       requesterRole: req.userInfo?.role,
       ...parsed.data.query,
     });
@@ -69,6 +88,53 @@ export class AdminController {
     const { userId } = parsed.data.params;
 
     const result = await this.service.deleteUser(userId, req.userInfo?.role);
+
+    res.status(200).json(result);
+  }
+
+  async banTrack(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(BanTrackRequestDTO, req);
+
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { trackId } = parsed.data.params;
+    const reason = parsed.data.body?.reason ?? '';
+
+    const result = await this.service.banTrack(
+      trackId,
+      reason,
+      req.userInfo?.role,
+    );
+
+    res.status(200).json(result);
+  }
+
+  async unbanTrack(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(UnbanTrackRequestDTO, req);
+
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { trackId } = parsed.data.params;
+
+    const result = await this.service.unbanTrack(trackId, req.userInfo?.role);
+
+    res.status(200).json(result);
+  }
+
+  async deleteTrack(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(DeleteAdminTrackRequestDTO, req);
+
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { trackId } = parsed.data.params;
+
+    const result = await this.service.deleteTrack(trackId, req.userInfo?.role);
 
     res.status(200).json(result);
   }

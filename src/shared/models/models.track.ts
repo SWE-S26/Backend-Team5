@@ -60,6 +60,7 @@ export type ITrack = {
   composer: string;
   releaseTitle: string;
   hidden: boolean;
+  banReason: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -224,6 +225,10 @@ const trackSchema = new Schema(
     hidden: {
       type: Boolean,
       default: false,
+    },
+    banReason: {
+      type: String,
+      default: '',
     },
   },
   { timestamps: true },

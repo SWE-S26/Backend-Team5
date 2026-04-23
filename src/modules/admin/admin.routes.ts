@@ -13,6 +13,10 @@ router.get(apiVersions.v1 + '/users', (req, res) =>
   adminController.findAll(req, res),
 );
 
+router.get(apiVersions.v1 + '/media', (req, res) =>
+  adminController.listMedia(req, res),
+);
+
 router.patch(apiVersions.v1 + '/users/:userId/suspend', (req, res) =>
   adminController.suspendUser(req, res),
 );
@@ -21,8 +25,20 @@ router.patch(apiVersions.v1 + '/users/:userId/unsuspend', (req, res) =>
   adminController.unsuspendUser(req, res),
 );
 
+router.patch(apiVersions.v1 + '/tracks/:trackId/ban', (req, res) =>
+  adminController.banTrack(req, res),
+);
+
+router.patch(apiVersions.v1 + '/tracks/:trackId/unban', (req, res) =>
+  adminController.unbanTrack(req, res),
+);
+
 router.delete(apiVersions.v1 + '/users/:userId', (req, res) =>
   adminController.deleteUser(req, res),
+);
+
+router.delete(apiVersions.v1 + '/tracks/:trackId', (req, res) =>
+  adminController.deleteTrack(req, res),
 );
 // adminRouter.get('/:id',   (req, res) => adminController.findOne(req, res));
 // adminRouter.post('/',     (req, res) => adminController.create(req, res));

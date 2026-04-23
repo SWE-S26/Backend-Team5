@@ -1,5 +1,7 @@
 import { Types } from 'mongoose';
 import {
+  AdminMediaListResponseDTO,
+  AdminMediaSnippetResponseDTO,
   AdminUserListResponseDTO,
   AdminUserSnippetResponseDTO,
 } from './admin.response';
@@ -13,6 +15,16 @@ export type AdminUserListRow = {
   createdAt: Date;
   uploadedTracksCount: number;
   followersCount: number;
+};
+
+export type AdminMediaListRow = {
+  title: string;
+  artistName: string;
+  type: 'track';
+  numberOfPlays: number;
+  numberOfLikes: number;
+  ban: boolean;
+  createdAt: Date | string;
 };
 
 export class AdminMapper {
@@ -40,6 +52,32 @@ export class AdminMapper {
       offset,
       limit,
       users: entities.map((entity) => this.toResponse(entity)),
+    });
+  }
+
+  static toMediaResponse(entity: AdminMediaListRow) {
+    return AdminMediaSnippetResponseDTO.parse({
+      title: entity.title,
+      artistName: entity.artistName,
+      type: entity.type,
+      numberOfPlays: entity.numberOfPlays,
+      numberOfLikes: entity.numberOfLikes,
+      banned: entity.ban,
+      createdAt: new Date(entity.createdAt).toISOString(),
+    });
+  }
+
+  static toMediaListResponse(
+    entities: AdminMediaListRow[],
+    total: number,
+    offset: number,
+    limit: number,
+  ) {
+    return AdminMediaListResponseDTO.parse({
+      total,
+      offset,
+      limit,
+      items: entities.map((entity) => this.toMediaResponse(entity)),
     });
   }
 

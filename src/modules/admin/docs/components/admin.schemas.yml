@@ -263,6 +263,67 @@ AdminTrackListResponse:
     - limit
     - tracks
 
+AdminMediaSnippet:
+  type: object
+  description: Track information visible to admins.
+  properties:
+    title:
+      type: string
+      example: 'Summer Vibes'
+    artistName:
+      type: string
+      example: 'DJ Cool'
+    type:
+      type: string
+      enum:
+        - track
+      example: 'track'
+    numberOfPlays:
+      type: integer
+      minimum: 0
+      example: 1200
+    numberOfLikes:
+      type: integer
+      minimum: 0
+      example: 540
+    banned:
+      type: boolean
+      example: false
+    createdAt:
+      type: string
+      format: date-time
+      example: '2025-01-05T14:00:00Z'
+  required:
+    - title
+    - artistName
+    - type
+    - numberOfPlays
+    - numberOfLikes
+    - banned
+    - createdAt
+
+AdminMediaListResponse:
+  type: object
+  properties:
+    total:
+      type: integer
+      example: 200
+    offset:
+      type: integer
+      example: 1
+    limit:
+      type: integer
+      example: 20
+    items:
+      type: array
+      items:
+        $ref: '#/components/schemas/AdminMediaSnippet'
+  required:
+    - total
+    - offset
+    - limit
+    - items
+
 AdminActionReasonRequest:
   type: object
   properties:

@@ -34,4 +34,12 @@ export const ListAdminUsersQueryDto = extendedZod.object({
     .optional(),
 });
 
+export const ListAdminMediaQueryDto = extendedZod.object({
+  offset: extendedZod.coerce.number().int().min(1).default(1),
+  limit: extendedZod.coerce.number().int().min(1).max(100).default(20),
+  query: extendedZod
+    .preprocess(toOptionalSearchQuery, extendedZod.string().min(1).optional())
+    .optional(),
+});
+
 export const ListAdminsQueryDto = ListAdminUsersQueryDto;

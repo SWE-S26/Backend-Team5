@@ -27,6 +27,31 @@
       500:
         $ref: '#/components/responses/ServerError'
 
+/api/admin/v1/media:
+  get:
+    tags:
+      - Admin Media
+    summary: List tracks.
+    description: Returns a paginated list of tracks for admins. Supports search by track title or artist name.
+    operationId: adminListMedia
+    parameters:
+      - $ref: '#/components/parameters/AdminOffsetParam'
+      - $ref: '#/components/parameters/AdminLimitParam'
+      - $ref: '#/components/parameters/AdminMediaSearchQueryParam'
+    responses:
+      200:
+        description: Paginated list of tracks.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminMediaListResponse'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      403:
+        $ref: '#/components/responses/Forbidden'
+      500:
+        $ref: '#/components/responses/ServerError'
+
 /api/admin/reports:
   get:
     tags:
@@ -87,40 +112,6 @@
         $ref: '#/components/responses/Forbidden'
       404:
         $ref: '#/components/responses/NotFound'
-      500:
-        $ref: '#/components/responses/ServerError'
-
-/api/admin/tracks:
-  get:
-    tags:
-      - Admin Tracks
-    summary: List all tracks.
-    description: Returns a paginated list of all tracks on the platform. Supports filtering by visibility state and genre. Admin only.
-    operationId: adminListTracks
-    parameters:
-      - $ref: '#/components/parameters/AdminOffsetParam'
-      - $ref: '#/components/parameters/AdminLimitParam'
-      - name: hidden
-        in: query
-        required: false
-        schema:
-          type: boolean
-      - name: genre
-        in: query
-        required: false
-        schema:
-          type: string
-    responses:
-      200:
-        description: Paginated list of tracks.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AdminTrackListResponse'
-      401:
-        $ref: '#/components/responses/Unauthorized'
-      403:
-        $ref: '#/components/responses/Forbidden'
       500:
         $ref: '#/components/responses/ServerError'
 

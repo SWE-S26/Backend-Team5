@@ -51,6 +51,54 @@ export const AdminUserListResponseDTO = extendedZod
     },
   });
 
+export const AdminMediaSnippetResponseDTO = extendedZod
+  .object({
+    title: extendedZod.string(),
+    artistName: extendedZod.string(),
+    type: extendedZod.enum(['track']),
+    numberOfPlays: extendedZod.number().int().min(0),
+    numberOfLikes: extendedZod.number().int().min(0),
+    banned: extendedZod.boolean(),
+    createdAt: extendedZod.string().datetime(),
+  })
+  .openapi('AdminMediaSnippet', {
+    example: {
+      title: 'Summer Vibes',
+      artistName: 'DJ Cool',
+      type: 'track',
+      numberOfPlays: 1200,
+      numberOfLikes: 540,
+      banned: false,
+      createdAt: '2025-01-10T09:00:00Z',
+    },
+  });
+
+export const AdminMediaListResponseDTO = extendedZod
+  .object({
+    total: extendedZod.number().int().min(0),
+    offset: extendedZod.number().int().min(1),
+    limit: extendedZod.number().int().min(1),
+    items: extendedZod.array(AdminMediaSnippetResponseDTO),
+  })
+  .openapi('AdminMediaListResponse', {
+    example: {
+      total: 2,
+      offset: 1,
+      limit: 20,
+      items: [
+        {
+          title: 'Summer Vibes',
+          artistName: 'DJ Cool',
+          type: 'track',
+          numberOfPlays: 1200,
+          numberOfLikes: 540,
+          banned: false,
+          createdAt: '2025-01-10T09:00:00Z',
+        },
+      ],
+    },
+  });
+
 export const ReportResponseDTO = extendedZod
   .object({
     reportId: extendedZod.string(),

@@ -79,3 +79,12 @@ AdminUserSearchQueryParam:
   schema:
     type: string
     example: john
+
+AdminMediaSearchQueryParam:
+  name: query
+  in: query
+  required: false
+  description: Case-insensitive text search on track title or artist name.
+  schema:
+    type: string
+    example: vibes
