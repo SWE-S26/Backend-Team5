@@ -36,9 +36,17 @@
                   items:
                     type: object
                     properties:
-                      _id:
+                      chatId:
                         type: string
                         example: 69e69a358352c5b3bb1c8fa4
+                      participants:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                          - "64b2f0c7e4b0a5d8f9e1c3a2"
+                          - "64b2f0c7e4b0a5d8f9e1c3b5"
+
                       lastMessage:
                         type: object
                         properties:

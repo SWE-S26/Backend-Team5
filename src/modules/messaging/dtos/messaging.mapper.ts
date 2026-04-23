@@ -15,7 +15,8 @@ export class MessagingMapper {
     if (!receiver) return null;
 
     return {
-      _id: chat._id,
+      chat: chat._id,
+      participants: chat.participants,
       lastMessage: chat.lastMessage,
       receiver: {
         displayName: receiver.displayName,
@@ -37,7 +38,8 @@ export class MessagingMapper {
     if (!sender) return null;
 
     return {
-      _id: chat._id,
+      chat: chat._id,
+      participants: chat.participants,
       lastMessage: chat.lastMessage,
       sender: {
         displayName: sender.displayName,
