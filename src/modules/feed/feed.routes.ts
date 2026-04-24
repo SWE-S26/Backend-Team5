@@ -31,6 +31,11 @@ feedRoutes.get(
   feedController.getSearchHistory.bind(feedController),
 );
 
+feedRoutes.post(
+  apiVersions.v1 + '/search/add-to-history',
+  feedController.addToSearchHistory.bind(feedController),
+);
+
 feedRoutes.get(
   apiVersions.v1 + '/search',
   feedController.applyGlobalSearch.bind(feedController),

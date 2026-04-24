@@ -17,7 +17,7 @@
                   description: the id of the clicked item
                 type:
                   type: string
-                  enum: [track, user, playlist, album]
+                  enum: [track, user, playlist]
                   description: the type of the clicked item
       responses:
         '201':

@@ -634,4 +634,31 @@ export class FeedRepository {
       metadata: u?.city ?? null,
     };
   }
+
+  async addToSearchHistory(
+    userId: string,
+    item: { id: string; type: 'track' | 'user' | 'playlist' },
+  ): Promise<void> {
+    const history = await SearchHistory.findOne({ userId });
+
+    if (!history) {
+      await SearchHistory.create({
+        userId,
+        historyList: [item],
+      });
+      return;
+    }
+
+    history.historyList = history.historyList.filter(
+      (h) => !(h.id.toString() === item.id),
+    );
+
+    history.historyList.unshift({ ...item, id: new Types.ObjectId(item.id) });
+
+    if (history.historyList.length > 20) {
+      history.historyList = history.historyList.slice(0, 20);
+    }
+
+    await history.save();
+  }
 }
