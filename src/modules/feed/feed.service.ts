@@ -6,6 +6,7 @@ import {
   FeedResponseDTOType,
   TrendingResponseDTOType,
 } from './dtos/feed.response';
+import { SearchSuggestionDTOType } from './dtos/feed.response';
 
 import {
   NotFoundError,
@@ -100,5 +101,28 @@ export class FeedService {
     );
 
     return paginatedTrendingTracks.map((id) => ({ id }));
+  }
+
+  async getSearchSuggestions(
+    userId: string,
+    searchQuery: string,
+  ): Promise<SearchSuggestionDTOType[]> {
+    const existingUser: IUser | null =
+      await this.repository.getUserById(userId);
+    if (!existingUser) throw NotFoundError('User not found');
+
+    const personalizedSearchSuggestions: SearchSuggestionDTOType[] =
+      await this.repository.getPersonalizedSearchSuggestions(
+        userId,
+        searchQuery,
+      );
+
+    let limit = 9;
+    if (personalizedSearchSuggestions.length === 2) limit = 8;
+
+    const globalSearchSuggestions: SearchSuggestionDTOType[] =
+      await this.repository.getGlobalSearchSuggestions(searchQuery, limit);
+
+    return [...personalizedSearchSuggestions, ...globalSearchSuggestions];
   }
 }

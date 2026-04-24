@@ -37,10 +37,10 @@ export type SearchResponseDTOType = z.infer<typeof SearchResponseDTO>;
 
 export const SearchSuggestionDTO = extendedZod.object({
   id: extendedZod.mongoId(),
-  type: extendedZod.enum(['track', 'user', 'playlist', 'album']),
+  type: extendedZod.enum(['track', 'user', 'playlist']).optional(),
   title: extendedZod.string(),
-  imgLink: extendedZod.string().url().nullable(),
-  isPersonalized: extendedZod.boolean(),
+  imgLink: extendedZod.string().url().nullable().optional(),
+  isPersonalized: extendedZod.boolean().optional(),
 });
 
 export type SearchSuggestionDTOType = z.infer<typeof SearchSuggestionDTO>;
