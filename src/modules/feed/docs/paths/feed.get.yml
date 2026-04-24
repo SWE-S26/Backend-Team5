@@ -234,7 +234,7 @@
                       type: string
                     type:
                       type: string
-                      enum: [track, user, playlist, album]
+                      enum: [track, user, playlist]
                     title:
                       type: string
                     imageUrl:

@@ -6,11 +6,14 @@ import {
   GetFeedRequestDTO,
   GetTrendingTracksRequestDTO,
   SuggestionsRequestDTO,
+  SearchRequestDTO,
 } from './dtos/feed.request';
+
 import {
   FeedResponseDTOType,
   TrendingResponseDTOType,
   SearchSuggestionDTOType,
+  SearchResponseDTOType,
 } from './dtos/feed.response';
 
 export class FeedController {
@@ -67,5 +70,19 @@ export class FeedController {
       await this.service.getSearchSuggestions(userId, searchQuery);
 
     res.json(searchSuggestions);
+  }
+
+  async applyGlobalSearch(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(SearchRequestDTO, req);
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const searchParams = validatedRequest.data.query;
+
+    const searchResult: SearchResponseDTOType =
+      await this.service.applyGlobalSearch(searchParams);
+
+    res.json(searchResult);
   }
 }
