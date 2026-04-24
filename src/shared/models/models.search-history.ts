@@ -3,7 +3,7 @@ import { Schema, Types, model } from 'mongoose';
 export type ISearchHistory = {
   userId: Types.ObjectId;
   historyList: {
-    type: 'Track' | 'User' | 'Playlist';
+    type: 'track' | 'user' | 'playlist';
     id: Schema.Types.ObjectId;
   }[];
 };
@@ -12,7 +12,7 @@ const searchHistoryItemSchema = new Schema(
   {
     type: {
       type: String,
-      enum: ['Track', 'User', 'Playlist'],
+      enum: ['track', 'user', 'playlist'],
       required: true,
     },
     id: {

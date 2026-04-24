@@ -6,6 +6,8 @@ import Track from '../../shared/models/models.track';
 import Playlist from '../../shared/models/models.playlist';
 import Plays from '../../shared/models/models.plays';
 
+import { SearchSuggestionDTOType } from './dtos/feed.response';
+
 export interface feedItem {
   id: string;
   type: 'playlist' | 'track';
@@ -226,5 +228,161 @@ export class FeedRepository {
     ]);
 
     return tracks.map((t) => t._id.toString());
+  }
+
+  async getPersonalizedSearchSuggestions(
+    userId: string,
+    searchQuery: string,
+  ): Promise<SearchSuggestionDTOType[]> {
+    const user = await User.findById(userId)
+      .select('likedTracks likedPlaylists')
+      .lean();
+
+    const following = await Following.findOne({ userId })
+      .select('followed')
+      .lean();
+
+    const likedTracks = user?.likedTracks ?? [];
+    const likedPlaylists = user?.likedPlaylists ?? [];
+    const followedUsers = following?.followed ?? [];
+
+    const regex = new RegExp(searchQuery, 'i');
+
+    const trackPromise = Track.find({
+      _id: { $in: likedTracks },
+      'basicInfo.title': regex,
+    })
+      .limit(2)
+      .select({
+        _id: 1,
+        title: '$basicInfo.title',
+        image: '$image.url',
+      })
+      .lean();
+
+    const playlistPromise = Playlist.find({
+      _id: { $in: likedPlaylists },
+      title: regex,
+    })
+      .limit(2)
+      .select({
+        _id: 1,
+        title: 1,
+        image: '$image.url',
+      })
+      .lean();
+
+    const userPromise = User.find({
+      _id: { $in: followedUsers },
+      displayName: regex,
+    })
+      .limit(2)
+      .select({
+        _id: 1,
+        displayName: 1,
+        profileImg: 1,
+      })
+      .lean();
+
+    const [tracks, playlists, users] = await Promise.all([
+      trackPromise,
+      playlistPromise,
+      userPromise,
+    ]);
+
+    const trackSearch: SearchSuggestionDTOType[] = tracks.map((t) => ({
+      id: t._id.toString(),
+      title: t.basicInfo?.title ?? '',
+      type: 'track',
+      imgLink: t.image?.url ?? null,
+      isPersonalized: true,
+    }));
+
+    const playlistSearch: SearchSuggestionDTOType[] = playlists.map((p) => ({
+      id: p._id.toString(),
+      title: p.title,
+      type: 'playlist',
+      imgLink: p.image?.url ?? null,
+      isPersonalized: true,
+    }));
+
+    const userSearch: SearchSuggestionDTOType[] = users.map((u) => ({
+      id: u._id.toString(),
+      title: u.displayName,
+      type: 'user',
+      imgLink: u.profileImg?.imgLink ?? null,
+      isPersonalized: true,
+    }));
+
+    return [...trackSearch, ...playlistSearch, ...userSearch].slice(0, 2);
+  }
+
+  async getGlobalSearchSuggestions(
+    searchQuery: string,
+    limit: number,
+  ): Promise<SearchSuggestionDTOType[]> {
+    const regex = new RegExp(searchQuery, 'i');
+
+    const trackPromise = Track.find({
+      'basicInfo.title': regex,
+    })
+      .limit(limit)
+      .select({
+        _id: 1,
+        'basicInfo.title': 1,
+      })
+      .lean();
+
+    const playlistPromise = Playlist.find({
+      title: regex,
+    })
+      .limit(limit)
+      .select({
+        _id: 1,
+        title: 1,
+      })
+      .lean();
+
+    const userPromise = User.find({
+      displayName: regex,
+    })
+      .limit(limit)
+      .select({
+        _id: 1,
+        displayName: 1,
+      })
+      .lean();
+
+    const [tracks, playlists, users] = await Promise.all([
+      trackPromise,
+      playlistPromise,
+      userPromise,
+    ]);
+
+    const trackResults = tracks.map((t) => ({
+      id: t._id.toString(),
+      title: t.basicInfo.title,
+      type: 'track' as const,
+      isPersonalized: false,
+    }));
+
+    const playlistResults = playlists.map((p) => ({
+      id: p._id.toString(),
+      title: p.title,
+      type: 'playlist' as const,
+      isPersonalized: false,
+    }));
+
+    const userResults = users.map((u) => ({
+      id: u._id.toString(),
+      title: u.displayName,
+      type: 'user' as const,
+      isPersonalized: false,
+    }));
+
+    return [...trackResults, ...playlistResults, ...userResults].slice(
+      0,
+      limit,
+    );
   }
 }
