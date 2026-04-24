@@ -3,12 +3,12 @@ import extendedZod from '../../../shared/docs/dtoDocumenter';
 
 export const FeedItemDTO = extendedZod.object({
   id: extendedZod.mongoId(),
-  type: extendedZod.enum(['track', 'playlist', 'album']),
+  type: extendedZod.enum(['track', 'playlist']),
   isRepost: extendedZod.boolean(),
   createdAt: extendedZod.string(),
   actorId: extendedZod.mongoId(),
   displayName: extendedZod.string(),
-  profileImg: extendedZod.string().url().nullable(),
+  imgLink: extendedZod.string().url().nullable(),
 });
 
 export const FeedResponseDTO = extendedZod.object({

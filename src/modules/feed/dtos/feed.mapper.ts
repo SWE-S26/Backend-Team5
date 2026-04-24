@@ -7,25 +7,6 @@ import {
 } from './feed.response';
 
 export class FeedMapper {
-  static toFeedItem(item: any) {
-    return {
-      id: item.id.toString(),
-      type: item.type,
-      isRepost: item.isRepost,
-      createdAt: item.createdAt,
-      actorId: item.actorId.toString(),
-      displayName: item.displayName,
-      profileImg: item.profileImg || null,
-    };
-  }
-
-  static toFeedResponse(data: any[], hasMore: boolean): FeedResponseDTOType {
-    return {
-      results: data.map(this.toFeedItem),
-      hasMore,
-    };
-  }
-
   static toSearchResponse(
     counts: any,
     results: any[],
@@ -46,7 +27,6 @@ export class FeedMapper {
     };
   }
 
-  // ===== Suggestions =====
   static toSuggestion(item: any): SearchSuggestionDTOType {
     return {
       id: item._id.toString(),

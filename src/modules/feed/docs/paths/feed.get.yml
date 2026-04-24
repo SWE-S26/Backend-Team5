@@ -1,4 +1,4 @@
-  /api/feed:
+  /api/feed/v1/feed:
     get:
       tags:
         - Feed
@@ -32,7 +32,7 @@
                           description: ID of track/playlist/album
                         type:
                           type: string
-                          enum: [track, playlist, album]
+                          enum: [track, playlist]
                         isRepost:
                           type: boolean
                           description: true if it is repost false if it is a post
@@ -46,7 +46,7 @@
                         displayName:
                           type: string
                           description: display name of the actor
-                        profileImg:
+                        imgLink:
                           type: string
                           description: profile img of actor
                   hasMore:
@@ -60,7 +60,7 @@
                 $ref: '#/components/schemas/ErrorResponse'
 
   # Global Search
-  /api/search:
+  /api/feed/v1/search:
     get:
       tags:
         - Search
@@ -162,7 +162,7 @@
   
   
   # Search Suggestions
-  /api/search/suggestions:
+  /api/feed/v1/search/suggestions:
     get:
       tags:
         - Search
@@ -223,7 +223,7 @@
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/search/history:
+  /api/feed/v1/search/history:
     get:
       tags:
         - Search
@@ -258,7 +258,7 @@
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /api/trending-tracks:
+  /api/feed/v1/trending-tracks:
     get:
       tags:
         - Feed

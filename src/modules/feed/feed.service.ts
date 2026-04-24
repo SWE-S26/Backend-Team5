@@ -1,25 +1,70 @@
-import { FeedRepository } from './feed.repository';
+import { FeedRepository, feedItem, actor } from './feed.repository';
+
+import { IUser } from '../../shared/models/models.user';
+
+import { FeedResponseDTOType } from './dtos/feed.response';
+
+import {
+  NotFoundError,
+  BadRequestError,
+  ForbiddenError,
+} from '../../shared/errors/responseErrors';
 
 export class FeedService {
   constructor(private readonly repository: FeedRepository) {}
 
-  async findAll(): Promise<any[]> {
-    return this.repository.findAll();
-  }
+  async getFeed(
+    userId: string,
+    includeReposts: boolean,
+    offset: number,
+    limit: number,
+  ): Promise<FeedResponseDTOType> {
+    const existingUser: IUser | null =
+      await this.repository.getUserById(userId);
+    if (!existingUser) throw NotFoundError('User not found');
 
-  async findById(id: string): Promise<any | null> {
-    return this.repository.findById(id);
-  }
+    const followedIds: string[] = await this.repository.getUsersIds(userId);
 
-  async create(data: any): Promise<any> {
-    return this.repository.create(data);
-  }
+    const limitHint = offset + limit + 1;
 
-  async update(id: string, data: any): Promise<any | null> {
-    return this.repository.update(id, data);
-  }
+    const postsFeed: feedItem[] = await this.repository.getPostsFeed(
+      followedIds,
+      limitHint,
+    );
 
-  async delete(id: string): Promise<boolean> {
-    return this.repository.delete(id);
+    let repostsFeed: feedItem[] = [];
+    if (includeReposts) {
+      repostsFeed = await this.repository.getRepostsFeed(
+        followedIds,
+        limitHint,
+      );
+    }
+
+    const feed: feedItem[] = [...repostsFeed, ...postsFeed];
+
+    feed.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+    const paginatedFeed = feed.slice(offset, offset + limit);
+
+    const actorIds = [...new Set(paginatedFeed.map((f) => f.actorId))];
+
+    const actors: actor[] = await this.repository.getActorsInfo(actorIds);
+
+    const actorsMap = new Map(actors.map((a) => [a.actorId, a]));
+
+    const results = paginatedFeed.map((item) => ({
+      id: item.id,
+      type: item.type,
+      isRepost: item.isRepost,
+      createdAt: item.createdAt.toISOString(),
+      actorId: item.actorId,
+      displayName: actorsMap.get(item.actorId)?.displayName ?? 'UNKNOWN',
+      imgLink: actorsMap.get(item.actorId)?.imgLink ?? 'UNKNOWN',
+    }));
+
+    return {
+      results,
+      hasMore: feed.length > offset + limit,
+    };
   }
 }

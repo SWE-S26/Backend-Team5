@@ -2,36 +2,31 @@ import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { FeedService } from './feed.service';
 
+import { GetFeedRequestDTO } from './dtos/feed.request';
+import { FeedResponseDTOType } from './dtos/feed.response';
+
 export class FeedController {
   constructor(private readonly service: FeedService) {}
 
-  async findAll(_req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
+  async getFeed(req: Request, res: Response): Promise<void> {
+    const userId = req.userInfo!._id;
 
-  async findOne(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
+    const validatedRequest = parseRequest(GetFeedRequestDTO, req);
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
 
-  async create(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
+    const offset = validatedRequest.data.query?.offset ?? 0;
+    const limit = validatedRequest.data.query?.limit ?? 20;
+    const includeReposts = validatedRequest.data.query?.includeReposts ?? true;
 
-  async replace(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
+    const feed: FeedResponseDTOType = await this.service.getFeed(
+      userId,
+      includeReposts,
+      offset,
+      limit,
+    );
 
-  async update(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
-  }
-
-  async remove(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
+    res.json(feed);
   }
 }

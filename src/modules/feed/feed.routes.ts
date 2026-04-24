@@ -1,14 +1,19 @@
 import { Router } from 'express';
 import { FeedController } from './feed.controller';
+import { FeedRepository } from './feed.repository';
+import { FeedService } from './feed.service';
 
-const router = Router();
-//TODO: const feedController = new FeedController(/* TODO: inject service */);
+import apiVersions from '../../shared/middleware/apiVersions';
 
-// feedRouter.get('/',      (req, res) => feedController.findAll(req, res));
-// feedRouter.get('/:id',   (req, res) => feedController.findOne(req, res));
-// feedRouter.post('/',     (req, res) => feedController.create(req, res));
-// feedRouter.put('/:id',   (req, res) => feedController.replace(req, res));
-// feedRouter.patch('/:id', (req, res) => feedController.update(req, res));
-// feedRouter.delete('/:id',(req, res) => feedController.remove(req, res));
+const feedRoutes = Router();
 
-export default router;
+const feedRepository = new FeedRepository();
+const feedService = new FeedService(feedRepository);
+const feedController = new FeedController(feedService);
+
+feedRoutes.get(
+  apiVersions.v1 + '/feed/',
+  feedController.getFeed.bind(feedController),
+);
+
+export default feedRoutes;
