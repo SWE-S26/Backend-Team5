@@ -26,6 +26,11 @@ feedRoutes.get(
   feedController.getSearchSuggestions.bind(feedController),
 );
 
+feedRoutes.delete(
+  apiVersions.v1 + '/search/history/:historyId',
+  feedController.deleteSearchHistoryItem.bind(feedController),
+);
+
 feedRoutes.get(
   apiVersions.v1 + '/search/history',
   feedController.getSearchHistory.bind(feedController),
