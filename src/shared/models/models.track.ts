@@ -252,6 +252,7 @@ const trackSchema = new Schema(
     banReason: {
       type: String,
       default: '',
+    },
     audioClip: {
       type: audioClipSchema,
     },
