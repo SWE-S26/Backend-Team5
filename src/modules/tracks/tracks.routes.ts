@@ -27,8 +27,9 @@ tracksPublicRouter.get(apiVersions.v1 + '/:id', (req, res) =>
   tracksController.getTrackById(req, res, 'PUBLIC'),
 );
 
-tracksPublicRouter.get(apiVersions.v1 + '/permalink/:permalink', (req, res) =>
-  tracksController.getTrackByPermalink(req, res, 'PUBLIC'),
+tracksPublicRouter.get(
+  apiVersions.v1 + '/permalink/:profileLink/:permalink',
+  (req, res) => tracksController.getTrackByPermalink(req, res, 'PUBLIC'),
 );
 
 tracksPublicRouter.get(apiVersions.v1, (req, res) =>
@@ -65,6 +66,15 @@ tracksPrivateRouter.get(apiVersions.v1 + '/posted/:id', (req, res) =>
 
 tracksPrivateRouter.get(apiVersions.v1 + '/detailed/:id', (req, res) =>
   tracksController.getDetailedTrackInfo(req, res),
+);
+
+tracksPrivateRouter.get(
+  apiVersions.v1 + '/permalink/valid/:permalink',
+  (req, res) => tracksController.isValidPermalink(req, res),
+);
+
+tracksPrivateRouter.get(apiVersions.v1 + '/quota', (req, res) =>
+  tracksController.getUserQuota(req, res),
 );
 
 // ================= DELETE ===================

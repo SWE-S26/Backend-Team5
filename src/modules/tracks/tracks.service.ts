@@ -98,7 +98,6 @@ export class TracksService {
 
   async getTrackById(
     trackId: string,
-    userId: string,
     requesterUserId: string | null,
   ): Promise<TrackResponsePublicDTO | null> {
     const searchTrack = await this.tracksRepository.findById(trackId);
@@ -169,8 +168,9 @@ export class TracksService {
         this.calculateTrackDuration(audio),
         this.trackUploader.uploadAudioTrack(audio),
         this.uploadImgToCloud(image),
-        this.tracksRepository.getTrackByPermalink(
+        this.tracksRepository.trackExistsByPermalinkForUser(
           trackInfo.basicInfo.permalink,
+          posterId,
         ),
         this.tracksRepository.findUserById(posterId),
       ]);
@@ -182,7 +182,7 @@ export class TracksService {
     }
 
     // if user already have this permalink
-    if (searchTrack && searchTrack.posterId.toString() == posterId) {
+    if (searchTrack) {
       logger.info(
         '[track]: user has a permalink that already exists in his collection',
       );
@@ -240,11 +240,13 @@ export class TracksService {
 
   async getTrackByPermalink(
     permalink: string,
-    userId: string,
+    profileLink: string,
     requesterUserId: string | null,
   ) {
-    const searchTrack =
-      await this.tracksRepository.getTrackByPermalink(permalink);
+    const searchTrack = await this.tracksRepository.getTrackByProfilePermalink(
+      permalink,
+      profileLink,
+    );
     if (!searchTrack) {
       throw NotFoundError('Track Not Found');
     }
@@ -386,5 +388,24 @@ export class TracksService {
       searchTrack,
       searchAdvancedInfo as IAdvancedAudioDetails,
     );
+  }
+
+  async isPermalinkFoundForUser(permalink: string, userId: string) {
+    const searchTrack =
+      await this.tracksRepository.trackExistsByPermalinkForUser(
+        permalink,
+        userId,
+      );
+
+    if (searchTrack) {
+      return true;
+    }
+    return false;
+  }
+
+  async getUserQuota(userId: string) {
+    const user = await this.tracksRepository.findUserById(userId);
+    if (!user) throw NotFoundError('User not found');
+    return user.uploads.length;
   }
 }
