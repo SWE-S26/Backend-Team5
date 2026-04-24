@@ -125,6 +125,16 @@ TrackInPlaylist:
         publicId:
           type: string
           example: 'audio/file_ech8r3'
+    audioClip:
+      type: object
+      properties:
+        start:
+          type: integer
+          example: 0
+        end:
+          type: integer
+          example: 20
+      nullable: true
     durationInSeconds:
       type: integer
       example: 236
