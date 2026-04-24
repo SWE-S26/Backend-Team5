@@ -9,6 +9,6 @@ export class PlaybackService {
 
   async getUserHistoryTracks(userId: string): Promise<any[]> {
     const tracks = await this.repository.getUserHistoryTracks(userId);
-    return TracksMapper.toTrackResponseList(tracks);
+    return TracksMapper.toTrackResponsePublicList(tracks);
   }
 }
