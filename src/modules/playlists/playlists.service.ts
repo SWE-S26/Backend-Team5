@@ -95,13 +95,26 @@ export class PlaylistsService {
       throw NotFoundError(durationInSeconds.message);
     }
 
-    return this.repository.create(
+    const playlist = await this.repository.create(
       playlistName,
       artistId,
       tracks,
       isPrivate,
       durationInSeconds,
     );
+
+    return playlist;
+  }
+
+  async addPlaylistToHistory(
+    playlistId: string,
+    userId: string,
+  ): Promise<void> {
+    const playlist = await this.repository.findById(playlistId);
+    if (!playlist) {
+      throw NotFoundError('Playlist not found');
+    }
+    await this.repository.addPlaylistToHistory(playlistId, userId);
   }
 
   async addTrackToPlaylist(

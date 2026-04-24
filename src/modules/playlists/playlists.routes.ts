@@ -20,6 +20,11 @@ playlistsPrivateRouter.delete(
   playlistsController.delete.bind(playlistsController),
 );
 
+playlistsPrivateRouter.post(
+  apiVersions.v1 + '/:id/history',
+  playlistsController.addPlaylistToHistory.bind(playlistsController),
+);
+
 playlistsPrivateRouter.put(
   apiVersions.v1 + '/:id',
   upload.fields([{ name: 'image', maxCount: 1 }]),
