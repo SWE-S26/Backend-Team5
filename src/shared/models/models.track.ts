@@ -31,6 +31,9 @@ export type ITrack = {
   audio: {
     url: string;
     id: string;
+    cloudIndex: number;
+    downloadLink: string;
+    waveformLink: string;
   };
   posterId: Types.ObjectId;
   image: {
@@ -62,8 +65,28 @@ export type ITrack = {
   hidden: boolean;
   banReason: string;
   createdAt: Date;
+  audioClip?: {
+    start: number;
+    end: number;
+  };
   updatedAt: Date;
 };
+
+const audioClipSchema = new Schema(
+  {
+    start: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    end: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+  },
+  { _id: false },
+);
 
 const permissionsSchema = new Schema(
   {
@@ -229,6 +252,8 @@ const trackSchema = new Schema(
     banReason: {
       type: String,
       default: '',
+    audioClip: {
+      type: audioClipSchema,
     },
   },
   { timestamps: true },

@@ -1,10 +1,28 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
-import { FeedIdParamDTO } from './feed.request.params';
-import { ListFeedsQueryDto } from './feed.request.query';
-import { CreateFeedRequestBodyDTO } from './feed.request.body';
+import {
+  FeedQueryDTO,
+  SearchQueryDTO,
+  SuggestionsQueryDTO,
+} from './feed.request.query';
+import { HistoryIdParamDTO } from './feed.request.params';
+import { AddToHistoryBodyDTO } from './feed.request.body';
 
-export const CreateFeedRequestDTO = extendedZod.object({
-  params: FeedIdParamDTO,
-  query: ListFeedsQueryDto,
-  body: CreateFeedRequestBodyDTO,
+export const GetFeedRequestDTO = extendedZod.object({
+  query: FeedQueryDTO,
+});
+
+export const SearchRequestDTO = extendedZod.object({
+  query: SearchQueryDTO,
+});
+
+export const SuggestionsRequestDTO = extendedZod.object({
+  query: SuggestionsQueryDTO,
+});
+
+export const DeleteHistoryItemRequestDTO = extendedZod.object({
+  params: HistoryIdParamDTO,
+});
+
+export const AddToHistoryRequestDTO = extendedZod.object({
+  body: AddToHistoryBodyDTO,
 });

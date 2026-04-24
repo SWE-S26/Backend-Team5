@@ -1,25 +1,328 @@
-import { PlaylistsRepository } from './playlists.repository';
+import {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+} from '../../shared/errors/responseErrors';
+import { IPlaylist } from '../../shared/models/models.playlist';
+import {
+  PlaylistsRepository,
+  PlaylistWithTracks,
+} from './playlists.repository';
+import {
+  CloudinaryService,
+  ImageFolder,
+} from '../../shared/abstractions/cloudinary.service';
+import { DEFAULT_PLAYLIST_IMAGE } from '../../config/constants';
+import { PlaylistArtistDetailsDTOType } from './dtos/playlists.response';
+import { UpdatePlaylistInfoInput } from './dtos/playlists.request';
+
+const isDefaultImage = (publicId: string) => {
+  return publicId === DEFAULT_PLAYLIST_IMAGE.publicId;
+};
 
 export class PlaylistsService {
-  constructor(private readonly repository: PlaylistsRepository) {}
+  private readonly repository: PlaylistsRepository = new PlaylistsRepository();
+  constructor() {}
 
-  async findAll(): Promise<any[]> {
-    return this.repository.findAll();
+  async findAll(
+    offset: number,
+    limit: number,
+    userId: string | null,
+  ): Promise<IPlaylist[]> {
+    return this.repository.findAll(limit, offset, userId);
   }
 
-  async findById(id: string): Promise<any | null> {
-    return this.repository.findById(id);
+  async findById(
+    id: string,
+    userId: string | null,
+    offset: number = 1,
+  ): Promise<PlaylistWithTracks | null> {
+    const playlistWithTracks = await this.repository.findByIdWithTracks(
+      id,
+      userId,
+      offset,
+    );
+
+    if (!playlistWithTracks) {
+      throw NotFoundError('Playlist not found');
+    }
+
+    if (playlistWithTracks instanceof Error) {
+      if (
+        playlistWithTracks.message ===
+        'You are blocked from accessing this playlist'
+      ) {
+        throw ForbiddenError(playlistWithTracks.message);
+      } else {
+        throw NotFoundError(playlistWithTracks.message);
+      }
+    }
+
+    return playlistWithTracks;
   }
 
-  async create(data: any): Promise<any> {
-    return this.repository.create(data);
+  async validateNumberOfPostedPlaylists(
+    userId: string,
+    role: string,
+  ): Promise<void> {
+    if (role === 'Pro') {
+      return;
+    }
+
+    const numberOfPostedTracks =
+      await this.repository.findNumberOfPostedPlaylists(userId);
+    if (!numberOfPostedTracks) {
+      throw NotFoundError('User not found');
+    }
+
+    if (numberOfPostedTracks.playlists.length >= 3) {
+      throw ForbiddenError(
+        'You have reached the maximum number of posted playlists allowed for your subscription. Please upgrade to Pro to post more playlists.',
+      );
+    }
   }
 
-  async update(id: string, data: any): Promise<any | null> {
-    return this.repository.update(id, data);
+  async create(
+    playlistName: string,
+    artistId: string,
+    tracks: any[],
+    isPrivate: boolean,
+  ): Promise<IPlaylist> {
+    const durationInSeconds =
+      await this.repository.findTrackLengthesByIds(tracks);
+
+    if (durationInSeconds instanceof Error) {
+      throw NotFoundError(durationInSeconds.message);
+    }
+
+    return this.repository.create(
+      playlistName,
+      artistId,
+      tracks,
+      isPrivate,
+      durationInSeconds,
+    );
   }
 
-  async delete(id: string): Promise<boolean> {
-    return this.repository.delete(id);
+  async addTrackToPlaylist(
+    playlistId: string,
+    trackId: string,
+    userId: string,
+  ): Promise<void> {
+    const result = await this.repository.addTrackToEndOfPlaylist(
+      trackId,
+      playlistId,
+      userId,
+    );
+
+    if (result instanceof Error) {
+      throw BadRequestError(result.message);
+    }
+  }
+
+  async getAlbumsOfAnArtist(
+    artistId: string,
+    userId: string | null,
+    limit = 5,
+    offset = 1,
+  ): Promise<IPlaylist[]> {
+    const getAlbums = true;
+    const albums = await this.repository.getPlaylistsForArtist(
+      artistId,
+      limit,
+      offset,
+      userId,
+      getAlbums,
+    );
+
+    if (albums instanceof Error) {
+      throw ForbiddenError(albums.message);
+    }
+
+    return albums;
+  }
+
+  async updatePlaylist(
+    playlist: UpdatePlaylistInfoInput,
+    userId: string,
+  ): Promise<boolean> {
+    const { id } = playlist.params;
+    const { imageFile } = playlist;
+
+    await this.updateImage(id, imageFile, userId);
+
+    const updatedInfo = await this.repository.updatePlaylist(playlist);
+
+    if (updatedInfo instanceof Error) {
+      throw NotFoundError(updatedInfo.message);
+    }
+
+    return true;
+  }
+
+  async getByPermalink(
+    permalink: string,
+    userId: string | null,
+  ): Promise<PlaylistWithTracks | null> {
+    const playlist = await this.repository.findByPermalink(permalink, userId);
+    if (!playlist) {
+      throw NotFoundError('Playlist not found');
+    }
+
+    if (playlist instanceof Error) {
+      if (playlist.message === 'You are blocked from accessing this playlist') {
+        throw ForbiddenError(playlist.message);
+      } else {
+        throw NotFoundError(playlist.message);
+      }
+    }
+    return playlist;
+  }
+
+  async updateImage(
+    playlistId: string,
+    imageFile: Express.Multer.File,
+    userId: string,
+  ): Promise<IPlaylist | void> {
+    const playlist = await this.repository.findById(playlistId);
+    if (!playlist) {
+      throw NotFoundError('Playlist not found');
+    }
+
+    if (playlist.artistId.toString() !== userId) {
+      throw ForbiddenError(
+        'This is not your playlist, you cannot update its image',
+      );
+    }
+
+    if (!imageFile) {
+      return;
+    }
+
+    const uploadResult = await CloudinaryService.uploadImage(
+      imageFile.buffer,
+      ImageFolder.PLAYLIST,
+    );
+
+    if (!isDefaultImage(playlist.image.publicId)) {
+      await CloudinaryService.deleteImage(playlist.image.publicId);
+    }
+
+    const updatedPlaylist = await this.repository.updateImage(
+      playlistId,
+      uploadResult.url,
+      uploadResult.publicId,
+      userId,
+    );
+
+    if (!updatedPlaylist) {
+      throw NotFoundError('Playlist not found for updating');
+    }
+
+    return updatedPlaylist;
+  }
+
+  async getArtistDetails(
+    artistId: string,
+    userId: string | null,
+  ): Promise<PlaylistArtistDetailsDTOType | null> {
+    const artistDetails = await this.repository.getArtistDetails(
+      artistId,
+      userId,
+    );
+
+    if (!artistDetails) {
+      throw NotFoundError('Artist not found');
+    }
+
+    return artistDetails;
+  }
+
+  async getMorePlaylistsFromArtist(
+    artistId: string,
+    excludePlaylistId: string,
+    userId: string | null,
+  ): Promise<IPlaylist[]> {
+    const playlists = await this.repository.getMorePlaylistsFromSameArtist(
+      artistId,
+      excludePlaylistId,
+      userId,
+    );
+
+    if (playlists instanceof Error) {
+      throw NotFoundError(playlists.message);
+    }
+
+    return playlists;
+  }
+
+  async getMyPlaylists(
+    artistId: string,
+    offset: number = 1,
+    limit: number = 5,
+  ): Promise<IPlaylist[]> {
+    if (!artistId) {
+      throw BadRequestError('Artist Id is required to fetch playlists');
+    }
+
+    return this.repository.getMyPlaylists(artistId, offset, limit);
+  }
+
+  async getPlaylistsForArtist(
+    artistId: string,
+    offset: number = 1,
+    limit: number = 5,
+    userId: string | null,
+  ): Promise<IPlaylist[] | Error> {
+    const playlists = await this.repository.getPlaylistsForArtist(
+      artistId,
+      offset,
+      limit,
+      userId,
+    );
+    if (playlists instanceof Error) {
+      throw ForbiddenError(playlists.message);
+    }
+
+    return playlists;
+  }
+
+  async updateOrderOfSingleTrack(
+    playlistId: string,
+    trackId: string,
+    oldPosition: number,
+    newPosition: number,
+    userId: string,
+  ): Promise<boolean> {
+    const result = await this.repository.updateOrderOfSignleTrack(
+      playlistId,
+      trackId,
+      oldPosition,
+      newPosition,
+      userId,
+    );
+
+    if (result instanceof Error) {
+      if (
+        result.message ===
+        'You are not the owner of this playlist, you cannot update it'
+      ) {
+        throw ForbiddenError(result.message);
+      } else {
+        throw BadRequestError(result.message);
+      }
+    }
+
+    return result;
+  }
+
+  async delete(id: string, userId: string): Promise<boolean> {
+    const deleted = await this.repository.delete(id, userId);
+
+    if (deleted instanceof Error) {
+      throw NotFoundError(deleted.message);
+    }
+
+    return deleted;
   }
 }

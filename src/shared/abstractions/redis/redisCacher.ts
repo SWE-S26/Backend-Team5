@@ -97,7 +97,12 @@ class RedisCacher {
       logger.info(`[Cache] GET ${key}`);
 
       const data = await this.client.get(key);
-      if (!data) return null;
+      if (!data) {
+        logger.info(`[Cache] MISS ${key}`);
+        return null;
+      }
+
+      logger.info(`[Cache] HIT ${key}`);
       return JSON.parse(data) as T;
     } catch (error) {
       if (error instanceof Error) {

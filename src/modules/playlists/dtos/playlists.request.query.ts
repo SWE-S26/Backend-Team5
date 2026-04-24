@@ -1,15 +1,6 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
-import { PaginationQueryDto } from '../../../shared/dtos/commonDTO';
 
-export const PlaylistsRoleQueryDto = extendedZod.object({
-  role: extendedZod.enum(['user', 'admin']).optional(),
-});
-
-export const ListPlaylistssQueryDto = PaginationQueryDto.extend(
-  PlaylistsRoleQueryDto.shape,
-).extend({
-  // I have added the defualt because, I think every API would need it's default
-  // for example you may fetch 8 comments easily, but not 8 posts, I am giving an example
-  page: extendedZod.string().default('1'),
-  limit: extendedZod.string().default('20'),
+export const findAllPlaylistsQueryDto = extendedZod.object({
+  limit: extendedZod.coerce.number().int().min(1).max(20).default(10),
+  offset: extendedZod.coerce.number().int().min(1).default(1),
 });

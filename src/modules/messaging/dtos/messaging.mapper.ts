@@ -1,11 +1,63 @@
+import { Types } from 'mongoose';
+import { IConversationPopulated } from './messaging.response';
+
 export class MessagingMapper {
-  static toResponse(entity: any): any {
-    // TODO: map entity fields to response DTO
-    return {} as any;
+  static toChatHistorySenderResponse(
+    chat: IConversationPopulated | null,
+    userId: Types.ObjectId,
+  ): any {
+    if (!chat) return null;
+
+    const receiver = chat.participants.find(
+      (p: any) => p._id.toString() !== userId.toString(),
+    );
+
+    if (!receiver) return null;
+
+    return {
+      chat: chat._id,
+      participants: chat.participants,
+      lastMessage: chat.lastMessage,
+      receiver: {
+        displayName: receiver.displayName,
+        photoUrl: receiver.profileImg?.imgLink,
+      },
+    };
   }
 
-  static toEntity(dto: any): any {
-    // TODO: map request DTO fields to entity
-    return {};
+  static toChatHistoryReceiverResponse(
+    chat: IConversationPopulated | null,
+    userId: Types.ObjectId,
+  ): any {
+    if (!chat) return null;
+
+    const sender = chat.participants.find(
+      (p: any) => p._id.toString() == userId.toString(),
+    );
+
+    if (!sender) return null;
+
+    return {
+      chat: chat._id,
+      participants: chat.participants,
+      lastMessage: chat.lastMessage,
+      sender: {
+        displayName: sender.displayName,
+        photoUrl: sender.profileImg?.imgLink,
+      },
+    };
+  }
+
+  static toChatHistoryListResponse(
+    chatsHistory: IConversationPopulated[] | null,
+    userId: Types.ObjectId,
+  ): any {
+    if (!chatsHistory) return null;
+    const chatsMapped: any[] = [];
+    chatsHistory.forEach((chat) => {
+      const chatMapped = this.toChatHistorySenderResponse(chat, userId);
+      if (chatMapped !== null) chatsMapped.push(chatMapped);
+    });
+    return chatsMapped;
   }
 }

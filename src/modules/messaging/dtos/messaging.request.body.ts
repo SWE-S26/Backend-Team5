@@ -1,14 +1,23 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
-export const CreateMessagingRequestBodyDTO = extendedZod
-  .object({
-    email: extendedZod.string().email(),
-    password: extendedZod.string().min(6),
-    name: extendedZod.string().min(2),
-  })
-  .openapi('CreateMessagingRequest', {
-    example: {
-      email: 'john.doe@example.com',
-      password: 'secret123',
-      name: 'John Doe',
-    },
-  });
+import { Types } from 'mongoose';
+import { z } from 'zod';
+
+export const SendNewMessageRequestBodyDTO = extendedZod.object({
+  receiverId: extendedZod
+    .string()
+    .refine((value) => Types.ObjectId.isValid(value), {
+      message: 'Invalid ObjectId',
+    }),
+  content: extendedZod.string().min(1).max(2000),
+});
+
+export const ArchiveChatRequestBodyDTO = extendedZod.object({
+  chatId: extendedZod
+    .string()
+    .refine((value) => Types.ObjectId.isValid(value), {
+      message: 'Invalid ObjectId',
+    }),
+});
+
+export type SendNewMessageDTO = z.infer<typeof SendNewMessageRequestBodyDTO>;
+export type ArchiveChatDTO = z.infer<typeof ArchiveChatRequestBodyDTO>;

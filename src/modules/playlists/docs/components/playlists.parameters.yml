@@ -1,1 +1,48 @@
 # OpenAPI parameter definitions for the playlists module, starting writing normally like paths
+
+PlaylistIdPathParam:
+  name: playlistId
+  in: path
+  required: true
+  description: Unique identifier of the playlist
+  schema:
+    type: string
+    example: '64b8f0c2e4b0a1a2b3c4d5e'
+
+ArtistIdPathParam:
+  name: artistId
+  in: path
+  required: true
+  description: Unique identifier of the artist
+  schema:
+    type: string
+    example: '64b8f0c2e4b0a1a2b3c4d5e'
+
+TrackIdPathParam:
+  name: trackId
+  in: path
+  required: true
+  description: Unique identifier of the track
+  schema:
+    type: string
+    example: '64b8f0c2e4b0a1a2b3c4d5e'
+
+Playlistlimit:
+  name: limit
+  in: query
+  required: false
+  description: Number of items per page
+  schema:
+    type: integer
+    minimum: 1
+    example: 20
+
+Playlistoffset:
+  name: offset
+  in: query
+  required: false
+  description: Number of items to skip before starting to collect the result set
+  schema:
+    type: integer
+    minimum: 1
+    example: 1

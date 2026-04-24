@@ -1,36 +1,16 @@
-# PATCH
-/api/playlists/{playlistId}:
+/api/playlists/v1/{playlistId}/image:
   patch:
     tags:
       - Playlist Management
-    summary: Update a playlist by adding an audio track
-    description: Adds a track (audioId) to the specified playlist.
-    parameters:
-      - name: playlistId
-        in: path
-        required: true
-        description: The ID of the playlist to update
-        schema:
-          type: string
-          example: pl_789
+    summary: Update playlist image
+    description: Updates the image of the specified playlist.
 
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              audioId:
-                type: string
-                description: The ID of the audio track to add
-                example: trk_456
-            required:
-              - audioId
+    parameters:
+      - $ref: '#/components/parameters/PlaylistIdPathParam'
 
     responses:
       '200':
-        description: Playlist updated successfully
+        description: Playlist track order updated successfully
         content:
           application/json:
             schema:
@@ -38,9 +18,15 @@
               properties:
                 message:
                   type: string
-                  example: 'updated successfully'
+                  example: 'Track order updated successfully'
+                data:
+                  type: object
+                  properties:
+                    playlist:
+                      $ref: '#/components/schemas/Playlist'
               required:
                 - message
+                - data
 
       '400':
         $ref: '#/components/responses/InvalidParameters'
@@ -53,43 +39,41 @@
 
       '500':
         $ref: '#/components/responses/ServerError'
-        
-/api/playlists/myPlaylists/{playlistId}:
+
+/api/playlists/v1/{playlistId}/tracks:
   patch:
     tags:
       - Playlist Management
-    summary: Update playlist track order
-    description: >
-      The ending position of the track range. 
-      Must be provided together with `initialPosition`.
+    summary: Update playlist track order (by index move)
+    description: Moves a track from one position to another inside the playlist without affecting other tracks.
 
     parameters:
-      - name: playlistId
-        in: path
-        required: true
-        description: The ID of the playlist to update
-        schema:
-          type: string
-          example: pl_789
+      - $ref: '#/components/parameters/PlaylistIdPathParam'
 
-      - name: initialPosition
-        in: query
-        required: false
-        description: The starting position of the track range
-        schema:
-          type: integer
-          example: 1
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - trackId
+              - oldPosition
+              - newPosition
+            properties:
+              trackId:
+                type: string
+                example: trk_123
+              oldPosition:
+                type: integer
+                example: 0
+              newPosition:
+                type: integer
+                example: 3
 
-      - name: finalPosition
-        in: query
-        required: false
-        description: The ending position of the track range
-        schema:
-          type: integer
-          example: 5
     responses:
-      "200":
-        description: Playlist track order updated successfully
+      '200':
+        description: Track order updated successfully
         content:
           application/json:
             schema:
@@ -97,18 +81,56 @@
               properties:
                 message:
                   type: string
-                  example: "Track order updated successfully"
-              required:
-                - message
+                  example: Track order updated successfully
 
-      "400":
-        $ref: "#/components/responses/InvalidParameters"
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
 
-      "401":
-        $ref: "#/components/responses/Unauthorized"
+      '401':
+        $ref: '#/components/responses/Unauthorized'
 
-      "404":
-        $ref: "#/components/responses/NotFound"
+      '403':
+        $ref: '#/components/responses/Forbidden'
 
-      "500":
-        $ref: "#/components/responses/ServerError"
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/playlists/v1/{playlistId}/tracks/{trackId}:
+  patch:
+    tags:
+      - Playlist Management
+    summary: Add a track to a playlist
+    description: Adds a track to the end of the playlist.
+
+    parameters:
+      - $ref: '#/components/parameters/PlaylistIdPathParam'
+      - $ref: '#/components/parameters/TrackIdPathParam'
+    responses:
+      '200':
+        description: Track added to playlist successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track added to playlist successfully
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '403':
+        $ref: '#/components/responses/Forbidden'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'

@@ -7,4 +7,8 @@ export enum SocketEvents {
   USER_DISCONNECTED = 'user:disconnected',
 
   ERROR = 'error',
+  JOIN_CHAT = 'chat:join',
+  LEAVE_CHAT = 'chat:leave',
+  SEND_MSG = 'message:send',
+  MSG_NOTIFY = 'message:notify',
 }

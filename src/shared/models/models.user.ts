@@ -31,7 +31,7 @@ export type IUser = {
   email: string;
   password?: string;
   googleId?: string;
-  role: 'Listener' | 'Artist' | 'Pro' | 'Admin';
+  role: 'Listener' | 'Pro' | 'Admin';
   displayName: string;
   firstName: string;
   lastName: string;
@@ -177,7 +177,7 @@ const userSchema = new Schema(
     },
     role: {
       type: String,
-      enum: ['Listener', 'Artist', 'Pro', 'Admin'],
+      enum: ['Listener', 'Pro', 'Admin'],
       required: true,
       default: 'Listener',
     },
@@ -439,7 +439,7 @@ userSchema.post('findOneAndDelete', async function (doc: IUser | null) {
     await Promise.allSettled(
       userTracks.map((track) => {
         publitioMediaStorage
-          .deleteAudioTrack(track.audio.id)
+          .deleteAudioTrack(track.audio.id, track.audio.cloudIndex)
           .then(() => {
             logger.debug(
               `Successfully deleted audio track from Publitio for user ${doc._id}`,

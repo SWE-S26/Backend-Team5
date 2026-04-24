@@ -31,12 +31,15 @@ export class TracksRepository {
     return track;
   }
 
-  async deleteById(trackId: string): Promise<boolean> {
-    const deletedTrack = await Track.findOneAndDelete({
+  async deleteById(trackId: string, userId: string): Promise<boolean> {
+    await Track.findOneAndDelete({
       _id: trackId,
     });
 
-    if (!deletedTrack) throw NotFoundError('Track Not found');
+    await User.findOneAndUpdate(
+      { _id: userId },
+      { $pull: { uploads: trackId } },
+    );
     return true;
   }
 
@@ -66,12 +69,22 @@ export class TracksRepository {
     return tracksList;
   }
 
-  async createNewTrack(trackInput: TrackInput): Promise<string> {
-    const trackCreate = await Track.create(trackInput.trackInfo);
-    const advancedTrackInfoCreate = await AdvancedAudioDetails.create({
+  async createNewTrack(
+    trackInput: TrackInput,
+    trackId: Types.ObjectId,
+  ): Promise<string> {
+    const trackCreate = await Track.create({
+      _id: trackId,
+      ...trackInput.trackInfo,
+    });
+    await AdvancedAudioDetails.create({
       trackId: trackCreate._id,
       ...trackInput.advanced,
     });
+    await User.findOneAndUpdate(
+      { _id: trackInput.trackInfo.posterId },
+      { $push: { uploads: [trackCreate._id] } },
+    );
     return trackCreate._id.toString();
   }
 
@@ -168,5 +181,9 @@ export class TracksRepository {
       trackId: trackId,
     });
     return advancedTrackInfo;
+  }
+
+  async findUserById(userId: string): Promise<IUser | null> {
+    return await User.findOne<IUser>({ _id: userId });
   }
 }
