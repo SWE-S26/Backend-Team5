@@ -31,12 +31,15 @@ export class TracksRepository {
     return track;
   }
 
-  async deleteById(trackId: string): Promise<boolean> {
-    const deletedTrack = await Track.findOneAndDelete({
+  async deleteById(trackId: string, userId: string): Promise<boolean> {
+    await Track.findOneAndDelete({
       _id: trackId,
     });
 
-    if (!deletedTrack) throw NotFoundError('Track Not found');
+    await User.findOneAndUpdate(
+      { _id: userId },
+      { $pull: { uploads: trackId } },
+    );
     return true;
   }
 

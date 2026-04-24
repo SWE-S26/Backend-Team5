@@ -2,8 +2,8 @@ import extendedZod from '../../../shared/docs/dtoDocumenter';
 import { UpdateTrackDTO } from './tracks.request.body';
 import { z } from 'zod';
 
-export const TrackResponse = extendedZod.object({
-  _id: extendedZod.string(),
+export const TrackResponsePublic = extendedZod.object({
+  trackId: extendedZod.string(),
   basicInfo: extendedZod.object({
     title: extendedZod.string(),
     permalink: extendedZod.string(),
@@ -21,6 +21,7 @@ export const TrackResponse = extendedZod.object({
     url: extendedZod.string(),
     publicId: extendedZod.string(),
   }),
+  posterId: extendedZod.string(),
   durationInSeconds: extendedZod.number(),
   numLikes: extendedZod.number(),
   numPlays: extendedZod.number(),
@@ -29,10 +30,17 @@ export const TrackResponse = extendedZod.object({
   releaseDate: extendedZod.date(),
 });
 
-export type TrackResponseDTO = z.infer<typeof TrackResponse>;
+export const TrackResponsePrivate = TrackResponsePublic.extend({
+  isLikedByUser: extendedZod.boolean(),
+});
+
+export type TrackResponsePublicDTO = z.infer<typeof TrackResponsePublic>;
+export type TrackResponsePrivateDTO = z.infer<typeof TrackResponsePrivate>;
 
 export const PaginationResponse = extendedZod.object({
-  tracks: extendedZod.array(TrackResponse),
+  tracks: extendedZod.array(
+    extendedZod.union([TrackResponsePublic, TrackResponsePrivate]),
+  ),
   paginationInfo: extendedZod.object({
     totalNumTracks: extendedZod.number(),
     page: extendedZod.number(),

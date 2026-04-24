@@ -93,16 +93,30 @@ export class TracksController {
     }
   }
 
-  async getTrackById(req: Request, res: Response): Promise<void> {
+  async getTrackById(
+    req: Request,
+    res: Response,
+    type: 'PUBLIC' | 'PRIVATE',
+  ): Promise<void> {
     const validatedRequest = parseRequest(GetTrackByIdRequestDTO, req);
 
     if (!validatedRequest.success) {
       throw validatedRequest.error;
     }
 
-    const trackId = validatedRequest.data.params.id;
+    let requesterUserId = null;
+    if (type == 'PRIVATE') {
+      requesterUserId = this.getUserInfo(req).userId;
+    }
 
-    const trackInfo = await this.service.getTrackById(trackId);
+    const trackId = validatedRequest.data.params.id;
+    const userId = this.getUserInfo(req).userId;
+
+    const trackInfo = await this.service.getTrackById(
+      trackId,
+      userId,
+      requesterUserId,
+    );
     res.json({
       message: 'Track Info Retrieved Successfully',
       data: trackInfo,
@@ -134,7 +148,11 @@ export class TracksController {
     }
   }
 
-  async getUserLikedTracks(req: Request, res: Response): Promise<void> {
+  async getUserLikedTracks(
+    req: Request,
+    res: Response,
+    type: 'PUBLIC' | 'PRIVATE',
+  ): Promise<void> {
     // no validator required except auth middleware
     const validatedRequest = parseRequest(
       GetLikedTracksByUserIdRequestDTO,
@@ -145,8 +163,16 @@ export class TracksController {
       throw validatedRequest.error;
     }
 
+    let requesterUserId = null;
+    if (type == 'PRIVATE') {
+      requesterUserId = this.getUserInfo(req).userId;
+    }
+
     const userId = validatedRequest.data.params.id;
-    const likedTracks = await this.service.getLikedTracks(userId);
+    const likedTracks = await this.service.getLikedTracks(
+      userId,
+      requesterUserId,
+    );
     res.json({
       message: 'User Liked Tracks Received Successfully',
       data: likedTracks,
@@ -184,23 +210,41 @@ export class TracksController {
     }
   }
 
-  async getTrackByPermalink(req: Request, res: Response): Promise<void> {
+  async getTrackByPermalink(
+    req: Request,
+    res: Response,
+    type: 'PUBLIC' | 'PRIVATE',
+  ): Promise<void> {
     const validatedRequest = parseRequest(PermalinkRequestDTO, req);
 
     if (!validatedRequest.success) {
       throw validatedRequest.error;
     }
 
-    const permaLink = validatedRequest.data.params.permalink;
+    let requesterUserId = null;
+    if (type == 'PRIVATE') {
+      requesterUserId = this.getUserInfo(req).userId;
+    }
 
-    const trackInfo = await this.service.getTrackByPermalink(permaLink);
+    const permaLink = validatedRequest.data.params.permalink;
+    const userId = this.getUserInfo(req).userId;
+
+    const trackInfo = await this.service.getTrackByPermalink(
+      permaLink,
+      userId,
+      requesterUserId,
+    );
     res.json({
       message: 'Track Info Retrieved Successfully',
       data: trackInfo,
     });
   }
 
-  async getPaginatedListOfTracks(req: Request, res: Response): Promise<void> {
+  async getPaginatedListOfTracks(
+    req: Request,
+    res: Response,
+    type: 'PUBLIC' | 'PRIVATE',
+  ): Promise<void> {
     const validatedRequest = parseRequest(PaginationRequestDTO, req);
 
     if (!validatedRequest.success) {
@@ -208,8 +252,16 @@ export class TracksController {
     }
     const page = validatedRequest.data.query.page;
     const limit = validatedRequest.data.query.limit;
+    let requesterUserId = null;
+    if (type == 'PRIVATE') {
+      requesterUserId = this.getUserInfo(req).userId;
+    }
 
-    const paginationList = await this.service.getPaginatedList(page, limit);
+    const paginationList = await this.service.getPaginatedList(
+      page,
+      limit,
+      requesterUserId,
+    );
     if (paginationList) {
       res.status(200);
       res.json({
@@ -246,7 +298,11 @@ export class TracksController {
     });
   }
 
-  async getUserPostedTracks(req: Request, res: Response): Promise<void> {
+  async getUserPostedTracks(
+    req: Request,
+    res: Response,
+    type: 'PUBLIC' | 'PRIVATE',
+  ): Promise<void> {
     const validatedRequest = parseRequest(
       GetPostedTracksByUserIdRequestDTO,
       req,
@@ -256,7 +312,14 @@ export class TracksController {
     }
 
     const userId = validatedRequest.data.params.id;
-    const postedTracks = await this.service.getUserPostedTracks(userId);
+    let requesterUserId = null;
+    if (type == 'PRIVATE') {
+      requesterUserId = this.getUserInfo(req).userId;
+    }
+    const postedTracks = await this.service.getUserPostedTracks(
+      userId,
+      requesterUserId,
+    );
 
     res.status(200);
     res.json({
