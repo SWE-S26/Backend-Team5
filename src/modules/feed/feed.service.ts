@@ -193,4 +193,20 @@ export class FeedService {
 
     await this.repository.addToSearchHistory(userId, item);
   }
+
+  async deleteSearchHistoryItem(
+    userId: string,
+    historyId: string,
+  ): Promise<void> {
+    const existingUser: IUser | null =
+      await this.repository.getUserById(userId);
+    if (!existingUser) throw NotFoundError('User not found');
+
+    const history = await this.repository.deleteSearchHistoryItem(
+      userId,
+      historyId,
+    );
+
+    if (!history) throw NotFoundError('History item not found');
+  }
 }

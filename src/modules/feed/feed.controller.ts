@@ -8,6 +8,7 @@ import {
   SuggestionsRequestDTO,
   SearchRequestDTO,
   AddToHistoryRequestDTO,
+  DeleteHistoryItemRequestDTO,
 } from './dtos/feed.request';
 
 import {
@@ -108,5 +109,20 @@ export class FeedController {
     await this.service.addToSearchHistory(userId, body);
 
     res.status(201).json({ message: 'Added to history' });
+  }
+
+  async deleteSearchHistoryItem(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(DeleteHistoryItemRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const historyId = validatedRequest.data.params.historyId;
+    const userId = req.userInfo!._id;
+
+    await this.service.deleteSearchHistoryItem(userId, historyId);
+
+    res.status(204).send();
   }
 }

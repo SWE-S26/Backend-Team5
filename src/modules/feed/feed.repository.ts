@@ -661,4 +661,22 @@ export class FeedRepository {
 
     await history.save();
   }
+
+  async deleteSearchHistoryItem(
+    userId: string,
+    historyId: string,
+  ): Promise<boolean> {
+    const result = await SearchHistory.updateOne(
+      { userId },
+      {
+        $pull: {
+          historyList: {
+            id: new Types.ObjectId(historyId),
+          },
+        },
+      },
+    );
+
+    return result.modifiedCount > 0;
+  }
 }
