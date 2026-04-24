@@ -6,7 +6,7 @@ import blobStorageService from '../../src/shared/abstractions/blob.service';
 
 export const deleteTracksOnPublitioZero = async (): Promise<void> => {
   const tracks = await Track.find({
-    'audio.url': { $regex: 'https://beatza.publit.io' },
+    $and: [{ 'audio.waveformLink': null }],
   });
 
   for (const track of tracks) {

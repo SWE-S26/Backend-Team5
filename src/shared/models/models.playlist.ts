@@ -10,6 +10,7 @@ import {
   RedisObjectType,
 } from '../abstractions/redis/redisRepoCacher';
 import { DEFAULT_PLAYLIST_IMAGE } from '../../config/constants';
+import { boolean } from 'zod';
 
 export type IPlaylist = {
   _id: Types.ObjectId;
@@ -22,7 +23,7 @@ export type IPlaylist = {
   listOfTracks: Types.ObjectId[];
   additionalTags: string[];
   releaseDate: Date;
-  type: 'public' | 'private';
+  isPrivate: boolean;
   numOfLikes: number;
   numOfReposts: number;
   playlistType: 'playlist' | 'album' | 'compilation' | 'single';
@@ -65,7 +66,7 @@ const playlistSchema = new Schema<IPlaylist, IPlaylistModel>(
     },
     additionalTags: { type: [{ type: String, maxlength: 30 }], default: [] },
     releaseDate: { type: Date, min: new Date('1950-01-01') },
-    type: { type: String, enum: ['public', 'private'], default: 'public' },
+    isPrivate: { type: Boolean, default: false },
     numOfLikes: { type: Number, default: 0, min: 0 },
     numOfReposts: { type: Number, default: 0, min: 0 },
     playlistType: {
@@ -115,8 +116,6 @@ playlistSchema.statics.findByIdCached = async function (
   return result ?? null;
 };
 
-// ─── Cache Write-through (after create / full save) ───────────────────────────
-
 /**
  * Only fires on full document saves (new doc or doc.save()).
  * findOneAndUpdate intentionally does NOT warm the cache here —
@@ -124,6 +123,11 @@ playlistSchema.statics.findByIdCached = async function (
  * so we invalidate instead (see below).
  */
 playlistSchema.post('save', async function (doc) {
+  await User.updateOne(
+    { _id: doc.artistId },
+    { $push: { playlists: doc._id } },
+  );
+
   await redisRepoCacher.cacheObject(
     RedisObjectType.PLAYLIST,
     doc._id.toString(),
@@ -131,14 +135,10 @@ playlistSchema.post('save', async function (doc) {
   );
 });
 
-// ─── Cache Invalidation (after mutation) ─────────────────────────────────────
-
 playlistSchema.post('findOneAndUpdate', async function (doc) {
   if (!doc) return;
   await invalidatePlaylistCache(doc._id);
 });
-
-// ─── Cascade Delete + Invalidation ───────────────────────────────────────────
 
 async function cascadeDeletePlaylist(doc: IPlaylist): Promise<void> {
   try {
@@ -223,4 +223,5 @@ playlistSchema.post('updateMany', async function () {
 });
 
 const Playlist = model<IPlaylist, IPlaylistModel>('Playlist', playlistSchema);
+
 export default Playlist;

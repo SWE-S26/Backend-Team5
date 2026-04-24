@@ -47,11 +47,9 @@
                   type: string
               description:
                 type: string
-              Privacy:
-                type: string
-                enum: [public, private]
-                desciption: WRITE "type" INSTEAD OF PRIVACY, THE SWAGGER DOESN'T PARSE IF I SAY "type"
-                example: 'public'
+              isPrivate:
+                type: boolean
+                example: false
               audioTracks:
                 type: array
                 items:

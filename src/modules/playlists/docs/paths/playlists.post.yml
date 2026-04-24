@@ -58,3 +58,38 @@
 
       '500':
         $ref: '#/components/responses/ServerError'
+
+/api/v1/playlists/{playlistId}/history:
+  post:
+    tags:
+      - Playlist Management
+    summary: Add playlist to history
+    description: Adds a playlist to the user's history.
+    parameters:
+      - $ref: '#/components/parameters/PlaylistIdPathParam'
+
+    responses:
+      '200':
+        description: Playlist added to history successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: 'Playlist added to history successfully'
+              required:
+                - message
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '403':
+        $ref: '#/components/responses/Forbidden'
+
+      '500':
+        $ref: '#/components/responses/ServerError'

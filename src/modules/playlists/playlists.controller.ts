@@ -14,7 +14,10 @@ import {
   AddTrackToPlaylistDTO,
   GetPlaylistByPermalinkDTO,
 } from './dtos/playlists.request';
-import { BadRequestError } from '../../shared/errors/responseErrors';
+import {
+  BadRequestError,
+  ForbiddenError,
+} from '../../shared/errors/responseErrors';
 import logger from '../../shared/logger/logger';
 
 export class PlaylistsController {
@@ -31,6 +34,12 @@ export class PlaylistsController {
       return req.userInfo._id;
     }
     return null;
+  }
+
+  private stopAdmins(userRole: string): void {
+    if (userRole === 'admin') {
+      throw ForbiddenError('Admins are not allowed to perform this action');
+    }
   }
 
   async findAll(req: Request, res: Response): Promise<void> {
@@ -80,6 +89,8 @@ export class PlaylistsController {
       throw validatedRequest.error;
     }
 
+    this.stopAdmins(req.userInfo!.role);
+
     const { role, _id } = req.userInfo!;
 
     this.service.validateNumberOfPostedPlaylists(_id, role);
@@ -122,6 +133,8 @@ export class PlaylistsController {
       );
     }
 
+    this.stopAdmins(req.userInfo!.role);
+
     const validatedRequest = parseRequest(FindOnePlaylistDTO, req);
 
     if (!validatedRequest.success) {
@@ -143,6 +156,25 @@ export class PlaylistsController {
     });
   }
 
+  async addPlaylistToHistory(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(DeletePlaylistDTO, req);
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    this.stopAdmins(req.userInfo!.role);
+
+    const { id } = validatedRequest.data.params;
+    const userId = req.userInfo!._id;
+
+    await this.service.addPlaylistToHistory(id, userId);
+
+    res.json({
+      message: 'Playlist added to history successfully',
+      data: null,
+    });
+  }
+
   async updatePlaylistSingleTrackOrder(
     req: Request,
     res: Response,
@@ -155,6 +187,8 @@ export class PlaylistsController {
     if (!validatedRequest.success) {
       throw validatedRequest.error;
     }
+
+    this.stopAdmins(req.userInfo!.role);
 
     const { id } = validatedRequest.data.params;
     const { trackId, oldPosition, newPosition } = validatedRequest.data.body;
@@ -180,6 +214,8 @@ export class PlaylistsController {
     } catch (err) {
       throw BadRequestError('Invalid JSON in "data" field');
     }
+
+    this.stopAdmins(req.userInfo!.role);
 
     logger.info(
       { body: req.body },
@@ -208,6 +244,8 @@ export class PlaylistsController {
     if (!validatedRequest.success) {
       throw validatedRequest.error;
     }
+
+    this.stopAdmins(req.userInfo!.role);
 
     const { id, trackId } = validatedRequest.data.params;
     const userId = req.userInfo!._id;

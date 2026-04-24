@@ -31,7 +31,7 @@ export const UpdatePlaylistInfoRequestBodyDTO = extendedZod
       .date()
       .min(new Date('1950-01-01'))
       .optional(),
-    type: extendedZod.enum(['public', 'private']),
+    isPrivate: extendedZod.boolean(),
     playlistType: extendedZod.enum([
       'playlist',
       'album',
@@ -48,7 +48,7 @@ export const UpdatePlaylistInfoRequestBodyDTO = extendedZod
       genre: 'Rock',
       additionalTags: ['tag1', 'tag2'],
       releaseDate: '2023-01-01',
-      type: 'public',
+      isPrivate: false,
       playlistType: 'playlist',
       rssFeedLink: 'https://example.com/rss-feed.xml',
       recordLabel: 'Example Record Label',

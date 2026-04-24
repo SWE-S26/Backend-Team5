@@ -14,6 +14,7 @@ import {
   ForbiddenError,
   NotFoundError,
 } from '../../shared/errors/responseErrors';
+import History from '../../shared/models/models.history';
 
 export type TrackInPlaylist = Omit<ITrack, 'likedBy'> & {
   poster: Pick<IUser, 'displayName' | 'profileLink'> | null;
@@ -46,6 +47,36 @@ export class PlaylistsRepository {
     }
   }
 
+  async addPlaylistToHistory(
+    userId: string,
+    playlistId: string,
+  ): Promise<void> {
+    const playlistObjectId = new Types.ObjectId(playlistId);
+    const userObjectId = new Types.ObjectId(userId);
+
+    await History.findOneAndUpdate(
+      { userId: userObjectId },
+      {
+        $pull: { recentlyPlayed: { playlistId: playlistObjectId } },
+      },
+      { upsert: true },
+    );
+
+    await History.findOneAndUpdate(
+      { userId: userObjectId },
+      {
+        $push: {
+          recentlyPlayed: {
+            $each: [{ playlistId: playlistObjectId, timestamp: new Date() }],
+            $position: 0,
+            $slice: 50,
+          },
+        },
+      },
+      { upsert: true, new: true },
+    );
+  }
+
   async findAll(
     limit: number,
     offset: number = 1,
@@ -65,7 +96,7 @@ export class PlaylistsRepository {
     }
 
     const baseMatch: any = {
-      type: 'public',
+      isPrivate: false,
     };
 
     if (userId && blockedUserIds.length > 0) {
@@ -323,6 +354,7 @@ export class PlaylistsRepository {
                 poster: 1,
                 hidden: 1,
                 isPrivate: '$basicInfo.isPrivate',
+                audioClip: 1,
               },
             },
           ],
@@ -418,7 +450,7 @@ export class PlaylistsRepository {
       // ── 6. Clean up all internal pipeline fields ────────────────────────────
       {
         $project: {
-          listOfTracks: 0, // replaced by `tracks`
+          listOfTracks: 0,
           _pageIds: 0,
           _fetchedTracks: 0,
           _viewer: 0,
@@ -446,7 +478,7 @@ export class PlaylistsRepository {
         .replace(/-+/g, '-'),
       artistId,
       listOfTracks: tracks,
-      type: isPrivate ? 'private' : 'public',
+      isPrivate,
       playlistLengthInSeconds: playlistDuration,
     });
     return (await playlist.save()).toObject() as IPlaylist;
@@ -612,7 +644,7 @@ export class PlaylistsRepository {
       additionalTags: body.additionalTags,
       releaseDate: body.releaseDate,
       listOfTracks: body.listOfTracks,
-      type: body.type,
+      isPrivate: body.isPrivate,
       playlistType: body.playlistType,
       recordLabel: body.recordLabel,
       playlistLengthInSeconds: totalDuration,
@@ -679,7 +711,7 @@ export class PlaylistsRepository {
     const playlists = await Playlist.find({
       artistId,
       _id: { $ne: new Types.ObjectId(excludePlaylistId) },
-      type: 'public',
+      isPrivate: false,
     })
       .limit(5)
       .lean()
@@ -726,7 +758,7 @@ export class PlaylistsRepository {
 
     return await Playlist.find({
       artistId,
-      type: 'public',
+      isPrivate: false,
       ...(getAlbums ? { playlistType: 'album' } : {}),
     })
       .skip((offset - 1) * limit)
