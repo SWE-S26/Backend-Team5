@@ -1,4 +1,4 @@
-  /api/search/add-to-history:
+  /api/feed/v1/search/add-to-history:
     post:
       tags:
         - Search

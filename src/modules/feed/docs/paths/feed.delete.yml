@@ -1,4 +1,4 @@
-  /api/search/history:
+  /api/feed/v1/search/history:
     delete:
       tags:
         - Search
@@ -14,7 +14,7 @@
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/search/history/{historyId}:
+  /api/feed/v1/search/history/{historyId}:
     delete:
       tags:
         - Search
