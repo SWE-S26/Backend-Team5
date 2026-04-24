@@ -84,12 +84,13 @@ export class TracksService {
     }
 
     // delete audio from cloud storage first
-    publitioMediaStorage.deleteAudioTrack(
-      searchTrack.audio.id,
-      searchTrack.audio.cloudIndex,
-    );
-
-    await blobStorageService.deleteWaveFromBlob(searchTrack._id);
+    await Promise.all([
+      publitioMediaStorage.deleteAudioTrack(
+        searchTrack.audio.id,
+        searchTrack.audio.cloudIndex,
+      ),
+      blobStorageService.deleteWaveFromBlob(searchTrack._id),
+    ]);
 
     // delete track info from database
     const isDeleted = await this.tracksRepository.deleteById(trackId, userId);
