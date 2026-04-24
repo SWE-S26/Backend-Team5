@@ -5,11 +5,13 @@ import Following from '../../shared/models/models.following';
 import Track from '../../shared/models/models.track';
 import Playlist from '../../shared/models/models.playlist';
 import Plays from '../../shared/models/models.plays';
+import SearchHistory from '../../shared/models/models.search-history';
 
 import { SearchQueryDTOType } from './dtos/feed.request.query';
 import {
   SearchSuggestionDTOType,
   SearchResponseDTOType,
+  SearchHistoryItemDTOType,
 } from './dtos/feed.response';
 
 export interface feedItem {
@@ -512,7 +514,7 @@ export class FeedRepository {
   }
 
   async searchAlbums(params: SearchQueryDTOType) {
-    const { q, limit = 20, offset = 0 } = params;
+    const { q, tag, limit = 20, offset = 0 } = params;
 
     const limitHint = limit + offset;
 
@@ -523,6 +525,10 @@ export class FeedRepository {
       playlistType: 'album',
       type: 'public',
     };
+
+    if (tag) {
+      query.additionalTags = tag;
+    }
 
     const [results, count] = await Promise.all([
       Playlist.find(query).limit(limitHint).select({ _id: 1 }).lean(),
@@ -536,6 +542,96 @@ export class FeedRepository {
         type: 'album' as const,
       })),
       count,
+    };
+  }
+
+  async getSearchHistory(userId: string): Promise<SearchHistoryItemDTOType[]> {
+    const history = await SearchHistory.findOne({ userId }).lean();
+
+    if (!history?.historyList?.length) return [];
+
+    const items = history.historyList;
+
+    const trackIds = items.filter((i) => i.type === 'track').map((i) => i.id);
+    const userIds = items.filter((i) => i.type === 'user').map((i) => i.id);
+    const playlistIds = items
+      .filter((i) => i.type === 'playlist')
+      .map((i) => i.id);
+
+    const tracks = trackIds.length
+      ? await Track.find({ _id: { $in: trackIds } })
+          .select('_id basicInfo.title image.url posterId')
+          .lean()
+      : [];
+
+    const playlists = playlistIds.length
+      ? await Playlist.find({ _id: { $in: playlistIds } })
+          .select('_id title image.url artistId')
+          .lean()
+      : [];
+
+    const trackOwnerIds = tracks.map((t) => t.posterId);
+    const playlistOwnerIds = playlists.map((p) => p.artistId);
+
+    const allUserIds = [...userIds, ...trackOwnerIds, ...playlistOwnerIds];
+
+    const users = allUserIds.length
+      ? await User.find({ _id: { $in: allUserIds } })
+          .select('_id displayName profileImg.imgLink city')
+          .lean()
+      : [];
+
+    const userMap = new Map(users.map((u) => [u._id.toString(), u]));
+    const trackMap = new Map(tracks.map((t) => [t._id.toString(), t]));
+    const playlistMap = new Map(playlists.map((p) => [p._id.toString(), p]));
+
+    return items.map((item) =>
+      this.resolveHistoryItem(item, trackMap, playlistMap, userMap),
+    );
+  }
+
+  private resolveHistoryItem(
+    item: { id: any; type: string },
+    trackMap: Map<string, any>,
+    playlistMap: Map<string, any>,
+    userMap: Map<string, any>,
+  ): SearchHistoryItemDTOType {
+    const id = item.id.toString();
+
+    if (item.type === 'track') {
+      const t = trackMap.get(id);
+      const owner = t?.posterId ? userMap.get(t.posterId.toString()) : null;
+
+      return {
+        id,
+        type: 'track',
+        title: t?.basicInfo.title ?? '',
+        imageUrl: t?.image?.url ?? null,
+        metadata: owner?.displayName ?? null,
+      };
+    }
+
+    if (item.type === 'playlist') {
+      const p = playlistMap.get(id);
+      const owner = p?.artistId ? userMap.get(p.artistId.toString()) : null;
+
+      return {
+        id,
+        type: 'playlist',
+        title: p?.title ?? '',
+        imageUrl: p?.image?.url ?? null,
+        metadata: owner?.displayName ?? null,
+      };
+    }
+
+    const u = userMap.get(id);
+
+    return {
+      id,
+      type: 'user',
+      title: u?.displayName ?? '',
+      imageUrl: u?.profileImg?.imgLink ?? null,
+      metadata: u?.city ?? null,
     };
   }
 }

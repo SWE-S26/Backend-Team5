@@ -4,7 +4,7 @@ export type ISearchHistory = {
   userId: Types.ObjectId;
   historyList: {
     type: 'track' | 'user' | 'playlist';
-    id: Schema.Types.ObjectId;
+    id: Types.ObjectId;
   }[];
 };
 

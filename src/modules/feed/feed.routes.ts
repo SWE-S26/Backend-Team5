@@ -27,6 +27,11 @@ feedRoutes.get(
 );
 
 feedRoutes.get(
+  apiVersions.v1 + '/search/history',
+  feedController.getSearchHistory.bind(feedController),
+);
+
+feedRoutes.get(
   apiVersions.v1 + '/search',
   feedController.applyGlobalSearch.bind(feedController),
 );
