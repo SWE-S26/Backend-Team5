@@ -182,4 +182,15 @@ export class FeedService {
 
     return searchHistory;
   }
+
+  async addToSearchHistory(
+    userId: string,
+    item: { id: string; type: 'track' | 'user' | 'playlist' },
+  ): Promise<void> {
+    const existingUser: IUser | null =
+      await this.repository.getUserById(userId);
+    if (!existingUser) throw NotFoundError('User not found');
+
+    await this.repository.addToSearchHistory(userId, item);
+  }
 }

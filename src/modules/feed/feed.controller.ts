@@ -7,6 +7,7 @@ import {
   GetTrendingTracksRequestDTO,
   SuggestionsRequestDTO,
   SearchRequestDTO,
+  AddToHistoryRequestDTO,
 } from './dtos/feed.request';
 
 import {
@@ -92,5 +93,20 @@ export class FeedController {
     const searchHistory = await this.service.getSearchHistory(userId);
 
     res.json(searchHistory);
+  }
+
+  async addToSearchHistory(req: Request, res: Response): Promise<void> {
+    const validated = parseRequest(AddToHistoryRequestDTO, req);
+
+    if (!validated.success) {
+      throw validated.error;
+    }
+
+    const userId = req.userInfo!._id;
+    const body = validated.data.body;
+
+    await this.service.addToSearchHistory(userId, body);
+
+    res.status(201).json({ message: 'Added to history' });
   }
 }
