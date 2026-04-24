@@ -30,7 +30,6 @@ export const SearchCountsDTO = extendedZod.object({
 export const SearchResponseDTO = extendedZod.object({
   counts: SearchCountsDTO,
   results: extendedZod.array(SearchResultDTO),
-  hasMore: extendedZod.boolean(),
 });
 
 export type SearchResponseDTOType = z.infer<typeof SearchResponseDTO>;
@@ -40,7 +39,7 @@ export const SearchSuggestionDTO = extendedZod.object({
   type: extendedZod.enum(['track', 'user', 'playlist']).optional(),
   title: extendedZod.string(),
   imgLink: extendedZod.string().url().nullable().optional(),
-  isPersonalized: extendedZod.boolean().optional(),
+  isPersonalized: extendedZod.boolean(),
 });
 
 export type SearchSuggestionDTOType = z.infer<typeof SearchSuggestionDTO>;

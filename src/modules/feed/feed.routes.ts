@@ -26,4 +26,9 @@ feedRoutes.get(
   feedController.getSearchSuggestions.bind(feedController),
 );
 
+feedRoutes.get(
+  apiVersions.v1 + '/search',
+  feedController.applyGlobalSearch.bind(feedController),
+);
+
 export default feedRoutes;

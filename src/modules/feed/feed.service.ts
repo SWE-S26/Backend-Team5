@@ -5,8 +5,10 @@ import { IUser } from '../../shared/models/models.user';
 import {
   FeedResponseDTOType,
   TrendingResponseDTOType,
+  SearchSuggestionDTOType,
+  SearchResponseDTOType,
 } from './dtos/feed.response';
-import { SearchSuggestionDTOType } from './dtos/feed.response';
+import { SearchQueryDTOType } from './dtos/feed.request.query';
 
 import {
   NotFoundError,
@@ -124,5 +126,50 @@ export class FeedService {
       await this.repository.getGlobalSearchSuggestions(searchQuery, limit);
 
     return [...personalizedSearchSuggestions, ...globalSearchSuggestions];
+  }
+
+  async applyGlobalSearch(
+    params: SearchQueryDTOType,
+  ): Promise<SearchResponseDTOType> {
+    const { type = 'everything', offset = 0, limit = 20 } = params;
+
+    const shouldSearchTracks = type === 'everything' || type === 'tracks';
+    const shouldSearchUsers = type === 'everything' || type === 'users';
+    const shouldSearchPlaylists = type === 'everything' || type === 'playlists';
+    const shouldSearchAlbums = type === 'everything' || type === 'albums';
+
+    const [tracksRes, usersRes, playlistsRes, albumsRes] = await Promise.all([
+      shouldSearchTracks
+        ? this.repository.searchTracks(params)
+        : { results: [], count: 0 },
+      shouldSearchUsers
+        ? this.repository.searchUsers(params)
+        : { results: [], count: 0 },
+      shouldSearchPlaylists
+        ? this.repository.searchPlaylists(params)
+        : { results: [], count: 0 },
+      shouldSearchAlbums
+        ? this.repository.searchAlbums(params)
+        : { results: [], count: 0 },
+    ]);
+
+    const combined = [
+      ...tracksRes.results,
+      ...usersRes.results,
+      ...playlistsRes.results,
+      ...albumsRes.results,
+    ];
+
+    const paginated = combined.slice(offset, offset + limit);
+
+    return {
+      counts: {
+        tracks: tracksRes.count,
+        users: usersRes.count,
+        playlists: playlistsRes.count,
+        albums: albumsRes.count,
+      },
+      results: paginated,
+    };
   }
 }

@@ -6,7 +6,11 @@ import Track from '../../shared/models/models.track';
 import Playlist from '../../shared/models/models.playlist';
 import Plays from '../../shared/models/models.plays';
 
-import { SearchSuggestionDTOType } from './dtos/feed.response';
+import { SearchQueryDTOType } from './dtos/feed.request.query';
+import {
+  SearchSuggestionDTOType,
+  SearchResponseDTOType,
+} from './dtos/feed.response';
 
 export interface feedItem {
   id: string;
@@ -20,11 +24,6 @@ export interface actor {
   actorId: string;
   displayName: string;
   imgLink: string;
-}
-
-export interface trending {
-  id: string;
-  score: number;
 }
 
 export class FeedRepository {
@@ -362,21 +361,18 @@ export class FeedRepository {
     const trackResults = tracks.map((t) => ({
       id: t._id.toString(),
       title: t.basicInfo.title,
-      type: 'track' as const,
       isPersonalized: false,
     }));
 
     const playlistResults = playlists.map((p) => ({
       id: p._id.toString(),
       title: p.title,
-      type: 'playlist' as const,
       isPersonalized: false,
     }));
 
     const userResults = users.map((u) => ({
       id: u._id.toString(),
       title: u.displayName,
-      type: 'user' as const,
       isPersonalized: false,
     }));
 
@@ -384,5 +380,162 @@ export class FeedRepository {
       0,
       limit,
     );
+  }
+
+  async searchTracks(params: SearchQueryDTOType) {
+    const {
+      q,
+      dateRange,
+      duration,
+      usage,
+      tag,
+      limit = 20,
+      offset = 0,
+    } = params;
+
+    const limitHint = limit + offset;
+
+    const regex = new RegExp(q, 'i');
+
+    const query: any = {
+      'basicInfo.title': regex,
+      hidden: false,
+      'basicInfo.isPrivate': false,
+    };
+
+    if (tag) {
+      query['basicInfo.tags'] = tag;
+    }
+
+    if (duration && duration !== 'all') {
+      if (duration === 'lt2') query.durationInSeconds = { $lt: 120 };
+      if (duration === '2to10')
+        query.durationInSeconds = { $gte: 120, $lte: 600 };
+      if (duration === '10to30')
+        query.durationInSeconds = { $gte: 600, $lte: 1800 };
+      if (duration === 'gt30') query.durationInSeconds = { $gt: 1800 };
+    }
+
+    if (dateRange && dateRange !== 'all') {
+      const now = new Date();
+      const past = new Date();
+
+      if (dateRange === 'hour') past.setHours(now.getHours() - 1);
+      if (dateRange === 'day') past.setDate(now.getDate() - 1);
+      if (dateRange === 'week') past.setDate(now.getDate() - 7);
+      if (dateRange === 'month') past.setMonth(now.getMonth() - 1);
+      if (dateRange === 'year') past.setFullYear(now.getFullYear() - 1);
+
+      query.createdAt = { $gte: past };
+    }
+
+    if (usage) {
+      if (usage === 'commercial') query['license.nonCommercial'] = false;
+      if (usage === 'modify') query['license.noDerivativeWorks'] = false;
+      if (usage === 'share') query['license.shareAlike'] = true;
+    }
+
+    const [results, count] = await Promise.all([
+      Track.find(query).limit(limitHint).select({ _id: 1 }).lean(),
+
+      Track.countDocuments(query),
+    ]);
+
+    return {
+      results: results.map((t) => ({
+        id: t._id.toString(),
+        type: 'track' as const,
+      })),
+      count,
+    };
+  }
+
+  async searchUsers(params: SearchQueryDTOType) {
+    const { q, location, limit = 20, offset = 0 } = params;
+
+    const limitHint = limit + offset;
+
+    const regex = new RegExp(q, 'i');
+
+    const query: any = {
+      displayName: regex,
+    };
+
+    if (location) {
+      query.city = new RegExp(location, 'i');
+    }
+
+    const [results, count] = await Promise.all([
+      User.find(query).limit(limitHint).select({ _id: 1 }).lean(),
+
+      User.countDocuments(query),
+    ]);
+
+    return {
+      results: results.map((u) => ({
+        id: u._id.toString(),
+        type: 'user' as const,
+      })),
+      count,
+    };
+  }
+
+  async searchPlaylists(params: SearchQueryDTOType) {
+    const { q, tag, limit = 20, offset = 0 } = params;
+
+    const limitHint = limit + offset;
+
+    const regex = new RegExp(q, 'i');
+
+    const query: any = {
+      title: regex,
+      type: 'public',
+    };
+
+    if (tag) {
+      query.additionalTags = tag;
+    }
+
+    const [results, count] = await Promise.all([
+      Playlist.find(query).limit(limitHint).select({ _id: 1 }).lean(),
+
+      Playlist.countDocuments(query),
+    ]);
+
+    return {
+      results: results.map((p) => ({
+        id: p._id.toString(),
+        type: 'playlist' as const,
+      })),
+      count,
+    };
+  }
+
+  async searchAlbums(params: SearchQueryDTOType) {
+    const { q, limit = 20, offset = 0 } = params;
+
+    const limitHint = limit + offset;
+
+    const regex = new RegExp(q, 'i');
+
+    const query: any = {
+      title: regex,
+      playlistType: 'album',
+      type: 'public',
+    };
+
+    const [results, count] = await Promise.all([
+      Playlist.find(query).limit(limitHint).select({ _id: 1 }).lean(),
+
+      Playlist.countDocuments(query),
+    ]);
+
+    return {
+      results: results.map((a) => ({
+        id: a._id.toString(),
+        type: 'album' as const,
+      })),
+      count,
+    };
   }
 }
