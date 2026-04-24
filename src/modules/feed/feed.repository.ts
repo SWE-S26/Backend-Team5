@@ -4,6 +4,7 @@ import User, { IUser } from '../../shared/models/models.user';
 import Following from '../../shared/models/models.following';
 import Track from '../../shared/models/models.track';
 import Playlist from '../../shared/models/models.playlist';
+import Plays from '../../shared/models/models.plays';
 
 export interface feedItem {
   id: string;
@@ -17,6 +18,11 @@ export interface actor {
   actorId: string;
   displayName: string;
   imgLink: string;
+}
+
+export interface trending {
+  id: string;
+  score: number;
 }
 
 export class FeedRepository {
@@ -130,5 +136,95 @@ export class FeedRepository {
       displayName: a.displayName,
       imgLink: a.profileImg?.imgLink ?? null,
     }));
+  }
+
+  async getTrendingByGenresAndTags(
+    userId: string,
+    limitHint: number,
+  ): Promise<string[]> {
+    const userGenres = await Track.distinct('basicInfo.genre', {
+      posterId: userId,
+    });
+
+    const userTags = await Track.distinct('basicInfo.tags', {
+      posterId: userId,
+    });
+
+    if (!userGenres.length && !userTags.length) {
+      return [];
+    }
+
+    const tracks = await Track.find(
+      {
+        hidden: false,
+        'basicInfo.isPrivate': false,
+        posterId: { $ne: userId },
+
+        $or: [
+          { 'basicInfo.genre': { $in: userGenres } },
+          { 'basicInfo.tags': { $in: userTags } },
+        ],
+      },
+      {
+        _id: 1,
+      },
+    )
+      .limit(limitHint)
+      .lean();
+
+    return tracks.map((t) => t._id.toString());
+  }
+
+  async getTrendingByStats(limitHint: number): Promise<string[]> {
+    const tracks = await Track.find(
+      {
+        hidden: false,
+        'basicInfo.isPrivate': false,
+      },
+      { _id: 1 },
+    )
+      .sort({
+        numberOfReposts: -1,
+        numOfLikes: -1,
+        numOfPlays: -1,
+      })
+      .limit(limitHint)
+      .lean();
+
+    return tracks.map((t) => t._id.toString());
+  }
+
+  async getTrendingByRecentPlays(limitHint: number): Promise<string[]> {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const tracks = await Plays.aggregate([
+      {
+        $match: {
+          date: { $gte: sevenDaysAgo },
+        },
+      },
+      {
+        $group: {
+          _id: '$trackId',
+          totalPlays: { $sum: '$numberOfPlay' },
+        },
+      },
+      {
+        $sort: {
+          totalPlays: -1,
+        },
+      },
+      {
+        $limit: limitHint,
+      },
+      {
+        $project: {
+          _id: 1,
+        },
+      },
+    ]);
+
+    return tracks.map((t) => t._id.toString());
   }
 }

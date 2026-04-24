@@ -20,38 +20,32 @@
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  results:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                          description: ID of track/playlist/album
-                        type:
-                          type: string
-                          enum: [track, playlist]
-                        isRepost:
-                          type: boolean
-                          description: true if it is repost false if it is a post
-                        createdAt:
-                          type: string
-                          format: date-time
-                          description: the date this action was done
-                        actorId:
-                          type: string
-                          description: the user who did the action
-                        displayName:
-                          type: string
-                          description: display name of the actor
-                        imgLink:
-                          type: string
-                          description: profile img of actor
-                  hasMore:
-                    type: boolean
-                    description: indicates whether more feed items are available              
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ID of track/playlist/album
+                    type:
+                      type: string
+                      enum: [track, playlist]
+                    isRepost:
+                      type: boolean
+                      description: true if it is repost false if it is a post
+                    createdAt:
+                      type: string
+                      format: date-time
+                      description: the date this action was done
+                    actorId:
+                      type: string
+                      description: the user who did the action
+                    displayName:
+                      type: string
+                      description: display name of the actor
+                    imgLink:
+                      type: string
+                      description: profile img of actor             
         '401':
           description: Unauthorized
           content:
@@ -149,10 +143,7 @@
                           type: string
                         type:
                           type: string
-                          enum: [track, user, playlist, album]
-                  hasMore:
-                    type: boolean
-                    description: indicates whether more search results are available                          
+                          enum: [track, user, playlist, album]                      
         '401':
           description: Unauthorized
           content:
@@ -280,19 +271,13 @@
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  results:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                          description: ID of the trending track
-                  hasMore:
-                    type: boolean
-                    description: indicates whether more trending tracks are available
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ID of the trending track
         '401':
           description: Unauthorized
           content:

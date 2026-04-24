@@ -2,7 +2,10 @@ import { FeedRepository, feedItem, actor } from './feed.repository';
 
 import { IUser } from '../../shared/models/models.user';
 
-import { FeedResponseDTOType } from './dtos/feed.response';
+import {
+  FeedResponseDTOType,
+  TrendingResponseDTOType,
+} from './dtos/feed.response';
 
 import {
   NotFoundError,
@@ -25,7 +28,7 @@ export class FeedService {
 
     const followedIds: string[] = await this.repository.getUsersIds(userId);
 
-    const limitHint = offset + limit + 1;
+    const limitHint = offset + limit;
 
     const postsFeed: feedItem[] = await this.repository.getPostsFeed(
       followedIds,
@@ -59,12 +62,43 @@ export class FeedService {
       createdAt: item.createdAt.toISOString(),
       actorId: item.actorId,
       displayName: actorsMap.get(item.actorId)?.displayName ?? 'UNKNOWN',
-      imgLink: actorsMap.get(item.actorId)?.imgLink ?? 'UNKNOWN',
+      imgLink: actorsMap.get(item.actorId)?.imgLink ?? null,
     }));
 
-    return {
-      results,
-      hasMore: feed.length > offset + limit,
-    };
+    return results;
+  }
+
+  async getTrendingTracks(
+    userId: string,
+    offset: number,
+    limit: number,
+  ): Promise<TrendingResponseDTOType> {
+    const existingUser: IUser | null =
+      await this.repository.getUserById(userId);
+    if (!existingUser) throw NotFoundError('User not found');
+
+    const limitHint = offset + limit + 1;
+
+    const trendingByGenresAndTags: string[] =
+      await this.repository.getTrendingByGenresAndTags(userId, limitHint);
+    const trendingByRecentPlays: string[] =
+      await this.repository.getTrendingByRecentPlays(limitHint);
+    const trendingByStats: string[] =
+      await this.repository.getTrendingByStats(limitHint);
+
+    const trendingTracks: string[] = Array.from(
+      new Set([
+        ...trendingByGenresAndTags,
+        ...trendingByRecentPlays,
+        ...trendingByStats,
+      ]),
+    );
+
+    const paginatedTrendingTracks = trendingTracks.slice(
+      offset,
+      offset + limit,
+    );
+
+    return paginatedTrendingTracks.map((id) => ({ id }));
   }
 }
