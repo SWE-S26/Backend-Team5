@@ -52,8 +52,8 @@ tags:
       subscription status in the system.
   - name: Admin Users
     description: All endpoints related to admin users
-  - name: Admin Tracks
-    description: All endpoints related to admin tracks
+  - name: Admin Media
+    description: All endpoints related to admin tracks and playlists
   - name: Admin Analytics
     description: All endpoints related to admin analytics
   - name: Admin Reports

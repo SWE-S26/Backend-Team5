@@ -507,12 +507,17 @@ export class AuthService {
     paymentInfo: PaymentInfo,
   ): Promise<void> => {
     if (paymentInfo.subscriptionType !== 'free') {
-      ForbiddenError(
+      throw ForbiddenError(
         'You cannot delete your account without canceling your subscription first. Please cancel your subscription first.',
       );
     }
 
+    await this.deleteUserWithCleanup(userId);
+  };
+
+  async deleteUserWithCleanup(userId: string): Promise<void> {
     const user = await this.authRepository.findById(userId);
+
     if (!user) {
       throw NotFoundError('User not found');
     }
@@ -524,5 +529,5 @@ export class AuthService {
     await this.authRepository.deleteUser(userId);
 
     emailService.sendDeletedAccount(user.displayName, user.email);
-  };
+  }
 }

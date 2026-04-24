@@ -1,6 +1,5 @@
 import { Schema, Types, model } from 'mongoose';
 import logger from '../logger/logger';
-import Report from './models.report';
 import Notification from './models.notification';
 import Track from './models.track';
 
@@ -80,9 +79,6 @@ commentSchema.post(
 
         // Cascade-delete each reply (each fires this same hook recursively)
         ...replies.map((reply) => reply.deleteOne()),
-
-        // Delete admin reports filed against this comment
-        Report.deleteMany({ reportedId: doc._id, violatorType: 'Comment' }),
 
         // Delete notifications that reference this comment
         Notification.deleteMany({ 'type.referenceId': doc._id }),

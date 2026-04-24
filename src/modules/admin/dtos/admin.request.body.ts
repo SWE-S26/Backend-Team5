@@ -2,7 +2,11 @@ import extendedZod from '../../../shared/docs/dtoDocumenter';
 
 export const SuspendRequestBodyDTO = extendedZod
   .object({
-    reason: extendedZod.string().max(500).optional(),
+    reason: extendedZod
+      .string()
+      .min(1, 'a Reason must be provided')
+      .max(500)
+      .trim(),
   })
   .openapi('SuspendRequest', {
     example: {
@@ -12,23 +16,15 @@ export const SuspendRequestBodyDTO = extendedZod
 
 export const CreateReportRequestBodyDTO = extendedZod
   .object({
-    violatorId: extendedZod.string(),
-    violatorType: extendedZod.enum(['user', 'track', 'comment']),
-    complaintType: extendedZod.enum([
-      'spam',
-      'harassment',
-      'copyright',
-      'inappropriate_content',
-      'other',
-    ]),
-    body: extendedZod.string().max(1000).optional(),
+    violatorId: extendedZod.mongoId(),
+    violatorType: extendedZod.enum(['user', 'track']),
+    reason: extendedZod.string().min(1).max(2000).trim(),
   })
   .openapi('CreateReportRequest', {
     example: {
-      violatorId: 'usr_002',
+      violatorId: '507f1f77bcf86cd799439012',
       violatorType: 'track',
-      complaintType: 'spam',
-      body: 'This track contains copyrighted material.',
+      reason: 'This track contains abusive content.',
     },
   });
 
@@ -46,7 +42,11 @@ export const UpdateReportStatusRequestBodyDTO = extendedZod
 
 export const AdminActionReasonRequestBodyDTO = extendedZod
   .object({
-    reason: extendedZod.string().max(500).optional(),
+    reason: extendedZod
+      .string()
+      .min(1, 'A reason must be provided')
+      .max(500)
+      .trim(),
   })
   .openapi('AdminActionReasonRequest', {
     example: {
