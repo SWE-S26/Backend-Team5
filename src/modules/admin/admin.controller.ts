@@ -3,8 +3,11 @@ import { parseRequest } from '../../shared/dtos/requestParser';
 import { AdminService } from './admin.service';
 import {
   BanTrackRequestDTO,
+  CreateAdminReportRequestDTO,
   DeleteAdminTrackRequestDTO,
   DeleteAdminUserRequestDTO,
+  GetAdminAnalyticsOverviewRequestDTO,
+  GetAdminAnalyticsStorageRequestDTO,
   GetAdminMediaRequestDTO,
   GetAdminUsersRequestDTO,
   SuspendUserRequestDTO,
@@ -137,6 +140,51 @@ export class AdminController {
     const result = await this.service.deleteTrack(trackId, req.userInfo?.role);
 
     res.status(200).json(result);
+  }
+
+  async createReport(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(CreateAdminReportRequestDTO, req);
+
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { violatorId, violatorType, reason } = parsed.data.body;
+
+    const result = await this.service.createReport({
+      reporterId: req.userInfo?._id,
+      violatorId,
+      violatorType,
+      reason,
+    });
+
+    res.status(201).json(result);
+  }
+
+  async analyticsOverview(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetAdminAnalyticsOverviewRequestDTO, req);
+
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const result = await this.service.getAnalyticsOverview(
+      req.userInfo?.role,
+    );
+
+    res.json(result);
+  }
+
+  async analyticsStorage(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetAdminAnalyticsStorageRequestDTO, req);
+
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const result = await this.service.getAnalyticsStorage(req.userInfo?.role);
+
+    res.json(result);
   }
 
   async findOne(req: Request, res: Response): Promise<void> {

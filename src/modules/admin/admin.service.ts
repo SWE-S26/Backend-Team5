@@ -3,6 +3,7 @@ import {
   BadRequestError,
   ForbiddenError,
   NotFoundError,
+  UnauthorizedError,
 } from '../../shared/errors/responseErrors';
 import { AdminMapper } from './dtos/admin.mapper';
 import { IUser } from '../../shared/models/models.user';
@@ -22,6 +23,13 @@ type ListMediaOptions = {
   offset: number;
   limit: number;
   query?: string;
+};
+
+type CreateReportOptions = {
+  reporterId?: string;
+  violatorId: string;
+  violatorType: 'user' | 'track';
+  reason: string;
 };
 
 export class AdminService {
@@ -208,6 +216,63 @@ export class AdminService {
     return {
       message: 'Track permanently deleted.',
     };
+  }
+
+  async createReport(options: CreateReportOptions) {
+    if (!options.reporterId) {
+      UnauthorizedError('Unauthorized Access');
+    }
+
+    const reporter = await this.repository.findUserById(options.reporterId!);
+
+    if (!reporter) {
+      NotFoundError('reporter not found');
+    }
+
+    if (options.violatorType === 'user') {
+      const violatorUser = await this.repository.findUserById(
+        options.violatorId,
+      );
+      if (!violatorUser) {
+        NotFoundError('violator user not found');
+      }
+    }
+
+    if (options.violatorType === 'track') {
+      const violatorTrack = await this.repository.findTrackById(
+        options.violatorId,
+      );
+      if (!violatorTrack) {
+        NotFoundError('violator track not found');
+      }
+    }
+
+    const report = await this.repository.createReport({
+      reporterId: options.reporterId!,
+      violatorId: options.violatorId,
+      violatorType: options.violatorType,
+      reason: options.reason,
+    });
+
+    return AdminMapper.toReportResponse(report);
+  }
+
+  async getAnalyticsOverview(requesterRole?: string) {
+    if (requesterRole !== 'Admin') {
+      throw ForbiddenError('Only admins can access this resource');
+    }
+
+    const result = await this.repository.getAnalyticsOverview();
+    return AdminMapper.toAnalyticsOverviewResponse(result);
+  }
+
+  async getAnalyticsStorage(requesterRole?: string) {
+    if (requesterRole !== 'Admin') {
+      throw ForbiddenError('Only admins can access this resource');
+    }
+
+    const result = await this.repository.getAnalyticsStorage();
+    return AdminMapper.toAnalyticsStorageResponse(result);
   }
 
   async findById(id: string): Promise<any | null> {

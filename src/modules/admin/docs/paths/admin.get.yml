@@ -115,28 +115,20 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/artist/analytics/overview:
+/api/admin/v1/analytics/overview:
   get:
     tags:
       - Admin Analytics
-    summary: Artist's own stats overview.
-    description: Returns an overview of the authenticated artist's performance stats. Requires Artist role with Pro subscription.
-    operationId: getArtistAnalyticsOverview
-    parameters:
-      - name: period
-        in: query
-        required: false
-        description: Time period for the stats (e.g., last_7_days, last_30_days, all_time).
-        schema:
-          type: string
-          example: 'last_30_days'
+    summary: Platform analytics overview.
+    description: Returns a platform-level overview for admins, including user counts, pro-to-listeners ratio, total tracks, and total plays.
+    operationId: adminGetAnalyticsOverview
     responses:
       200:
-        description: Artist analytics overview.
+        description: Platform analytics overview.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ArtistAnalyticsOverviewResponse'
+              $ref: '#/components/schemas/AdminAnalyticsOverviewResponse'
       401:
         $ref: '#/components/responses/Unauthorized'
       403:
@@ -144,41 +136,20 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/artist/analytics/play-through-rate:
+/api/admin/v1/analytics/storage:
   get:
     tags:
       - Admin Analytics
-    summary: Artist's play-through rate per track.
-    description: Returns the average play-through rate across all tracks and per-track breakdowns. Requires Artist role with Pro subscription.
-    operationId: getArtistPlaythroughRate
+    summary: Platform storage usage.
+    description: Returns total audio storage usage for admins by summing file sizes from Publitio files list API.
+    operationId: adminGetAnalyticsStorage
     responses:
       200:
-        description: Play-through rate data.
+        description: Platform storage usage.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ArtistPlaythroughRateResponse'
-      401:
-        $ref: '#/components/responses/Unauthorized'
-      403:
-        $ref: '#/components/responses/Forbidden'
-      500:
-        $ref: '#/components/responses/ServerError'
-
-/api/artist/analytics/storage:
-  get:
-    tags:
-      - Admin Analytics
-    summary: Artist's storage usage.
-    description: Returns the storage usage statistics for the authenticated artist. Requires Artist role with Pro subscription.
-    operationId: getArtistStorageUsage
-    responses:
-      200:
-        description: Storage usage data.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ArtistStorageResponse'
+              $ref: '#/components/schemas/AdminAnalyticsStorageResponse'
       401:
         $ref: '#/components/responses/Unauthorized'
       403:

@@ -102,46 +102,47 @@ export const AdminMediaListResponseDTO = extendedZod
 export const ReportResponseDTO = extendedZod
   .object({
     reportId: extendedZod.string(),
-    reporterId: extendedZod.string(),
+    reportedId: extendedZod.string(),
     violatorId: extendedZod.string(),
-    violatorType: extendedZod.enum(['user', 'track', 'comment']),
-    complaintType: extendedZod.string(),
-    status: extendedZod.enum(['pending', 'resolved', 'dismissed']),
-    body: extendedZod.string().optional(),
-    adminNote: extendedZod.string().optional(),
+    violatorType: extendedZod.enum(['user', 'track']),
+    reason: extendedZod.string(),
+    status: extendedZod.enum(['pending', 'done']),
     createdAt: extendedZod.string().datetime(),
-    resolvedAt: extendedZod.string().datetime().optional(),
   })
   .openapi('Report', {
     example: {
-      reportId: 'rep_123',
-      reporterId: 'usr_001',
-      violatorId: 'usr_002',
+      reportId: '507f1f77bcf86cd799439013',
+      reportedId: '507f1f77bcf86cd799439011',
+      violatorId: '507f1f77bcf86cd799439012',
       violatorType: 'track',
-      complaintType: 'spam',
+      reason: 'This track contains abusive content.',
       status: 'pending',
       createdAt: '2025-01-12T08:00:00Z',
     },
   });
 
-export const ArtistAnalyticsOverviewResponseDTO = extendedZod
+export const AdminAnalyticsOverviewResponseDTO = extendedZod
   .object({
+    totalUsers: extendedZod.number().int().min(0),
+    proToListenersRatio: extendedZod.number().min(0),
+    totalTracks: extendedZod.number().int().min(0),
     totalPlays: extendedZod.number().int().min(0),
-    totalLikes: extendedZod.number().int().min(0),
-    totalReposts: extendedZod.number().int().min(0),
-    totalComments: extendedZod.number().int().min(0),
-    totalFollowers: extendedZod.number().int().min(0),
-    uniqueListeners: extendedZod.number().int().min(0),
-    period: extendedZod.string().optional(),
   })
-  .openapi('ArtistAnalyticsOverviewResponse', {
+  .openapi('AdminAnalyticsOverviewResponse', {
     example: {
+      totalUsers: 1520,
+      proToListenersRatio: 0.08,
+      totalTracks: 420,
       totalPlays: 50000,
-      totalLikes: 3200,
-      totalReposts: 410,
-      totalComments: 780,
-      totalFollowers: 1200,
-      uniqueListeners: 8500,
-      period: 'last_30_days',
+    },
+  });
+
+export const AdminAnalyticsStorageResponseDTO = extendedZod
+  .object({
+    usedBytes: extendedZod.number().int().min(0),
+  })
+  .openapi('AdminAnalyticsStorageResponse', {
+    example: {
+      usedBytes: 524288000,
     },
   });

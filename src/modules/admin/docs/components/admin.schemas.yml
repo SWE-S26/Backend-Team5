@@ -86,81 +86,59 @@ CreateReportRequest:
   properties:
     violatorId:
       type: string
-      example: 'usr_002'
+      example: '507f1f77bcf86cd799439012'
     violatorType:
       type: string
       enum:
         - user
         - track
-        - comment
       example: 'track'
-    complaintType:
+    reason:
       type: string
-      enum:
-        - spam
-        - harassment
-        - copyright
-        - inappropriate_content
-        - other
-      example: 'spam'
-    body:
-      type: string
-      maxLength: 1000
-      example: 'This track contains copyrighted material.'
+      maxLength: 2000
+      example: 'This track contains abusive content.'
   required:
     - violatorId
     - violatorType
-    - complaintType
+    - reason
 
 Report:
   type: object
   properties:
     reportId:
       type: string
-      example: 'rep_123'
-    reporterId:
+      example: '507f1f77bcf86cd799439013'
+    reportedId:
       type: string
-      example: 'usr_001'
+      example: '507f1f77bcf86cd799439011'
     violatorId:
       type: string
-      example: 'usr_002'
+      example: '507f1f77bcf86cd799439012'
     violatorType:
       type: string
       enum:
         - user
         - track
-        - comment
       example: 'track'
-    complaintType:
+    reason:
       type: string
-      example: 'spam'
+      example: 'This track contains abusive content.'
     status:
       type: string
       enum:
         - pending
-        - resolved
-        - dismissed
+        - done
       example: 'pending'
-    body:
-      type: string
-      example: 'This content violates guidelines.'
-    adminNote:
-      type: string
-      example: 'Reviewed and found in violation.'
     createdAt:
       type: string
       format: date-time
       example: '2025-01-12T08:00:00Z'
-    resolvedAt:
-      type: string
-      format: date-time
-      example: '2025-01-13T10:00:00Z'
   required:
     - reportId
-    - reporterId
+    - reportedId
     - violatorId
     - violatorType
-    - complaintType
+    - reason
     - status
     - createdAt
 
@@ -332,91 +310,35 @@ AdminActionReasonRequest:
       maxLength: 500
       example: 'Content violates community guidelines.'
 
-# ─── Section 4: Analytics (Artist Pro) ────────────────────────────────────
+# ─── Section 4: Analytics (Admin) ────────────────────────────────────────
 
-ArtistAnalyticsOverviewResponse:
+AdminAnalyticsOverviewResponse:
   type: object
   properties:
+    totalUsers:
+      type: integer
+      example: 1520
+    proToListenersRatio:
+      type: number
+      format: float
+      example: 0.08
+    totalTracks:
+      type: integer
+      example: 420
     totalPlays:
       type: integer
       example: 50000
-    totalLikes:
-      type: integer
-      example: 3200
-    totalReposts:
-      type: integer
-      example: 410
-    totalComments:
-      type: integer
-      example: 780
-    totalFollowers:
-      type: integer
-      example: 1200
-    uniqueListeners:
-      type: integer
-      example: 8500
-    period:
-      type: string
-      description: Time period for the stats (e.g., last_30_days, all_time).
-      example: 'last_30_days'
   required:
+    - totalUsers
+    - proToListenersRatio
+    - totalTracks
     - totalPlays
-    - totalLikes
-    - totalReposts
-    - totalComments
-    - totalFollowers
-    - uniqueListeners
 
-TrackPlaythroughStat:
-  type: object
-  properties:
-    trackId:
-      type: string
-      example: 'trk_456'
-    title:
-      type: string
-      example: 'Summer Vibes'
-    averagePlaythroughRate:
-      type: number
-      format: float
-      minimum: 0
-      maximum: 1
-      example: 0.72
-  required:
-    - trackId
-    - title
-    - averagePlaythroughRate
-
-ArtistPlaythroughRateResponse:
-  type: object
-  properties:
-    averagePlaythroughRate:
-      type: number
-      format: float
-      minimum: 0
-      maximum: 1
-      example: 0.68
-    tracks:
-      type: array
-      items:
-        $ref: '#/components/schemas/TrackPlaythroughStat'
-  required:
-    - averagePlaythroughRate
-    - tracks
-
-ArtistStorageResponse:
+AdminAnalyticsStorageResponse:
   type: object
   properties:
     usedBytes:
       type: integer
       example: 524288000
-    totalBytes:
-      type: integer
-      example: 10737418240
-    trackCount:
-      type: integer
-      example: 25
   required:
     - usedBytes
-    - totalBytes
-    - trackCount

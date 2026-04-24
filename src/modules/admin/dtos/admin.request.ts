@@ -1,6 +1,7 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 import {
   AdminActionReasonRequestBodyDTO,
+  CreateReportRequestBodyDTO,
   SuspendRequestBodyDTO,
 } from './admin.request.body';
 import {
@@ -20,6 +21,10 @@ export const GetAdminUsersRequestDTO = extendedZod.object({
 
 export const GetAdminMediaRequestDTO = extendedZod.object({
   query: ListAdminMediaQueryDto,
+});
+
+export const CreateAdminReportRequestDTO = extendedZod.object({
+  body: CreateReportRequestBodyDTO,
 });
 
 export const SuspendUserRequestDTO = extendedZod.object({
@@ -52,3 +57,7 @@ export const CreateAdminRequestDTO = extendedZod.object({
   params: AdminIdParamDTO,
   query: ListAdminsQueryDto,
 });
+
+export const GetAdminAnalyticsOverviewRequestDTO = extendedZod.object({});
+
+export const GetAdminAnalyticsStorageRequestDTO = extendedZod.object({});

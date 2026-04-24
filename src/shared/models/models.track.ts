@@ -341,7 +341,7 @@ trackSchema.post(
         PlaysTrackHandling.deleteMany({ trackId: doc._id }),
 
         // Delete admin reports filed against this track
-        Report.deleteMany({ reportedId: doc._id, violatorType: 'Track' }),
+        Report.deleteMany({ violatorId: doc._id, violatorType: 'track' }),
 
         // Delete notifications that reference this track
         Notification.deleteMany({ 'type.referenceId': doc._id }),

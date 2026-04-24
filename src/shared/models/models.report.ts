@@ -2,18 +2,12 @@ import { Schema, Types, model } from 'mongoose';
 
 export type IReport = {
   reporterId: Types.ObjectId;
-  reportedId: Types.ObjectId;
-  complaintType:
-    | 'Spam'
-    | 'Impersonation'
-    | 'Abuse'
-    | 'Trademark infringement'
-    | 'Audio track posted on wrong account'
-    | 'Other';
-  violatorType: 'User' | 'Comment' | 'Track';
-  content?: string;
-  status: 'pending' | 'resolved' | 'dismissed';
-  adminNote?: string;
+  violatorId: Types.ObjectId;
+  reason: string;
+  violatorType: 'user' | 'track';
+  status: 'pending' | 'done';
+  resolvedTime?: Date | null;
+  createdAt: Date;
 };
 
 const reportSchema = new Schema(
@@ -23,41 +17,29 @@ const reportSchema = new Schema(
       ref: 'User',
       required: true,
     },
-    reportedId: {
+    violatorId: {
       type: Schema.Types.ObjectId,
       required: true,
     },
-    complaintType: {
+    reason: {
       type: String,
-      enum: [
-        'Spam',
-        'Impersonation',
-        'Abuse',
-        'Trademark infringement',
-        'Audio track posted on wrong account',
-        'Other',
-      ],
       required: true,
+      trim: true,
+      maxlength: 2000,
     },
     violatorType: {
       type: String,
-      enum: ['User', 'Comment', 'Track'],
+      enum: ['user', 'track'],
       required: true,
-    },
-    content: {
-      type: String,
-      default: '',
-      maxlength: 2000,
     },
     status: {
       type: String,
-      enum: ['pending', 'resolved', 'dismissed'],
+      enum: ['pending', 'done'],
       default: 'pending',
     },
-    adminNote: {
-      type: String,
-      default: '',
-      maxlength: 2000,
+    resolvedTime: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: { createdAt: 'createdAt', updatedAt: false } },

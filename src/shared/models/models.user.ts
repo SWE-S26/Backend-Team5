@@ -542,7 +542,7 @@ userSchema.post('findOneAndDelete', async function (doc: IUser | null) {
       Report.deleteMany({
         $or: [
           { reporterId: doc._id },
-          { reportedId: doc._id, violatorType: 'User' },
+          { violatorId: doc._id, violatorType: 'user' },
         ],
       }),
 

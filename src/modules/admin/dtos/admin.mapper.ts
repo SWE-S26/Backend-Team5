@@ -2,8 +2,11 @@ import { Types } from 'mongoose';
 import {
   AdminMediaListResponseDTO,
   AdminMediaSnippetResponseDTO,
+  ReportResponseDTO,
   AdminUserListResponseDTO,
   AdminUserSnippetResponseDTO,
+  AdminAnalyticsOverviewResponseDTO,
+  AdminAnalyticsStorageResponseDTO,
 } from './admin.response';
 
 export type AdminUserListRow = {
@@ -25,6 +28,28 @@ export type AdminMediaListRow = {
   numberOfLikes: number;
   ban: boolean;
   createdAt: Date | string;
+};
+
+export type AdminReportRow = {
+  _id: Types.ObjectId | string;
+  reporterId: Types.ObjectId | string;
+  violatorId: Types.ObjectId | string;
+  violatorType: 'user' | 'track';
+  reason: string;
+  status: 'pending' | 'done';
+  createdAt: Date;
+};
+
+export type AdminAnalyticsOverviewRow = {
+  totalUsers: number;
+  proUsers: number;
+  listenerUsers: number;
+  totalTracks: number;
+  totalPlays: number;
+};
+
+export type AdminAnalyticsStorageRow = {
+  usedBytes: number;
 };
 
 export class AdminMapper {
@@ -78,6 +103,34 @@ export class AdminMapper {
       offset,
       limit,
       items: entities.map((entity) => this.toMediaResponse(entity)),
+    });
+  }
+
+  static toReportResponse(entity: AdminReportRow) {
+    return ReportResponseDTO.parse({
+      reportId: entity._id.toString(),
+      reportedId: entity.reporterId.toString(),
+      violatorId: entity.violatorId.toString(),
+      violatorType: entity.violatorType,
+      reason: entity.reason,
+      status: entity.status,
+      createdAt: entity.createdAt.toISOString(),
+    });
+  }
+
+  static toAnalyticsOverviewResponse(entity: AdminAnalyticsOverviewRow) {
+    return AdminAnalyticsOverviewResponseDTO.parse({
+      totalUsers: entity.totalUsers,
+      proToListenersRatio:
+        entity.listenerUsers === 0 ? 0 : entity.proUsers / entity.listenerUsers,
+      totalTracks: entity.totalTracks,
+      totalPlays: entity.totalPlays,
+    });
+  }
+
+  static toAnalyticsStorageResponse(entity: AdminAnalyticsStorageRow) {
+    return AdminAnalyticsStorageResponseDTO.parse({
+      usedBytes: entity.usedBytes,
     });
   }
 

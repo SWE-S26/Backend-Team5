@@ -17,6 +17,18 @@ router.get(apiVersions.v1 + '/media', (req, res) =>
   adminController.listMedia(req, res),
 );
 
+router.get(apiVersions.v1 + '/analytics/overview', (req, res) =>
+  adminController.analyticsOverview(req, res),
+);
+
+router.get(apiVersions.v1 + '/analytics/storage', (req, res) =>
+  adminController.analyticsStorage(req, res),
+);
+
+router.post(apiVersions.v1 + '/reports', (req, res) =>
+  adminController.createReport(req, res),
+);
+
 router.patch(apiVersions.v1 + '/users/:userId/suspend', (req, res) =>
   adminController.suspendUser(req, res),
 );

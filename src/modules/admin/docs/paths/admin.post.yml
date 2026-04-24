@@ -1,28 +1,28 @@
 # POST paths for admin module
 
-/api/admin/reports:
+/api/admin/v1/reports:
   post:
     tags:
       - Admin Reports
     summary: Submit a report.
-    description: Allows any authenticated user to flag a track, comment, or user for review.
+    description: Allows any authenticated user to report a track or user for admin review.
     operationId: createReport
     requestBody:
       required: true
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/CreateReportRequest"
+            $ref: '#/components/schemas/CreateReportRequest'
     responses:
       201:
         description: Report submitted successfully.
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Report"
+              $ref: '#/components/schemas/Report'
       401:
-        $ref: "#/components/responses/Unauthorized"
+        $ref: '#/components/responses/Unauthorized'
       422:
-        $ref: "#/components/responses/InvalidParameters"
+        $ref: '#/components/responses/InvalidParameters'
       500:
-        $ref: "#/components/responses/ServerError"
+        $ref: '#/components/responses/ServerError'
