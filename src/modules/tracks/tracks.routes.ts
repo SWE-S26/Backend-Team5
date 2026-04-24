@@ -20,26 +20,46 @@ const tracksController = new TracksController();
 // ========================= PUBLIC =========================
 
 tracksPublicRouter.get(apiVersions.v1 + '/liked/:id', (req, res) =>
-  tracksController.getUserLikedTracks(req, res),
+  tracksController.getUserLikedTracks(req, res, 'PUBLIC'),
 );
 
 tracksPublicRouter.get(apiVersions.v1 + '/:id', (req, res) =>
-  tracksController.getTrackById(req, res),
+  tracksController.getTrackById(req, res, 'PUBLIC'),
 );
 
 tracksPublicRouter.get(apiVersions.v1 + '/permalink/:permalink', (req, res) =>
-  tracksController.getTrackByPermalink(req, res),
+  tracksController.getTrackByPermalink(req, res, 'PUBLIC'),
 );
 
 tracksPublicRouter.get(apiVersions.v1, (req, res) =>
-  tracksController.getPaginatedListOfTracks(req, res),
+  tracksController.getPaginatedListOfTracks(req, res, 'PUBLIC'),
 );
 
 tracksPublicRouter.get(apiVersions.v1 + '/posted/:id', (req, res) =>
-  tracksController.getUserPostedTracks(req, res),
+  tracksController.getUserPostedTracks(req, res, 'PUBLIC'),
 );
 
 // ======================== PRIVATE =========================
+
+tracksPrivateRouter.get(apiVersions.v1 + '/liked/:id', (req, res) =>
+  tracksController.getUserLikedTracks(req, res, 'PRIVATE'),
+);
+
+tracksPrivateRouter.get(apiVersions.v1 + '/:id', (req, res) =>
+  tracksController.getTrackById(req, res, 'PRIVATE'),
+);
+
+tracksPrivateRouter.get(apiVersions.v1 + '/permalink/:permalink', (req, res) =>
+  tracksController.getTrackByPermalink(req, res, 'PRIVATE'),
+);
+
+tracksPrivateRouter.get(apiVersions.v1, (req, res) =>
+  tracksController.getPaginatedListOfTracks(req, res, 'PRIVATE'),
+);
+
+tracksPrivateRouter.get(apiVersions.v1 + '/posted/:id', (req, res) =>
+  tracksController.getUserPostedTracks(req, res, 'PRIVATE'),
+);
 
 // ================= GET ===================
 

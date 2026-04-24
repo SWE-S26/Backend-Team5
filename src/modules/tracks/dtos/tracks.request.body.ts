@@ -2,7 +2,6 @@ import extendedZod from '../../../shared/docs/dtoDocumenter';
 import { z } from 'zod';
 import { Types } from 'mongoose';
 import { PublitioUploadResult } from '../../../shared/abstractions/publitio';
-import { CloudinaryUploadResult } from '../../../shared/abstractions/cloudinary.service';
 
 type ImageInfo = {
   imgLink: string;
@@ -81,7 +80,13 @@ export const CreateTrackRequestBodyDTO = extendedZod.object({
     audioClipStart: extendedZod.number().optional(),
     audioClipEnd: extendedZod.number().optional(),
     composer: extendedZod.string().optional(),
-    ISWC: extendedZod.string().optional(),
+    ISWC: extendedZod
+      .string()
+      .regex(
+        /^T-\d{9}-\d$/,
+        'ISWC must be in format T-XXXXXXXXX-C (e.g. T-034524680-1)',
+      )
+      .optional(),
     albumTitle: extendedZod.string().optional(),
     releaseTitle: extendedZod.string().optional(),
   }),
@@ -99,7 +104,9 @@ export const UpdateTrackRequestBodyDTO = extendedZod.object({
 export type TrackInput = {
   trackInfo: {
     basicInfo: CreateTrackDTO['basicInfo'];
-    audio: PublitioUploadResult;
+    audio: {
+      waveformLink: string;
+    } & PublitioUploadResult;
     image?: ImageInfo;
     posterId: Types.ObjectId;
     numOfPlays: number;
@@ -113,6 +120,10 @@ export type TrackInput = {
     composer: string;
     releaseTitle: string;
     hidden: boolean;
+    audioClip: {
+      start: number;
+      end: number;
+    };
   };
   advanced: {
     buyLink: string;
@@ -123,10 +134,6 @@ export type TrackInput = {
     iswc: string;
     explicitContent: boolean;
     pLine: string;
-    audioClip: {
-      start: number;
-      end: number;
-    };
     albumTitle: string;
   };
 };
