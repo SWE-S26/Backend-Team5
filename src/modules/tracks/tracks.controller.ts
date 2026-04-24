@@ -6,13 +6,14 @@ import {
   GetTrackByIdRequestDTO,
   IncrementTrackListenCountRequestDTO,
   UploadAudioTrackRequestDTO,
-  PermalinkRequestDTO,
+  GetTrackByProfilePermalinkRequestDTO,
   PaginationRequestDTO,
   UpdateTrackRequestDTO,
   GetLikedTracksByUserIdRequestDTO,
   GetPostedTracksByUserIdRequestDTO,
   AddTrackToUserHistoryRequestDTO,
   GetUserTrackDetailedInfoRequestDTO,
+  IsValidPermaLinkForUser,
 } from './dtos/tracks.request';
 import logger from '../../shared/logger/logger';
 
@@ -110,13 +111,8 @@ export class TracksController {
     }
 
     const trackId = validatedRequest.data.params.id;
-    const userId = this.getUserInfo(req).userId;
 
-    const trackInfo = await this.service.getTrackById(
-      trackId,
-      userId,
-      requesterUserId,
-    );
+    const trackInfo = await this.service.getTrackById(trackId, requesterUserId);
     res.json({
       message: 'Track Info Retrieved Successfully',
       data: trackInfo,
@@ -180,7 +176,6 @@ export class TracksController {
   }
 
   async uploadAudioTrack(req: Request, res: Response): Promise<void> {
-    // TODO : Check if user is Pro or no subscription to update criteria
     this.parseFormDataToJson(req);
 
     const validatedRequest = parseRequest(UploadAudioTrackRequestDTO, req);
@@ -215,7 +210,10 @@ export class TracksController {
     res: Response,
     type: 'PUBLIC' | 'PRIVATE',
   ): Promise<void> {
-    const validatedRequest = parseRequest(PermalinkRequestDTO, req);
+    const validatedRequest = parseRequest(
+      GetTrackByProfilePermalinkRequestDTO,
+      req,
+    );
 
     if (!validatedRequest.success) {
       throw validatedRequest.error;
@@ -227,11 +225,11 @@ export class TracksController {
     }
 
     const permaLink = validatedRequest.data.params.permalink;
-    const userId = this.getUserInfo(req).userId;
+    const profileLink = validatedRequest.data.params.profileLink;
 
     const trackInfo = await this.service.getTrackByPermalink(
       permaLink,
-      userId,
+      profileLink,
       requesterUserId,
     );
     res.json({
@@ -374,6 +372,40 @@ export class TracksController {
     res.json({
       message: 'Detailed Track Info Successfully',
       data: trackDetailedInfo,
+    });
+  }
+
+  async isValidPermalink(req: Request, res: Response) {
+    const validatedRequest = parseRequest(IsValidPermaLinkForUser, req);
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+    const permalink = validatedRequest.data.params.permalink;
+    const userInfo = this.getUserInfo(req);
+    const userId = userInfo.userId;
+
+    const isFound = await this.service.isPermalinkFoundForUser(
+      permalink,
+      userId,
+    );
+    res.status(200);
+    res.json({
+      message: 'Requested Done Successfully',
+      data: {
+        isFound,
+      },
+    });
+  }
+
+  async getUserQuota(req: Request, res: Response) {
+    const userId = this.getUserInfo(req).userId;
+    const quota = await this.service.getUserQuota(userId);
+    res.status(200);
+    res.json({
+      message: 'User Quota Fetched Successfully',
+      data: {
+        quota,
+      },
     });
   }
 }

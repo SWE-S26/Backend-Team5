@@ -3,6 +3,7 @@ import {
   TracksIdParamDTO,
   PermaLinkParamDTO,
   UserIdParamDTO,
+  ProfilePermalinkParamDTO,
 } from './tracks.request.params';
 import { ListTrackssQueryDto } from './tracks.request.query';
 import {
@@ -12,6 +13,10 @@ import {
 
 export const DeleteTrackRequestDTO = extendedZod.object({
   params: TracksIdParamDTO,
+});
+
+export const IsValidPermaLinkForUser = extendedZod.object({
+  params: PermaLinkParamDTO,
 });
 
 export const AddTrackToUserHistoryRequestDTO = extendedZod.object({
@@ -46,8 +51,8 @@ export const UpdateTrackRequestDTO = extendedZod.object({
   body: UpdateTrackRequestBodyDTO,
 });
 
-export const PermalinkRequestDTO = extendedZod.object({
-  params: PermaLinkParamDTO,
+export const GetTrackByProfilePermalinkRequestDTO = extendedZod.object({
+  params: ProfilePermalinkParamDTO,
 });
 
 export const PaginationRequestDTO = extendedZod.object({

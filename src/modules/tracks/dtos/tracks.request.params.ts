@@ -13,3 +13,12 @@ export const PermaLinkParamDTO = extendedZod.object({
       'Use only lowercase letters, numbers, underscores, or hyphens.',
     ),
 });
+
+export const ProfilePermalinkParamDTO = PermaLinkParamDTO.extend({
+  profileLink: extendedZod
+    .string()
+    .regex(
+      /^[a-z0-9_-]+$/,
+      'Use only lowercase letters, numbers, underscores, or hyphens.',
+    ),
+});

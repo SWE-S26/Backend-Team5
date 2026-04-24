@@ -260,7 +260,7 @@
       '500':
         $ref: '#/components/responses/ServerError'
 
-/api/public/tracks/v1/permalink/{permalink}:
+/api/public/tracks/v1/permalink/{profileLink}/{permalink}:
   get:
     tags:
       - Track Management
@@ -273,7 +273,6 @@
 
       It is typically used in:
         - Public track pages accessed via shareable links.
-        - Web and mobile deep links where the track is identified by its permalink.
         - SEO-friendly routing for track detail pages.
 
       The response includes complete publicly available track information such as metadata,
@@ -288,6 +287,12 @@
         schema:
           type: string
         example: cairo-grid
+      - name: profilelink
+        in: path
+        required: true
+        schema:
+          type: string
+        example: user-1234
 
     responses:
       '200':
@@ -1180,5 +1185,89 @@
         $ref: '#/components/responses/Unauthorized'
       '404':
         $ref: '#/components/responses/NotFound'
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/tracks/v1/permalink/valid/{permalink}:
+  get:
+    tags:
+      - Track Management
+    summary: Check if permalink is valid
+    description: >
+      Checks whether a given permalink is available for use.
+
+      Returns isFound as true if the permalink is already taken,
+      false if it is available.
+
+      It is typically used in:
+        - Track upload/edit forms to validate permalink availability in real time.
+
+    parameters:
+      - name: permalink
+        in: path
+        required: true
+        schema:
+          type: string
+        example: cairo-grid
+
+    responses:
+      '200':
+        description: Permalink validity checked successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Requested Done Successfully
+                data:
+                  type: object
+                  properties:
+                    isFound:
+                      type: boolean
+                      example: false
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/tracks/v1/quota:
+  get:
+    tags:
+      - Track Management
+    summary: Get user upload quota
+    description: >
+      Retrieves the upload quota for the currently authenticated user.
+
+      It is typically used in:
+        - Track upload screens to check if the user is allowed to upload more tracks.
+        - Profile or settings pages showing usage limits.
+
+    responses:
+      '200':
+        description: User quota fetched successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: User Quota Fetched Successfully
+                data:
+                  type: object
+                  properties:
+                    quota:
+                      type: integer
+                      example: 5
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
       '500':
         $ref: '#/components/responses/ServerError'

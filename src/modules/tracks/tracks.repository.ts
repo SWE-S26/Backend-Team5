@@ -88,8 +88,16 @@ export class TracksRepository {
     return trackCreate._id.toString();
   }
 
-  async getTrackByPermalink(permalink: string): Promise<ITrack | null> {
-    return await Track.findOne<ITrack>({ 'basicInfo.permalink': permalink });
+  async getTrackByProfilePermalink(
+    permalink: string,
+    profileLink: string,
+  ): Promise<ITrack | null> {
+    const searchUser = await User.findOne({ profileLink: profileLink });
+    if (!searchUser) return null;
+    return await Track.findOne<ITrack>({
+      'basicInfo.permalink': permalink,
+      posterId: searchUser._id,
+    });
   }
 
   async getPaginatedList(page: number, limit: number): Promise<PaginationList> {
@@ -185,5 +193,12 @@ export class TracksRepository {
 
   async findUserById(userId: string): Promise<IUser | null> {
     return await User.findOne<IUser>({ _id: userId });
+  }
+
+  async trackExistsByPermalinkForUser(permalink: string, userId: string) {
+    return await Track.findOne<ITrack>({
+      'basicInfo.permalink': permalink,
+      posterId: userId,
+    });
   }
 }
