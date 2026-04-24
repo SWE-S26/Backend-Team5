@@ -2,8 +2,14 @@ import { Request, Response } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
 import { FeedService } from './feed.service';
 
-import { GetFeedRequestDTO } from './dtos/feed.request';
-import { FeedResponseDTOType } from './dtos/feed.response';
+import {
+  GetFeedRequestDTO,
+  GetTrendingTracksRequestDTO,
+} from './dtos/feed.request';
+import {
+  FeedResponseDTOType,
+  TrendingResponseDTOType,
+} from './dtos/feed.response';
 
 export class FeedController {
   constructor(private readonly service: FeedService) {}
@@ -28,5 +34,21 @@ export class FeedController {
     );
 
     res.json(feed);
+  }
+
+  async getTrendingTracks(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(GetTrendingTracksRequestDTO, req);
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const offset = validatedRequest.data.query?.offset ?? 0;
+    const limit = validatedRequest.data.query?.limit ?? 20;
+    const userId = validatedRequest.data!.params.id;
+
+    const trending: TrendingResponseDTOType =
+      await this.service.getTrendingTracks(userId, offset, limit);
+
+    res.json(trending);
   }
 }

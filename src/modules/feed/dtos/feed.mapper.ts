@@ -46,16 +46,4 @@ export class FeedMapper {
       metadata: item.metadata || null,
     };
   }
-
-  static toTrendingResponse(
-    tracks: any[],
-    hasMore: boolean,
-  ): TrendingResponseDTOType {
-    return {
-      results: tracks.map((t) => ({
-        id: t._id.toString(),
-      })),
-      hasMore,
-    };
-  }
 }

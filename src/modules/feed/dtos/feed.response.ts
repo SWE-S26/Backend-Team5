@@ -11,10 +11,7 @@ export const FeedItemDTO = extendedZod.object({
   imgLink: extendedZod.string().url().nullable(),
 });
 
-export const FeedResponseDTO = extendedZod.object({
-  results: extendedZod.array(FeedItemDTO),
-  hasMore: extendedZod.boolean(),
-});
+export const FeedResponseDTO = extendedZod.array(FeedItemDTO);
 
 export type FeedResponseDTOType = z.infer<typeof FeedResponseDTO>;
 
@@ -62,9 +59,6 @@ export const TrendingTrackDTO = extendedZod.object({
   id: extendedZod.mongoId(),
 });
 
-export const TrendingResponseDTO = extendedZod.object({
-  results: extendedZod.array(TrendingTrackDTO),
-  hasMore: extendedZod.boolean(),
-});
+export const TrendingResponseDTO = extendedZod.array(TrendingTrackDTO);
 
 export type TrendingResponseDTOType = z.infer<typeof TrendingResponseDTO>;

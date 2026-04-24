@@ -12,7 +12,12 @@ const feedService = new FeedService(feedRepository);
 const feedController = new FeedController(feedService);
 
 feedRoutes.get(
-  apiVersions.v1 + '/feed/',
+  apiVersions.v1 + '/trending-tracks/:id',
+  feedController.getTrendingTracks.bind(feedController),
+);
+
+feedRoutes.get(
+  apiVersions.v1 + '/feed',
   feedController.getFeed.bind(feedController),
 );
 
