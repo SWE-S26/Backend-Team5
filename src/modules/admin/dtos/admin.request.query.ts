@@ -19,7 +19,7 @@ const toOptionalSearchQuery = (value: unknown): string | undefined => {
 };
 
 export const AdminRoleQueryDto = extendedZod.object({
-  role: extendedZod.enum(['Listener', 'Artist', 'Pro', 'Admin']).optional(),
+  role: extendedZod.enum(['Listener', 'Pro', 'Admin']).optional(),
 });
 
 export const ListAdminUsersQueryDto = extendedZod.object({

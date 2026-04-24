@@ -168,9 +168,7 @@ export class AdminController {
       throw parsed.error;
     }
 
-    const result = await this.service.getAnalyticsOverview(
-      req.userInfo?.role,
-    );
+    const result = await this.service.getAnalyticsOverview(req.userInfo?.role);
 
     res.json(result);
   }

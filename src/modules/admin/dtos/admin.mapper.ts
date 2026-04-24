@@ -13,7 +13,7 @@ export type AdminUserListRow = {
   _id: Types.ObjectId | string;
   displayName: string;
   email: string;
-  role: 'Listener' | 'Artist' | 'Pro' | 'Admin';
+  role: 'Listener' | 'Pro' | 'Admin';
   ban: boolean;
   createdAt: Date;
   uploadedTracksCount: number;
