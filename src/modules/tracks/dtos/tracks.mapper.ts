@@ -1,5 +1,9 @@
 import { ITrack } from '../../../shared/models/models.track';
-import { TrackResponseDTO } from './tracks.response';
+import {
+  TrackResponsePrivateDTO,
+  TrackResponsePublic,
+  TrackResponsePublicDTO,
+} from './tracks.response';
 import { CreateTrackDTO } from './tracks.request.body';
 import { PublitioUploadResult } from '../../../shared/abstractions/publitio';
 import { TrackInput } from './tracks.request.body';
@@ -60,10 +64,13 @@ export class TracksMapper {
     };
   }
 
-  static toTrackResponse(track: ITrack): TrackResponseDTO {
+  static toTrackResponsePrivate(
+    track: ITrack,
+    userId: string,
+  ): TrackResponsePrivateDTO {
     const trackBasicInfo = track.basicInfo;
     return {
-      _id: track._id.toString(),
+      trackId: track._id.toString(),
       basicInfo: {
         title: trackBasicInfo.title,
         permalink: trackBasicInfo.permalink,
@@ -73,6 +80,33 @@ export class TracksMapper {
         description: trackBasicInfo.description,
         isPrivate: trackBasicInfo.isPrivate,
       },
+      posterId: track.posterId.toString(),
+      durationInSeconds: track.durationInSeconds,
+      audio: track.audio,
+      image: track.image,
+      numLikes: track.numOfLikes,
+      numPlays: track.numOfPlays,
+      numReposts: track.numberOfReposts,
+      numComments: track.comments.length,
+      releaseDate: track.createdAt,
+      isLikedByUser: track.likedBy.map((id) => id.toString()).includes(userId),
+    };
+  }
+
+  static toTrackResponsePublic(track: ITrack): TrackResponsePublicDTO {
+    const trackBasicInfo = track.basicInfo;
+    return {
+      trackId: track._id.toString(),
+      basicInfo: {
+        title: trackBasicInfo.title,
+        permalink: trackBasicInfo.permalink,
+        mainArtists: trackBasicInfo.mainArtists,
+        genre: trackBasicInfo.genre,
+        tags: trackBasicInfo.tags,
+        description: trackBasicInfo.description,
+        isPrivate: trackBasicInfo.isPrivate,
+      },
+      posterId: track.posterId.toString(),
       durationInSeconds: track.durationInSeconds,
       audio: track.audio,
       image: track.image,
@@ -84,10 +118,22 @@ export class TracksMapper {
     };
   }
 
-  static toTrackResponseList(tracks: ITrack[]): TrackResponseDTO[] {
-    const tracksMapped: TrackResponseDTO[] = [];
+  static toTrackResponsePublicList(tracks: ITrack[]): TrackResponsePublicDTO[] {
+    const tracksMapped: TrackResponsePublicDTO[] = [];
     tracks.forEach((track) => {
-      const trackMapped = this.toTrackResponse(track);
+      const trackMapped = this.toTrackResponsePublic(track);
+      tracksMapped.push(trackMapped);
+    });
+    return tracksMapped;
+  }
+
+  static toTrackResponsePrivateList(
+    tracks: ITrack[],
+    userId: string,
+  ): TrackResponsePrivateDTO[] {
+    const tracksMapped: TrackResponsePrivateDTO[] = [];
+    tracks.forEach((track) => {
+      const trackMapped = this.toTrackResponsePrivate(track, userId);
       tracksMapped.push(trackMapped);
     });
     return tracksMapped;
