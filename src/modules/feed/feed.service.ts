@@ -172,4 +172,14 @@ export class FeedService {
       results: paginated,
     };
   }
+
+  async getSearchHistory(userId: string) {
+    const existingUser: IUser | null =
+      await this.repository.getUserById(userId);
+    if (!existingUser) throw NotFoundError('User not found');
+
+    const searchHistory = await this.repository.getSearchHistory(userId);
+
+    return searchHistory;
+  }
 }

@@ -85,4 +85,12 @@ export class FeedController {
 
     res.json(searchResult);
   }
+
+  async getSearchHistory(req: Request, res: Response): Promise<void> {
+    const userId = req.userInfo!._id;
+
+    const searchHistory = await this.service.getSearchHistory(userId);
+
+    res.json(searchHistory);
+  }
 }
