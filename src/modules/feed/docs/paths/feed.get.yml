@@ -258,7 +258,7 @@
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /api/feed/v1/trending-tracks:
+  /api/feed/v1/trending-tracks/{userId}:
     get:
       tags:
         - Feed
@@ -266,6 +266,12 @@
       description: this endpoint returns the trending tracks, it could be used in the discover feed in cross, it could be somewhere else in the app but now sure where
       operationId: getTrendingTracks
       parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
         - $ref: '#/components/parameters/OffsetParam'
         - $ref: '#/components/parameters/LimitParam'      
       responses:
