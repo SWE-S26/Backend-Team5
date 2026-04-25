@@ -14,6 +14,7 @@ export type ITransaction = {
   stripeSubscriptionId: string | null;
   stripeInvoiceId: string | null;
   type: TransactionType;
+  discountPercent?: number | null;
   amount: number;
   currency: string;
   subscriptionType: string;
@@ -65,6 +66,10 @@ const transactionSchema = new Schema<ITransaction>(
       default: 'usd',
       lowercase: true,
       trim: true,
+    },
+    discountPercent: {
+      type: Number,
+      default: null,
     },
     subscriptionType: {
       type: String,
