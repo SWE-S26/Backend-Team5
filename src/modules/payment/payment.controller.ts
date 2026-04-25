@@ -55,11 +55,12 @@ export class PaymentController {
     }
 
     const userId = req.userInfo!._id;
-    const { priceId } = validatedRequest.data.body;
+    const { priceId, promoCode } = validatedRequest.data.body;
 
     const { clientResponse, emailData } = await this.service.createSubscription(
       userId,
       priceId,
+      promoCode,
     );
 
     res.status(201).json({

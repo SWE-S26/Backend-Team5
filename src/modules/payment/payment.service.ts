@@ -28,6 +28,12 @@ export interface PricePlans {
   label: string;
 }
 
+const PROMO_CODES: Record<string, number> = {
+  C0CK5: 69,
+  JU1CY: 67,
+  E1OZO: 70,
+};
+
 const PRICE_TO_PLAN: Record<string, PricePlans> = {
   price_1TGQ4EKiCVlMQgBUJwZCK3um: {
     role: 'Pro',
@@ -140,6 +146,7 @@ export class PaymentService {
   async createSubscription(
     userId: string,
     priceId: string,
+    promoCode?: string,
   ): Promise<SubscriptionCreatedResult> {
     const user = await this.repository.findUserById(userId);
 
@@ -147,8 +154,25 @@ export class PaymentService {
     this.validateCustomerId(user.stripeCustomerId!);
     this.validatePriceId(priceId);
 
+    let discountPercent: number | undefined;
+    if (promoCode !== undefined) {
+      if (PROMO_CODES[promoCode] === undefined) {
+        throw BadRequestError('Invalid promo code');
+      }
+      discountPercent = PROMO_CODES[promoCode];
+    }
+
     if (user.stripeSubscriptionId) {
       throw BadRequestError('User already has an active subscription');
+    }
+
+    let stripeCouponId: string | undefined;
+    if (discountPercent !== undefined) {
+      const coupon = await this.stripe.coupons.create({
+        percent_off: discountPercent,
+        duration: 'once',
+      });
+      stripeCouponId = coupon.id;
     }
 
     let subscription: Stripe.Subscription;
@@ -157,6 +181,7 @@ export class PaymentService {
         customer: user.stripeCustomerId,
         items: [{ price: priceId }],
         expand: ['latest_invoice.payment_intent'],
+        ...(stripeCouponId && { discounts: [{ coupon: stripeCouponId }] }),
       });
     } catch (error) {
       if (error instanceof Error) {
@@ -188,6 +213,7 @@ export class PaymentService {
       type: 'subscription_created',
       subscriptionType: plan.subscriptionType,
       description: `Subscribed to ${plan.label}`,
+      ...(discountPercent !== undefined && { discountPercent }),
     });
 
     return PaymentMapper.toSubscriptionCreatedResult(
