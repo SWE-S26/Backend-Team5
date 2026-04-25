@@ -151,6 +151,11 @@
                 type: string
                 description: Stripe price ID for the desired plan
                 example: price_1TGQ4EKiCVlMQgBUJwZCK3um
+              promoCode:
+                type: string
+                description: Optional promo code for a one-time discount on the first invoice
+                example: JU1CY
+                nullable: true
 
     responses:
       '201':
