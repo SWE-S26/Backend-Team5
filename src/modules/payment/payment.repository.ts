@@ -24,6 +24,7 @@ export interface CreateTransactionFields {
   currency?: string;
   subscriptionType: string;
   description: string;
+  discountPercent?: number | null;
 }
 
 export interface FindTransactionsResult {
