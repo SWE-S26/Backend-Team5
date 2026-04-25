@@ -2,12 +2,15 @@ import z from 'zod';
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 
 export const PaginationQueryDTO = extendedZod.object({
-  offset: extendedZod.number().min(0).optional(),
-  limit: extendedZod.number().min(1).max(50).optional(),
+  offset: extendedZod.coerce.number().min(0).optional(),
+  limit: extendedZod.coerce.number().min(1).max(50).optional(),
 });
 
 export const FeedQueryDTO = PaginationQueryDTO.extend({
-  includeReposts: extendedZod.boolean().optional(),
+  includeReposts: extendedZod.preprocess(
+    (val) => val === 'true',
+    extendedZod.boolean(),
+  ),
 });
 
 export const SearchQueryDTO = PaginationQueryDTO.extend({
