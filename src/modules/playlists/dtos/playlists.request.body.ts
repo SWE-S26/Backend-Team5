@@ -2,7 +2,14 @@ import extendedZod from '../../../shared/docs/dtoDocumenter';
 export const CreatePlaylistsRequestBodyDTO = extendedZod
   .object({
     playlistName: extendedZod.string().min(1).max(100),
-    tracks: extendedZod.array(extendedZod.mongoId()).max(150),
+    tracks: extendedZod
+      .array(extendedZod.mongoId())
+      .max(150)
+      .min(1)
+      .refine(
+        (arr) => new Set(arr.map((id) => id.toString())).size === arr.length,
+        { message: 'Tracks must be unique' },
+      ),
     isPrivate: extendedZod.boolean(),
   })
   .openapi('CreatePlaylistsRequest', {
@@ -25,7 +32,14 @@ export const UpdatePlaylistInfoRequestBodyDTO = extendedZod
     description: extendedZod.string().max(500),
     genre: extendedZod.string().max(50),
     permalink: extendedZod.string().min(1).max(100),
-    listOfTracks: extendedZod.array(extendedZod.mongoId()).max(150),
+    listOfTracks: extendedZod
+      .array(extendedZod.mongoId())
+      .max(150)
+      .min(1)
+      .refine(
+        (arr) => new Set(arr.map((id) => id.toString())).size === arr.length,
+        { message: 'Tracks must be unique' },
+      ),
     additionalTags: extendedZod.array(extendedZod.string().max(30)),
     releaseDate: extendedZod.coerce
       .date()

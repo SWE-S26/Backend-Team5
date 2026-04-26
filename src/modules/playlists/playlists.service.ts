@@ -15,6 +15,7 @@ import {
 import { DEFAULT_PLAYLIST_IMAGE } from '../../config/constants';
 import { PlaylistArtistDetailsDTOType } from './dtos/playlists.response';
 import { UpdatePlaylistInfoInput } from './dtos/playlists.request';
+import logger from '../../shared/logger/logger';
 
 const isDefaultImage = (publicId: string) => {
   return publicId === DEFAULT_PLAYLIST_IMAGE.publicId;
@@ -95,15 +96,25 @@ export class PlaylistsService {
       throw NotFoundError(durationInSeconds.message);
     }
 
-    const playlist = await this.repository.create(
-      playlistName,
-      artistId,
-      tracks,
-      isPrivate,
-      durationInSeconds,
-    );
+    try {
+      const playlist = await this.repository.create(
+        playlistName,
+        artistId,
+        tracks,
+        isPrivate,
+        durationInSeconds,
+      );
 
-    return playlist;
+      return playlist;
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('permaLink')) {
+        throw BadRequestError(
+          'PermaLink taken, please choose another Display Name',
+        );
+      } else {
+        throw error;
+      }
+    }
   }
 
   async addPlaylistToHistory(
@@ -161,6 +172,15 @@ export class PlaylistsService {
   ): Promise<boolean> {
     const { id } = playlist.params;
     const { imageFile } = playlist;
+
+    const isPermalinkTaken = await this.repository.isPlaylsitPermalinkTaken(
+      playlist.body.permalink,
+      id,
+    );
+
+    if (isPermalinkTaken) {
+      throw BadRequestError('Playlist permalink is already taken');
+    }
 
     await this.updateImage(id, imageFile, userId);
 

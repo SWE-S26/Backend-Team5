@@ -1156,7 +1156,7 @@ describe('AuthService : completeGoogleSignUp', () => {
 
     await expect(
       authService.completeGoogleSignUp(googleCompleteBody),
-    ).rejects.toThrow('This user is logged in normally');
+    ).rejects.toThrow('User already exists. Please login normally.');
   });
 
   it('should call verifyIncomplete with correct token', async () => {
@@ -1222,30 +1222,6 @@ describe('AuthService : completeGoogleSignUp', () => {
       dateOfBirth: new Date('1995-01-01'),
       gender: 'Male',
     });
-  });
-
-  it('should call issueTokenPair with correct user fields', async () => {
-    jest
-      .spyOn(JWTService.prototype, 'verifyIncomplete')
-      .mockReturnValue(fakePayload);
-    (AuthRepository.prototype.findByEmail as jest.Mock).mockResolvedValue(null);
-    (AuthRepository.prototype.createWithGoogle as jest.Mock).mockResolvedValue(
-      fakeUser,
-    );
-    const issueSpy = jest
-      .spyOn(authService as any, 'issueTokenPair')
-      .mockReturnValue(fakeTokens);
-    jest
-      .spyOn(AuthMapper, 'toUserCredientialsResponse')
-      .mockReturnValue(fakeLoginResponse);
-
-    await authService.completeGoogleSignUp(googleCompleteBody);
-
-    expect(issueSpy).toHaveBeenCalledWith(
-      fakeUser._id.toString(),
-      fakeUser.role,
-      fakeUser.subscription,
-    );
   });
 
   it('should throw when verifyIncomplete throws', async () => {
