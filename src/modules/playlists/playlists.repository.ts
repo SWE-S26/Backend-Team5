@@ -15,6 +15,7 @@ import {
   NotFoundError,
 } from '../../shared/errors/responseErrors';
 import History from '../../shared/models/models.history';
+import logger from '../../shared/logger/logger';
 
 export type TrackInPlaylist = Omit<ITrack, 'likedBy'> & {
   poster: Pick<IUser, 'displayName' | 'profileLink'> | null;
@@ -193,6 +194,19 @@ export class PlaylistsRepository {
       blockedByMe,
       blockedMe,
     };
+  }
+
+  async isPlaylsitPermalinkTaken(
+    permaLink: string,
+    excludedPlaylistId: string | null = null,
+  ): Promise<boolean> {
+    const playlist = await Playlist.findOne({
+      permaLink: permaLink,
+      _id: { $ne: excludedPlaylistId },
+    });
+    logger.debug({ playlist }, 'Checked if playlist permalink is taken');
+
+    return !!playlist;
   }
 
   async isUserBlocked(artistId: string, userId: string): Promise<boolean> {
@@ -468,14 +482,20 @@ export class PlaylistsRepository {
     isPrivate: boolean,
     playlistDuration: number,
   ): Promise<IPlaylist> {
+    const permaLink = playlistName
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+
+    const isPermalinkTaken = await this.isPlaylsitPermalinkTaken(permaLink);
+    if (isPermalinkTaken) {
+      throw new Error('Playlist permaLink is already taken');
+    }
     const playlist = new Playlist({
       title: playlistName,
-      permaLink: playlistName
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9\s]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-'),
+      permaLink: permaLink,
       artistId,
       listOfTracks: tracks,
       isPrivate,
