@@ -57,6 +57,10 @@
                               - subscription_updated
                               - subscription_cancelled
                             example: payment_succeeded
+                          discountPercent:
+                            type: number
+                            nullable: true
+                            example: 10
                           amount:
                             type: number
                             description: Amount in smallest currency unit (e.g., cents)
