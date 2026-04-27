@@ -12,6 +12,7 @@ export const TrackResponsePublic = extendedZod.object({
     tags: extendedZod.array(extendedZod.string()),
     description: extendedZod.string(),
     isPrivate: extendedZod.boolean(),
+    caption: extendedZod.string(),
   }),
   audio: extendedZod.object({
     id: extendedZod.string(),
