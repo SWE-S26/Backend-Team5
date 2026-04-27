@@ -69,6 +69,13 @@ export class TracksMapper {
     userId: string,
   ): TrackResponsePrivateDTO {
     const trackBasicInfo = track.basicInfo;
+    const audio = track.audio as unknown as { id: string; url?: string; audioLink?: string };
+    const image = track.image as unknown as {
+      publicId: string;
+      url?: string;
+      imgLink?: string;
+    };
+
     return {
       trackId: track._id.toString(),
       basicInfo: {
@@ -82,8 +89,14 @@ export class TracksMapper {
       },
       posterId: track.posterId.toString(),
       durationInSeconds: track.durationInSeconds,
-      audio: track.audio,
-      image: track.image,
+      audio: {
+        id: audio.id,
+        url: audio.url ?? audio.audioLink ?? '',
+      },
+      image: {
+        publicId: image.publicId,
+        url: image.url ?? image.imgLink ?? '',
+      },
       numLikes: track.numOfLikes,
       numPlays: track.numOfPlays,
       numReposts: track.numberOfReposts,
@@ -95,6 +108,13 @@ export class TracksMapper {
 
   static toTrackResponsePublic(track: ITrack): TrackResponsePublicDTO {
     const trackBasicInfo = track.basicInfo;
+    const audio = track.audio as unknown as { id: string; url?: string; audioLink?: string };
+    const image = track.image as unknown as {
+      publicId: string;
+      url?: string;
+      imgLink?: string;
+    };
+
     return {
       trackId: track._id.toString(),
       basicInfo: {
@@ -108,8 +128,14 @@ export class TracksMapper {
       },
       posterId: track.posterId.toString(),
       durationInSeconds: track.durationInSeconds,
-      audio: track.audio,
-      image: track.image,
+      audio: {
+        id: audio.id,
+        url: audio.url ?? audio.audioLink ?? '',
+      },
+      image: {
+        publicId: image.publicId,
+        url: image.url ?? image.imgLink ?? '',
+      },
       numLikes: track.numOfLikes,
       numPlays: track.numOfPlays,
       numReposts: track.numberOfReposts,

@@ -171,6 +171,54 @@
     security:
       - BearerAuth: []
 
+/api/engagement/tracks/v1/reposted:
+  get:
+    tags:
+      - Reposts
+    summary: Get authenticated user reposted tracks.
+    description: Returns a paginated list of tracks reposted by the authenticated user.
+    operationId: getUserRepostedTracks
+    parameters:
+      - $ref: '#/components/parameters/EngagementOffsetParam'
+      - $ref: '#/components/parameters/EngagementLimitParam'
+    responses:
+      200:
+        description: Paginated list of reposted tracks for authenticated user.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepostedTracksResponse'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      500:
+        $ref: '#/components/responses/ServerError'
+    security:
+      - BearerAuth: []
+
+/api/engagement/playlists/v1/reposted:
+  get:
+    tags:
+      - Reposts
+    summary: Get authenticated user reposted playlists.
+    description: Returns a paginated list of playlists reposted by the authenticated user.
+    operationId: getUserRepostedPlaylists
+    parameters:
+      - $ref: '#/components/parameters/EngagementOffsetParam'
+      - $ref: '#/components/parameters/EngagementLimitParam'
+    responses:
+      200:
+        description: Paginated list of reposted playlists for authenticated user.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepostedPlaylistsResponse'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      500:
+        $ref: '#/components/responses/ServerError'
+    security:
+      - BearerAuth: []
+
 /api/engagement/tracks/v1/{trackId}/like:
   get:
     tags:

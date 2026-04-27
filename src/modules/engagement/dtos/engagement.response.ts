@@ -1,5 +1,6 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 import { z } from 'zod';
+import { TrackResponsePublic } from '../../tracks/dtos/tracks.response';
 
 export const ToggleLikeResponseDTO = extendedZod
   .object({
@@ -85,6 +86,30 @@ export const MentionFollowerResponseDTO = extendedZod.object({
 export const MentionFollowersResponseDTO = extendedZod.array(
   MentionFollowerResponseDTO,
 );
+
+export const RepostedTrackItemResponseDTO = TrackResponsePublic.extend({
+  repostCaption: extendedZod.string().optional(),
+});
+
+export const RepostedPlaylistItemResponseDTO = extendedZod
+  .object({
+    repostCaption: extendedZod.string().optional(),
+  })
+  .passthrough();
+
+export const RepostedTracksResponseDTO = extendedZod.object({
+  total: extendedZod.number().int().min(0),
+  offset: extendedZod.number().int().min(0),
+  limit: extendedZod.number().int().min(1),
+  tracks: extendedZod.array(RepostedTrackItemResponseDTO),
+});
+
+export const RepostedPlaylistsResponseDTO = extendedZod.object({
+  total: extendedZod.number().int().min(0),
+  offset: extendedZod.number().int().min(0),
+  limit: extendedZod.number().int().min(1),
+  playlists: extendedZod.array(RepostedPlaylistItemResponseDTO),
+});
 
 export const TrackLikeStatusResponseDTO = extendedZod
   .object({
@@ -243,6 +268,10 @@ export type MentionFollowerResponse = z.infer<
 >;
 export type MentionFollowersResponse = z.infer<
   typeof MentionFollowersResponseDTO
+>;
+export type RepostedTracksResponse = z.infer<typeof RepostedTracksResponseDTO>;
+export type RepostedPlaylistsResponse = z.infer<
+  typeof RepostedPlaylistsResponseDTO
 >;
 export type TrackLikeStatusResponse = z.infer<
   typeof TrackLikeStatusResponseDTO
