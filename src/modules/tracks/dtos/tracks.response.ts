@@ -35,12 +35,16 @@ export const TrackResponsePublic = extendedZod.object({
     displayedEmbedCode: z.boolean(),
     enableAppPlayback: z.boolean(),
   }),
-  license: z.object({
-    type: z.enum(['allRightsReserved', 'creativeCommons']),
+  license: extendedZod.object({
+    type: extendedZod.enum(['allRightsReserved', 'creativeCommons']),
     attribution: z.boolean(),
     nonCommercial: z.boolean(),
     noDerivativeWorks: z.boolean(),
     shareAlike: z.boolean(),
+  }),
+  audioClip: extendedZod.object({
+    start: extendedZod.number().default(0),
+    end: extendedZod.number().default(0),
   }),
 });
 

@@ -65,6 +65,15 @@ TrackPublicResponse:
     releaseDate:
       type: string
       format: date-time
+    audioClip:
+      type: object
+      properties:
+        start:
+          type: integer
+          example: 0
+        end:
+          type: integer
+          example: 30
     permissions:
       type: object
       properties:

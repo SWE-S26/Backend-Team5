@@ -109,6 +109,10 @@ export class TracksMapper {
       isLikedByUser: track.likedBy.map((id) => id.toString()).includes(userId),
       permissions: track.permissions,
       license: track.license,
+      audioClip: {
+        start: track.audioClip?.start ?? 0,
+        end: track.audioClip?.end ?? 0,
+      },
     };
   }
 
@@ -153,6 +157,10 @@ export class TracksMapper {
       releaseDate: track.createdAt,
       permissions: track.permissions,
       license: track.license,
+      audioClip: {
+        start: track.audioClip?.start ?? 0,
+        end: track.audioClip?.end ?? 0,
+      },
     };
   }
 
