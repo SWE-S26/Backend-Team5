@@ -66,13 +66,6 @@ class EmailService {
         to: options.userEmail,
         subject: options.subject,
         html: options.htmlContent,
-        attachments: [
-          {
-            filename: 'beatza.png',
-            path: imagePath,
-            cid: 'beatza-logo',
-          },
-        ],
       });
       return true;
     } catch (error) {
