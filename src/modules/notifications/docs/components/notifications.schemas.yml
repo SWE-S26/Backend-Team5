@@ -130,6 +130,14 @@ NotificationDTO:
       $ref: '#/components/schemas/NotificationUserSnippet'
     target:
       $ref: '#/components/schemas/NotificationTarget'
+    isBlockingActor:
+      type: boolean
+      description: Whether the notification recipient is blocking the actor.
+      example: false
+    isFollowingActor:
+      type: boolean
+      description: Whether the notification recipient is following the actor.
+      example: true
     createdAt:
       type: string
       format: date-time
@@ -141,6 +149,8 @@ NotificationDTO:
     - activityType
     - actor
     - target
+    - isBlockingActor
+    - isFollowingActor
     - createdAt
 
 NotificationListResponse:

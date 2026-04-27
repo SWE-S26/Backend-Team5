@@ -6,6 +6,8 @@ import {
 import { NotificationsService } from '../../modules/notifications/notifications.service';
 import logger from '../../shared/logger/logger';
 import Settings from '../../shared/models/models.settings';
+import BlockedList from '../../shared/models/models.blocked-list';
+import Following from '../../shared/models/models.following';
 import { SocketEvents } from '../socket.events';
 import { SocketService } from '../socket.service';
 
@@ -45,6 +47,8 @@ export type NotificationReceivePayload = {
     commentText?: string;
     mentionedUserProfileLink?: string;
   };
+  isBlockingActor: boolean;
+  isFollowingActor: boolean;
   createdAt: string;
 };
 
@@ -141,17 +145,28 @@ export class NotificationSocketHandler {
     const payload = this.toReceivePayload(notification);
     const shouldSend = await this.shouldSendToDevice(notification);
 
+    const actorRelation = await this.getActorRelationStatus(
+      notification.to,
+      notification.type.payload.actorId,
+    );
+
+    const enrichedPayload: NotificationReceivePayload = {
+      ...payload,
+      isBlockingActor: actorRelation.isBlockingActor,
+      isFollowingActor: actorRelation.isFollowingActor,
+    };
+
     if (!shouldSend) {
       logger.info(
         `[notification:receive] recipient ${notification.to.toString()} disabled device notifications for ${payload.activityType}`,
       );
-      return payload;
+      return enrichedPayload;
     }
 
     const delivered = this.socketService.sendToUser(
       notification.to.toString(),
       SocketEvents.NOTIFICATION_RECEIVE,
-      payload,
+      enrichedPayload,
     );
 
     if (!delivered) {
@@ -160,7 +175,7 @@ export class NotificationSocketHandler {
       );
     }
 
-    return payload;
+    return enrichedPayload;
   }
 
   private async shouldSendToDevice(
@@ -180,6 +195,27 @@ export class NotificationSocketHandler {
 
     const preference = settings?.notifications?.[preferenceField] ?? 'devices';
     return preference === 'devices' || preference === 'both';
+  }
+
+  private async getActorRelationStatus(
+    toUserId: Types.ObjectId,
+    actorId: Types.ObjectId,
+  ): Promise<{ isBlockingActor: boolean; isFollowingActor: boolean }> {
+    const [blockedDoc, followingDoc] = await Promise.all([
+      BlockedList.findOne({ blockerId: toUserId })
+        .select('blockedIds')
+        .lean<{ blockedIds?: Types.ObjectId[] } | null>(),
+      Following.findOne({ userId: toUserId })
+        .select('followed')
+        .lean<{ followed?: Types.ObjectId[] } | null>(),
+    ]);
+
+    const isBlockingActor =
+      blockedDoc?.blockedIds?.some((id) => id.equals(actorId)) ?? false;
+    const isFollowingActor =
+      followingDoc?.followed?.some((id) => id.equals(actorId)) ?? false;
+
+    return { isBlockingActor, isFollowingActor };
   }
 
   private toPreferenceField(
@@ -205,7 +241,7 @@ export class NotificationSocketHandler {
 
   private toReceivePayload(
     notification: NotificationRecord,
-  ): NotificationReceivePayload {
+  ): Omit<NotificationReceivePayload, 'isBlockingActor' | 'isFollowingActor'> {
     const activityType = this.toActivityType(notification.type.type);
 
     return {

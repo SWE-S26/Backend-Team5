@@ -7,6 +7,7 @@ import Track from '../../shared/models/models.track';
 import Comment from '../../shared/models/models.comment';
 import Following from '../../shared/models/models.following';
 import Settings from '../../shared/models/models.settings';
+import BlockedList from '../../shared/models/models.blocked-list';
 import {
   BadRequestError,
   NotFoundError,
@@ -570,6 +571,35 @@ export class NotificationsRepository {
 
     const created = await Notification.insertMany(insertDocs);
     return created.map((doc) => this.toNotificationRecord(doc));
+  }
+
+  async findBlockingActors(
+    actorIds: Types.ObjectId[],
+    recipientUserId: Types.ObjectId,
+  ): Promise<Set<string>> {
+    if (actorIds.length === 0) return new Set();
+
+    const doc = await BlockedList.findOne({ blockerId: recipientUserId })
+      .select('blockedIds')
+      .lean<{ blockedIds?: Types.ObjectId[] } | null>();
+
+    const blocking = new Set<string>();
+    if (doc?.blockedIds) {
+      for (const actorId of actorIds) {
+        if (doc.blockedIds.some((id) => id.equals(actorId))) {
+          blocking.add(actorId.toString());
+        }
+      }
+    }
+    return blocking;
+  }
+
+  async findFollowedUserIds(userId: Types.ObjectId): Promise<Set<string>> {
+    const doc = await Following.findOne({ userId })
+      .select('followed')
+      .lean<{ followed?: Types.ObjectId[] } | null>();
+
+    return new Set(doc?.followed?.map((id) => id.toString()) ?? []);
   }
 
   private parseObjectId(id: string, fieldName: string): Types.ObjectId {
