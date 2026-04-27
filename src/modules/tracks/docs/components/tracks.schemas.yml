@@ -1,95 +1,91 @@
 # OpenAPI parameter definitions for the tracks module, starting writing normally like paths
-BasicInfo:
+TrackPublicResponse:
   type: object
   properties:
-    title:
+    trackId:
       type: string
-    permalink:
+      example: 69e6bea48ae84d2ffd60e5cb
+    basicInfo:
+      type: object
+      properties:
+        title:
+          type: string
+        permalink:
+          type: string
+        mainArtists:
+          type: array
+          items:
+            type: string
+        genre:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+        isPrivate:
+          type: boolean
+    audio:
+      type: object
+      properties:
+        audioLink:
+          type: string
+          example: https://example.com/audio.mp3
+        id:
+          type: string
+          example: LQ9uT2jj
+        waveformLink:
+          type: string
+          example: https://example.com/waveform.json
+        downloadLink:
+          type: string
+          example: https://example.com/download/audio.mp3
+    durationInSeconds:
+      type: integer
+      example: 13
+    posterId:
       type: string
-    mainArtists:
-      type: array
-      items:
-        type: string
-    genre:
-      type: string
-    tags:
-      type: array
-      items:
-        type: string
-    description:
-      type: array
-      items:
-        type: string
-    isPrivate:
-      type: boolean
-  required:
-    - title
-    - permalink
-    - mainArtists
-    - genre
-    - isPrivate
-
-Permissions:
-  type: object
-  properties:
-    enableDirectDownload:
-      type: boolean
-    offlineListening:
-      type: boolean
-    includeInRssFeed:
-      type: boolean
-    displayedEmbedCode:
-      type: boolean
-    enableAppPlayback:
-      type: boolean
-  required:
-    - enableDirectDownload
-    - offlineListening
-    - includeInRssFeed
-    - displayedEmbedCode
-    - enableAppPlayback
-
-AdvancedDetails:
-  type: object
-  properties:
-    buyLink:
-      type: string
-    recordLabel:
-      type: string
+      example: 69e6bea48ae84d2ffd60e5cb
+    image:
+      type: object
+      properties:
+        imgLink:
+          type: string
+        publicId:
+          type: string
+    numLikes:
+      type: integer
+    numPlays:
+      type: integer
+    numReposts:
+      type: integer
+    numComments:
+      type: integer
     releaseDate:
-      type: date-time
-    publisher:
       type: string
-    ISRC:
-      type: string
-    hasExplictContent:
-      type: boolean
-    pLine:
-      type: string
-  required:
-    - buyLink
-    - recordLabel
-    - releaseDate
-    - publisher
-    - ISRC
-    - hasExplictContent
-    - pLine
-
-Licensing:
-  oneOf:
-    - type: object
+      format: date-time
+    permissions:
+      type: object
+      properties:
+        enableDirectDownload:
+          type: boolean
+        offlineListening:
+          type: boolean
+        includeInRssFeed:
+          type: boolean
+        displayedEmbedCode:
+          type: boolean
+        enableAppPlayback:
+          type: boolean
+    license:
+      type: object
       properties:
         type:
           type: string
-          enum: [allRightsReserved]
-      required:
-        - type
-
-    - type: object
-      properties:
-        type:
-          type: string
-          enum: [creativeCommon]
+          enum:
+            - allRightsReserved
+            - creativeCommons
         attribution:
           type: boolean
         nonCommercial:
@@ -98,9 +94,177 @@ Licensing:
           type: boolean
         shareAlike:
           type: boolean
-      required:
-        - type
-        - attribution
-        - nonCommercial
-        - noDerivativeWorks
-        - shareAlike
+
+TrackPrivateResponse:
+  allOf:
+    - $ref: '#/components/schemas/TrackPublicResponse'
+    - type: object
+      properties:
+        isLikedByUser:
+          type: boolean
+          example: true
+
+PlaylistPublicResponse:
+  type: object
+  properties:
+    _id:
+      type: string
+      example: 69edd49d63a6eab14eed5458
+    artistId:
+      type: object
+      properties:
+        _id:
+          type: string
+        displayName:
+          type: string
+        profileLink:
+          type: string
+        profileImg:
+          type: object
+          properties:
+            imgLink:
+              type: string
+            publicId:
+              type: string
+    title:
+      type: string
+    permaLink:
+      type: string
+    description:
+      type: string
+    genre:
+      type: string
+    listOfTracks:
+      type: array
+      items:
+        type: string
+    additionalTags:
+      type: array
+      items:
+        type: string
+    isPrivate:
+      type: boolean
+    numOfLikes:
+      type: integer
+    numOfReposts:
+      type: integer
+    playlistType:
+      type: string
+      enum:
+        - playlist
+        - album
+    playlistLengthInSeconds:
+      type: integer
+    rssFeedLink:
+      type: string
+    recordLabel:
+      type: string
+    image:
+      type: object
+      properties:
+        imgLink:
+          type: string
+        publicId:
+          type: string
+    createdAt:
+      type: string
+      format: date-time
+    updatedAt:
+      type: string
+      format: date-time
+
+TrackDetailedResponse:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 69e6bea48ae84d2ffd60e5cb
+    basicInfo:
+      type: object
+      properties:
+        title:
+          type: string
+        permalink:
+          type: string
+        mainArtists:
+          type: array
+          items:
+            type: string
+        genre:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+        isPrivate:
+          type: boolean
+    permissions:
+      type: object
+      properties:
+        enableDirectDownload:
+          type: boolean
+        offlineListening:
+          type: boolean
+        includeInRssFeed:
+          type: boolean
+        displayedEmbedCode:
+          type: boolean
+        enableAppPlayback:
+          type: boolean
+    license:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - allRightsReserved
+            - creativeCommons
+        attribution:
+          type: boolean
+        nonCommercial:
+          type: boolean
+        noDerivativeWorks:
+          type: boolean
+        shareAlike:
+          type: boolean
+    advanced:
+      type: object
+      properties:
+        buyLink:
+          type: string
+          example: https://example.com/buy
+        recordLabel:
+          type: string
+          example: Sony Music
+        releaseDate:
+          type: string
+          format: date-time
+        publisher:
+          type: string
+          example: Universal
+        ISRC:
+          type: string
+          example: USRC12345678
+        explicitContent:
+          type: boolean
+          example: false
+        pLine:
+          type: string
+          example: 2024 Example Records
+        audioClipStart:
+          type: integer
+          example: 0
+        audioClipEnd:
+          type: integer
+          example: 30
+        composer:
+          type: string
+          example: John Doe
+        ISWC:
+          type: string
+          example: T-123456789-0
+        albumTitle:
+          type: string
+          example: My Album

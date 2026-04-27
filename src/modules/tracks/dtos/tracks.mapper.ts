@@ -90,6 +90,8 @@ export class TracksMapper {
       numComments: track.comments.length,
       releaseDate: track.createdAt,
       isLikedByUser: track.likedBy.map((id) => id.toString()).includes(userId),
+      permissions: track.permissions,
+      license: track.license,
     };
   }
 
@@ -115,6 +117,8 @@ export class TracksMapper {
       numReposts: track.numberOfReposts,
       numComments: track.comments.length,
       releaseDate: track.createdAt,
+      permissions: track.permissions,
+      license: track.license,
     };
   }
 

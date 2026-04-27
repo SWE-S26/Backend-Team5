@@ -129,7 +129,6 @@ export class TracksController {
       throw validatedRequest.error;
     }
 
-    const userInfo = this.getUserInfo(req);
     const trackId = validatedRequest.data.params.id;
     const isUpdatedNumPlays =
       await this.service.incrementTrackNumPlays(trackId);
@@ -398,7 +397,10 @@ export class TracksController {
   }
 
   async getUserQuota(req: Request, res: Response) {
-    const userId = this.getUserInfo(req).userId;
+    logger.info('HG');
+    const userInfo = this.getUserInfo(req);
+    const userId = userInfo.userId;
+    logger.info('Q');
     const quota = await this.service.getUserQuota(userId);
     res.status(200);
     res.json({
@@ -406,6 +408,36 @@ export class TracksController {
       data: {
         quota,
       },
+    });
+  }
+
+  async getPlaylistsContainingTrack(
+    req: Request,
+    res: Response,
+    type: 'PUBLIC' | 'PRIVATE',
+    playlistType: 'playlist' | 'album',
+  ) {
+    const validatedRequest = parseRequest(GetTrackByIdRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    let requesterUserId = null;
+    if (type == 'PRIVATE') {
+      requesterUserId = this.getUserInfo(req).userId;
+    }
+
+    const trackId = validatedRequest.data.params.id;
+
+    const trackInfo = await this.service.getPlaylistsContainingTrack(
+      trackId,
+      requesterUserId,
+      playlistType,
+    );
+    res.json({
+      message: 'Track Playlists Retrieved Successfully',
+      data: trackInfo,
     });
   }
 }

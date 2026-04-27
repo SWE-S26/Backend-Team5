@@ -28,6 +28,20 @@ export const TrackResponsePublic = extendedZod.object({
   numReposts: extendedZod.number(),
   numComments: extendedZod.number(),
   releaseDate: extendedZod.date(),
+  permissions: z.object({
+    enableDirectDownload: z.boolean(),
+    offlineListening: z.boolean(),
+    includeInRssFeed: z.boolean(),
+    displayedEmbedCode: z.boolean(),
+    enableAppPlayback: z.boolean(),
+  }),
+  license: z.object({
+    type: z.enum(['allRightsReserved', 'creativeCommons']),
+    attribution: z.boolean(),
+    nonCommercial: z.boolean(),
+    noDerivativeWorks: z.boolean(),
+    shareAlike: z.boolean(),
+  }),
 });
 
 export const TrackResponsePrivate = TrackResponsePublic.extend({
