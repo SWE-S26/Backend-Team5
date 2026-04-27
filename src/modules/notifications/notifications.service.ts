@@ -1,8 +1,10 @@
+import { Types } from 'mongoose';
 import {
   NotificationRecord,
   NotificationsRepository,
 } from './notifications.repository';
 import { NotFoundError } from '../../shared/errors/responseErrors';
+import { ActorRelationStatus } from './dtos/notifications.mapper';
 
 type ListNotificationsOptions = {
   offset?: number;
@@ -58,6 +60,7 @@ export class NotificationsService {
     offset: number;
     limit: number;
     notifications: NotificationRecord[];
+    actorRelations: Map<string, ActorRelationStatus>;
   }> {
     const offset = options.offset ?? 1;
     const limit = options.limit ?? 20;
@@ -67,18 +70,27 @@ export class NotificationsService {
       this.repository.countForUser(userId, options.read),
     ]);
 
+    const actorRelations = await this.getActorRelationsBatch(
+      userId,
+      notifications,
+    );
+
     return {
       total,
       offset,
       limit,
       notifications,
+      actorRelations,
     };
   }
 
   async getUserNotificationById(
     userId: string,
     notificationId: string,
-  ): Promise<NotificationRecord> {
+  ): Promise<{
+    notification: NotificationRecord;
+    actorRelation: ActorRelationStatus;
+  }> {
     const notification = await this.repository.findByIdForUser(
       userId,
       notificationId,
@@ -88,7 +100,16 @@ export class NotificationsService {
       NotFoundError('Notification not found');
     }
 
-    return notification as NotificationRecord;
+    const notif = notification as NotificationRecord;
+    const actorRelation = await this.getActorRelation(
+      userId,
+      notif.type.payload.actorId.toString(),
+    );
+
+    return {
+      notification: notif,
+      actorRelation,
+    };
   }
 
   async findAll(): Promise<any[]> {
@@ -151,5 +172,53 @@ export class NotificationsService {
     trackId: string,
   ): Promise<NotificationRecord[]> {
     return this.repository.createNewTrackNotifications(actorId, trackId);
+  }
+
+  private async getActorRelationsBatch(
+    recipientId: string,
+    notifications: NotificationRecord[],
+  ): Promise<Map<string, ActorRelationStatus>> {
+    const uniqueActorIds = [
+      ...new Set(notifications.map((n) => n.type.payload.actorId.toString())),
+    ];
+
+    if (uniqueActorIds.length === 0) {
+      return new Map();
+    }
+
+    const actorObjectIds = uniqueActorIds.map((id) => new Types.ObjectId(id));
+    const recipientObjectId = new Types.ObjectId(recipientId);
+
+    const [blockingActors, followedUserIds] = await Promise.all([
+      this.repository.findBlockingActors(actorObjectIds, recipientObjectId),
+      this.repository.findFollowedUserIds(recipientObjectId),
+    ]);
+
+    const relations = new Map<string, ActorRelationStatus>();
+    for (const actorId of uniqueActorIds) {
+      relations.set(actorId, {
+        isBlockingActor: blockingActors.has(actorId),
+        isFollowingActor: followedUserIds.has(actorId),
+      });
+    }
+    return relations;
+  }
+
+  private async getActorRelation(
+    recipientId: string,
+    actorId: string,
+  ): Promise<ActorRelationStatus> {
+    const [blockingActors, followedUserIds] = await Promise.all([
+      this.repository.findBlockingActors(
+        [new Types.ObjectId(actorId)],
+        new Types.ObjectId(recipientId),
+      ),
+      this.repository.findFollowedUserIds(new Types.ObjectId(recipientId)),
+    ]);
+
+    return {
+      isBlockingActor: blockingActors.has(actorId),
+      isFollowingActor: followedUserIds.has(actorId),
+    };
   }
 }

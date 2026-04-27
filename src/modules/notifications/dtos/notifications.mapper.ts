@@ -10,6 +10,11 @@ type NotificationActivityType =
 
 type NotificationTargetType = 'track' | 'comment' | 'user';
 
+export type ActorRelationStatus = {
+  isBlockingActor: boolean;
+  isFollowingActor: boolean;
+};
+
 export type NotificationResponseDTOType = {
   notificationId: string;
   to: string;
@@ -28,11 +33,16 @@ export type NotificationResponseDTOType = {
     commentText?: string;
     mentionedUserProfileLink?: string;
   };
+  isBlockingActor: boolean;
+  isFollowingActor: boolean;
   createdAt: string;
 };
 
 export class NotificationsMapper {
-  static toResponse(entity: NotificationRecord): NotificationResponseDTOType {
+  static toResponse(
+    entity: NotificationRecord,
+    actorRelation?: ActorRelationStatus,
+  ): NotificationResponseDTOType {
     const activityType = this.toActivityType(entity.type.type);
 
     return {
@@ -46,6 +56,8 @@ export class NotificationsMapper {
         avatarUrl: entity.type.payload.avatarURL,
       },
       target: this.toTarget(entity),
+      isBlockingActor: actorRelation?.isBlockingActor ?? false,
+      isFollowingActor: actorRelation?.isFollowingActor ?? false,
       createdAt: entity.createdAt.toISOString(),
     };
   }
@@ -55,6 +67,7 @@ export class NotificationsMapper {
     offset: number,
     limit: number,
     total: number,
+    actorRelations?: Map<string, ActorRelationStatus>,
   ): {
     total: number;
     offset: number;
@@ -66,7 +79,10 @@ export class NotificationsMapper {
       offset,
       limit,
       notifications: notifications.map((notification) =>
-        this.toResponse(notification),
+        this.toResponse(
+          notification,
+          actorRelations?.get(notification.type.payload.actorId.toString()),
+        ),
       ),
     };
   }
@@ -111,8 +127,7 @@ export class NotificationsMapper {
         targetId: referenceId,
         trackId,
         commentText: entity.type.payload.commentText,
-        mentionedUserProfileLink:
-          entity.type.payload.mentionedUserProfileLink,
+        mentionedUserProfileLink: entity.type.payload.mentionedUserProfileLink,
       };
     }
 

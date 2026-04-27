@@ -57,6 +57,7 @@ export class NotificationsController {
         result.offset,
         result.limit,
         result.total,
+        result.actorRelations,
       ),
     );
   }
@@ -71,11 +72,9 @@ export class NotificationsController {
     const userId = req.userInfo!._id;
     const { notificationId } = parsed.data.params;
 
-    const notification = await this.service.getUserNotificationById(
-      userId,
-      notificationId,
-    );
+    const { notification, actorRelation } =
+      await this.service.getUserNotificationById(userId, notificationId);
 
-    res.json(NotificationsMapper.toResponse(notification));
+    res.json(NotificationsMapper.toResponse(notification, actorRelation));
   }
 }
