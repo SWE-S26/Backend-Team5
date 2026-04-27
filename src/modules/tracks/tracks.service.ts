@@ -463,14 +463,14 @@ export class TracksService {
       // if he is not the owner don't get the private playlists
       const visiblePlaylists = playlists.filter(
         (playlist) =>
-          !(playlist?.type === 'private') ||
+          !playlist?.isPrivate ||
           playlist.artistId.toString() === requesterUserId,
       );
       return visiblePlaylists;
     } else {
       // if from public endpoint remove all private tracks
       const visiblePlaylists = playlists.filter(
-        (playlist) => !(playlist?.type === 'private'),
+        (playlist) => !playlist?.isPrivate,
       );
       return visiblePlaylists;
     }
