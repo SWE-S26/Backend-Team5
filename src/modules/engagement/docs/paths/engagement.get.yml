@@ -145,6 +145,54 @@
         $ref: '#/components/responses/ServerError'
     security: []
 
+/api/public/engagement/tracks/v1/users/{userId}/reposted:
+  get:
+    tags:
+      - Reposts
+    summary: Get reposted tracks for a user.
+    description: Returns a paginated list of tracks reposted by the specified user. Public endpoint — no authentication required.
+    operationId: getUserRepostedTracks
+    parameters:
+      - $ref: '#/components/parameters/UserIdParam'
+      - $ref: '#/components/parameters/EngagementOffsetParam'
+      - $ref: '#/components/parameters/EngagementLimitParam'
+    responses:
+      200:
+        description: Paginated list of reposted tracks for the specified user.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepostedTracksResponse'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
+    security: []
+
+/api/public/engagement/playlists/v1/users/{userId}/reposted:
+  get:
+    tags:
+      - Reposts
+    summary: Get reposted playlists for a user.
+    description: Returns a paginated list of playlists reposted by the specified user. Public endpoint — no authentication required.
+    operationId: getUserRepostedPlaylists
+    parameters:
+      - $ref: '#/components/parameters/UserIdParam'
+      - $ref: '#/components/parameters/EngagementOffsetParam'
+      - $ref: '#/components/parameters/EngagementLimitParam'
+    responses:
+      200:
+        description: Paginated list of reposted playlists for the specified user.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepostedPlaylistsResponse'
+      404:
+        $ref: '#/components/responses/NotFound'
+      500:
+        $ref: '#/components/responses/ServerError'
+    security: []
+
 /api/engagement/mentions/v1/followers:
   get:
     tags:
@@ -164,54 +212,6 @@
               type: array
               items:
                 $ref: '#/components/schemas/MentionFollower'
-      401:
-        $ref: '#/components/responses/Unauthorized'
-      500:
-        $ref: '#/components/responses/ServerError'
-    security:
-      - BearerAuth: []
-
-/api/engagement/tracks/v1/reposted:
-  get:
-    tags:
-      - Reposts
-    summary: Get authenticated user reposted tracks.
-    description: Returns a paginated list of tracks reposted by the authenticated user.
-    operationId: getUserRepostedTracks
-    parameters:
-      - $ref: '#/components/parameters/EngagementOffsetParam'
-      - $ref: '#/components/parameters/EngagementLimitParam'
-    responses:
-      200:
-        description: Paginated list of reposted tracks for authenticated user.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RepostedTracksResponse'
-      401:
-        $ref: '#/components/responses/Unauthorized'
-      500:
-        $ref: '#/components/responses/ServerError'
-    security:
-      - BearerAuth: []
-
-/api/engagement/playlists/v1/reposted:
-  get:
-    tags:
-      - Reposts
-    summary: Get authenticated user reposted playlists.
-    description: Returns a paginated list of playlists reposted by the authenticated user.
-    operationId: getUserRepostedPlaylists
-    parameters:
-      - $ref: '#/components/parameters/EngagementOffsetParam'
-      - $ref: '#/components/parameters/EngagementLimitParam'
-    responses:
-      200:
-        description: Paginated list of reposted playlists for authenticated user.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RepostedPlaylistsResponse'
       401:
         $ref: '#/components/responses/Unauthorized'
       500:

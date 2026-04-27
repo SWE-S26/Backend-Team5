@@ -24,7 +24,6 @@ import {
   GetUserRepostedTracksRequestDTO,
   GetUserRepostedPlaylistsRequestDTO,
 } from './dtos/engagement.request';
-import console from 'console';
 
 export class EngagementController {
   constructor(private readonly service: EngagementService) {}
@@ -281,7 +280,7 @@ export class EngagementController {
       throw parsed.error;
     }
 
-    const userId = req.userInfo!._id;
+    const { userId } = parsed.data!.params;
     const { offset, limit } = parsed.data!.query;
     const result = await this.service.getUserRepostedTracks(
       userId,
@@ -297,7 +296,7 @@ export class EngagementController {
       throw parsed.error;
     }
 
-    const userId = req.userInfo!._id;
+    const { userId } = parsed.data!.params;
     const { offset, limit } = parsed.data!.query;
 
     const result = await this.service.getUserRepostedPlaylists(

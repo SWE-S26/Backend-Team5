@@ -44,6 +44,16 @@ engagementPublicRouter.get(
   (req, res) => engagementController.getPlaylistReposters(req, res),
 );
 
+engagementPublicRouter.get(
+  '/tracks' + apiVersions.v1 + '/users/:userId/reposted',
+  (req, res) => engagementController.getUserRepostedTracks(req, res),
+);
+
+engagementPublicRouter.get(
+  '/playlists' + apiVersions.v1 + '/users/:userId/reposted',
+  (req, res) => engagementController.getUserRepostedPlaylists(req, res),
+);
+
 engagementProtectedRouter.post(
   '/tracks' + apiVersions.v1 + '/:trackId/like',
   (req, res) => engagementController.toggleTrackLike(req, res),
@@ -97,16 +107,6 @@ engagementProtectedRouter.post(
 engagementProtectedRouter.get(
   '/mentions' + apiVersions.v1 + '/followers',
   (req, res) => engagementController.getMentionFollowers(req, res),
-);
-
-engagementProtectedRouter.get(
-  '/tracks' + apiVersions.v1 + '/reposted',
-  (req, res) => engagementController.getUserRepostedTracks(req, res),
-);
-
-engagementProtectedRouter.get(
-  '/playlists' + apiVersions.v1 + '/reposted',
-  (req, res) => engagementController.getUserRepostedPlaylists(req, res),
 );
 
 engagementProtectedRouter.post(

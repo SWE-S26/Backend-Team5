@@ -25,6 +25,15 @@ PlaylistIdParam:
     type: string
     example: 'pl_789'
 
+UserIdParam:
+  name: userId
+  in: path
+  required: true
+  description: The unique identifier of the user.
+  schema:
+    type: string
+    example: '507f1f77bcf86cd799439012'
+
 EngagementOffsetParam:
   name: offset
   in: query
