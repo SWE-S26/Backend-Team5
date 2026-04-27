@@ -774,6 +774,11 @@ export class EngagementRepository {
     };
   }
 
+  async userExists(userId: string): Promise<boolean> {
+    const result = await User.exists({ _id: userId });
+    return result !== null;
+  }
+
   async getCommentReplies(
     commentId: string,
     page: number,

@@ -69,7 +69,11 @@ export class TracksMapper {
     userId: string,
   ): TrackResponsePrivateDTO {
     const trackBasicInfo = track.basicInfo;
-    const audio = track.audio as unknown as { id: string; url?: string; audioLink?: string };
+    const audio = track.audio as unknown as {
+      id: string;
+      url?: string;
+      audioLink?: string;
+    };
     const image = track.image as unknown as {
       publicId: string;
       url?: string;
@@ -108,7 +112,11 @@ export class TracksMapper {
 
   static toTrackResponsePublic(track: ITrack): TrackResponsePublicDTO {
     const trackBasicInfo = track.basicInfo;
-    const audio = track.audio as unknown as { id: string; url?: string; audioLink?: string };
+    const audio = track.audio as unknown as {
+      id: string;
+      url?: string;
+      audioLink?: string;
+    };
     const image = track.image as unknown as {
       publicId: string;
       url?: string;

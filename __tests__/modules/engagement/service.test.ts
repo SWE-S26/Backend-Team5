@@ -724,7 +724,10 @@ describe('EngagementService', () => {
         mentionedUserId,
       );
 
-      expect(mentionSpy).toHaveBeenCalledWith(userId, mockComment._id.toString());
+      expect(mentionSpy).toHaveBeenCalledWith(
+        userId,
+        mockComment._id.toString(),
+      );
       expect(commentSpy).not.toHaveBeenCalled();
     });
 
@@ -777,7 +780,10 @@ describe('EngagementService', () => {
         mentionedUserId,
       );
 
-      expect(mentionSpy).toHaveBeenCalledWith(userId, mockComment._id.toString());
+      expect(mentionSpy).toHaveBeenCalledWith(
+        userId,
+        mockComment._id.toString(),
+      );
       expect(commentSpy).not.toHaveBeenCalled();
     });
   });
@@ -1105,9 +1111,9 @@ describe('EngagementService', () => {
       expect(
         EngagementRepository.prototype.findUserRepostedTrackIds,
       ).toHaveBeenCalledWith(userId, 1, 20);
-      expect(EngagementRepository.prototype.findTracksByIds).toHaveBeenCalledWith(
-        trackIds,
-      );
+      expect(
+        EngagementRepository.prototype.findTracksByIds,
+      ).toHaveBeenCalledWith(trackIds);
       expect(EngagementMapper.toRepostedTracksResponse).toHaveBeenCalledWith(
         tracks,
         1,

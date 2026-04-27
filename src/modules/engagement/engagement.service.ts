@@ -270,6 +270,9 @@ export class EngagementService {
     offset = '0',
     limit = '20',
   ): Promise<RepostedTracksResponse> {
+    const userExists = await this.repository.userExists(userId);
+    if (!userExists) NotFoundError('User not found');
+
     const parsedOffset = Math.max(1, Number.parseInt(offset, 10) || 1);
     const parsedLimit = Math.max(1, Number.parseInt(limit, 10) || 20);
 
@@ -317,6 +320,9 @@ export class EngagementService {
     offset = '0',
     limit = '20',
   ): Promise<RepostedPlaylistsResponse> {
+    const userExists = await this.repository.userExists(userId);
+    if (!userExists) NotFoundError('User not found');
+
     const parsedOffset = Math.max(1, Number.parseInt(offset, 10) || 1);
     const parsedLimit = Math.max(1, Number.parseInt(limit, 10) || 20);
 
@@ -328,15 +334,16 @@ export class EngagementService {
       );
 
     const playlistIds = playlistReposts.map((repost) => repost.id);
-    const playlistCaptionsById = playlistReposts.reduce<
-      Record<string, string>
-    >((acc, repost) => {
-      const caption = repost.caption?.trim();
-      if (caption) {
-        acc[repost.id] = caption;
-      }
-      return acc;
-    }, {});
+    const playlistCaptionsById = playlistReposts.reduce<Record<string, string>>(
+      (acc, repost) => {
+        const caption = repost.caption?.trim();
+        if (caption) {
+          acc[repost.id] = caption;
+        }
+        return acc;
+      },
+      {},
+    );
 
     if (playlistIds.length === 0) {
       return EngagementMapper.toRepostedPlaylistsResponse(

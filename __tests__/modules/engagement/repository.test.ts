@@ -646,7 +646,11 @@ describe('EngagementRepository', () => {
         }),
       });
 
-      const result = await repository.findUserRepostedPlaylistIds(userId, 0, 20);
+      const result = await repository.findUserRepostedPlaylistIds(
+        userId,
+        0,
+        20,
+      );
 
       expect(result).toEqual({
         playlistReposts: [{ id: repostId.toString(), caption: undefined }],
