@@ -1061,7 +1061,25 @@ describe('EngagementService', () => {
   describe('getUserRepostedTracks', () => {
     const userId = '507f1f77bcf86cd799439022';
 
+    it('should throw NotFoundError when user does not exist', async () => {
+      (
+        EngagementRepository.prototype.userExists as jest.Mock
+      ).mockResolvedValue(false);
+
+      await expect(
+        service.getUserRepostedTracks(userId, '0', '20'),
+      ).rejects.toThrow();
+
+      expect(
+        EngagementRepository.prototype.findUserRepostedTrackIds,
+      ).not.toHaveBeenCalled();
+    });
+
     it('should return mapped reposted tracks response', async () => {
+      (
+        EngagementRepository.prototype.userExists as jest.Mock
+      ).mockResolvedValue(true);
+
       const trackReposts = [
         {
           id: '507f1f77bcf86cd799439011',
@@ -1135,7 +1153,25 @@ describe('EngagementService', () => {
   describe('getUserRepostedPlaylists', () => {
     const userId = '507f1f77bcf86cd799439022';
 
+    it('should throw NotFoundError when user does not exist', async () => {
+      (
+        EngagementRepository.prototype.userExists as jest.Mock
+      ).mockResolvedValue(false);
+
+      await expect(
+        service.getUserRepostedPlaylists(userId, '0', '20'),
+      ).rejects.toThrow();
+
+      expect(
+        EngagementRepository.prototype.findUserRepostedPlaylistIds,
+      ).not.toHaveBeenCalled();
+    });
+
     it('should return mapped reposted playlists response', async () => {
+      (
+        EngagementRepository.prototype.userExists as jest.Mock
+      ).mockResolvedValue(true);
+
       const playlistReposts = [
         {
           id: '507f1f77bcf86cd799439011',
