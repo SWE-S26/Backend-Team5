@@ -24,6 +24,8 @@ TrackPublicResponse:
             type: string
         description:
           type: string
+        caption:
+          type: string
         isPrivate:
           type: boolean
     audio:
