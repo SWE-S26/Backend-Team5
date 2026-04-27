@@ -262,6 +262,68 @@ MentionFollower:
     - displayName
     - profileLink
 
+RepostedTracksResponse:
+  type: object
+  properties:
+    total:
+      type: integer
+      minimum: 0
+      example: 12
+    offset:
+      type: integer
+      minimum: 0
+      example: 0
+    limit:
+      type: integer
+      minimum: 1
+      example: 20
+    tracks:
+      type: array
+      items:
+        type: object
+        properties:
+          repostCaption:
+            type: string
+            description: Optional caption added by the user when reposting.
+            example: 'Love this track!'
+        additionalProperties: true
+  required:
+    - total
+    - offset
+    - limit
+    - tracks
+
+RepostedPlaylistsResponse:
+  type: object
+  properties:
+    total:
+      type: integer
+      minimum: 0
+      example: 8
+    offset:
+      type: integer
+      minimum: 0
+      example: 0
+    limit:
+      type: integer
+      minimum: 1
+      example: 20
+    playlists:
+      type: array
+      items:
+        type: object
+        properties:
+          repostCaption:
+            type: string
+            description: Optional caption added by the user when reposting.
+            example: 'This mix is perfect for late nights.'
+        additionalProperties: true
+  required:
+    - total
+    - offset
+    - limit
+    - playlists
+
 CommentListResponse:
   type: object
   properties:

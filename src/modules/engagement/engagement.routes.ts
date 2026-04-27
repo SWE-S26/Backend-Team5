@@ -99,6 +99,16 @@ engagementProtectedRouter.get(
   (req, res) => engagementController.getMentionFollowers(req, res),
 );
 
+engagementProtectedRouter.get(
+  '/tracks' + apiVersions.v1 + '/reposted',
+  (req, res) => engagementController.getUserRepostedTracks(req, res),
+);
+
+engagementProtectedRouter.get(
+  '/playlists' + apiVersions.v1 + '/reposted',
+  (req, res) => engagementController.getUserRepostedPlaylists(req, res),
+);
+
 engagementProtectedRouter.post(
   '/comments' + apiVersions.v1 + '/:commentId/like',
   (req, res) => engagementController.toggleCommentLike(req, res),

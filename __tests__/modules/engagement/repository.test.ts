@@ -523,4 +523,184 @@ describe('EngagementRepository', () => {
       expect(Comment.find).not.toHaveBeenCalled();
     });
   });
+
+  describe('findUserRepostedTrackIds', () => {
+    const userId = '507f1f77bcf86cd799439022';
+
+    it('should filter to track reposts, sort newest first, and paginate', async () => {
+      (User.findById as jest.Mock).mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          lean: jest.fn().mockResolvedValue({
+            reposts: [
+              {
+                id: 't-old',
+                caption: 'older',
+                type: 'track',
+                timestamp: new Date('2024-01-01T00:00:00.000Z'),
+              },
+              {
+                id: 'p-1',
+                type: 'playlist',
+                timestamp: new Date('2024-02-01T00:00:00.000Z'),
+              },
+              {
+                id: 't-new',
+                caption: 'newer',
+                type: 'track',
+                timestamp: new Date('2024-03-01T00:00:00.000Z'),
+              },
+            ],
+          }),
+        }),
+      });
+
+      const result = await repository.findUserRepostedTrackIds(userId, 0, 20);
+
+      expect(result).toEqual({
+        trackReposts: [
+          { id: 't-new', caption: 'newer' },
+          { id: 't-old', caption: 'older' },
+        ],
+        total: 2,
+      });
+    });
+
+    it('should return string ids when repost id values are ObjectIds', async () => {
+      const repostId = new Types.ObjectId('507f1f77bcf86cd799439011');
+
+      (User.findById as jest.Mock).mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          lean: jest.fn().mockResolvedValue({
+            reposts: [
+              {
+                id: repostId,
+                type: 'track',
+                timestamp: new Date('2024-03-01T00:00:00.000Z'),
+              },
+            ],
+          }),
+        }),
+      });
+
+      const result = await repository.findUserRepostedTrackIds(userId, 0, 20);
+
+      expect(result).toEqual({
+        trackReposts: [{ id: repostId.toString(), caption: undefined }],
+        total: 1,
+      });
+    });
+  });
+
+  describe('findUserRepostedPlaylistIds', () => {
+    const userId = '507f1f77bcf86cd799439022';
+
+    it('should filter to playlist reposts and paginate', async () => {
+      (User.findById as jest.Mock).mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          lean: jest.fn().mockResolvedValue({
+            reposts: [
+              {
+                id: 'p-old',
+                caption: 'older playlist',
+                type: 'playlist',
+                timestamp: new Date('2024-01-01T00:00:00.000Z'),
+              },
+              {
+                id: 't-1',
+                type: 'track',
+                timestamp: new Date('2024-02-01T00:00:00.000Z'),
+              },
+              {
+                id: 'p-new',
+                caption: 'latest playlist',
+                type: 'playlist',
+                timestamp: new Date('2024-03-01T00:00:00.000Z'),
+              },
+            ],
+          }),
+        }),
+      });
+
+      const result = await repository.findUserRepostedPlaylistIds(userId, 0, 1);
+
+      expect(result).toEqual({
+        playlistReposts: [{ id: 'p-new', caption: 'latest playlist' }],
+        total: 2,
+      });
+    });
+
+    it('should return string ids when repost id values are ObjectIds', async () => {
+      const repostId = new Types.ObjectId('507f1f77bcf86cd799439021');
+
+      (User.findById as jest.Mock).mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          lean: jest.fn().mockResolvedValue({
+            reposts: [
+              {
+                id: repostId,
+                type: 'playlist',
+                timestamp: new Date('2024-03-01T00:00:00.000Z'),
+              },
+            ],
+          }),
+        }),
+      });
+
+      const result = await repository.findUserRepostedPlaylistIds(userId, 0, 20);
+
+      expect(result).toEqual({
+        playlistReposts: [{ id: repostId.toString(), caption: undefined }],
+        total: 1,
+      });
+    });
+  });
+
+  describe('findTracksByIds', () => {
+    it('should return tracks in provided ids order and skip missing ones', async () => {
+      const id1 = new Types.ObjectId('507f1f77bcf86cd799439011');
+      const id2 = new Types.ObjectId('507f1f77bcf86cd799439012');
+
+      (Track.find as jest.Mock).mockReturnValue({
+        lean: jest.fn().mockResolvedValue([
+          { _id: id2, basicInfo: { title: 'Second' } },
+          { _id: id1, basicInfo: { title: 'First' } },
+        ]),
+      });
+
+      const result = await repository.findTracksByIds([
+        id1.toString(),
+        '507f1f77bcf86cd799439099',
+        id2.toString(),
+      ]);
+
+      expect(result.map((track) => track._id.toString())).toEqual([
+        id1.toString(),
+        id2.toString(),
+      ]);
+    });
+  });
+
+  describe('findPlaylistsByIds', () => {
+    it('should return playlists in provided ids order', async () => {
+      const id1 = new Types.ObjectId('507f1f77bcf86cd799439021');
+      const id2 = new Types.ObjectId('507f1f77bcf86cd799439022');
+
+      (Playlist.find as jest.Mock).mockReturnValue({
+        lean: jest.fn().mockResolvedValue([
+          { _id: id2, title: 'Second' },
+          { _id: id1, title: 'First' },
+        ]),
+      });
+
+      const result = await repository.findPlaylistsByIds([
+        id1.toString(),
+        id2.toString(),
+      ]);
+
+      expect(result.map((playlist) => playlist._id.toString())).toEqual([
+        id1.toString(),
+        id2.toString(),
+      ]);
+    });
+  });
 });

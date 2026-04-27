@@ -107,3 +107,11 @@ export const GetCommentRepliesRequestDTO = extendedZod.object({
 export const GetMentionFollowersRequestDTO = extendedZod.object({
   query: GetTrackLikersQueryDto,
 });
+
+export const GetUserRepostedTracksRequestDTO = extendedZod.object({
+  query: GetTrackLikersQueryDto,
+});
+
+export const GetUserRepostedPlaylistsRequestDTO = extendedZod.object({
+  query: GetTrackLikersQueryDto,
+});

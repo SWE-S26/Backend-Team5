@@ -1051,4 +1051,153 @@ describe('EngagementService', () => {
       );
     });
   });
+
+  describe('getUserRepostedTracks', () => {
+    const userId = '507f1f77bcf86cd799439022';
+
+    it('should return mapped reposted tracks response', async () => {
+      const trackReposts = [
+        {
+          id: '507f1f77bcf86cd799439011',
+          caption: 'Love this track!',
+        },
+      ];
+      const trackIds = trackReposts.map((repost) => repost.id);
+      const tracks = [
+        {
+          _id: new Types.ObjectId(trackIds[0]),
+          basicInfo: {
+            title: 'Track',
+            permalink: 'track',
+            mainArtists: [],
+            genre: 'None',
+            tags: [],
+            description: '',
+            isPrivate: false,
+          },
+          audio: { id: 'a1', url: 'url' },
+          image: { url: 'img', publicId: 'pid' },
+          posterId: new Types.ObjectId(),
+          durationInSeconds: 10,
+          numOfLikes: 0,
+          numOfPlays: 0,
+          numberOfReposts: 1,
+          comments: [],
+          createdAt: new Date(),
+        },
+      ];
+
+      (
+        EngagementRepository.prototype.findUserRepostedTrackIds as jest.Mock
+      ).mockResolvedValue({ trackReposts, total: 1 });
+      (
+        EngagementRepository.prototype.findTracksByIds as jest.Mock
+      ).mockResolvedValue(tracks);
+      (EngagementMapper.toRepostedTracksResponse as jest.Mock).mockReturnValue({
+        total: 1,
+        offset: 1,
+        limit: 20,
+        tracks: [],
+      });
+
+      const result = await service.getUserRepostedTracks(userId, '0', '20');
+
+      expect(
+        EngagementRepository.prototype.findUserRepostedTrackIds,
+      ).toHaveBeenCalledWith(userId, 1, 20);
+      expect(EngagementRepository.prototype.findTracksByIds).toHaveBeenCalledWith(
+        trackIds,
+      );
+      expect(EngagementMapper.toRepostedTracksResponse).toHaveBeenCalledWith(
+        tracks,
+        1,
+        1,
+        20,
+        {
+          [trackIds[0]]: 'Love this track!',
+        },
+      );
+      expect(result).toEqual({
+        total: 1,
+        offset: 1,
+        limit: 20,
+        tracks: [],
+      });
+    });
+  });
+
+  describe('getUserRepostedPlaylists', () => {
+    const userId = '507f1f77bcf86cd799439022';
+
+    it('should return mapped reposted playlists response', async () => {
+      const playlistReposts = [
+        {
+          id: '507f1f77bcf86cd799439011',
+          caption: 'This mix is perfect',
+        },
+      ];
+      const playlistIds = playlistReposts.map((repost) => repost.id);
+      const playlists = [
+        {
+          _id: new Types.ObjectId(playlistIds[0]),
+          artistId: new Types.ObjectId(),
+          title: 'Playlist',
+          permaLink: 'playlist',
+          image: { url: 'img', publicId: 'pid' },
+          description: '',
+          genre: 'None',
+          listOfTracks: [],
+          additionalTags: [],
+          releaseDate: new Date(),
+          isPrivate: false,
+          numOfLikes: 0,
+          numOfReposts: 1,
+          playlistType: 'playlist',
+          playlistLengthInSeconds: 0,
+          likedUser: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      (
+        EngagementRepository.prototype.findUserRepostedPlaylistIds as jest.Mock
+      ).mockResolvedValue({ playlistReposts, total: 1 });
+      (
+        EngagementRepository.prototype.findPlaylistsByIds as jest.Mock
+      ).mockResolvedValue(playlists);
+      (
+        EngagementMapper.toRepostedPlaylistsResponse as jest.Mock
+      ).mockReturnValue({
+        total: 1,
+        offset: 1,
+        limit: 20,
+        playlists: [],
+      });
+
+      const result = await service.getUserRepostedPlaylists(userId, '0', '20');
+
+      expect(
+        EngagementRepository.prototype.findUserRepostedPlaylistIds,
+      ).toHaveBeenCalledWith(userId, 1, 20);
+      expect(
+        EngagementRepository.prototype.findPlaylistsByIds,
+      ).toHaveBeenCalledWith(playlistIds);
+      expect(EngagementMapper.toRepostedPlaylistsResponse).toHaveBeenCalledWith(
+        playlists,
+        1,
+        1,
+        20,
+        {
+          [playlistIds[0]]: 'This mix is perfect',
+        },
+      );
+      expect(result).toEqual({
+        total: 1,
+        offset: 1,
+        limit: 20,
+        playlists: [],
+      });
+    });
+  });
 });
