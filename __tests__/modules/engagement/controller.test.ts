@@ -970,11 +970,10 @@ describe('EngagementController', () => {
   describe('getUserRepostedTracks', () => {
     const userId = '507f1f77bcf86cd799439022';
 
-    it('should return authenticated user reposted tracks', async () => {
+    it('should return user reposted tracks by userId param', async () => {
       mockReq = {
-        userInfo: { _id: userId } as any,
+        params: { userId },
         query: { offset: '0', limit: '20' },
-        params: {},
         body: {},
       };
 
@@ -1004,11 +1003,10 @@ describe('EngagementController', () => {
   describe('getUserRepostedPlaylists', () => {
     const userId = '507f1f77bcf86cd799439022';
 
-    it('should return authenticated user reposted playlists', async () => {
+    it('should return user reposted playlists by userId param', async () => {
       mockReq = {
-        userInfo: { _id: userId } as any,
+        params: { userId },
         query: { offset: '10', limit: '5' },
-        params: {},
         body: {},
       };
 

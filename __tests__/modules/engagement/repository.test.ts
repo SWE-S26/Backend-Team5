@@ -341,6 +341,30 @@ describe('EngagementRepository', () => {
     });
   });
 
+  describe('userExists', () => {
+    const userId = '507f1f77bcf86cd799439011';
+
+    it('should return true when user exists', async () => {
+      (User.exists as jest.Mock).mockResolvedValue({
+        _id: new Types.ObjectId(userId),
+      });
+
+      const result = await repository.userExists(userId);
+
+      expect(User.exists).toHaveBeenCalledWith({ _id: userId });
+      expect(result).toBe(true);
+    });
+
+    it('should return false when user does not exist', async () => {
+      (User.exists as jest.Mock).mockResolvedValue(null);
+
+      const result = await repository.userExists(userId);
+
+      expect(User.exists).toHaveBeenCalledWith({ _id: userId });
+      expect(result).toBe(false);
+    });
+  });
+
   describe('findPlaylistWithOwner', () => {
     const playlistId = '507f1f77bcf86cd799439011';
     const artistId = '507f1f77bcf86cd799439022';
