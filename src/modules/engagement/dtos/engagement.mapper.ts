@@ -116,6 +116,27 @@ export class EngagementMapper {
     const parsedTracks = TracksMapper.toTrackResponsePublicList(tracks).map(
       (track) => ({
         ...track,
+        basicInfo: {
+          ...track.basicInfo,
+          title: track.basicInfo.title ?? '',
+          permalink: track.basicInfo.permalink ?? '',
+          mainArtists: track.basicInfo.mainArtists ?? [],
+          genre: track.basicInfo.genre ?? '',
+          tags: track.basicInfo.tags ?? [],
+          description: track.basicInfo.description ?? '',
+          isPrivate: track.basicInfo.isPrivate ?? false,
+          caption: track.basicInfo.caption ?? '',
+        },
+        audio: {
+          ...track.audio,
+          url:
+            track.audio.url ??
+            (track.audio as { audioLink?: string }).audioLink,
+        },
+        image: {
+          ...track.image,
+          url: track.image.url ?? (track.image as { imgLink?: string }).imgLink,
+        },
         repostCaption: captionsByTrackId[track.trackId],
       }),
     ) as Array<TrackResponsePublicDTO & { repostCaption?: string }>;
