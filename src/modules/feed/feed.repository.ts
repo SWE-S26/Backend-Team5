@@ -98,7 +98,9 @@ export class FeedRepository {
   ): Promise<feedItem[]> {
     const reposts = await User.aggregate([
       {
-        $match: { _id: { $in: followedIds } },
+        $match: {
+          _id: { $in: followedIds.map((id) => new Types.ObjectId(id)) },
+        },
       },
       {
         $unwind: '$reposts',
@@ -109,7 +111,7 @@ export class FeedRepository {
           type: '$reposts.type',
           isRepost: { $literal: true },
           createdAt: '$reposts.timestamp',
-          actorId: '$_id',
+          actorId: { $toString: '$_id' },
         },
       },
       {
