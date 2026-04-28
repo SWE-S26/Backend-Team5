@@ -69,6 +69,17 @@ export class TracksMapper {
     userId: string,
   ): TrackResponsePrivateDTO {
     const trackBasicInfo = track.basicInfo;
+    const audio = track.audio as unknown as {
+      id: string;
+      url?: string;
+      audioLink?: string;
+    };
+    const image = track.image as unknown as {
+      publicId: string;
+      url?: string;
+      imgLink?: string;
+    };
+
     return {
       trackId: track._id.toString(),
       basicInfo: {
@@ -79,22 +90,46 @@ export class TracksMapper {
         tags: trackBasicInfo.tags,
         description: trackBasicInfo.description,
         isPrivate: trackBasicInfo.isPrivate,
+        caption: trackBasicInfo.caption,
       },
       posterId: track.posterId.toString(),
       durationInSeconds: track.durationInSeconds,
-      audio: track.audio,
-      image: track.image,
+      audio: {
+        id: audio.id,
+        url: audio.url ?? audio.audioLink ?? '',
+      },
+      image: {
+        publicId: image.publicId,
+        url: image.url ?? image.imgLink ?? '',
+      },
       numLikes: track.numOfLikes,
       numPlays: track.numOfPlays,
       numReposts: track.numberOfReposts,
       numComments: track.comments.length,
       releaseDate: track.createdAt,
       isLikedByUser: track.likedBy.map((id) => id.toString()).includes(userId),
+      permissions: track.permissions,
+      license: track.license,
+      audioClip: {
+        start: track.audioClip?.start ?? 0,
+        end: track.audioClip?.end ?? 0,
+      },
     };
   }
 
   static toTrackResponsePublic(track: ITrack): TrackResponsePublicDTO {
     const trackBasicInfo = track.basicInfo;
+    const audio = track.audio as unknown as {
+      id: string;
+      url?: string;
+      audioLink?: string;
+    };
+    const image = track.image as unknown as {
+      publicId: string;
+      url?: string;
+      imgLink?: string;
+    };
+
     return {
       trackId: track._id.toString(),
       basicInfo: {
@@ -105,16 +140,29 @@ export class TracksMapper {
         tags: trackBasicInfo.tags,
         description: trackBasicInfo.description,
         isPrivate: trackBasicInfo.isPrivate,
+        caption: trackBasicInfo.caption,
       },
       posterId: track.posterId.toString(),
       durationInSeconds: track.durationInSeconds,
-      audio: track.audio,
-      image: track.image,
+      audio: {
+        id: audio.id,
+        url: audio.url ?? audio.audioLink ?? '',
+      },
+      image: {
+        publicId: image.publicId,
+        url: image.url ?? image.imgLink ?? '',
+      },
       numLikes: track.numOfLikes,
       numPlays: track.numOfPlays,
       numReposts: track.numberOfReposts,
       numComments: track.comments.length,
       releaseDate: track.createdAt,
+      permissions: track.permissions,
+      license: track.license,
+      audioClip: {
+        start: track.audioClip?.start ?? 0,
+        end: track.audioClip?.end ?? 0,
+      },
     };
   }
 

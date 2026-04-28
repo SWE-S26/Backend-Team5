@@ -21,6 +21,8 @@ import {
   GetCommentRepliesRequestDTO,
   DeleteTrackCommentRequestDTO,
   GetMentionFollowersRequestDTO,
+  GetUserRepostedTracksRequestDTO,
+  GetUserRepostedPlaylistsRequestDTO,
 } from './dtos/engagement.request';
 
 export class EngagementController {
@@ -265,6 +267,39 @@ export class EngagementController {
     const { offset, limit } = parsed.data!.query;
 
     const result = await this.service.getMentionFollowers(
+      userId,
+      offset,
+      limit,
+    );
+    res.json(result);
+  }
+
+  async getUserRepostedTracks(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetUserRepostedTracksRequestDTO, req);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { userId } = parsed.data!.params;
+    const { offset, limit } = parsed.data!.query;
+    const result = await this.service.getUserRepostedTracks(
+      userId,
+      offset,
+      limit,
+    );
+    res.json(result);
+  }
+
+  async getUserRepostedPlaylists(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetUserRepostedPlaylistsRequestDTO, req);
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { userId } = parsed.data!.params;
+    const { offset, limit } = parsed.data!.query;
+
+    const result = await this.service.getUserRepostedPlaylists(
       userId,
       offset,
       limit,

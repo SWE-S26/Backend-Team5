@@ -23,8 +23,8 @@ tracksPublicRouter.get(apiVersions.v1 + '/liked/:id', (req, res) =>
   tracksController.getUserLikedTracks(req, res, 'PUBLIC'),
 );
 
-tracksPublicRouter.get(apiVersions.v1 + '/:id', (req, res) =>
-  tracksController.getTrackById(req, res, 'PUBLIC'),
+tracksPublicRouter.get(apiVersions.v1 + '/posted/:id', (req, res) =>
+  tracksController.getUserPostedTracks(req, res, 'PUBLIC'),
 );
 
 tracksPublicRouter.get(
@@ -32,40 +32,36 @@ tracksPublicRouter.get(
   (req, res) => tracksController.getTrackByPermalink(req, res, 'PUBLIC'),
 );
 
+tracksPublicRouter.get(apiVersions.v1 + '/playlists/:id', (req, res) =>
+  tracksController.getPlaylistsContainingTrack(req, res, 'PUBLIC', 'playlist'),
+);
+
+tracksPublicRouter.get(apiVersions.v1 + '/albums/:id', (req, res) =>
+  tracksController.getPlaylistsContainingTrack(req, res, 'PUBLIC', 'album'),
+);
+
+tracksPublicRouter.get(apiVersions.v1 + '/:id', (req, res) =>
+  tracksController.getTrackById(req, res, 'PUBLIC'),
+);
+
 tracksPublicRouter.get(apiVersions.v1, (req, res) =>
   tracksController.getPaginatedListOfTracks(req, res, 'PUBLIC'),
 );
 
-tracksPublicRouter.get(apiVersions.v1 + '/posted/:id', (req, res) =>
-  tracksController.getUserPostedTracks(req, res, 'PUBLIC'),
-);
-
 // ======================== PRIVATE =========================
+
+// ================= GET ===================
+
+tracksPrivateRouter.get(apiVersions.v1 + '/quota', (req, res) =>
+  tracksController.getUserQuota(req, res),
+);
 
 tracksPrivateRouter.get(apiVersions.v1 + '/liked/:id', (req, res) =>
   tracksController.getUserLikedTracks(req, res, 'PRIVATE'),
 );
 
-tracksPrivateRouter.get(apiVersions.v1 + '/:id', (req, res) =>
-  tracksController.getTrackById(req, res, 'PRIVATE'),
-);
-
-tracksPrivateRouter.get(apiVersions.v1 + '/permalink/:permalink', (req, res) =>
-  tracksController.getTrackByPermalink(req, res, 'PRIVATE'),
-);
-
-tracksPrivateRouter.get(apiVersions.v1, (req, res) =>
-  tracksController.getPaginatedListOfTracks(req, res, 'PRIVATE'),
-);
-
 tracksPrivateRouter.get(apiVersions.v1 + '/posted/:id', (req, res) =>
   tracksController.getUserPostedTracks(req, res, 'PRIVATE'),
-);
-
-// ================= GET ===================
-
-tracksPrivateRouter.get(apiVersions.v1 + '/detailed/:id', (req, res) =>
-  tracksController.getDetailedTrackInfo(req, res),
 );
 
 tracksPrivateRouter.get(
@@ -73,10 +69,30 @@ tracksPrivateRouter.get(
   (req, res) => tracksController.isValidPermalink(req, res),
 );
 
-tracksPrivateRouter.get(apiVersions.v1 + '/quota', (req, res) =>
-  tracksController.getUserQuota(req, res),
+tracksPrivateRouter.get(
+  apiVersions.v1 + '/permalink/:profileLink/:permalink',
+  (req, res) => tracksController.getTrackByPermalink(req, res, 'PRIVATE'),
 );
 
+tracksPrivateRouter.get(apiVersions.v1 + '/playlists/:id', (req, res) =>
+  tracksController.getPlaylistsContainingTrack(req, res, 'PRIVATE', 'playlist'),
+);
+
+tracksPrivateRouter.get(apiVersions.v1 + '/albums/:id', (req, res) =>
+  tracksController.getPlaylistsContainingTrack(req, res, 'PRIVATE', 'album'),
+);
+
+tracksPrivateRouter.get(apiVersions.v1 + '/detailed/:id', (req, res) =>
+  tracksController.getDetailedTrackInfo(req, res),
+);
+
+tracksPrivateRouter.get(apiVersions.v1, (req, res) =>
+  tracksController.getPaginatedListOfTracks(req, res, 'PRIVATE'),
+);
+
+tracksPrivateRouter.get(apiVersions.v1 + '/:id', (req, res) =>
+  tracksController.getTrackById(req, res, 'PRIVATE'),
+);
 // ================= DELETE ===================
 
 tracksPrivateRouter.delete(apiVersions.v1 + '/:id', (req, res) =>
@@ -97,6 +113,10 @@ tracksPrivateRouter.patch(
 
 // ================= POST ===================
 
+tracksPrivateRouter.post(apiVersions.v1 + '/played/:id', (req, res) =>
+  tracksController.addTrackToUserHistory(req, res),
+);
+
 tracksPrivateRouter.post(
   apiVersions.v1,
   uploadTrackLimiter,
@@ -105,10 +125,6 @@ tracksPrivateRouter.post(
     { name: 'image', maxCount: 1 },
   ]),
   (req, res) => tracksController.uploadAudioTrack(req, res),
-);
-
-tracksPrivateRouter.post(apiVersions.v1 + '/played/:id', (req, res) =>
-  tracksController.addTrackToUserHistory(req, res),
 );
 
 export { tracksPublicRouter };

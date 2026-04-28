@@ -966,4 +966,70 @@ describe('EngagementController', () => {
       expect(mockRes.json).toHaveBeenCalledWith(mockResult);
     });
   });
+
+  describe('getUserRepostedTracks', () => {
+    const userId = '507f1f77bcf86cd799439022';
+
+    it('should return user reposted tracks by userId param', async () => {
+      mockReq = {
+        params: { userId },
+        query: { offset: '0', limit: '20' },
+        body: {},
+      };
+
+      const mockResult = {
+        total: 2,
+        offset: 0,
+        limit: 20,
+        tracks: [],
+      };
+
+      (
+        EngagementService.prototype.getUserRepostedTracks as jest.Mock
+      ).mockResolvedValue(mockResult);
+
+      await controller.getUserRepostedTracks(
+        mockReq as Request,
+        mockRes as Response,
+      );
+
+      expect(
+        EngagementService.prototype.getUserRepostedTracks,
+      ).toHaveBeenCalledWith(userId, '0', '20');
+      expect(mockRes.json).toHaveBeenCalledWith(mockResult);
+    });
+  });
+
+  describe('getUserRepostedPlaylists', () => {
+    const userId = '507f1f77bcf86cd799439022';
+
+    it('should return user reposted playlists by userId param', async () => {
+      mockReq = {
+        params: { userId },
+        query: { offset: '10', limit: '5' },
+        body: {},
+      };
+
+      const mockResult = {
+        total: 1,
+        offset: 10,
+        limit: 5,
+        playlists: [],
+      };
+
+      (
+        EngagementService.prototype.getUserRepostedPlaylists as jest.Mock
+      ).mockResolvedValue(mockResult);
+
+      await controller.getUserRepostedPlaylists(
+        mockReq as Request,
+        mockRes as Response,
+      );
+
+      expect(
+        EngagementService.prototype.getUserRepostedPlaylists,
+      ).toHaveBeenCalledWith(userId, '10', '5');
+      expect(mockRes.json).toHaveBeenCalledWith(mockResult);
+    });
+  });
 });

@@ -2,11 +2,17 @@ import { IPlaylist } from '../../../shared/models/models.playlist';
 import { ITrack } from '../../../shared/models/models.track';
 import { IUser } from '../../../shared/models/models.user';
 import { IComment } from '../../../shared/models/models.comment';
+import { TracksMapper } from '../../tracks/dtos/tracks.mapper';
+import { TrackResponsePublicDTO } from '../../tracks/dtos/tracks.response';
 import {
   TrackLikersResponse,
   TrackLikersResponseDTO,
   MentionFollowersResponse,
   MentionFollowersResponseDTO,
+  RepostedTracksResponse,
+  RepostedTracksResponseDTO,
+  RepostedPlaylistsResponse,
+  RepostedPlaylistsResponseDTO,
   ToggleLikeResponse,
   ToggleLikeResponseDTO,
   TogglePlaylistLikeResponse,
@@ -98,6 +104,48 @@ export class EngagementMapper {
         profileLink: user.profileLink,
       })),
     );
+  }
+
+  static toRepostedTracksResponse(
+    tracks: ITrack[],
+    total: number,
+    offset: number,
+    limit: number,
+    captionsByTrackId: Record<string, string> = {},
+  ): RepostedTracksResponse {
+    const parsedTracks = TracksMapper.toTrackResponsePublicList(tracks).map(
+      (track) => ({
+        ...track,
+        repostCaption: captionsByTrackId[track.trackId],
+      }),
+    ) as Array<TrackResponsePublicDTO & { repostCaption?: string }>;
+
+    return RepostedTracksResponseDTO.parse({
+      total,
+      offset,
+      limit,
+      tracks: parsedTracks,
+    });
+  }
+
+  static toRepostedPlaylistsResponse(
+    playlists: IPlaylist[],
+    total: number,
+    offset: number,
+    limit: number,
+    captionsByPlaylistId: Record<string, string> = {},
+  ): RepostedPlaylistsResponse {
+    const playlistsWithCaption = playlists.map((playlist) => ({
+      ...playlist,
+      repostCaption: captionsByPlaylistId[playlist._id.toString()],
+    }));
+
+    return RepostedPlaylistsResponseDTO.parse({
+      total,
+      offset,
+      limit,
+      playlists: playlistsWithCaption,
+    });
   }
 
   static toTrackRepostStatusResponse(

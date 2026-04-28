@@ -9,6 +9,8 @@ import { EngagementMapper } from './dtos/engagement.mapper';
 import {
   TrackLikersResponse,
   MentionFollowersResponse,
+  RepostedTracksResponse,
+  RepostedPlaylistsResponse,
   ToggleLikeResponse,
   TogglePlaylistLikeResponse,
   ToggleRepostResponse,
@@ -261,6 +263,106 @@ export class EngagementService {
     );
 
     return EngagementMapper.toMentionFollowersResponse(users);
+  }
+
+  async getUserRepostedTracks(
+    userId: string,
+    offset = '0',
+    limit = '20',
+  ): Promise<RepostedTracksResponse> {
+    const userExists = await this.repository.userExists(userId);
+    if (!userExists) NotFoundError('User not found');
+
+    const parsedOffset = Math.max(1, Number.parseInt(offset, 10) || 1);
+    const parsedLimit = Math.max(1, Number.parseInt(limit, 10) || 20);
+
+    const { trackReposts, total } =
+      await this.repository.findUserRepostedTrackIds(
+        userId,
+        parsedOffset,
+        parsedLimit,
+      );
+
+    const trackIds = trackReposts.map((repost) => repost.id);
+    const trackCaptionsById = trackReposts.reduce<Record<string, string>>(
+      (acc, repost) => {
+        const caption = repost.caption?.trim();
+        if (caption) {
+          acc[repost.id] = caption;
+        }
+        return acc;
+      },
+      {},
+    );
+
+    if (trackIds.length === 0) {
+      return EngagementMapper.toRepostedTracksResponse(
+        [],
+        total,
+        parsedOffset,
+        parsedLimit,
+        trackCaptionsById,
+      );
+    }
+
+    const tracks = await this.repository.findTracksByIds(trackIds);
+    return EngagementMapper.toRepostedTracksResponse(
+      tracks,
+      total,
+      parsedOffset,
+      parsedLimit,
+      trackCaptionsById,
+    );
+  }
+
+  async getUserRepostedPlaylists(
+    userId: string,
+    offset = '0',
+    limit = '20',
+  ): Promise<RepostedPlaylistsResponse> {
+    const userExists = await this.repository.userExists(userId);
+    if (!userExists) NotFoundError('User not found');
+
+    const parsedOffset = Math.max(1, Number.parseInt(offset, 10) || 1);
+    const parsedLimit = Math.max(1, Number.parseInt(limit, 10) || 20);
+
+    const { playlistReposts, total } =
+      await this.repository.findUserRepostedPlaylistIds(
+        userId,
+        parsedOffset,
+        parsedLimit,
+      );
+
+    const playlistIds = playlistReposts.map((repost) => repost.id);
+    const playlistCaptionsById = playlistReposts.reduce<Record<string, string>>(
+      (acc, repost) => {
+        const caption = repost.caption?.trim();
+        if (caption) {
+          acc[repost.id] = caption;
+        }
+        return acc;
+      },
+      {},
+    );
+
+    if (playlistIds.length === 0) {
+      return EngagementMapper.toRepostedPlaylistsResponse(
+        [],
+        total,
+        parsedOffset,
+        parsedLimit,
+        playlistCaptionsById,
+      );
+    }
+
+    const playlists = await this.repository.findPlaylistsByIds(playlistIds);
+    return EngagementMapper.toRepostedPlaylistsResponse(
+      playlists,
+      total,
+      parsedOffset,
+      parsedLimit,
+      playlistCaptionsById,
+    );
   }
 
   async getTrackLikeStatus(

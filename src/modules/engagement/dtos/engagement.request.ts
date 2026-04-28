@@ -4,6 +4,7 @@ import {
   PlaylistIdParamDTO,
   TrackIdParamDTO,
   CommentIdParamDTO,
+  UserIdParamDTO,
 } from './engagement.request.params';
 import {
   GetTrackLikersQueryDto,
@@ -105,5 +106,15 @@ export const GetCommentRepliesRequestDTO = extendedZod.object({
 });
 
 export const GetMentionFollowersRequestDTO = extendedZod.object({
+  query: GetTrackLikersQueryDto,
+});
+
+export const GetUserRepostedTracksRequestDTO = extendedZod.object({
+  params: UserIdParamDTO,
+  query: GetTrackLikersQueryDto,
+});
+
+export const GetUserRepostedPlaylistsRequestDTO = extendedZod.object({
+  params: UserIdParamDTO,
   query: GetTrackLikersQueryDto,
 });

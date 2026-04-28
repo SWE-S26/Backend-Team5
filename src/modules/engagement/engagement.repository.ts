@@ -5,6 +5,7 @@ import User, { IUser } from '../../shared/models/models.user';
 import Following from '../../shared/models/models.following';
 import Comment, { IComment } from '../../shared/models/models.comment';
 import Settings, { ISettings } from '../../shared/models/models.settings';
+import console from 'console';
 
 export class EngagementRepository {
   async findTrackById(trackId: string): Promise<ITrack | null> {
@@ -270,6 +271,97 @@ export class EngagementRepository {
   async findUserReposts(userId: string): Promise<IUser['reposts'] | null> {
     const user = await User.findById(userId).select('reposts');
     return user?.reposts || null;
+  }
+
+  async findUserRepostedTrackIds(
+    userId: string,
+    page: number,
+    limit: number,
+  ): Promise<{
+    trackReposts: Array<{ id: string; caption?: string }>;
+    total: number;
+  }> {
+    const user = await User.findById(userId).select('reposts').lean();
+    const trackReposts = (user?.reposts ?? [])
+      .filter((repost) => repost.type === 'track')
+      .sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+      );
+    const parsedPage = Math.max(1, page);
+    const skip = (parsedPage - 1) * limit;
+    const pagedTrackReposts = trackReposts.slice(skip, skip + limit);
+
+    return {
+      trackReposts: pagedTrackReposts.map((repost) => ({
+        id: repost.id.toString(),
+        caption: repost.caption,
+      })),
+      total: trackReposts.length,
+    };
+  }
+
+  async findUserRepostedPlaylistIds(
+    userId: string,
+    page: number,
+    limit: number,
+  ): Promise<{
+    playlistReposts: Array<{ id: string; caption?: string }>;
+    total: number;
+  }> {
+    const user = await User.findById(userId).select('reposts').lean();
+    const playlistReposts = (user?.reposts ?? [])
+      .filter((repost) => repost.type === 'playlist')
+      .sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+      );
+
+    const parsedPage = Math.max(1, page);
+    const skip = (parsedPage - 1) * limit;
+    const pagedPlaylistReposts = playlistReposts.slice(skip, skip + limit);
+
+    return {
+      playlistReposts: pagedPlaylistReposts.map((repost) => ({
+        id: repost.id.toString(),
+        caption: repost.caption,
+      })),
+      total: playlistReposts.length,
+    };
+  }
+
+  async findTracksByIds(trackIds: string[]): Promise<ITrack[]> {
+    const objectIds = trackIds.map((trackId) => new Types.ObjectId(trackId));
+
+    const tracks = await Track.find({
+      _id: { $in: objectIds },
+    }).lean<ITrack[]>();
+
+    const tracksById = new Map(
+      tracks.map((track) => [track._id.toString(), track]),
+    );
+
+    return trackIds
+      .map((trackId) => tracksById.get(trackId))
+      .filter((track): track is ITrack => Boolean(track));
+  }
+
+  async findPlaylistsByIds(playlistIds: string[]): Promise<IPlaylist[]> {
+    const objectIds = playlistIds.map(
+      (playlistId) => new Types.ObjectId(playlistId),
+    );
+
+    const playlists = await Playlist.find({
+      _id: { $in: objectIds },
+    }).lean<IPlaylist[]>();
+
+    const playlistsById = new Map(
+      playlists.map((playlist) => [playlist._id.toString(), playlist]),
+    );
+
+    return playlistIds
+      .map((playlistId) => playlistsById.get(playlistId))
+      .filter((playlist): playlist is IPlaylist => Boolean(playlist));
   }
 
   async addRepostToUser(
@@ -680,6 +772,11 @@ export class EngagementRepository {
         })),
       total,
     };
+  }
+
+  async userExists(userId: string): Promise<boolean> {
+    const result = await User.exists({ _id: userId });
+    return result !== null;
   }
 
   async getCommentReplies(

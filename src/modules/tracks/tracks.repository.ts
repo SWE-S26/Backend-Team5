@@ -9,6 +9,7 @@ import AdvancedAudioDetails, {
 } from '../../shared/models/models.advanced-audio-details';
 import { TrackInput } from './dtos/tracks.request.body';
 import { Types } from 'mongoose';
+import Playlist, { IPlaylist } from '../../shared/models/models.playlist';
 
 type PaginationList = {
   tracks: ITrack[];
@@ -23,6 +24,10 @@ type PaginationList = {
 type ImageInfo = {
   imgLink: string;
   publicId: string;
+};
+
+export type PlaylistWithArtist = Omit<IPlaylist, 'artistId'> & {
+  artistId: Pick<IUser, 'displayName' | 'profileLink' | 'profileImg'>;
 };
 
 export class TracksRepository {
@@ -66,7 +71,7 @@ export class TracksRepository {
     );
 
     // returns null if user doesnt have any liked tracks
-    return tracksList;
+    return tracksList.filter((track): track is ITrack => track !== null);
   }
 
   async createNewTrack(
@@ -200,5 +205,17 @@ export class TracksRepository {
       'basicInfo.permalink': permalink,
       posterId: userId,
     });
+  }
+
+  async getPlaylistsContainingTrack(
+    trackId: string,
+    playlistType: string,
+  ): Promise<PlaylistWithArtist[] | null> {
+    return (await Playlist.find({
+      listOfTracks: trackId,
+      playlistType: playlistType,
+    })
+      .populate('artistId', 'displayName profileLink profileImg')
+      .lean()) as unknown as PlaylistWithArtist[];
   }
 }

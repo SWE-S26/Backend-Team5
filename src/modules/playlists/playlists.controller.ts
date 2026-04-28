@@ -13,6 +13,9 @@ import {
   UpdatePlaylistInfoDTO,
   AddTrackToPlaylistDTO,
   GetPlaylistByPermalinkDTO,
+  CreatePlaylistWithImageDTO,
+  CreatePlaylistWithImageInput,
+  GetByPermaLinkDTO,
 } from './dtos/playlists.request';
 import {
   BadRequestError,
@@ -105,6 +108,47 @@ export class PlaylistsController {
     );
 
     res.status(201).json({
+      message: 'Playlist created successfully',
+      data: { playlist },
+    });
+  }
+
+  async createWithImage(req: Request, res: Response): Promise<void> {
+    const imageFile = this.extractImageFile(req);
+    logger.debug(req.body);
+    try {
+      req.body = JSON.parse(req.body.data);
+    } catch (err) {
+      throw BadRequestError('Invalid JSON in "data" field');
+    }
+
+    this.stopAdmins(req.userInfo!.role);
+
+    logger.info(
+      { body: req.body },
+      'Parsed request body for updating playlist',
+    );
+
+    const validateRequest = parseRequest(CreatePlaylistWithImageDTO, req);
+    if (!validateRequest.success) {
+      throw validateRequest.error;
+    }
+
+    const infoTotal: CreatePlaylistWithImageInput = {
+      ...validateRequest.data,
+      imageFile,
+    };
+
+    const { role, _id } = req.userInfo!;
+
+    this.service.validateNumberOfPostedPlaylists(_id, role);
+    const userId = req.userInfo!._id;
+    const playlist = await this.service.createPlaylistWithImage(
+      infoTotal,
+      userId,
+    );
+
+    res.json({
       message: 'Playlist created successfully',
       data: { playlist },
     });
@@ -362,6 +406,32 @@ export class PlaylistsController {
     const userId = this.getUserIdFromRequest(req);
 
     const playlist = await this.service.getByPermalink(permalink, userId);
+
+    if (!playlist) {
+      throw BadRequestError('Playlist with the given permalink not found');
+    }
+
+    res.json({
+      message: 'Playlist retrieved successfully',
+      data: { playlist },
+    });
+  }
+
+  async getPlaylistByPermalinkAndProfileLink(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const validateRequest = parseRequest(GetByPermaLinkDTO, req);
+    if (!validateRequest.success) {
+      throw validateRequest.error;
+    }
+
+    const { permalink, profilelink } = validateRequest.data.params;
+
+    const playlist = await this.service.getByPermaLinkAndProfileLink(
+      permalink,
+      profilelink,
+    );
 
     if (!playlist) {
       throw BadRequestError('Playlist with the given permalink not found');

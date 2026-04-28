@@ -266,7 +266,6 @@ trackSchema.pre<ITrack>(
   async function () {
     const trackToDelete = this;
 
-    // Get all comments of the track
     const comments = await Comment.find({ trackId: trackToDelete._id }).select(
       '_id replyList',
     );

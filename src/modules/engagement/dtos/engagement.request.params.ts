@@ -19,3 +19,7 @@ export const TrackCommentIdParamDTO = extendedZod.object({
   trackId: extendedZod.mongoId(),
   commentId: extendedZod.mongoId(),
 });
+
+export const UserIdParamDTO = extendedZod.object({
+  userId: extendedZod.mongoId(),
+});
