@@ -25,7 +25,7 @@ export class ProfileController {
     if (!validatedRequest.success) {
       throw validatedRequest.error;
     }
-    const myId = req.userInfo!._id;
+    const myId = req.userInfo?._id ?? null;
     const userId = validatedRequest.data!.params.id;
     const profile = await this.service.getProfileById(userId, myId);
 
@@ -183,7 +183,7 @@ export class ProfileController {
       throw validatedRequest.error;
     }
 
-    const myId = req.userInfo!._id;
+    const myId = req.userInfo?._id ?? null;
     const profileLink = validatedRequest.data!.params.profileLink;
     const profile = await this.service.getProfileByProfileLink(
       profileLink,
