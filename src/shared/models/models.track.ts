@@ -60,6 +60,11 @@ export type ITrack = {
     noDerivativeWorks: boolean;
     shareAlike: boolean;
   };
+  geoBlocking: {
+    mode: 'worldwide' | 'exclusive' | 'blocked';
+    regions: string[];
+    countries: string[];
+  };
   composer: string;
   releaseTitle: string;
   hidden: boolean;
@@ -72,6 +77,12 @@ export type ITrack = {
   updatedAt: Date;
 };
 
+export enum GeoblockingMode {
+  WORLDWIDE = 'worldwide',
+  EXCLUSIVE = 'exclusive',
+  BLOCKED = 'blocked',
+}
+
 const audioClipSchema = new Schema(
   {
     start: {
@@ -83,6 +94,26 @@ const audioClipSchema = new Schema(
       type: Number,
       required: true,
       min: 0,
+    },
+  },
+  { _id: false },
+);
+
+const geoBlockingSchema = new Schema(
+  {
+    mode: {
+      type: String,
+      enum: Object.values(GeoblockingMode),
+      default: GeoblockingMode.WORLDWIDE,
+      required: true,
+    },
+    regions: {
+      type: [String],
+      default: [],
+    },
+    countries: {
+      type: [String],
+      default: [],
     },
   },
   { _id: false },
@@ -228,6 +259,11 @@ const trackSchema = new Schema(
         ref: 'User',
       },
     ],
+    geoBlocking: {
+      type: geoBlockingSchema,
+      required: true,
+      default: () => ({}),
+    },
     permissions: {
       type: permissionsSchema,
       default: () => ({}),

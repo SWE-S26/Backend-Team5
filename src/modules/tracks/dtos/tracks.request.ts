@@ -8,7 +8,9 @@ import {
 import { ListTrackssQueryDto } from './tracks.request.query';
 import {
   CreateTrackRequestBodyDTO,
+  CreateTrackRequestBodyDTOV2,
   UpdateTrackRequestBodyDTO,
+  UpdateTrackRequestBodyDTOV2,
 } from './tracks.request.body';
 
 export const DeleteTrackRequestDTO = extendedZod.object({
@@ -47,8 +49,16 @@ export const UploadAudioTrackRequestDTO = extendedZod.object({
   body: CreateTrackRequestBodyDTO,
 });
 
+export const UploadAudioTrackRequestDTOV2 = extendedZod.object({
+  body: CreateTrackRequestBodyDTOV2,
+});
+
 export const UpdateTrackRequestDTO = extendedZod.object({
   body: UpdateTrackRequestBodyDTO,
+});
+
+export const UpdateTrackRequestDTOV2 = extendedZod.object({
+  body: UpdateTrackRequestBodyDTOV2,
 });
 
 export const GetTrackByProfilePermalinkRequestDTO = extendedZod.object({

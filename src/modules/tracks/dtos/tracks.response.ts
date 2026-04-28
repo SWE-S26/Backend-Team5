@@ -1,5 +1,12 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
-import { UpdateTrackDTO } from './tracks.request.body';
+import { UpdateTrackDTO, UpdateTrackDTOV2 } from './tracks.request.body';
+import {
+  Region,
+  Country,
+  ValidCountries,
+  ValidRegions,
+} from '../tracks.consts';
+import { GeoblockingModeValues } from './tracks.request.body';
 import { z } from 'zod';
 
 export const TrackResponsePublic = extendedZod.object({
@@ -53,8 +60,26 @@ export const TrackResponsePrivate = TrackResponsePublic.extend({
   isLikedByUser: extendedZod.boolean(),
 });
 
+export const TrackResponsePrivateV2 = TrackResponsePrivate.extend({
+  geoBlocking: extendedZod.object({
+    mode: extendedZod.enum(GeoblockingModeValues),
+    regions: extendedZod
+      .array(extendedZod.enum(ValidRegions))
+      .default([] as Region[]),
+    countries: extendedZod
+      .array(extendedZod.enum(ValidCountries))
+      .default([] as Country[]),
+  }),
+  isRepostedByUser: extendedZod.boolean(),
+  isAvailableForUser: extendedZod.boolean(),
+});
+
+export type TrackResponsePublicWithGeoBlockingDTO = z.infer<
+  typeof TrackResponsePrivateV2
+>;
 export type TrackResponsePublicDTO = z.infer<typeof TrackResponsePublic>;
 export type TrackResponsePrivateDTO = z.infer<typeof TrackResponsePrivate>;
+export type TrackResponsePrivateDTOV2 = z.infer<typeof TrackResponsePrivateV2>;
 
 export const PaginationResponse = extendedZod.object({
   tracks: extendedZod.array(
@@ -69,5 +94,6 @@ export const PaginationResponse = extendedZod.object({
 });
 
 export type TrackDetailedInfo = UpdateTrackDTO;
+export type TrackDetailedInfoV2 = UpdateTrackDTOV2;
 
 export type PaginationResponseDTO = z.infer<typeof PaginationResponse>;
