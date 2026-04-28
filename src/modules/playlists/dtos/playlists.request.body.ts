@@ -68,3 +68,28 @@ export const UpdatePlaylistInfoRequestBodyDTO = extendedZod
       recordLabel: 'Example Record Label',
     },
   });
+
+export const CreatePlaylistWithImageRequestBodyDTO = extendedZod
+  .object({
+    title: extendedZod.string().min(1).max(100),
+    description: extendedZod.string().max(500).optional(),
+    listOfTracks: extendedZod
+      .array(extendedZod.mongoId())
+      .max(150)
+      .min(1)
+      .refine(
+        (arr) => new Set(arr.map((id) => id.toString())).size === arr.length,
+        { message: 'Tracks must be unique' },
+      ),
+    isPrivate: extendedZod.boolean(),
+  })
+  .openapi('UpdatePlaylistInfoRequest', {
+    example: {
+      title: 'Updated Playlist Title',
+      description: 'Updated description for my playlist',
+      genre: 'Rock',
+      additionalTags: ['tag1', 'tag2'],
+      isPrivate: false,
+      playlistType: 'playlist',
+    },
+  });
