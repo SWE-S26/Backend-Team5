@@ -4,6 +4,8 @@ import { NotificationsService } from './notifications.service';
 import {
   GetNotificationByIdRequestDTO,
   GetNotificationsRequestDTO,
+  RegisterFcmTokenRequestDTO,
+  UnregisterFcmTokenRequestDTO,
 } from './dtos/notifications.request';
 import { NotificationsMapper } from './dtos/notifications.mapper';
 
@@ -76,5 +78,31 @@ export class NotificationsController {
       await this.service.getUserNotificationById(userId, notificationId);
 
     res.json(NotificationsMapper.toResponse(notification, actorRelation));
+  }
+
+  async registerFcmToken(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(RegisterFcmTokenRequestDTO, req);
+
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const userId = req.userInfo!._id;
+    const { token, platform } = parsed.data.body;
+
+    await this.service.registerFcmToken(userId.toString(), token, platform);
+    res.json({ message: 'FCM token registered successfully' });
+  }
+
+  async unregisterFcmToken(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(UnregisterFcmTokenRequestDTO, req);
+
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { token } = parsed.data.body;
+    await this.service.unregisterFcmToken(token);
+    res.json({ message: 'FCM token unregistered successfully' });
   }
 }

@@ -16,6 +16,7 @@ import Report from './models.report';
 import { DEFAULT_PROFILE_IMAGE } from '../../config/constants';
 import { CloudinaryService } from '../abstractions/cloudinary.service';
 import publitioMediaStorage from '../abstractions/publitio';
+import FcmToken from './models.fcm-token';
 
 export type PaymentInfo = {
   subscriptionType: string;
@@ -550,6 +551,7 @@ userSchema.post('findOneAndDelete', async function (doc: IUser | null) {
       Notification.deleteMany({
         $or: [{ to: doc._id }, { 'type.referenceId': doc._id }],
       }),
+      FcmToken.deleteMany({ userId: doc._id }),
     ]);
 
     logger.debug(`Cascade deleted user ${doc._id}`);

@@ -1,1 +1,29 @@
-# No POST endpoints for the notifications module
+# POST paths for notifications module
+
+/api/notifications/v1/fcm-token:
+  post:
+    tags:
+      - Notifications
+    summary: Register an FCM device token.
+    description: |
+      Registers a Firebase Cloud Messaging device token for the authenticated user.
+      Call this on every app launch and on token refresh.
+      If the token already exists (e.g. token rotation), it is reassigned to the current user.
+    operationId: registerFcmToken
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RegisterFcmTokenBody'
+    responses:
+      200:
+        description: Token registered successfully.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FcmTokenResponse'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      500:
+        $ref: '#/components/responses/ServerError'

@@ -15,6 +15,8 @@ type ListNotificationsOptions = {
 export class NotificationsService {
   constructor(private readonly repository: NotificationsRepository) {}
 
+  // ─── Notification Queries ─────────────────────────────────────────
+
   async getUnreadCount(userId: string): Promise<{ unreadCount: number }> {
     const unreadCount = await this.repository.countForUser(userId, false);
     return { unreadCount };
@@ -112,6 +114,8 @@ export class NotificationsService {
     };
   }
 
+  // ─── Notification Creation ────────────────────────────────────────
+
   async findAll(): Promise<any[]> {
     return this.repository.findAll();
   }
@@ -173,6 +177,26 @@ export class NotificationsService {
   ): Promise<NotificationRecord[]> {
     return this.repository.createNewTrackNotifications(actorId, trackId);
   }
+
+  // ─── FCM Token Methods ────────────────────────────────────────────
+
+  async registerFcmToken(
+    userId: string,
+    token: string,
+    platform: 'ios' | 'android',
+  ): Promise<void> {
+    await this.repository.saveFcmToken(userId, token, platform);
+  }
+
+  async unregisterFcmToken(token: string): Promise<boolean> {
+    return this.repository.removeFcmToken(token);
+  }
+
+  async unregisterAllFcmTokens(userId: string): Promise<number> {
+    return this.repository.removeFcmTokensForUser(userId);
+  }
+
+  // ─── Private Helpers ──────────────────────────────────────────────
 
   private async getActorRelationsBatch(
     recipientId: string,

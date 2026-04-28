@@ -200,3 +200,43 @@ MarkReadResponse:
     - notificationId
     - read
     - unreadCount
+
+RegisterFcmTokenBody:
+  type: object
+  description: Request body for registering an FCM device token.
+  properties:
+    token:
+      type: string
+      description: The FCM device token from the client.
+      example: 'dqreXabc123...'
+    platform:
+      type: string
+      enum:
+        - ios
+        - android
+      description: The platform of the device.
+      example: android
+  required:
+    - token
+    - platform
+
+UnregisterFcmTokenBody:
+  type: object
+  description: Request body for unregistering an FCM device token.
+  properties:
+    token:
+      type: string
+      description: The FCM device token to remove.
+      example: 'dqreXabc123...'
+  required:
+    - token
+
+FcmTokenResponse:
+  type: object
+  description: Response after registering or unregistering an FCM token.
+  properties:
+    message:
+      type: string
+      example: 'FCM token registered successfully'
+  required:
+    - message

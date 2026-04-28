@@ -204,3 +204,13 @@ export const MarkReadResponseDTO = extendedZod
       unreadCount: 4,
     },
   });
+
+export const FcmTokenResponseDTO = extendedZod
+  .object({
+    message: extendedZod.string(),
+  })
+  .openapi('FcmTokenResponse', {
+    example: {
+      message: 'FCM token registered successfully',
+    },
+  });
