@@ -249,7 +249,7 @@
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /api/feed/v1/trending-tracks/{userId}:
+  /api/public/feed/v1/trending-tracks/{userId}:
     get:
       tags:
         - Feed
