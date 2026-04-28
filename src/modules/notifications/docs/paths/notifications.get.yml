@@ -74,6 +74,8 @@
                     targetType: track
                     targetId: trk_456
                     title: My Awesome Track
+                  isBlockingActor: false
+                  isFollowingActor: true
                   createdAt: 2025-01-15T12:00:00Z
               trackCommented:
                 summary: Track commented notification
@@ -90,6 +92,8 @@
                     targetId: cmt_123
                     trackId: trk_456
                     commentText: Great track!
+                  isBlockingActor: false
+                  isFollowingActor: false
                   createdAt: 2025-01-15T12:05:00Z
               userMentioned:
                 summary: User mentioned notification
@@ -108,6 +112,8 @@
                     trackId: trk_456
                     commentText: '@Jane this drop is for you!'
                     mentionedUserProfileLink: jane-smith-ab12c
+                  isBlockingActor: true
+                  isFollowingActor: false
                   createdAt: 2025-01-15T12:07:00Z
               trackReposted:
                 summary: Track reposted notification
@@ -123,6 +129,8 @@
                     targetType: track
                     targetId: trk_456
                     title: My Awesome Track
+                  isBlockingActor: false
+                  isFollowingActor: true
                   createdAt: 2025-01-15T12:10:00Z
               userFollowed:
                 summary: User followed notification
@@ -137,6 +145,8 @@
                   target:
                     targetType: user
                     targetId: usr_001
+                  isBlockingActor: false
+                  isFollowingActor: false
                   createdAt: 2025-01-15T12:12:00Z
               newTrack:
                 summary: New track notification
@@ -152,6 +162,8 @@
                     targetType: track
                     targetId: trk_999
                     title: Neon Drift
+                  isBlockingActor: false
+                  isFollowingActor: true
                   createdAt: 2025-01-15T12:15:00Z
       401:
         $ref: '#/components/responses/Unauthorized'

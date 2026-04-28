@@ -12,6 +12,7 @@ import { changeProfileImages } from './changeProfileImages';
 import { backupDatabase } from './backupDb';
 import { deleteTracksWithoutDuration } from './cleanUpWithoutDurationTracks';
 import { deleteTracksOnPublitioZero } from './DeleteTracksOnPublitioZero';
+import { cleanUpPlaylistsWithNoTracks } from './cleanUpPlaylistsWithNoTracks';
 
 const runMigrations = async () => {
   try {
@@ -21,7 +22,8 @@ const runMigrations = async () => {
     await changeProfileImages();
     await deleteTracksWithoutDuration();
     // await cleanUpBelalMess();
-    await deleteTracksOnPublitioZero();
+    // await deleteTracksOnPublitioZero();
+    await cleanUpPlaylistsWithNoTracks();
   } catch (e) {
     if (e instanceof Error) {
       logger.error(`Error during migration execution: ${e.message}`);

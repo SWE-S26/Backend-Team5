@@ -30,6 +30,11 @@ export const GetPlaylistByPermalinkParamsDTO = extendedZod
     },
   });
 
+export const GetByPermaLinkParamsDTOType = extendedZod.object({
+  profilelink: extendedZod.string().min(1).max(100),
+  permalink: extendedZod.string().min(1).max(100),
+});
+
 export type PlaylistsIdParamDTOType = z.infer<typeof PlaylistsIdParamDTO>;
 export type GetMorePlaylistsFromArtistParamsDTOType = z.infer<
   typeof GetMorePlaylistsFromArtistParamsDTO

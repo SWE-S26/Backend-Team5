@@ -7,6 +7,8 @@ import Track from '../../shared/models/models.track';
 import Comment from '../../shared/models/models.comment';
 import Following from '../../shared/models/models.following';
 import Settings from '../../shared/models/models.settings';
+import BlockedList from '../../shared/models/models.blocked-list';
+import FcmToken from '../../shared/models/models.fcm-token';
 import {
   BadRequestError,
   NotFoundError,
@@ -59,6 +61,8 @@ export type NotificationRecord = INotification & {
 };
 
 export class NotificationsRepository {
+  // ─── Notification CRUD ────────────────────────────────────────────
+
   async markAllAsReadForUser(userId: string): Promise<number> {
     const userObjectId = this.parseObjectId(userId, 'user id');
 
@@ -208,6 +212,8 @@ export class NotificationsRepository {
     const result = await Notification.deleteOne({ _id: objectId });
     return result.deletedCount > 0;
   }
+
+  // ─── Notification Creation ────────────────────────────────────────
 
   async createLikeNotification(
     actorId: string,
@@ -571,6 +577,71 @@ export class NotificationsRepository {
     const created = await Notification.insertMany(insertDocs);
     return created.map((doc) => this.toNotificationRecord(doc));
   }
+
+  // ─── Blocking / Following lookups ─────────────────────────────────
+
+  async findBlockingActors(
+    actorIds: Types.ObjectId[],
+    recipientUserId: Types.ObjectId,
+  ): Promise<Set<string>> {
+    if (actorIds.length === 0) return new Set();
+
+    const doc = await BlockedList.findOne({ blockerId: recipientUserId })
+      .select('blockedIds')
+      .lean<{ blockedIds?: Types.ObjectId[] } | null>();
+
+    const blocking = new Set<string>();
+    if (doc?.blockedIds) {
+      for (const actorId of actorIds) {
+        if (doc.blockedIds.some((id) => id.equals(actorId))) {
+          blocking.add(actorId.toString());
+        }
+      }
+    }
+    return blocking;
+  }
+
+  async findFollowedUserIds(userId: Types.ObjectId): Promise<Set<string>> {
+    const doc = await Following.findOne({ userId })
+      .select('followed')
+      .lean<{ followed?: Types.ObjectId[] } | null>();
+
+    return new Set(doc?.followed?.map((id) => id.toString()) ?? []);
+  }
+
+  // ─── FCM Token Methods ────────────────────────────────────────────
+
+  async saveFcmToken(
+    userId: string,
+    token: string,
+    platform: 'ios' | 'android',
+  ): Promise<void> {
+    const userObjectId = this.parseObjectId(userId, 'user id');
+
+    await FcmToken.findOneAndUpdate(
+      { token },
+      {
+        $set: {
+          userId: userObjectId,
+          platform,
+        },
+      },
+      { upsert: true, new: true },
+    );
+  }
+
+  async removeFcmToken(token: string): Promise<boolean> {
+    const result = await FcmToken.deleteOne({ token });
+    return result.deletedCount > 0;
+  }
+
+  async removeFcmTokensForUser(userId: string): Promise<number> {
+    const userObjectId = this.parseObjectId(userId, 'user id');
+    const result = await FcmToken.deleteMany({ userId: userObjectId });
+    return result.deletedCount;
+  }
+
+  // ─── Private Helpers ──────────────────────────────────────────────
 
   private parseObjectId(id: string, fieldName: string): Types.ObjectId {
     if (!Types.ObjectId.isValid(id)) {

@@ -59,6 +59,72 @@
       '500':
         $ref: '#/components/responses/ServerError'
 
+/api/v1/playlists/with-image:
+  post:
+    tags:
+      - Playlist Management
+    summary: Create a new playlist
+    description: Creates a new playlist with a name, list of track IDs, and privacy setting.
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+              description:
+                type: string
+              isPrivate:
+                type: boolean
+                example: false
+              listOfTracks:
+                type: array
+                items:
+                  type: string
+              buyLink:
+                type: string
+              recordLabel:
+                type: string
+              image:
+                type: string
+                format: binary
+
+    responses:
+      '200':
+        description: Playlist created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: 'Created successfully'
+                data:
+                  type: object
+                  properties:
+                    playlists:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Playlist'
+              required:
+                - message
+                - data
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '403':
+        $ref: '#/components/responses/Forbidden'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
 /api/v1/playlists/{playlistId}/history:
   post:
     tags:

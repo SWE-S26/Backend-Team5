@@ -402,11 +402,64 @@
 
 /api/public/playlists/v1/permalink/{permalink}:
   get:
+    deprecated: true
     tags:
       - Playlist Management
     summary: Get playlist with tracks by permalink
     description: Get playlist with tracks by permalink
     parameters:
+      - name: permalink
+        in: path
+        required: true
+        description: Unique permalink of the playlist
+        schema:
+          type: string
+          example: '64b8f0c2e4b0a1a2b3c4d5e'
+      - $ref: '#/components/parameters/Playlistlimit'
+      - $ref: '#/components/parameters/Playlistoffset'
+    responses:
+      '200':
+        description: Playlists retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Playlists retrieved successfully
+                data:
+                  type: object
+                  properties:
+                    playlists:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Playlist'
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '403':
+        $ref: '#/components/responses/Forbidden'
+      '404':
+        $ref: '#/components/responses/NotFound'
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/public/playlists/v2/permalink/{profilelink}/{permalink}:
+  get:
+    tags:
+      - Playlist Management
+    summary: Get playlist with tracks by permalink, and user profile link if you get the playlist preferably switch to get by id for getting tracks
+    description: Get playlist with tracks by permalink, and user profile link if you get the playlist preferably switch to get by id for getting tracks
+    parameters:
+      - name: profilelink
+        in: path
+        required: true
+        description: Unique profile link of the artist
+        schema:
+          type: string
+          example: 'john-doe'
       - name: permalink
         in: path
         required: true

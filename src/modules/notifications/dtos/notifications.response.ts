@@ -31,6 +31,26 @@ export const NotificationTargetResponseDTO = extendedZod
     },
   });
 
+const notificationExampleFields = {
+  notificationId: 'ntf_789',
+  to: 'usr_001',
+  read: false,
+  activityType: 'track_liked',
+  actor: {
+    userId: 'usr_001',
+    displayName: 'Jane Smith',
+    avatarUrl: 'https://cdn.example.com/avatars/usr_001.jpg',
+  },
+  target: {
+    targetType: 'track',
+    targetId: 'trk_456',
+    title: 'My Awesome Track',
+  },
+  isBlockingActor: false,
+  isFollowingActor: true,
+  createdAt: '2025-01-15T12:00:00Z',
+};
+
 export const NotificationResponseDTO = extendedZod
   .object({
     notificationId: extendedZod.string(),
@@ -46,26 +66,12 @@ export const NotificationResponseDTO = extendedZod
     ]),
     actor: NotificationActorResponseDTO,
     target: NotificationTargetResponseDTO,
+    isBlockingActor: extendedZod.boolean(),
+    isFollowingActor: extendedZod.boolean(),
     createdAt: extendedZod.string().datetime(),
   })
   .openapi('NotificationResponse', {
-    example: {
-      notificationId: 'ntf_789',
-      to: 'usr_001',
-      read: false,
-      activityType: 'track_liked',
-      actor: {
-        userId: 'usr_001',
-        displayName: 'Jane Smith',
-        avatarUrl: 'https://cdn.example.com/avatars/usr_001.jpg',
-      },
-      target: {
-        targetType: 'track',
-        targetId: 'trk_456',
-        title: 'My Awesome Track',
-      },
-      createdAt: '2025-01-15T12:00:00Z',
-    },
+    example: notificationExampleFields,
   });
 
 export const NotificationTypeExamplesResponseDTO = extendedZod
@@ -80,26 +86,18 @@ export const NotificationTypeExamplesResponseDTO = extendedZod
   .openapi('NotificationTypeExamplesResponse', {
     example: {
       like: {
+        ...notificationExampleFields,
         notificationId: 'ntf_like_001',
-        to: 'usr_001',
-        read: false,
         activityType: 'track_liked',
         actor: {
           userId: 'usr_010',
           displayName: 'Jane Smith',
           avatarUrl: 'https://cdn.example.com/avatars/usr_010.jpg',
         },
-        target: {
-          targetType: 'track',
-          targetId: 'trk_456',
-          title: 'My Awesome Track',
-        },
-        createdAt: '2025-01-15T12:00:00Z',
       },
       comment: {
+        ...notificationExampleFields,
         notificationId: 'ntf_comment_001',
-        to: 'usr_001',
-        read: false,
         activityType: 'track_commented',
         actor: {
           userId: 'usr_011',
@@ -111,12 +109,10 @@ export const NotificationTypeExamplesResponseDTO = extendedZod
           trackId: 'trk_456',
           commentText: 'Great track!',
         },
-        createdAt: '2025-01-15T12:05:00Z',
       },
       mention: {
+        ...notificationExampleFields,
         notificationId: 'ntf_mention_001',
-        to: 'usr_001',
-        read: false,
         activityType: 'user_mentioned',
         actor: {
           userId: 'usr_020',
@@ -129,28 +125,19 @@ export const NotificationTypeExamplesResponseDTO = extendedZod
           commentText: '@Jane check this part!',
           mentionedUserProfileLink: 'jane-smith-ab12c',
         },
-        createdAt: '2025-01-15T12:07:00Z',
       },
       repost: {
+        ...notificationExampleFields,
         notificationId: 'ntf_repost_001',
-        to: 'usr_001',
-        read: false,
         activityType: 'track_reposted',
         actor: {
           userId: 'usr_012',
           displayName: 'Maya Noor',
         },
-        target: {
-          targetType: 'track',
-          targetId: 'trk_456',
-          title: 'My Awesome Track',
-        },
-        createdAt: '2025-01-15T12:10:00Z',
       },
       follow: {
+        ...notificationExampleFields,
         notificationId: 'ntf_follow_001',
-        to: 'usr_001',
-        read: false,
         activityType: 'user_followed',
         actor: {
           userId: 'usr_013',
@@ -160,12 +147,10 @@ export const NotificationTypeExamplesResponseDTO = extendedZod
           targetType: 'user',
           targetId: 'usr_001',
         },
-        createdAt: '2025-01-15T12:12:00Z',
       },
       newTrack: {
+        ...notificationExampleFields,
         notificationId: 'ntf_newtrack_001',
-        to: 'usr_001',
-        read: false,
         activityType: 'new_track',
         actor: {
           userId: 'usr_014',
@@ -176,7 +161,6 @@ export const NotificationTypeExamplesResponseDTO = extendedZod
           targetId: 'trk_999',
           title: 'Neon Drift',
         },
-        createdAt: '2025-01-15T12:15:00Z',
       },
     },
   });
@@ -193,25 +177,7 @@ export const NotificationListResponseDTO = extendedZod
       total: 1,
       offset: 1,
       limit: 20,
-      notifications: [
-        {
-          notificationId: 'ntf_789',
-          to: 'usr_001',
-          read: false,
-          activityType: 'track_liked',
-          actor: {
-            userId: 'usr_001',
-            displayName: 'Jane Smith',
-            avatarUrl: 'https://cdn.example.com/avatars/usr_001.jpg',
-          },
-          target: {
-            targetType: 'track',
-            targetId: 'trk_456',
-            title: 'My Awesome Track',
-          },
-          createdAt: '2025-01-15T12:00:00Z',
-        },
-      ],
+      notifications: [notificationExampleFields],
     },
   });
 
@@ -236,5 +202,15 @@ export const MarkReadResponseDTO = extendedZod
       notificationId: 'ntf_789',
       read: true,
       unreadCount: 4,
+    },
+  });
+
+export const FcmTokenResponseDTO = extendedZod
+  .object({
+    message: extendedZod.string(),
+  })
+  .openapi('FcmTokenResponse', {
+    example: {
+      message: 'FCM token registered successfully',
     },
   });

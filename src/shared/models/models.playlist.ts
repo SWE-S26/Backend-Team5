@@ -10,7 +10,6 @@ import {
   RedisObjectType,
 } from '../abstractions/redis/redisRepoCacher';
 import { DEFAULT_PLAYLIST_IMAGE } from '../../config/constants';
-import { boolean } from 'zod';
 
 export type IPlaylist = {
   _id: Types.ObjectId;
@@ -45,7 +44,12 @@ const playlistSchema = new Schema<IPlaylist, IPlaylistModel>(
   {
     artistId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     title: { type: String, required: true, minlength: 1, maxlength: 100 },
-    permaLink: { type: String, required: true, minlength: 1, maxlength: 100 },
+    permaLink: {
+      type: String,
+      required: true,
+      minlength: 1,
+      maxlength: 100,
+    },
     image: {
       type: imgSchema,
       default: () => ({

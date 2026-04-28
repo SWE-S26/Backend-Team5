@@ -20,6 +20,7 @@ import {
   SubscriptionUpdatedResult,
 } from './dtos/payment.response';
 import emailService from '../../shared/abstractions/email/email.service';
+import { PaymentWebhookService } from './payment.webhook.service';
 
 export interface PricePlans {
   role: string;
@@ -27,6 +28,12 @@ export interface PricePlans {
   unlimited: boolean;
   label: string;
 }
+
+const PROMO_CODES: Record<string, number> = {
+  C0CK5: 69,
+  JU1CY: 67,
+  E1OZO: 70,
+};
 
 const PRICE_TO_PLAN: Record<string, PricePlans> = {
   price_1TGQ4EKiCVlMQgBUJwZCK3um: {
@@ -47,6 +54,7 @@ export class PaymentService {
   private readonly repository: PaymentRepository;
   private readonly stripe: Stripe;
   private readonly webhookSecret: string;
+  private readonly webhookHandler: PaymentWebhookService;
 
   constructor() {
     this.repository = new PaymentRepository();
@@ -54,6 +62,12 @@ export class PaymentService {
       apiVersion: '2026-02-25.clover',
     });
     this.webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
+    this.webhookHandler = new PaymentWebhookService(
+      this.repository,
+      this.stripe,
+      this.webhookSecret,
+      PRICE_TO_PLAN,
+    );
   }
 
   private validateUser(user: IUser | null): asserts user is IUser {
@@ -140,6 +154,7 @@ export class PaymentService {
   async createSubscription(
     userId: string,
     priceId: string,
+    promoCode?: string,
   ): Promise<SubscriptionCreatedResult> {
     const user = await this.repository.findUserById(userId);
 
@@ -147,8 +162,25 @@ export class PaymentService {
     this.validateCustomerId(user.stripeCustomerId!);
     this.validatePriceId(priceId);
 
+    let discountPercent: number | undefined;
+    if (promoCode !== undefined) {
+      if (PROMO_CODES[promoCode] === undefined) {
+        throw BadRequestError('Invalid promo code');
+      }
+      discountPercent = PROMO_CODES[promoCode];
+    }
+
     if (user.stripeSubscriptionId) {
       throw BadRequestError('User already has an active subscription');
+    }
+
+    let stripeCouponId: string | undefined;
+    if (discountPercent !== undefined) {
+      const coupon = await this.stripe.coupons.create({
+        percent_off: discountPercent,
+        duration: 'once',
+      });
+      stripeCouponId = coupon.id;
     }
 
     let subscription: Stripe.Subscription;
@@ -157,6 +189,7 @@ export class PaymentService {
         customer: user.stripeCustomerId,
         items: [{ price: priceId }],
         expand: ['latest_invoice.payment_intent'],
+        ...(stripeCouponId && { discounts: [{ coupon: stripeCouponId }] }),
       });
     } catch (error) {
       if (error instanceof Error) {
@@ -188,6 +221,7 @@ export class PaymentService {
       type: 'subscription_created',
       subscriptionType: plan.subscriptionType,
       description: `Subscribed to ${plan.label}`,
+      ...(discountPercent !== undefined && { discountPercent }),
     });
 
     return PaymentMapper.toSubscriptionCreatedResult(
@@ -400,162 +434,7 @@ export class PaymentService {
     return this.repository.findTransactionsByUserId(userId, page, limit);
   }
 
-  private extractSubscriptionId(invoice: Stripe.Invoice): string | null {
-    if (invoice.parent?.type === 'subscription_details') {
-      const sub = invoice.parent.subscription_details?.subscription;
-      return typeof sub === 'string' ? sub : (sub?.id ?? null);
-    }
-    return null;
-  }
-
-  private extractPriceId(invoice: Stripe.Invoice): string {
-    const line = invoice.lines?.data[0];
-    if (!line) return '';
-
-    // New clover-era path
-    const pricingPrice = line.pricing?.price_details?.price;
-    if (pricingPrice) {
-      return typeof pricingPrice === 'string' ? pricingPrice : pricingPrice.id;
-    }
-
-    return '';
-  }
-
   async handleWebhook(rawBody: Buffer, signature: string): Promise<void> {
-    let event: Stripe.Event;
-    try {
-      event = this.stripe.webhooks.constructEvent(
-        rawBody,
-        signature,
-        this.webhookSecret,
-      );
-
-      logger.info(`Received Stripe webhook: ${event.type}`);
-    } catch (error) {
-      throw BadRequestError('Invalid Stripe webhook signature');
-    }
-
-    switch (event!.type) {
-      case 'invoice.paid': {
-        const invoice = event.data.object as Stripe.Invoice;
-        const user = await this.repository.findUserByStripeCustomerId(
-          invoice.customer as string,
-        );
-
-        if (user) {
-          await this.repository.updateUser(user._id.toString(), {
-            isPaid: true,
-          });
-
-          const invoiceId = invoice.id;
-          const existing =
-            await this.repository.findTransactionByInvoiceId(invoiceId);
-
-          if (!existing) {
-            const priceId = this.extractPriceId(invoice);
-            const plan = PRICE_TO_PLAN[priceId];
-
-            await this.recordTransaction({
-              userId: user._id.toString(),
-              stripeCustomerId: invoice.customer as string,
-              stripeSubscriptionId: this.extractSubscriptionId(invoice),
-              stripeInvoiceId: invoiceId,
-              type: 'payment_succeeded',
-              amount: invoice.amount_paid,
-              currency: invoice.currency,
-              subscriptionType: plan?.subscriptionType ?? 'unknown',
-              description: `Payment of ${(invoice.amount_paid / 100).toFixed(2)} ${invoice.currency.toUpperCase()} for ${plan?.label ?? 'subscription'}`,
-            });
-          }
-        }
-        break;
-      }
-
-      case 'invoice.payment_failed': {
-        const invoice = event.data.object as Stripe.Invoice;
-        const user = await this.repository.findUserByStripeCustomerId(
-          invoice.customer as string,
-        );
-
-        if (user) {
-          await this.repository.updateUser(user._id.toString(), {
-            isPaid: false,
-          });
-
-          const invoiceId = invoice.id;
-          const existing =
-            await this.repository.findTransactionByInvoiceId(invoiceId);
-
-          if (!existing) {
-            const priceId = this.extractPriceId(invoice);
-            const plan = PRICE_TO_PLAN[priceId];
-
-            await this.recordTransaction({
-              userId: user._id.toString(),
-              stripeCustomerId: invoice.customer as string,
-              stripeSubscriptionId: this.extractSubscriptionId(invoice),
-              stripeInvoiceId: invoiceId,
-              type: 'payment_failed',
-              amount: invoice.amount_due,
-              currency: invoice.currency,
-              subscriptionType: plan?.subscriptionType ?? 'unknown',
-              description: `Failed payment of ${(invoice.amount_due / 100).toFixed(2)} ${invoice.currency.toUpperCase()} for ${plan?.label ?? 'subscription'}`,
-            });
-          }
-        }
-        break;
-      }
-
-      case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription;
-        const user = await this.repository.findUserByStripeCustomerId(
-          subscription.customer as string,
-        );
-
-        if (user) {
-          const role = 'Listener';
-          await this.repository.updateUser(
-            user._id.toString(),
-            {
-              isPaid: false,
-              role: role,
-              'subscription.subscriptionType': 'free',
-              'subscription.quota.unlimited': false,
-            },
-            { stripeSubscriptionId: 1 },
-          );
-
-          const { emailData } =
-            PaymentMapper.toSubscriptionCancelledResult(user);
-          emailService.sendSubscriptionCancelled(
-            emailData.userName,
-            emailData.email,
-          );
-        }
-        break;
-      }
-
-      case 'customer.subscription.updated': {
-        const subscription = event.data.object as Stripe.Subscription;
-        const priceId = subscription.items.data[0]?.price.id;
-        const user = await this.repository.findUserByStripeCustomerId(
-          subscription.customer as string,
-        );
-
-        if (user && priceId) {
-          const plan = PRICE_TO_PLAN[priceId];
-          if (plan) {
-            await this.repository.updateUser(user._id.toString(), {
-              'subscription.subscriptionType': plan.subscriptionType,
-              role: plan.role,
-            });
-          }
-        }
-        break;
-      }
-
-      default:
-        break;
-    }
+    await this.webhookHandler.handleWebhook(rawBody, signature);
   }
 }

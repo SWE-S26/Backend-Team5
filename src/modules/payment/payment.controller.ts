@@ -10,7 +10,6 @@ import {
   UpdateSubscriptionRequestDTO,
 } from './dtos/payment.request';
 import { BadRequestError } from '../../shared/errors/responseErrors';
-import { GetTransactionsQueryDTO } from './dtos/payment.request.query';
 
 export class PaymentController {
   private readonly service: PaymentService;
@@ -21,7 +20,7 @@ export class PaymentController {
 
   async getPaymentPlans(req: Request, res: Response): Promise<void> {
     const planPrices = await this.service.getPlanPrices();
-    res.status(200).json({
+    res.json({
       success: true,
       message: 'Payment plans retrieved successfully',
       data: planPrices,
@@ -55,11 +54,12 @@ export class PaymentController {
     }
 
     const userId = req.userInfo!._id;
-    const { priceId } = validatedRequest.data.body;
+    const { priceId, promoCode } = validatedRequest.data.body;
 
     const { clientResponse, emailData } = await this.service.createSubscription(
       userId,
       priceId,
+      promoCode,
     );
 
     res.status(201).json({
@@ -100,7 +100,7 @@ export class PaymentController {
       priceId,
     );
 
-    res.status(200).json({
+    res.json({
       success: true,
       message: 'Subscription updated successfully',
       data: null,
@@ -129,7 +129,7 @@ export class PaymentController {
       cancelAtPeriodEnd ?? true,
     );
 
-    res.status(200).json({
+    res.json({
       success: true,
       message: 'Subscription cancelled successfully',
       data: null,
@@ -150,7 +150,7 @@ export class PaymentController {
 
     const data = await this.service.getTransactionHistory(userId, page, limit);
 
-    res.status(200).json({
+    res.json({
       success: true,
       message: 'Transaction history retrieved successfully',
       data,
@@ -170,7 +170,7 @@ export class PaymentController {
 
     await this.service.handleWebhook(req.rawBody, signature);
 
-    res.status(200).json({
+    res.json({
       success: true,
       message: 'Webhook processed successfully',
       data: null,

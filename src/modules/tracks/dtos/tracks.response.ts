@@ -12,6 +12,7 @@ export const TrackResponsePublic = extendedZod.object({
     tags: extendedZod.array(extendedZod.string()),
     description: extendedZod.string(),
     isPrivate: extendedZod.boolean(),
+    caption: extendedZod.string(),
   }),
   audio: extendedZod.object({
     id: extendedZod.string(),
@@ -28,6 +29,24 @@ export const TrackResponsePublic = extendedZod.object({
   numReposts: extendedZod.number(),
   numComments: extendedZod.number(),
   releaseDate: extendedZod.date(),
+  permissions: z.object({
+    enableDirectDownload: z.boolean(),
+    offlineListening: z.boolean(),
+    includeInRssFeed: z.boolean(),
+    displayedEmbedCode: z.boolean(),
+    enableAppPlayback: z.boolean(),
+  }),
+  license: extendedZod.object({
+    type: extendedZod.enum(['allRightsReserved', 'creativeCommons']),
+    attribution: z.boolean(),
+    nonCommercial: z.boolean(),
+    noDerivativeWorks: z.boolean(),
+    shareAlike: z.boolean(),
+  }),
+  audioClip: extendedZod.object({
+    start: extendedZod.number().default(0),
+    end: extendedZod.number().default(0),
+  }),
 });
 
 export const TrackResponsePrivate = TrackResponsePublic.extend({

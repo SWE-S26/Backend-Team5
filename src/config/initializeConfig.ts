@@ -1,10 +1,12 @@
 import 'dotenv/config';
 import { initializeDbConnection } from './connect';
 import { initializeRedis } from './redis';
+import { initializeFirebase } from './firebase';
 import logger from '../shared/logger/logger';
 
 export const initializeConfig = async (): Promise<void> => {
   await initializeDbConnection();
+  await initializeFirebase();
 
   try {
     if (process.env.USE_REDIS === 'TRUE') {

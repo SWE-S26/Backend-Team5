@@ -11,47 +11,40 @@ import {
 import { LoginResponse, LoginSession, AuthTokens } from './dtos/auth.response';
 import { AuthRepository } from './auth.repository';
 import JWTService from '../../shared/abstractions/jwt.service';
-import { redisCacher } from '../../shared/abstractions/redis/redisCacher';
 import emailService from '../../shared/abstractions/email/email.service';
 import { AuthMapper } from './dtos/auth.mapper';
 import { PaymentInfo } from '../../shared/models/models.user';
 import { paymentController } from '../payment/payment.routes';
-import { LoginRequestBody, SignUpRequestBody } from './dtos/auth.request.body';
-
-type QRSession = {
-  status: 'pending' | 'verified';
-  userId: string | null;
-  role: string | null;
-  subscription: unknown | null;
-};
-
-const QR_PREFIX = 'qr-login:';
-const QR_TTL_SECONDS = 120; // 2 minutes initial
-const QR_EXTEND_SECONDS = 180; // +3 minutes on approval
-
-export type GoogleCompleteSignUpBody = {
-  incompleteToken: string;
-  dateOfBirth: Date;
-  gender: 'Male' | 'Female';
-  displayName: string;
-};
-
-export type SendGoogleVerificationCode = {
-  userId: string;
-  role: string;
-  subscription: unknown;
-  email: string;
-  displayName: string;
-  googleId: string;
-};
+import {
+  GoogleCompleteSignUpBody,
+  LoginRequestBody,
+  SignUpRequestBody,
+} from './dtos/auth.request.body';
+import {
+  AuthGoogleService,
+  SendGoogleVerificationCode,
+} from './auth.google.service';
+import { AuthQRLoginService } from './auth.qrlogin.service';
 
 export class AuthService {
   private readonly jwtService: JWTService;
   private readonly authRepository: AuthRepository;
 
+  private readonly googleService: AuthGoogleService;
+  private readonly qrService: AuthQRLoginService;
+
   constructor() {
     this.jwtService = new JWTService();
     this.authRepository = new AuthRepository();
+    this.googleService = new AuthGoogleService(
+      this.authRepository,
+      this.jwtService,
+    );
+
+    this.qrService = new AuthQRLoginService(
+      this.authRepository,
+      this.jwtService,
+    );
   }
 
   private async hashPassowrd(password: string) {
@@ -280,85 +273,20 @@ export class AuthService {
     }
   }
 
-  async sendGoogleVerificationEmail(
-    data: SendGoogleVerificationCode,
-  ): Promise<string> {
-    const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits
-    const TTL_SECONDS = 300; // 5 minutes
-
-    await redisCacher.set(`google-signin:${data.userId}`, code, TTL_SECONDS);
-
-    await emailService.sendGoogleSignInVerificationCode(
-      data.displayName,
-      data.email,
-      code,
-    );
-
-    const pendingToken = this.jwtService.signPending({
-      userId: data.userId,
-      role: data.role,
-      subscription: data.subscription,
-      googleId: data.googleId,
-    });
-
-    return pendingToken;
+  sendGoogleVerificationEmail(data: SendGoogleVerificationCode) {
+    return this.googleService.sendGoogleVerificationEmail(data);
   }
 
-  async resendGoogleVerificationEmail(pendingToken: string): Promise<void> {
-    const payload = this.jwtService.verifyPending(pendingToken);
-
-    if (!payload) {
-      throw UnauthorizedError('Invalid token');
-    }
-
-    const code = await redisCacher.get<string>(
-      `google-signin:${payload.userId}`,
-    );
-
-    if (!code) {
-      throw GoneError(
-        'Verification code expired. Please sign in with Google again to receive a new code.',
-      );
-    }
-
-    const user = await this.authRepository.findById(payload.userId);
-
-    if (!user) {
-      throw NotFoundError('User not found');
-    }
-
-    await emailService.sendGoogleSignInVerificationCode(
-      user.displayName,
-      user.email,
-      code,
-    );
+  resendGoogleVerificationEmail(token: string) {
+    return this.googleService.resendGoogleVerificationEmail(token);
   }
 
-  async verifyGoogleSignInCode(
-    pendingToken: string,
-    code: string,
-  ): Promise<AuthTokens> {
-    const payload = this.jwtService.verifyPending(pendingToken);
+  verifyGoogleSignInCode(token: string, code: string) {
+    return this.googleService.verifyGoogleSignInCode(token, code);
+  }
 
-    const storedCode = await redisCacher.get<string>(
-      `google-signin:${payload.userId}`,
-    );
-
-    if (!storedCode || storedCode !== code) {
-      throw UnauthorizedError('Invalid or expired verification code');
-    }
-
-    redisCacher.delete(`google-signin:${payload.userId}`);
-
-    this.authRepository.linkGoogleId(payload.userId, payload.googleId);
-
-    const tokens = this.issueTokenPair(
-      payload.userId,
-      payload.role,
-      payload.subscription,
-    );
-
-    return tokens;
+  completeGoogleSignUp(body: GoogleCompleteSignUpBody) {
+    return this.googleService.completeGoogleSignUp(body);
   }
 
   issueTokenPair(
@@ -380,127 +308,27 @@ export class AuthService {
     return this.jwtService.signIncomplete(payload);
   }
 
-  async completeGoogleSignUp(
-    body: GoogleCompleteSignUpBody,
-  ): Promise<AuthTokens> {
-    const payload = this.jwtService.verifyIncomplete(body.incompleteToken);
-
-    // ! Race condition guard: user registered between the two steps
-    const alreadyExists = await this.authRepository.findByEmail(payload.email);
-    if (alreadyExists) {
-      throw ResourceAlreadyExists(
-        'This user is logged in normally, sign in with google again, please.',
-      );
-    }
-
-    const finalDisplayName = body.displayName
-      ? body.displayName
-      : payload.displayName;
-
-    const newUser = await this.authRepository.createWithGoogle({
-      googleId: payload.googleId,
-      email: payload.email,
-      displayName: finalDisplayName,
-      dateOfBirth: body.dateOfBirth,
-      gender: body.gender,
-    });
-
-    const tokens = this.issueTokenPair(
-      newUser._id.toString(),
-      newUser.role,
-      newUser.subscription,
-    );
-
-    return tokens;
+  createQRCodeForDesktopLogin() {
+    return this.qrService.createQRCodeForDesktopLogin();
   }
 
-  createQRCodeForDesktopLogin = async (): Promise<{
-    qrCode: string;
-    expiresIn: number;
-  }> => {
-    const qrCode = `qr_${crypto.randomBytes(16).toString('hex')}`;
+  pollQRCodeForLogin(qrCode: string) {
+    return this.qrService.pollQRCodeForLogin(qrCode);
+  }
 
-    const session: QRSession = {
-      status: 'pending',
-      userId: null,
-      role: null,
-      subscription: null,
-    };
-
-    await redisCacher.set<QRSession>(
-      `${QR_PREFIX}${qrCode}`,
-      session,
-      QR_TTL_SECONDS,
-    );
-
-    return { qrCode, expiresIn: QR_TTL_SECONDS };
-  };
-
-  pollQRCodeForLogin = async (qrCode: string): Promise<LoginSession | null> => {
-    const session = await redisCacher.get<QRSession>(`${QR_PREFIX}${qrCode}`);
-
-    if (!session) {
-      throw GoneError('QR code has expired. Please generate a new one.');
-    }
-
-    if (session.status === 'pending') {
-      return null;
-    }
-
-    await redisCacher.delete(`${QR_PREFIX}${qrCode}`);
-
-    const tokens = this.issueTokenPair(
-      session.userId!,
-      session.role!,
-      session.subscription,
-    );
-
-    const user = await this.authRepository.findById(session.userId!);
-
-    if (!user) {
-      throw NotFoundError('How did you even get this token? User not found');
-    }
-
-    if (user.ban) {
-      throw ForbiddenError(
-        `Your account has been banned. Due to ${user.banReason} Please contact support.`,
-      );
-    }
-
-    const userDetails = AuthMapper.toUserCredientialsResponse(user!);
-
-    return { tokens, userDetails };
-  };
-
-  approveDesktopLogin = async (
+  approveDesktopLogin(
     qrCode: string,
     userId: string,
     role: string,
     subscription: unknown,
-  ): Promise<void> => {
-    const session = await redisCacher.get<QRSession>(`${QR_PREFIX}${qrCode}`);
-
-    if (!session) {
-      throw GoneError('QR code has expired. Please generate a new one.');
-    }
-
-    if (session.status === 'verified') {
-      return;
-    }
-
-    const updatedSession: QRSession = {
-      status: 'verified',
+  ) {
+    return this.qrService.approveDesktopLogin(
+      qrCode,
       userId,
       role,
       subscription,
-    };
-
-    await redisCacher.set<QRSession>(
-      `${QR_PREFIX}${qrCode}`,
-      updatedSession,
-      QR_EXTEND_SECONDS,
     );
-  };
+  }
 
   deleteAcount = async (
     userId: string,

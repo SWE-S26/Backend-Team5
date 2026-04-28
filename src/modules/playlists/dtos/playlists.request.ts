@@ -4,10 +4,12 @@ import {
   PlaylistsIdParamDTO,
   AddTrackToPlaylistParamsDTO,
   GetPlaylistByPermalinkParamsDTO,
+  GetByPermaLinkParamsDTOType,
 } from './playlists.request.params';
 import { findAllPlaylistsQueryDto } from './playlists.request.query';
 import {
   CreatePlaylistsRequestBodyDTO,
+  CreatePlaylistWithImageRequestBodyDTO,
   UpdatePlaylistInfoRequestBodyDTO,
   UpdatePlaylistSingleTrackOrderRequestBodyDTO,
 } from './playlists.request.body';
@@ -56,6 +58,15 @@ export const AddTrackToPlaylistDTO = extendedZod.object({
   params: AddTrackToPlaylistParamsDTO,
 });
 
+export const CreatePlaylistWithImageDTO = extendedZod.object({
+  body: CreatePlaylistWithImageRequestBodyDTO,
+});
+
+export const GetByPermaLinkDTO = extendedZod.object({
+  params: GetByPermaLinkParamsDTOType,
+  query: findAllPlaylistsQueryDto,
+});
+
 export type FindAllPlaylistsInput = z.infer<typeof FindAllPlaylistsDTO>;
 export type FindOnePlaylistInput = z.infer<typeof FindOnePlaylistDTO>;
 export type CreatePlaylistInput = z.infer<typeof CreatePlaylistDTO>;
@@ -68,5 +79,10 @@ export type UpdatePlaylistSingleTrackOrderInput = z.infer<
   typeof UpdatePlaylistSingleTrackOrderDTO
 >;
 export type UpdatePlaylistInfoInput = z.infer<typeof UpdatePlaylistInfoDTO> & {
+  imageFile: Express.Multer.File;
+};
+export type CreatePlaylistWithImageInput = z.infer<
+  typeof CreatePlaylistWithImageDTO
+> & {
   imageFile: Express.Multer.File;
 };

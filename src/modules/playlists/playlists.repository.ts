@@ -15,6 +15,7 @@ import {
   NotFoundError,
 } from '../../shared/errors/responseErrors';
 import History from '../../shared/models/models.history';
+import logger from '../../shared/logger/logger';
 
 export type TrackInPlaylist = Omit<ITrack, 'likedBy'> & {
   poster: Pick<IUser, 'displayName' | 'profileLink'> | null;
@@ -195,6 +196,27 @@ export class PlaylistsRepository {
     };
   }
 
+  async isPlaylsitPermalinkTaken(
+    permaLink: string,
+    userId: string,
+    excludedPlaylistId: string | null = null,
+  ): Promise<boolean> {
+    const query: any = {
+      permaLink,
+      artistId: userId,
+    };
+
+    if (excludedPlaylistId) {
+      query._id = { $ne: excludedPlaylistId };
+    }
+
+    const playlist = await Playlist.findOne(query);
+
+    logger.debug({ playlist }, 'Checked if playlist permalink is taken');
+
+    return !!playlist;
+  }
+
   async isUserBlocked(artistId: string, userId: string): Promise<boolean> {
     const blockedDoc = await BlockedList.findOne({ blockerId: artistId })
       .select('blockedIds')
@@ -238,6 +260,7 @@ export class PlaylistsRepository {
     playlistId: string,
     requestingUserId: string | null,
     offset: number = 1,
+    limit: number = 5,
   ): Promise<PlaylistWithTracks | Error | null> {
     const skip = (offset - 1) * TRACKS_PER_PAGE;
 
@@ -468,20 +491,72 @@ export class PlaylistsRepository {
     isPrivate: boolean,
     playlistDuration: number,
   ): Promise<IPlaylist> {
+    const permaLink = playlistName
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+
+    const isPermalinkTaken = await this.isPlaylsitPermalinkTaken(
+      permaLink,
+      artistId,
+    );
+
+    if (isPermalinkTaken) {
+      throw new Error('Playlist permaLink is already taken');
+    }
+
     const playlist = new Playlist({
       title: playlistName,
-      permaLink: playlistName
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9\s]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-'),
+      permaLink: permaLink,
       artistId,
       listOfTracks: tracks,
       isPrivate,
       playlistLengthInSeconds: playlistDuration,
     });
     return (await playlist.save()).toObject() as IPlaylist;
+  }
+
+  async createWithImage(
+    playlistName: string,
+    artistId: string,
+    tracks: Types.ObjectId[],
+    isPrivate: boolean,
+    playlistDuration: number,
+    description: string,
+  ): Promise<IPlaylist> {
+    const permaLink = playlistName
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+
+    const isPermalinkTaken = await this.isPlaylsitPermalinkTaken(
+      permaLink,
+      artistId,
+    );
+
+    if (isPermalinkTaken) {
+      throw new Error('Playlist permaLink is already taken');
+    }
+
+    const playlist = new Playlist({
+      title: playlistName,
+      permaLink: permaLink,
+      artistId,
+      listOfTracks: tracks,
+      isPrivate,
+      playlistLengthInSeconds: playlistDuration,
+      description: description,
+    });
+    return (await playlist.save()).toObject() as IPlaylist;
+  }
+
+  async getUserIdByProfileLink(profileLink: string): Promise<string | null> {
+    const searchUser = await User.findOne({ profileLink: profileLink });
+    return searchUser?._id.toString() || null;
   }
 
   async addTrackToEndOfPlaylist(
@@ -599,6 +674,33 @@ export class PlaylistsRepository {
     const playlistPro = await this.findByIdWithTracks(
       playlist._id.toString(),
       userId,
+    );
+
+    return playlistPro;
+  }
+
+  async findByPermalinkWithProfileLink(
+    permalink: string,
+    userId: string,
+    offset: number = 1,
+    limit: number = 5,
+  ): Promise<PlaylistWithTracks | Error | null> {
+    const playlist = await Playlist.findOne({
+      permaLink: permalink,
+      artistId: new Types.ObjectId(userId),
+    })
+      .lean()
+      .exec();
+
+    if (!playlist) {
+      return null;
+    }
+
+    const playlistPro = await this.findByIdWithTracks(
+      playlist._id.toString(),
+      null,
+      offset,
+      limit,
     );
 
     return playlistPro;

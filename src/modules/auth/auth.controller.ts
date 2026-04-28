@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { parseRequest } from '../../shared/dtos/requestParser';
-import { AuthService, GoogleCompleteSignUpBody } from './auth.service';
+import { AuthService } from './auth.service';
+import { GoogleCompleteSignUpBody } from './dtos/auth.request.body';
 import {
   CheckEmailRequestDTO,
   DesktopPollingRequestDTO,

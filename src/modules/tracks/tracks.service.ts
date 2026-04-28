@@ -1,5 +1,6 @@
 import {
   BadRequestError,
+  ForbiddenError,
   NotFoundError,
   UnauthorizedError,
 } from '../../shared/errors/responseErrors';
@@ -22,6 +23,11 @@ import { getNotificationSocketHandler } from '../../sockets/handlers/notificatio
 import { parseBuffer } from 'music-metadata';
 import logger from '../../shared/logger/logger';
 import blobStorageService from '../../shared/abstractions/blob.service';
+import {
+  PlaylistWithTracks,
+  TrackInPlaylist,
+} from '../playlists/playlists.repository';
+import Playlist from '../../shared/models/models.playlist';
 
 type ImageInfo = {
   imgLink: string;
@@ -55,6 +61,21 @@ export class TracksService {
     return imgInfo;
   }
 
+  private validateTrackOwnerShip(
+    userId: string,
+    posterId: string,
+    userRole: string,
+  ) {
+    // if the user trying to delete is not
+    if (userRole !== 'Admin') {
+      if (userId !== posterId) {
+        // means user is trying to delete a track he has not posted
+        throw UnauthorizedError('Unauthorized Action');
+      }
+    }
+    logger.info('[track]: validated User OwnerShip');
+  }
+
   private async calculateTrackDuration(file: Express.Multer.File) {
     const metadata = await parseBuffer(file.buffer, file.mimetype);
     const duration = Math.ceil(metadata.format.duration as number);
@@ -74,14 +95,7 @@ export class TracksService {
     }
 
     const posterId = searchTrack.posterId.toString();
-
-    // if the user trying to delete is not
-    if (userRole !== 'Admin') {
-      if (userId !== posterId) {
-        // means user is trying to delete a track he has not posted
-        throw UnauthorizedError('Unauthorized Action');
-      }
-    }
+    this.validateTrackOwnerShip(userId, posterId, userRole);
 
     // delete audio from cloud storage first
     await Promise.all([
@@ -91,9 +105,11 @@ export class TracksService {
       ),
       blobStorageService.deleteWaveFromBlob(searchTrack._id),
     ]);
+    logger.info('[track]: Delted Audio and Waveform');
 
     // delete track info from database
     const isDeleted = await this.tracksRepository.deleteById(trackId, userId);
+    logger.info('[track]: Delted Track from Data Base');
     return isDeleted;
   }
 
@@ -106,6 +122,15 @@ export class TracksService {
     // if not found
     if (!searchTrack) {
       throw NotFoundError("Track Doesn't Exists");
+    }
+
+    const posterId = searchTrack.posterId.toString();
+    if (searchTrack.basicInfo.isPrivate && posterId != requesterUserId) {
+      throw ForbiddenError('Unauthorized Access');
+    }
+
+    if (searchTrack.hidden == true) {
+      throw ForbiddenError('This Track Is Banned Cannot Access It');
     }
 
     let trackResponse;
@@ -141,17 +166,33 @@ export class TracksService {
     if (!likedTracksList) {
       return null;
     }
+    logger.info(`[track]: fetched liked tracks for user ${userId}`);
 
     let trackResponseList: any;
-
+    console.log(likedTracksList);
     if (requesterUserId) {
+      logger.info(`[track Priavte]: fetched liked tracks for user ${userId}`);
+      // if private endpoint, fetch tracks that are not banned, user private and belong to him
+      // if he is not the owner don't get the private tracks
+      const visibleLikedTracks = likedTracksList.filter(
+        (track) =>
+          track?.hidden !== true &&
+          (!track?.basicInfo.isPrivate ||
+            track.posterId.toString() === requesterUserId),
+      );
       trackResponseList = TracksMapper.toTrackResponsePrivateList(
-        likedTracksList as ITrack[],
+        visibleLikedTracks as ITrack[],
         requesterUserId,
       );
     } else {
+      // if from public endpoint remove all private tracks
+      logger.info(`[track Public]: fetched liked tracks for user ${userId}`);
+      const visibleLikedTracks = likedTracksList.filter(
+        (track) => !track?.basicInfo.isPrivate && track?.hidden !== true,
+      );
+      console.log(visibleLikedTracks);
       trackResponseList = TracksMapper.toTrackResponsePublicList(
-        likedTracksList as ITrack[],
+        visibleLikedTracks as ITrack[],
       );
     }
 
@@ -252,6 +293,10 @@ export class TracksService {
       throw NotFoundError('Track Not Found');
     }
 
+    if (searchTrack.hidden) {
+      throw ForbiddenError('Track is Banned Cannot Access It');
+    }
+
     let trackResponse;
 
     if (requesterUserId) {
@@ -279,14 +324,21 @@ export class TracksService {
     let trackResponseList;
 
     if (requesterUserId) {
+      const visibleTracks = tracks.filter(
+        (track) =>
+          track?.hidden !== true &&
+          (!track?.basicInfo.isPrivate ||
+            track.posterId.toString() === requesterUserId),
+      );
       trackResponseList = TracksMapper.toTrackResponsePrivateList(
-        tracks as ITrack[],
+        visibleTracks as ITrack[],
         requesterUserId,
       );
     } else {
-      trackResponseList = TracksMapper.toTrackResponsePublicList(
-        tracks as ITrack[],
+      const visibleTracks = tracks.filter(
+        (track) => !track?.basicInfo.isPrivate && track?.hidden !== true,
       );
+      trackResponseList = TracksMapper.toTrackResponsePublicList(visibleTracks);
     }
     return {
       tracks: trackResponseList,
@@ -304,32 +356,16 @@ export class TracksService {
   ) {
     const searchTrack = await this.tracksRepository.findById(trackInfo.id);
 
-    // TODO: REFACTOR THIS PART : MAKE IT DRY
     if (!searchTrack) {
       throw NotFoundError('Track Not Found');
     }
 
-    let imgInfo: ImageInfo | null = null;
-    if (image) {
-      const retreiveImgInfo = await this.imgUploader.uploadImage(
-        image.buffer,
-        ImageFolder.AUDIO,
-      );
-      imgInfo = {
-        imgLink: retreiveImgInfo?.url as string,
-        publicId: retreiveImgInfo?.publicId,
-      };
-    }
+    const imgInfo = await this.uploadImgToCloud(image);
 
     const posterId = searchTrack.posterId.toString();
 
-    // if the user trying to delete is not
-    if (userRole !== 'Admin') {
-      if (userId !== posterId) {
-        // means user is trying to delete a track he has not posted
-        throw UnauthorizedError('Unauthorized Action');
-      }
-    }
+    this.validateTrackOwnerShip(userId, posterId, userRole);
+
     const updatedTrack = await this.tracksRepository.updateTrackInfo(
       trackInfo,
       imgInfo,
@@ -341,12 +377,21 @@ export class TracksService {
     const postedTracks = await this.tracksRepository.getPostedTracks(userId);
     let trackResponseList;
     if (requesterUserId) {
+      const visibleTracks = postedTracks.filter(
+        (track) =>
+          track?.hidden !== true &&
+          (!track?.basicInfo.isPrivate ||
+            track.posterId.toString() === requesterUserId),
+      );
       trackResponseList = TracksMapper.toTrackResponsePrivateList(
-        postedTracks,
+        visibleTracks,
         requesterUserId,
       );
     } else {
-      trackResponseList = TracksMapper.toTrackResponsePublicList(postedTracks);
+      const visibleTracks = postedTracks.filter(
+        (track) => !track?.basicInfo.isPrivate && track?.hidden !== true,
+      );
+      trackResponseList = TracksMapper.toTrackResponsePublicList(visibleTracks);
     }
     return trackResponseList;
   }
@@ -373,15 +418,7 @@ export class TracksService {
       throw NotFoundError('Track Not Found');
     }
 
-    const posterId = searchTrack.posterId.toString();
-
-    // if the user trying to delete is not
-    if (userRole !== 'Admin') {
-      if (userId !== posterId) {
-        // means user is trying to delete a track he has not posted
-        throw UnauthorizedError('Unauthorized Action');
-      }
-    }
+    this.validateTrackOwnerShip(userId, trackId, userRole);
 
     const searchAdvancedInfo =
       await this.tracksRepository.getTrackAdvancedInfo(trackId);
@@ -408,5 +445,34 @@ export class TracksService {
     const user = await this.tracksRepository.findUserById(userId);
     if (!user) throw NotFoundError('User not found');
     return user.uploads.length;
+  }
+
+  async getPlaylistsContainingTrack(
+    trackId: string,
+    requesterUserId: string | null,
+    playlistType: string,
+  ) {
+    const playlists = await this.tracksRepository.getPlaylistsContainingTrack(
+      trackId,
+      playlistType,
+    );
+
+    if (!playlists) return null;
+    if (requesterUserId) {
+      // if private endpoint, fetch playlists that are user private and belong to him
+      // if he is not the owner don't get the private playlists
+      const visiblePlaylists = playlists.filter(
+        (playlist) =>
+          !playlist?.isPrivate ||
+          playlist.artistId.toString() === requesterUserId,
+      );
+      return visiblePlaylists;
+    } else {
+      // if from public endpoint remove all private tracks
+      const visiblePlaylists = playlists.filter(
+        (playlist) => !playlist?.isPrivate,
+      );
+      return visiblePlaylists;
+    }
   }
 }
