@@ -8,18 +8,13 @@ import {
   Country,
   ValidCountries,
   ValidRegions,
+  GeoblockingModeValues,
 } from '../tracks.consts';
 
 type ImageInfo = {
   imgLink: string;
   publicId: string;
 };
-
-export const GeoblockingModeValues = [
-  'worldwide',
-  'exclusive',
-  'blocked',
-] as const;
 
 export const CreateTrackRequestBodyDTO = extendedZod.object({
   basicInfo: extendedZod.object({

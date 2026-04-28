@@ -6,7 +6,7 @@ import {
   ValidCountries,
   ValidRegions,
 } from '../tracks.consts';
-import { GeoblockingModeValues } from './tracks.request.body';
+import { GeoblockingModeValues } from '../tracks.consts';
 import { z } from 'zod';
 
 export const TrackResponsePublic = extendedZod.object({
