@@ -54,7 +54,7 @@
                 $ref: '#/components/schemas/ErrorResponse'
 
   # Global Search
-  /api/feed/v1/search:
+  /api/public/feed/v1/search:
     get:
       tags:
         - Search
