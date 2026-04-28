@@ -4,6 +4,7 @@ import {
   NotificationsRepository,
 } from '../../modules/notifications/notifications.repository';
 import { NotificationsService } from '../../modules/notifications/notifications.service';
+import fcmService from '../../shared/abstractions/fcm/fcm.service';
 import logger from '../../shared/logger/logger';
 import Settings from '../../shared/models/models.settings';
 import BlockedList from '../../shared/models/models.blocked-list';
@@ -171,8 +172,10 @@ export class NotificationSocketHandler {
 
     if (!delivered) {
       logger.info(
-        `[notification:receive] recipient ${notification.to.toString()} is offline for notification ${payload.notificationId}`,
+        `[notification:receive] recipient ${notification.to.toString()} is offline — sending FCM for ${payload.notificationId}`,
       );
+
+      await fcmService.sendToUser(notification.to.toString(), enrichedPayload);
     }
 
     return enrichedPayload;

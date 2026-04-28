@@ -1,1 +1,28 @@
-# No DELETE endpoints for the notifications module
+# DELETE paths for notifications module
+
+/api/notifications/v1/fcm-token:
+  delete:
+    tags:
+      - Notifications
+    summary: Unregister an FCM device token.
+    description: |
+      Removes a specific FCM device token. Call this on logout to prevent pushes to stale tokens.
+      If the token does not exist, the request still returns 200.
+    operationId: unregisterFcmToken
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnregisterFcmTokenBody'
+    responses:
+      200:
+        description: Token unregistered successfully.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FcmTokenResponse'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      500:
+        $ref: '#/components/responses/ServerError'

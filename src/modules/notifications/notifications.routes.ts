@@ -24,6 +24,16 @@ router.patch(
   notificationsController.markAllAsRead.bind(notificationsController),
 );
 
+router.post(
+  apiVersions.v1 + '/fcm-token',
+  notificationsController.registerFcmToken.bind(notificationsController),
+);
+
+router.delete(
+  apiVersions.v1 + '/fcm-token',
+  notificationsController.unregisterFcmToken.bind(notificationsController),
+);
+
 router.patch(
   apiVersions.v1 + '/:notificationId/read',
   notificationsController.markAsRead.bind(notificationsController),
