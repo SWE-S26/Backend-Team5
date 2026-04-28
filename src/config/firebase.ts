@@ -1,5 +1,4 @@
 import * as admin from 'firebase-admin';
-import path from 'path';
 import logger from '../shared/logger/logger';
 
 let initialized = false;
@@ -8,12 +7,15 @@ export function initializeFirebase(): void {
   if (initialized) return;
 
   try {
-    const serviceAccountPath = path.resolve(
-      __dirname,
-      '../../firebase-service-account.json',
-    );
+    const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
 
-    const serviceAccount = require(serviceAccountPath);
+    if (!raw) {
+      throw new Error(
+        'FIREBASE_SERVICE_ACCOUNT_JSON is not set in environment variables.',
+      );
+    }
+
+    const serviceAccount = JSON.parse(raw);
 
     if (!admin.apps.length) {
       admin.initializeApp({
@@ -26,7 +28,7 @@ export function initializeFirebase(): void {
   } catch (error) {
     logger.error(`[Firebase] Failed to initialize: ${error}`);
     throw new Error(
-      'Firebase initialization failed. Ensure firebase-service-account.json exists in the project root.',
+      'Firebase initialization failed. Ensure FIREBASE_SERVICE_ACCOUNT_JSON is set in .env with a valid service account object.',
     );
   }
 }
