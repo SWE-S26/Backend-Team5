@@ -1,4 +1,4 @@
-  /api/profile/v1/{userId}:
+  /api/public/profile/v1/{userId}:
     get:
       tags:
         - Profile-Management
@@ -67,7 +67,7 @@
                     success: false
                     message: "User not found"
                     code: 404
-  /api/profile/v1/profile-link/{profilelink}:
+  /api/public/profile/v1/profile-link/{profilelink}:
     get:
       tags:
         - Profile-Management
