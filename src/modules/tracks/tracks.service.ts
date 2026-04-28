@@ -188,7 +188,7 @@ export class TracksService {
       // if from public endpoint remove all private tracks
       logger.info(`[track Public]: fetched liked tracks for user ${userId}`);
       const visibleLikedTracks = likedTracksList.filter(
-        (track) => !(track?.basicInfo.isPrivate || track?.hidden !== true),
+        (track) => !track?.basicInfo.isPrivate && track?.hidden !== true,
       );
       console.log(visibleLikedTracks);
       trackResponseList = TracksMapper.toTrackResponsePublicList(
@@ -336,7 +336,7 @@ export class TracksService {
       );
     } else {
       const visibleTracks = tracks.filter(
-        (track) => !(track?.basicInfo.isPrivate || track?.hidden !== true),
+        (track) => !track?.basicInfo.isPrivate && track?.hidden !== true,
       );
       trackResponseList = TracksMapper.toTrackResponsePublicList(visibleTracks);
     }
@@ -389,7 +389,7 @@ export class TracksService {
       );
     } else {
       const visibleTracks = postedTracks.filter(
-        (track) => !(track?.basicInfo.isPrivate || track?.hidden !== true),
+        (track) => !track?.basicInfo.isPrivate && track?.hidden !== true,
       );
       trackResponseList = TracksMapper.toTrackResponsePublicList(visibleTracks);
     }
