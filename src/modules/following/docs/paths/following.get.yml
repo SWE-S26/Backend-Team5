@@ -1,4 +1,4 @@
-/api/social/v1/followers/{userId}:
+/api/public/social/v1/followers/{userId}:
   get:
     tags:
       - Social
@@ -71,7 +71,7 @@
                   code: 404
 
 # Get following
-/api/social/v1/following/{userId}:
+/api/public/social/v1/following/{userId}:
   get:
     tags:
       - Social
