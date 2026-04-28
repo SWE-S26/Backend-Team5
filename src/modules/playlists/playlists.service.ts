@@ -14,8 +14,12 @@ import {
 } from '../../shared/abstractions/cloudinary.service';
 import { DEFAULT_PLAYLIST_IMAGE } from '../../config/constants';
 import { PlaylistArtistDetailsDTOType } from './dtos/playlists.response';
-import { UpdatePlaylistInfoInput } from './dtos/playlists.request';
+import {
+  CreatePlaylistWithImageInput,
+  UpdatePlaylistInfoInput,
+} from './dtos/playlists.request';
 import logger from '../../shared/logger/logger';
+import { Types } from 'mongoose';
 
 const isDefaultImage = (publicId: string) => {
   return publicId === DEFAULT_PLAYLIST_IMAGE.publicId;
@@ -37,11 +41,13 @@ export class PlaylistsService {
     id: string,
     userId: string | null,
     offset: number = 1,
+    limit: number = 5,
   ): Promise<PlaylistWithTracks | null> {
     const playlistWithTracks = await this.repository.findByIdWithTracks(
       id,
       userId,
       offset,
+      limit,
     );
 
     if (!playlistWithTracks) {
@@ -117,6 +123,54 @@ export class PlaylistsService {
     }
   }
 
+  async createPlaylistWithImage(
+    infoTotal: CreatePlaylistWithImageInput,
+    artistId: string,
+  ): Promise<IPlaylist> {
+    const { title, description, listOfTracks, isPrivate } = infoTotal.body;
+
+    const { imageFile } = infoTotal;
+    const durationInSeconds =
+      await this.repository.findTrackLengthesByIds(listOfTracks);
+    if (durationInSeconds instanceof Error) {
+      throw NotFoundError(durationInSeconds.message);
+    }
+
+    const uploadResult = await CloudinaryService.uploadImage(
+      imageFile.buffer,
+      ImageFolder.PLAYLIST,
+    );
+
+    try {
+      const finalDescription = description || '';
+      const playlist = await this.repository.createWithImage(
+        title,
+        artistId,
+        listOfTracks.map((id) => new Types.ObjectId(id)),
+        isPrivate,
+        durationInSeconds,
+        finalDescription,
+      );
+
+      const finalPlaylist = await this.updateImage(
+        playlist._id.toString(),
+        imageFile,
+        artistId,
+      );
+
+      return finalPlaylist!;
+    } catch (error) {
+      await CloudinaryService.deleteImage(uploadResult.publicId);
+      if (error instanceof Error && error.message.includes('permaLink')) {
+        throw BadRequestError(
+          'PermaLink taken, please choose another Display Name',
+        );
+      } else {
+        throw error;
+      }
+    }
+  }
+
   async addPlaylistToHistory(
     playlistId: string,
     userId: string,
@@ -175,6 +229,7 @@ export class PlaylistsService {
 
     const isPermalinkTaken = await this.repository.isPlaylsitPermalinkTaken(
       playlist.body.permalink,
+      userId,
       id,
     );
 
@@ -182,14 +237,19 @@ export class PlaylistsService {
       throw BadRequestError('Playlist permalink is already taken');
     }
 
-    await this.updateImage(id, imageFile, userId);
-
     const updatedInfo = await this.repository.updatePlaylist(playlist);
 
     if (updatedInfo instanceof Error) {
-      throw NotFoundError(updatedInfo.message);
+      if (updatedInfo.message === 'You are not the owner of this playlist') {
+        throw ForbiddenError(updatedInfo.message);
+      } else if (updatedInfo.message.includes('permaLink')) {
+        throw BadRequestError(updatedInfo.message);
+      } else {
+        throw NotFoundError(updatedInfo.message);
+      }
     }
 
+    await this.updateImage(id, imageFile, userId);
     return true;
   }
 
@@ -198,6 +258,38 @@ export class PlaylistsService {
     userId: string | null,
   ): Promise<PlaylistWithTracks | null> {
     const playlist = await this.repository.findByPermalink(permalink, userId);
+    if (!playlist) {
+      throw NotFoundError('Playlist not found');
+    }
+
+    if (playlist instanceof Error) {
+      if (playlist.message === 'You are blocked from accessing this playlist') {
+        throw ForbiddenError(playlist.message);
+      } else {
+        throw NotFoundError(playlist.message);
+      }
+    }
+    return playlist;
+  }
+
+  async getByPermaLinkAndProfileLink(
+    permalink: string,
+    profilelink: string,
+    limit: number = 5,
+    offset: number = 1,
+  ): Promise<PlaylistWithTracks | null> {
+    const findUserIdResult =
+      await this.repository.getUserIdByProfileLink(profilelink);
+    if (!findUserIdResult) {
+      throw NotFoundError('Profile not found');
+    }
+
+    const playlist = await this.repository.findByPermalinkWithProfileLink(
+      permalink,
+      findUserIdResult,
+      offset,
+      limit,
+    );
     if (!playlist) {
       throw NotFoundError('Playlist not found');
     }

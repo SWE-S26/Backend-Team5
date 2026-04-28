@@ -15,6 +15,12 @@ playlistsPrivateRouter.post(
   playlistsController.create.bind(playlistsController),
 );
 
+playlistsPrivateRouter.post(
+  apiVersions.v1 + '/with-image',
+  upload.fields([{ name: 'image', maxCount: 1 }]),
+  playlistsController.createWithImage.bind(playlistsController),
+);
+
 playlistsPrivateRouter.delete(
   apiVersions.v1 + '/:id',
   playlistsController.delete.bind(playlistsController),
@@ -61,6 +67,14 @@ playlistsPublicRouter.get(
   apiVersions.v1 + '/permalink/:permalink',
   optionalAuth,
   playlistsController.getPlaylistByPermalink.bind(playlistsController),
+);
+
+playlistsPublicRouter.get(
+  apiVersions.v2 + '/permalink/:profilelink/:permalink',
+  optionalAuth,
+  playlistsController.getPlaylistByPermalinkAndProfileLink.bind(
+    playlistsController,
+  ),
 );
 
 playlistsPrivateRouter.get(

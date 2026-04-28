@@ -49,8 +49,6 @@ const playlistSchema = new Schema<IPlaylist, IPlaylistModel>(
       required: true,
       minlength: 1,
       maxlength: 100,
-      unique: true,
-      index: true,
     },
     image: {
       type: imgSchema,
