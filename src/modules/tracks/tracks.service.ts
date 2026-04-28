@@ -336,7 +336,7 @@ export class TracksService {
       );
     } else {
       const visibleTracks = tracks.filter(
-        (track) => !(track?.basicInfo.isPrivate || track?.hidden !== true),
+        (track) => !track?.basicInfo.isPrivate && track?.hidden !== true,
       );
       trackResponseList = TracksMapper.toTrackResponsePublicList(visibleTracks);
     }

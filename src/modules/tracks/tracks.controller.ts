@@ -397,7 +397,6 @@ export class TracksController {
   }
 
   async getUserQuota(req: Request, res: Response) {
-    logger.info('HG');
     const userInfo = this.getUserInfo(req);
     const userId = userInfo.userId;
     logger.info('Q');
