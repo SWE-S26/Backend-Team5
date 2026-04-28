@@ -106,18 +106,21 @@ export class FeedService {
   }
 
   async getSearchSuggestions(
-    userId: string,
+    userId: string | null,
     searchQuery: string,
   ): Promise<SearchSuggestionDTOType[]> {
-    const existingUser: IUser | null =
-      await this.repository.getUserById(userId);
-    if (!existingUser) throw NotFoundError('User not found');
+    if (userId) {
+      const existingUser: IUser | null =
+        await this.repository.getUserById(userId);
+      if (!existingUser) throw NotFoundError('User not found');
+    }
 
-    const personalizedSearchSuggestions: SearchSuggestionDTOType[] =
-      await this.repository.getPersonalizedSearchSuggestions(
-        userId,
-        searchQuery,
-      );
+    const personalizedSearchSuggestions: SearchSuggestionDTOType[] = userId
+      ? await this.repository.getPersonalizedSearchSuggestions(
+          userId,
+          searchQuery,
+        )
+      : [];
 
     let limit = 9;
     if (personalizedSearchSuggestions.length === 2) limit = 8;

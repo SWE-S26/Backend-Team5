@@ -22,7 +22,7 @@ feedRoutes.get(
   feedController.getFeed.bind(feedController),
 );
 
-feedRoutes.get(
+feedPublicRouter.get(
   apiVersions.v1 + '/search/suggestions',
   feedController.getSearchSuggestions.bind(feedController),
 );
@@ -42,7 +42,7 @@ feedRoutes.post(
   feedController.addToSearchHistory.bind(feedController),
 );
 
-feedRoutes.get(
+feedPublicRouter.get(
   apiVersions.v1 + '/search',
   feedController.applyGlobalSearch.bind(feedController),
 );
