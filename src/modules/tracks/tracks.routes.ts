@@ -127,5 +127,71 @@ tracksPrivateRouter.post(
   (req, res) => tracksController.uploadAudioTrack(req, res),
 );
 
+// ======================================================= V2 ==========================================================
+
+// ====== public ======
+tracksPublicRouter.get(apiVersions.v2, (req, res) =>
+  tracksController.getPaginatedListOfTracksV2(req, res, 'PUBLIC'),
+);
+
+tracksPublicRouter.get(apiVersions.v2 + '/liked/:id', (req, res) =>
+  tracksController.getUserLikedTracksV2(req, res, 'PUBLIC'),
+);
+
+tracksPublicRouter.get(apiVersions.v2 + '/posted/:id', (req, res) =>
+  tracksController.getUserPostedTracksV2(req, res, 'PUBLIC'),
+);
+
+tracksPublicRouter.get(
+  apiVersions.v2 + '/permalink/:profileLink/:permalink',
+  (req, res) => tracksController.getTrackByPermalinkV2(req, res, 'PUBLIC'),
+);
+
+tracksPublicRouter.get(apiVersions.v2 + '/:id', (req, res) =>
+  tracksController.getTrackByIdV2(req, res, 'PUBLIC'),
+);
+
+// ====== private ======
+tracksPrivateRouter.patch(
+  apiVersions.v2,
+  upload.fields([{ name: 'image', maxCount: 1 }]),
+  (req, res) => tracksController.updateTrackInfoV2(req, res),
+);
+
+tracksPrivateRouter.post(
+  apiVersions.v2,
+  uploadTrackLimiter,
+  upload.fields([
+    { name: 'audio', maxCount: 1 },
+    { name: 'image', maxCount: 1 },
+  ]),
+  (req, res) => tracksController.uploadAudioTrackV2(req, res),
+);
+
+tracksPrivateRouter.get(apiVersions.v2, (req, res) =>
+  tracksController.getPaginatedListOfTracksV2(req, res, 'PRIVATE'),
+);
+
+tracksPrivateRouter.get(apiVersions.v2 + '/liked/:id', (req, res) =>
+  tracksController.getUserLikedTracksV2(req, res, 'PRIVATE'),
+);
+
+tracksPrivateRouter.get(apiVersions.v2 + '/posted/:id', (req, res) =>
+  tracksController.getUserPostedTracksV2(req, res, 'PRIVATE'),
+);
+
+tracksPrivateRouter.get(apiVersions.v2 + '/detailed/:id', (req, res) =>
+  tracksController.getDetailedTrackInfoV2(req, res),
+);
+
+tracksPrivateRouter.get(
+  apiVersions.v2 + '/permalink/:profileLink/:permalink',
+  (req, res) => tracksController.getTrackByPermalinkV2(req, res, 'PRIVATE'),
+);
+
+tracksPrivateRouter.get(apiVersions.v2 + '/:id', (req, res) =>
+  tracksController.getTrackByIdV2(req, res, 'PRIVATE'),
+);
+
 export { tracksPublicRouter };
 export default tracksPrivateRouter;
