@@ -1,3 +1,9 @@
+export const GeoblockingModeValues = [
+  'worldwide',
+  'exclusive',
+  'blocked',
+] as const;
+
 export const ValidRegions = [
   'Africa',
   'Antarctica',
