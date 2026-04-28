@@ -1,7 +1,8 @@
- /api/tracks/v1/:
+/api/tracks/v1/:
   patch:
     tags:
       - Track Management
+    deprecated: true
     summary: Update track (metadata and/or media)
     description: >
       Updates an existing track. Supports partial updates.
@@ -25,7 +26,6 @@
           schema:
             type: object
             properties:
-
               id:
                 type: string
                 description: Track ID to update
@@ -123,8 +123,7 @@
       '500':
         $ref: '#/components/responses/ServerError'
 
-
- /api/tracks/v1/listen/{id}:
+/api/tracks/v1/listen/{id}:
   patch:
     tags:
       - Track Management
@@ -168,6 +167,146 @@
 
       '401':
         $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/tracks/v2/:
+  patch:
+    tags:
+      - Track Management
+    summary: Update track (metadata and/or media)
+    description: >
+      Updates an existing track. Supports partial updates.
+
+      This endpoint is used to:
+        - Update track metadata (title, genre, tags, etc.)
+        - Update permissions and licensing
+        - Update advanced publishing settings
+        - Replace cover image
+
+      Note:
+        - Structured data fields are sent as JSON strings in multipart/form-data
+        - Image upload is handled as binary file
+
+    operationId: updateTrackById
+
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Track ID to update
+                example: 69d81e7846eff3dce7069b08
+
+              image:
+                type: string
+                format: binary
+                description: Optional cover image replacement
+
+              basicInfo:
+                type: string
+                description: >
+                  JSON stringified object:
+                  {
+                    "title": "New Title",
+                    "permalink": "new-title",
+                    "mainArtists": ["Artist 1"],
+                    "genre": "Hip-Hop",
+                    "tags": ["rap"],
+                    "description": "",
+                    "isPrivate": false,
+                    "caption": ""
+                  }
+
+              permissions:
+                type: string
+                description: >
+                  JSON stringified object:
+                  {
+                    "enableDirectDownload": true,
+                    "offlineListening": true,
+                    "includeInRssFeed": true,
+                    "displayedEmbedCode": true,
+                    "enableAppPlayback": true
+                  }
+
+              license:
+                type: string
+                description: >
+                  JSON stringified object:
+                  {
+                    "type": "allRightsReserved",
+                    "attribution": false,
+                    "nonCommercial": false,
+                    "noDerivativeWorks": false,
+                    "shareAlike": false
+                  }
+
+              advanced:
+                type: string
+                description: >
+                  JSON stringified object:
+                  {
+                    "buyLink": "",
+                    "recordLabel": "",
+                    "releaseDate": "2026-01-01T00:00:00Z",
+                    "publisher": "",
+                    "ISRC": "",
+                    "ISWC": "",
+                    "explicitContent": false,
+                    "pLine": "",
+                    "audioClipStart": 0,
+                    "audioClipEnd": 30,
+                    "composer": "",
+                    "albumTitle": ""
+                  }
+
+              geoBlocking:
+                type: string
+                description: >
+                  JSON stringified object controlling geo-restrictions:
+                  {
+                    "mode": "worldwide | exclusive | blocked",
+                    "regions": ["MENA", "EU"],
+                    "countries": ["EG", "US"]
+                  }
+
+                  Rules:
+                  - If mode = "worldwide" → regions and countries must be empty
+                  - Otherwise → at least one region or country is required
+
+                example: '{"mode":"exclusive","regions":["MENA"],"countries":[]}'
+
+    responses:
+      '200':
+        description: Track updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track Info Updated Successfully
+                data:
+                  $ref: '#/components/schemas/Track'
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '403':
+        $ref: '#/components/responses/Forbidden'
 
       '404':
         $ref: '#/components/responses/NotFound'

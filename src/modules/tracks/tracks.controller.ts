@@ -641,6 +641,8 @@ export class TracksController {
     if (type == 'PRIVATE') {
       requesterUserId = this.getUserInfo(req).userId;
     }
+    console.log(`userId : ${userId}`);
+    console.log(`requesterUserId : ${requesterUserId}`);
     const postedTracks = await this.service.getUserPostedTracksV2(
       userId,
       requesterUserId,

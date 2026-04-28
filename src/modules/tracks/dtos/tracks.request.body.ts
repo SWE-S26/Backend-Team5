@@ -25,7 +25,8 @@ export const CreateTrackRequestBodyDTO = extendedZod.object({
         /^[a-z0-9_-]+$/,
         'Use only lowercase letters, numbers, underscores, or hyphens.',
       )
-      .regex(/[a-z0-9_-]/, 'Permalink cannot be only digits.'),
+      .optional()
+      .default(''),
     mainArtists: extendedZod
       .array(extendedZod.string().min(1, 'Cannot Be Empty'))
       .min(1, 'At least one artist is required'),
