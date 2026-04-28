@@ -30,9 +30,6 @@
                 type: array
                 items:
                   type: string
-              'type':
-                type: string
-                enum: [public, private]
               playlistType:
                 type: string
                 enum: [playlist, album, ep, single]
@@ -41,23 +38,15 @@
                 format: date-time
               genre:
                 type: string
-              tags:
-                type: array
-                items:
-                  type: string
               description:
                 type: string
               isPrivate:
                 type: boolean
                 example: false
-              audioTracks:
+              listOfTracks:
                 type: array
                 items:
                   type: string
-              lengthOfRecievedTracks:
-                type: integer
-              licensing:
-                $ref: '#/components/schemas/Licensing'
               buyLink:
                 type: string
               recordLabel:
