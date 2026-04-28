@@ -111,7 +111,7 @@ export class TracksRepository {
 
     // get limited tracks + total count of tracks
     const [tracks, totalNumTracks] = await Promise.all([
-      Track.find({ 'basicInfo.isPrivate': false }).skip(skip).limit(limit),
+      Track.find().skip(skip).limit(limit),
       Track.countDocuments(),
     ]);
 
@@ -163,7 +163,6 @@ export class TracksRepository {
     // run queries in paralled insteaad of a for loop
     const postedTracks = await Track.find({
       posterId: userId,
-      'basicInfo.isPrivate': false,
     });
     // returns null if user doesnt have any liked tracks
     return postedTracks;

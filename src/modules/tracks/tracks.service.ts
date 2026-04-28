@@ -211,12 +211,26 @@ export class TracksService {
         this.calculateTrackDuration(audio),
         this.trackUploader.uploadAudioTrack(audio),
         this.uploadImgToCloud(image),
-        this.tracksRepository.trackExistsByPermalinkForUser(
-          trackInfo.basicInfo.permalink,
-          posterId,
-        ),
+        trackInfo.basicInfo.permalink
+          ? this.tracksRepository.trackExistsByPermalinkForUser(
+              trackInfo.basicInfo.permalink,
+              posterId,
+            )
+          : null,
         this.tracksRepository.findUserById(posterId),
       ]);
+
+    if (trackInfo.basicInfo.permalink === '') {
+      const seconds = Math.floor(Date.now() / 1000);
+      trackInfo.basicInfo.permalink =
+        trackInfo.basicInfo.title
+          .toLowerCase()
+          .trim()
+          .replace(/\s+/g, '_')
+          .replace(/[^a-z0-9_-]/g, '') +
+        '_' +
+        seconds.toLocaleString();
+    }
 
     // duration is less than preview time
     if (duration < 20) {
@@ -523,6 +537,16 @@ export class TracksService {
       logger.info('[track]: user of free tier has consumed all of his quota');
       throw BadRequestError('user is in free tier and consumed all his quota');
     }
+
+    if (
+      trackInfo.geoBlocking &&
+      trackInfo.geoBlocking.mode !== 'worldwide' &&
+      userInfo &&
+      userInfo.role == 'Listener'
+    ) {
+      throw ForbiddenError('GeoBlocking Allowed For Pro');
+    }
+
     const trackId = new Types.ObjectId();
     const waveformLink = await blobStorageService.uploadWaveToBlob(
       audio,
@@ -565,6 +589,14 @@ export class TracksService {
     const posterId = searchTrack.posterId.toString();
 
     this.validateTrackOwnerShip(userId, posterId, userRole);
+
+    if (
+      trackInfo.geoBlocking &&
+      trackInfo.geoBlocking.mode !== 'worldwide' &&
+      userRole == 'Listener'
+    ) {
+      throw ForbiddenError('GeoBlocking Allowed For Pro');
+    }
 
     await this.tracksRepository.updateTrackInfo(trackInfo, imgInfo);
     return true;
@@ -769,6 +801,8 @@ export class TracksService {
         ? this.tracksRepository.findUserById(requesterUserId)
         : null,
     ]);
+
+    console.log(postedTracks.map((track) => String(track._id)));
 
     if (requesterUserId) {
       const visibleTracks = postedTracks.filter(
