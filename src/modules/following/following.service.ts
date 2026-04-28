@@ -149,10 +149,14 @@ export class FollowingService {
     const isFollowedUsers: Record<string, boolean> =
       await this.repository.isUsersFollowed(myId, userIds);
 
+    const blockedIds = await this.repository.getBlockedIds(myId);
+    const blockedSet = new Set(blockedIds.map((id) => id.toString()));
+
     const combined = users.map((user) => ({
       ...user,
       ...usersStats[user._id.toString()],
       isFollowed: isFollowedUsers[user._id.toString()] ?? false,
+      isBlocked: blockedSet.has(user._id.toString()),
     }));
 
     const followers: UserSummaryWithFollowDTOType[] = combined.map((user) =>
@@ -184,10 +188,14 @@ export class FollowingService {
     const isFollowedUsers: Record<string, boolean> =
       await this.repository.isUsersFollowed(myId, userIds);
 
+    const blockedIds = await this.repository.getBlockedIds(myId);
+    const blockedSet = new Set(blockedIds.map((id) => id.toString()));
+
     const combined = users.map((user) => ({
       ...user,
       ...usersStats[user._id.toString()],
       isFollowed: isFollowedUsers[user._id.toString()] ?? false,
+      isBlocked: blockedSet.has(user._id.toString()),
     }));
 
     const followed: UserSummaryWithFollowDTOType[] = combined.map((user) =>

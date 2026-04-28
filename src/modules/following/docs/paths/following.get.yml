@@ -29,6 +29,10 @@
                       isFollowed:
                         type: boolean
                         description: Whether the authenticated user follows this user
+                      isBlocked:
+                        type: boolean
+                        description: Whether the authenticated user blocks this user                        
+
       '400':
         description: Invalid user ID
         content:
@@ -98,6 +102,9 @@
                       isFollowed:
                         type: boolean
                         description: Whether the authenticated user follows this user
+                      isBlocked:
+                        type: boolean
+                        description: Whether the authenticated user blocks this user                           
       '400':
         description: Invalid user ID
         content:
