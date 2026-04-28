@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 import { EngagementMapper } from '../../../src/modules/engagement/dtos/engagement.mapper';
+import { ITrack } from '../../../src/shared/models/models.track';
 
 describe('EngagementMapper', () => {
   describe('toCommentEntryResponse', () => {
@@ -93,6 +94,83 @@ describe('EngagementMapper', () => {
 
       expect(result.isLikedByUser).toBe(true);
       expect(result.isOwnComment).toBe(false);
+    });
+  });
+
+  describe('toRepostedTracksResponse', () => {
+    it('should normalize legacy track media and basicInfo fields before validation', () => {
+      const trackId = new Types.ObjectId();
+      const track = {
+        _id: trackId,
+        basicInfo: {
+          title: 'Track title',
+          permalink: 'track-title',
+          mainArtists: ['Artist'],
+          isPrivate: false,
+          caption: 'Caption',
+        },
+        audio: {
+          id: 'audio-id',
+          audioLink: 'https://cdn.example.com/audio.mp3',
+          cloudIndex: 1,
+          downloadLink: 'https://cdn.example.com/download.mp3',
+          waveformLink: 'https://cdn.example.com/waveform.json',
+        },
+        posterId: new Types.ObjectId(),
+        image: {
+          imgLink: 'https://cdn.example.com/image.jpg',
+          publicId: 'image-public-id',
+        },
+        durationInSeconds: 123,
+        numOfPlays: 10,
+        comments: [],
+        numberOfReposts: 2,
+        numOfLikes: 3,
+        likedBy: [],
+        permissions: {
+          enableDirectDownload: false,
+          offlineListening: true,
+          includeInRssFeed: true,
+          displayedEmbedCode: true,
+          enableAppPlayback: true,
+        },
+        license: {
+          type: 'allRightsReserved' as const,
+          attribution: false,
+          nonCommercial: false,
+          noDerivativeWorks: false,
+          shareAlike: false,
+        },
+        composer: '',
+        releaseTitle: '',
+        hidden: false,
+        banReason: '',
+        createdAt: new Date('2025-01-15T12:00:00Z'),
+        updatedAt: new Date('2025-01-15T12:00:00Z'),
+        audioClip: { start: 0, end: 123 },
+      } as unknown as ITrack;
+
+      const result = EngagementMapper.toRepostedTracksResponse(
+        [track],
+        1,
+        0,
+        20,
+        {
+          [trackId.toString()]: 'Great track',
+        },
+      );
+
+      expect(result.tracks).toHaveLength(1);
+      expect(result.tracks[0].basicInfo.genre).toBe('');
+      expect(result.tracks[0].basicInfo.tags).toEqual([]);
+      expect(result.tracks[0].basicInfo.description).toBe('');
+      expect(result.tracks[0].audio.url).toBe(
+        'https://cdn.example.com/audio.mp3',
+      );
+      expect(result.tracks[0].image.url).toBe(
+        'https://cdn.example.com/image.jpg',
+      );
+      expect(result.tracks[0].repostCaption).toBe('Great track');
     });
   });
 });
