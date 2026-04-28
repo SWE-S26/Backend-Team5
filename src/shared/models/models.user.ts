@@ -16,6 +16,7 @@ import Report from './models.report';
 import { DEFAULT_PROFILE_IMAGE } from '../../config/constants';
 import { CloudinaryService } from '../abstractions/cloudinary.service';
 import publitioMediaStorage from '../abstractions/publitio.service';
+import FcmToken from './models.fcm-token';
 
 export type PaymentInfo = {
   subscriptionType: string;
