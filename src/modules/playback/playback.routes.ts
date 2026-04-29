@@ -9,4 +9,12 @@ playbackRouter.get(apiVersions.v1 + '/history/tracks', (req, res) =>
   playbackController.getUserHistoryTracks(req, res),
 );
 
+playbackRouter.get(apiVersions.v1 + '/history/playlists', (req, res) =>
+  playbackController.getUserHistoryTracks(req, res),
+);
+
+playbackRouter.delete(apiVersions.v1 + '/history/', (req, res) =>
+  playbackController.deleteUserHistory(req, res),
+);
+
 export default playbackRouter;
