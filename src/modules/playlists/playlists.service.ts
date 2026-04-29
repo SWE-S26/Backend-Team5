@@ -275,6 +275,7 @@ export class PlaylistsService {
   async getByPermaLinkAndProfileLink(
     permalink: string,
     profilelink: string,
+    userId: string | null,
     limit: number = 5,
     offset: number = 1,
   ): Promise<PlaylistWithTracks | null> {
@@ -287,6 +288,7 @@ export class PlaylistsService {
     const playlist = await this.repository.findByPermalinkWithProfileLink(
       permalink,
       findUserIdResult,
+      userId,
       offset,
       limit,
     );

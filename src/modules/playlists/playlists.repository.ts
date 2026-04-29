@@ -318,10 +318,7 @@ export class PlaylistsRepository {
       : [{ $addFields: { _viewer: { likedTracks: [], reposts: [] } } }];
 
     const [result] = await Playlist.aggregate<PlaylistWithTracks>([
-      // ── 1. Find the playlist ────────────────────────────────────────────────
       { $match: { _id: new Types.ObjectId(playlistId) } },
-
-      // ── 2. Snapshot total track count, then slice for this page ────────────
       {
         $addFields: {
           totalTracks: { $size: '$listOfTracks' },
@@ -330,18 +327,10 @@ export class PlaylistsRepository {
           },
           _pageIds: { $slice: ['$listOfTracks', skip, TRACKS_PER_PAGE] },
           page: offset,
+          limit: limit,
         },
       },
-
-      // ── 3. Inject viewer data (liked / reposted context) ───────────────────
       ...viewerStages,
-
-      // ── 4. Fetch paginated tracks + each track's poster in one lookup ───────
-      //
-      // Inner $lookup: poster details
-      //   We only need displayName and profileLink from User.
-      //   basicInfo.permalink already lives on the track itself.
-      //
       {
         $lookup: {
           from: 'tracks',
@@ -384,15 +373,6 @@ export class PlaylistsRepository {
           as: '_fetchedTracks',
         },
       },
-
-      // ── 5. Re-order tracks to match playlist order, add viewer flags ────────
-      //
-      // $lookup does NOT preserve the order of the input array — we must
-      // map back over _pageIds (the ordered slice) and pick each track out.
-      //
-      // isLiked:    viewer.likedTracks contains the track's ObjectId
-      // isReposted: viewer.reposts[].id (string) matches track._id as string
-      //
       {
         $addFields: {
           isLiked: {
@@ -469,8 +449,6 @@ export class PlaylistsRepository {
           },
         },
       },
-
-      // ── 6. Clean up all internal pipeline fields ────────────────────────────
       {
         $project: {
           listOfTracks: 0,
@@ -681,13 +659,14 @@ export class PlaylistsRepository {
 
   async findByPermalinkWithProfileLink(
     permalink: string,
-    userId: string,
+    ownerUserId: string,
+    requestingUserId: string | null,
     offset: number = 1,
     limit: number = 5,
   ): Promise<PlaylistWithTracks | Error | null> {
     const playlist = await Playlist.findOne({
       permaLink: permalink,
-      artistId: new Types.ObjectId(userId),
+      artistId: new Types.ObjectId(ownerUserId),
     })
       .lean()
       .exec();
@@ -698,7 +677,7 @@ export class PlaylistsRepository {
 
     const playlistPro = await this.findByIdWithTracks(
       playlist._id.toString(),
-      null,
+      requestingUserId,
       offset,
       limit,
     );
