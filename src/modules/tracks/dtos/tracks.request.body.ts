@@ -194,3 +194,9 @@ export type CreateTrackDTO = z.infer<typeof CreateTrackRequestBodyDTO>;
 export type CreateTrackDTOV2 = z.infer<typeof CreateTrackRequestBodyDTOV2>;
 export type UpdateTrackDTO = z.infer<typeof UpdateTrackRequestBodyDTO>;
 export type UpdateTrackDTOV2 = z.infer<typeof UpdateTrackRequestBodyDTOV2>;
+
+export const IncrementTrackNumPlaysRequestBodyDTO = extendedZod.object({
+  trackId: extendedZod.string(),
+  listenedDuration: extendedZod.coerce.number(),
+  sessionIdPlay: extendedZod.uuid(),
+});

@@ -10,6 +10,11 @@ import AdvancedAudioDetails, {
 import { TrackInput } from './dtos/tracks.request.body';
 import { Types } from 'mongoose';
 import Playlist, { IPlaylist } from '../../shared/models/models.playlist';
+import Plays from '../../shared/models/models.plays';
+import Following, { IFollowing } from '../../shared/models/models.following';
+import PlaysTrackHandling, {
+  IPlaysTrackHandling,
+} from '../../shared/models/models.plays-track-handling';
 
 type PaginationList = {
   tracks: ITrack[];
@@ -19,6 +24,10 @@ type PaginationList = {
     totalPages: number;
     hasNext: boolean;
   };
+};
+
+export type PopulatedFans = Omit<IPlaysTrackHandling, 'userId'> & {
+  userId: { displayName: string; profileImg: string };
 };
 
 type ImageInfo = {
@@ -215,5 +224,87 @@ export class TracksRepository {
     })
       .populate('artistId', 'displayName profileLink profileImg')
       .lean()) as unknown as PlaylistWithArtist[];
+  }
+
+  async incrementInPlaysTable(trackId: string): Promise<void> {
+    const todayDate = new Date().toISOString().split('T')[0]; // "2026-04-29"
+    await Plays.findOneAndUpdate(
+      { trackId: trackId, date: todayDate },
+      {
+        $inc: { numberOfPlay: 1 },
+      },
+      { upsert: true },
+    );
+    return;
+  }
+
+  async addToTrackStats(
+    track: ITrack,
+    userId: string,
+    listenedDuration: number,
+  ) {
+    const userFollowing = await Following.findOne<IFollowing>({
+      userId: userId,
+    });
+    const isArtistFollowed = userFollowing?.followed.some(
+      (id) => id.toString() === track.posterId.toString(),
+    );
+    const isTrackLikedByUser = track.likedBy.some(
+      (id) => id.toString() === userId.toString(),
+    );
+    const isFanOfArtist = isArtistFollowed && isTrackLikedByUser;
+    const isInFirstWeek =
+      new Date().getTime() - track.createdAt.getTime() <
+      7 * 24 * 60 * 60 * 1000;
+    const trackStats =
+      await PlaysTrackHandling.findOneAndUpdate<IPlaysTrackHandling>(
+        {
+          trackId: track._id,
+          userId: userId,
+        },
+        {
+          $inc: {
+            totalNumberOfPlay: 1,
+            totalListenedDuration: listenedDuration,
+            ...(isInFirstWeek && { firstWeekNumPlays: 1 }),
+          },
+          $set: {
+            isFanOfArtist: isFanOfArtist,
+          },
+        },
+        { upsert: true, new: true },
+      );
+
+    const playThroughPercentage =
+      ((trackStats as IPlaysTrackHandling).totalListenedDuration /
+        ((trackStats as IPlaysTrackHandling).totalNumberOfPlay *
+          track.durationInSeconds)) *
+      100;
+    await PlaysTrackHandling.findOneAndUpdate(
+      { trackId: track._id, userId: userId },
+      { $set: { playThroughPercentage } },
+    );
+  }
+
+  async getTopFans(trackId: string): Promise<PopulatedFans[]> {
+    return (await PlaysTrackHandling.find({
+      trackId: trackId,
+      isFanOfArtist: true,
+    })
+      .sort({ totalNumberOfPlay: -1 })
+      .limit(5)
+      .populate('userId', 'displayName profileImg')
+      .lean()) as unknown as PopulatedFans[];
+  }
+
+  async getFirstFans(trackId: string): Promise<PopulatedFans[]> {
+    return (await PlaysTrackHandling.find({
+      trackId: trackId,
+      isFanOfArtist: true,
+    })
+      .sort({ firstWeekNumPlays: -1 })
+      .limit(5)
+      .populate('userId', 'displayName profileImg')
+      .lean()) as unknown as PopulatedFans[];
   }
 }
