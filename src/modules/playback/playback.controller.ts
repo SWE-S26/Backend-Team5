@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { parseRequest } from '../../shared/dtos/requestParser';
 import { PlaybackService } from './playback.service';
 import { JWTPayload } from '../../shared/abstractions/jwt.service';
 
@@ -37,8 +36,25 @@ export class PlaybackController {
     });
   }
 
-  async findOne(req: Request, res: Response): Promise<void> {
-    //TODO: parse query params if needed
-    res.json({});
+  async getUserHistoryPlaylists(req: Request, res: Response): Promise<void> {
+    const userInfo = this.getUserInfo(req);
+    const userId = userInfo.userId;
+    const userHistory = await this.service.getUserHistoryPlaylists(userId);
+
+    res.status(200);
+    res.json({
+      message: 'User History Retrieved Successfully',
+      data: userHistory,
+    });
+  }
+
+  async deleteUserHistory(req: Request, res: Response): Promise<void> {
+    const userInfo = this.getUserInfo(req);
+    const userId = userInfo.userId;
+    await this.service.deleteUserHistory(userId);
+    res.status(200);
+    res.json({
+      message: 'User History Deleted Successfully',
+    });
   }
 }
