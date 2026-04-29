@@ -300,7 +300,6 @@ export class TracksRepository {
   async getFirstFans(trackId: string): Promise<PopulatedFans[]> {
     return (await PlaysTrackHandling.find({
       trackId: trackId,
-      isFanOfArtist: true,
     })
       .sort({ firstWeekNumPlays: -1 })
       .limit(5)
