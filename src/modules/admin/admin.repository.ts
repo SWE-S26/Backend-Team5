@@ -6,6 +6,7 @@ import Track from '../../shared/models/models.track';
 import Report from '../../shared/models/models.report';
 import {
   AdminAnalyticsOverviewRow,
+  AdminArtistAnalyticsRow,
   AdminAnalyticsStorageRow,
   AdminMediaListRow,
   AdminReportRow,
@@ -46,6 +47,8 @@ type CreateReportPayload = {
 type AnalyticsOverviewResult = AdminAnalyticsOverviewRow;
 
 type AnalyticsStorageResult = AdminAnalyticsStorageRow;
+
+type ArtistAnalyticsResult = AdminArtistAnalyticsRow;
 
 type PublitioListFile = {
   size?: number | string;
@@ -323,6 +326,36 @@ export class AdminRepository {
 
     return {
       usedBytes: Math.trunc(usedBytes),
+    };
+  }
+
+  async getArtistAnalytics(userId: string): Promise<ArtistAnalyticsResult> {
+    const [result] = await Track.aggregate<ArtistAnalyticsResult>([
+      { $match: { posterId: new Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: null,
+          totalPlays: { $sum: '$numOfPlays' },
+          totalReposts: { $sum: '$numberOfReposts' },
+          totalDownloads: {
+            $sum: {
+              $cond: [{ $eq: ['$permissions.enableDirectDownload', true] }, 1, 0],
+            },
+          },
+          totalLikes: { $sum: '$numOfLikes' },
+          totalComments: {
+            $sum: { $size: { $ifNull: ['$comments', []] } },
+          },
+        },
+      },
+    ]);
+
+    return {
+      totalPlays: result?.totalPlays ?? 0,
+      totalReposts: result?.totalReposts ?? 0,
+      totalDownloads: result?.totalDownloads ?? 0,
+      totalLikes: result?.totalLikes ?? 0,
+      totalComments: result?.totalComments ?? 0,
     };
   }
 

@@ -32,6 +32,10 @@ type CreateReportOptions = {
   reason: string;
 };
 
+type ArtistAnalyticsOptions = {
+  userId?: string;
+};
+
 export class AdminService {
   constructor(
     private readonly repository: AdminRepository,
@@ -273,6 +277,15 @@ export class AdminService {
 
     const result = await this.repository.getAnalyticsStorage();
     return AdminMapper.toAnalyticsStorageResponse(result);
+  }
+
+  async getArtistAnalytics(options: ArtistAnalyticsOptions) {
+    if (!options.userId) {
+      UnauthorizedError('Unauthorized Access');
+    }
+
+    const result = await this.repository.getArtistAnalytics(options.userId!);
+    return AdminMapper.toArtistAnalyticsResponse(result);
   }
 
   async findById(id: string): Promise<any | null> {

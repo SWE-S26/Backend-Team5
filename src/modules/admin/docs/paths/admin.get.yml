@@ -156,3 +156,22 @@
         $ref: '#/components/responses/Forbidden'
       500:
         $ref: '#/components/responses/ServerError'
+
+/api/admin/v1/artist-analytics/me:
+  get:
+    tags:
+      - Artist Analytics
+    summary: Get the authenticated artist analytics.
+    description: Returns total plays, reposts, downloads, likes, and comments across all tracks uploaded by the authenticated user.
+    operationId: getArtistAnalytics
+    responses:
+      200:
+        description: Artist analytics summary.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArtistAnalyticsResponse'
+      401:
+        $ref: '#/components/responses/Unauthorized'
+      500:
+        $ref: '#/components/responses/ServerError'
