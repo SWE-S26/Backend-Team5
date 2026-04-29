@@ -12,6 +12,11 @@ const feedRepository = new FeedRepository();
 const feedService = new FeedService(feedRepository);
 const feedController = new FeedController(feedService);
 
+feedRoutes.get(
+  apiVersions.v1 + '/trending-tracks/:id',
+  feedController.getTrendingTracks.bind(feedController),
+);
+
 feedPublicRouter.get(
   apiVersions.v1 + '/trending-tracks/:id',
   feedController.getTrendingTracks.bind(feedController),
@@ -20,6 +25,11 @@ feedPublicRouter.get(
 feedRoutes.get(
   apiVersions.v1 + '/feed',
   feedController.getFeed.bind(feedController),
+);
+
+feedRoutes.get(
+  apiVersions.v1 + '/search/suggestions',
+  feedController.getSearchSuggestions.bind(feedController),
 );
 
 feedPublicRouter.get(
@@ -40,6 +50,11 @@ feedRoutes.get(
 feedRoutes.post(
   apiVersions.v1 + '/search/add-to-history',
   feedController.addToSearchHistory.bind(feedController),
+);
+
+feedRoutes.get(
+  apiVersions.v1 + '/search',
+  feedController.applyGlobalSearch.bind(feedController),
 );
 
 feedPublicRouter.get(

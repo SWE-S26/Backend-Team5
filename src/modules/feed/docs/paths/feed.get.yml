@@ -214,6 +214,166 @@
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/feed/v1/search:
+    get:
+      tags:
+        - Search
+      summary: Global search
+      description: Search across Tracks, Users, Playlists, and Albums
+      operationId: globalSearch
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Keyword for search
+          schema:
+            type: string
+
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [everything, tracks, users, playlists, albums]      
+
+        - name: dateRange
+          in: query
+          schema:
+            type: string
+            enum: [hour, day, week, month, year, all]   
+            description: this is only for tracks
+
+        - name: duration
+          in: query
+          schema:
+            type: string
+            enum: [lt2, 2to10, 10to30, gt30, all]    
+            description: this is only for tracks
+
+        - name: usage
+          in: query
+          schema:
+            type: string
+            enum: [commercial, modify, share, listen]     
+            description: this is only for tracks
+
+        - name: tag
+          in: query
+          schema:
+            type: string   
+            description: this is not used for users  
+
+
+        - name: location
+          in: query
+          schema:
+            type: string  
+            description: this is only for users                                                             
+  
+        - $ref: '#/components/parameters/OffsetParam'
+        - $ref: '#/components/parameters/LimitParam'
+  
+
+  
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  counts:
+                    type: object
+                    properties:
+                      tracks:
+                        type: integer
+                      users:
+                        type: integer
+                      playlists:
+                        type: integer
+                      albums:
+                        type: integer
+
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        type:
+                          type: string
+                          enum: [track, user, playlist, album]                      
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  
+  
+  # Search Suggestions
+  /api/feed/v1/search/suggestions:
+    get:
+      tags:
+        - Search
+      summary: Search suggestions
+      description: Returns autocomplete suggestions while the user types
+      operationId: getSearchSuggestions
+  
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Partial search keyword
+          schema:
+            type: string
+            minLength: 1
+  
+      responses:
+        '200':
+          description: Suggestions retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    type:
+                      type: string
+                      enum: [track, user, playlist, album]
+                    title:
+                      type: string
+                    imgLink:
+                      type: string
+                      format: uri
+                    isPersonalized:
+                      type: boolean
+                      description:  true if user likes or follows they are of max 2, and it has different view in the app
+  
+        '400':
+          description: Invalid search query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidQuery:
+                  value:
+                    success: false
+                    message: "Query parameter 'q' must not be empty"
+                    code: 400
+  
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'                
+
   /api/feed/v1/search/history:
     get:
       tags:
@@ -283,4 +443,40 @@
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'             
+                $ref: '#/components/schemas/ErrorResponse'   
+
+  /api/feed/v1/trending-tracks/{userId}:
+    get:
+      tags:
+        - Feed
+      summary: Get trending tracks
+      description: this endpoint returns the trending tracks, it could be used in the discover feed in cross, it could be somewhere else in the app but now sure where
+      operationId: getTrendingTracks
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+        - $ref: '#/components/parameters/OffsetParam'
+        - $ref: '#/components/parameters/LimitParam'      
+      responses:
+        '200':
+          description: Trending tracks retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ID of the trending track
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'                             
