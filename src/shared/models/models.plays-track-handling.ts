@@ -8,6 +8,7 @@ export type IPlaysTrackHandling = {
   firstWeekNumPlays: number;
   trackCreatedAt: Date;
   playThroughPercentage: number;
+  totalListenedDuration: number;
 };
 
 const playsTrackHandlingSchema = new Schema(
@@ -37,6 +38,10 @@ const playsTrackHandlingSchema = new Schema(
     trackCreatedAt: {
       type: Date,
       required: true,
+    },
+    totalListenedDuration: {
+      type: Number,
+      require: true,
     },
     playThroughPercentage: {
       type: Number,

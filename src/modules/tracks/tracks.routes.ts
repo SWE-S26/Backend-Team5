@@ -142,6 +142,10 @@ tracksPublicRouter.get(apiVersions.v2 + '/posted/:id', (req, res) =>
   tracksController.getUserPostedTracksV2(req, res, 'PUBLIC'),
 );
 
+tracksPublicRouter.get(apiVersions.v2 + '/stats/:id', (req, res) =>
+  tracksController.getTrackStats(req, res),
+);
+
 tracksPublicRouter.get(
   apiVersions.v2 + '/permalink/:profileLink/:permalink',
   (req, res) => tracksController.getTrackByPermalinkV2(req, res, 'PUBLIC'),
@@ -156,6 +160,10 @@ tracksPrivateRouter.patch(
   apiVersions.v2,
   upload.fields([{ name: 'image', maxCount: 1 }]),
   (req, res) => tracksController.updateTrackInfoV2(req, res),
+);
+
+tracksPrivateRouter.patch(apiVersions.v2 + '/listen/', (req, res) =>
+  tracksController.incrementTrackNumPlaysV2(req, res),
 );
 
 tracksPrivateRouter.post(
@@ -182,6 +190,10 @@ tracksPrivateRouter.get(apiVersions.v2 + '/posted/:id', (req, res) =>
 
 tracksPrivateRouter.get(apiVersions.v2 + '/detailed/:id', (req, res) =>
   tracksController.getDetailedTrackInfoV2(req, res),
+);
+
+tracksPrivateRouter.get(apiVersions.v2 + '/stats/:id', (req, res) =>
+  tracksController.getTrackStats(req, res),
 );
 
 tracksPrivateRouter.get(

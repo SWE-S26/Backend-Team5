@@ -5,6 +5,7 @@ import {
   DeleteTrackRequestDTO,
   GetTrackByIdRequestDTO,
   IncrementTrackListenCountRequestDTO,
+  IncrementTrackListenCountRequestDTOV2,
   UploadAudioTrackRequestDTO,
   GetTrackByProfilePermalinkRequestDTO,
   PaginationRequestDTO,
@@ -16,6 +17,7 @@ import {
   IsValidPermaLinkForUser,
   UploadAudioTrackRequestDTOV2,
   UpdateTrackRequestDTOV2,
+  TrackStatsRequestDTO,
 } from './dtos/tracks.request';
 import logger from '../../shared/logger/logger';
 
@@ -678,6 +680,46 @@ export class TracksController {
     res.json({
       message: 'Detailed Track Info Successfully',
       data: trackDetailedInfo,
+    });
+  }
+
+  async incrementTrackNumPlaysV2(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(
+      IncrementTrackListenCountRequestDTOV2,
+      req,
+    );
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const userId = this.getUserInfo(req).userId;
+    const trackId = validatedRequest.data.body.trackId;
+    const listenedDuration = validatedRequest.data.body.listenedDuration;
+    const sessionIdPlay = validatedRequest.data.body.sessionIdPlay;
+    await this.service.incrementTrackNumPlaysV2(
+      userId,
+      trackId,
+      listenedDuration,
+      sessionIdPlay,
+    );
+    res.json({
+      message: 'Number of Plays Updated Successfully',
+    });
+  }
+
+  async getTrackStats(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(TrackStatsRequestDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const trackId = validatedRequest.data.params.id;
+    const trackStats = await this.service.getTrackStats(trackId);
+    res.json({
+      message: 'Track Stats Retrieved Sucessfully',
+      data: trackStats,
     });
   }
 }

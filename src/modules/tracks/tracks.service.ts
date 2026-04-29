@@ -29,6 +29,7 @@ import { parseBuffer } from 'music-metadata';
 import logger from '../../shared/logger/logger';
 import blobStorageService from '../../shared/abstractions/blob.service';
 import { ValidCountries, ValidRegions, Country, Region } from './tracks.consts';
+import { redisCacher } from '../../shared/abstractions/redis/redisCacher';
 
 type ImageInfo = {
   imgLink: string;
@@ -60,6 +61,13 @@ export class TracksService {
       logger.info('[track]: Track Image Uploaded To Cloud');
     }
     return imgInfo;
+  }
+
+  private getSecondsUntilMidnight(): number {
+    const now = new Date();
+    const midnight = new Date();
+    midnight.setHours(24, 0, 0, 0);
+    return Math.floor((midnight.getTime() - now.getTime()) / 1000);
   }
 
   private validateTrackOwnerShip(
@@ -858,5 +866,81 @@ export class TracksService {
       searchTrack,
       searchAdvancedInfo as IAdvancedAudioDetails,
     );
+  }
+
+  async incrementTrackNumPlaysV2(
+    userId: string,
+    trackId: string,
+    listenedDuration: number,
+    sessionIdPlay: string,
+  ): Promise<void> {
+    const searchTrack = await this.tracksRepository.findById(trackId);
+
+    if (!searchTrack) {
+      throw NotFoundError("Track Doesn't Exists");
+    }
+
+    if (listenedDuration < Math.floor(0.3 * searchTrack.durationInSeconds)) {
+      throw BadRequestError(
+        "Listened Duration Doesn't excedd 30% of Played Track",
+      );
+    }
+
+    // check if in cool down period
+    const isCooldown = await redisCacher.get(
+      `play:cooldown:${userId}:${trackId}`,
+    );
+    if (isCooldown) {
+      logger.info('[tracks]: still in cooldown - Returning sliently');
+      return;
+    }
+
+    // check duplicate play
+    const UniqueListenKey = await redisCacher.get(
+      `play:dedup:${userId}:${trackId}:${sessionIdPlay}`,
+    );
+    if (UniqueListenKey) {
+      logger.info('[tracks]: Duplicate Key - Returning sliently');
+      return;
+    }
+
+    await Promise.all([
+      redisCacher.set(
+        `play:dedup:${userId}:${trackId}:${sessionIdPlay}`,
+        1,
+        60,
+      ),
+      redisCacher.set(
+        `play:cooldown:${userId}:${trackId}`,
+        '1',
+        Math.floor(searchTrack.durationInSeconds * 0.3),
+      ),
+      this.tracksRepository.incrementNumPlays(trackId),
+      this.tracksRepository.incrementInPlaysTable(trackId),
+      this.tracksRepository.addToTrackStats(
+        searchTrack,
+        userId,
+        listenedDuration,
+      ),
+    ]);
+
+    return;
+  }
+
+  async getTrackStats(trackId: string) {
+    const searchTrack = await this.tracksRepository.findById(trackId);
+
+    if (!searchTrack) {
+      throw NotFoundError("Track Doesn't Exists");
+    }
+
+    const [topFans, firstFans] = await Promise.all([
+      this.tracksRepository.getTopFans(trackId),
+      this.tracksRepository.getFirstFans(trackId),
+    ]);
+    return {
+      topFans: topFans,
+      firstFans: firstFans,
+    };
   }
 }
