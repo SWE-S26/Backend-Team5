@@ -22,6 +22,7 @@ export class FollowingMapper {
       trackCount: user.trackCount || 0,
       followersCount: user.followersCount || 0,
       isFollowed: user.isFollowed ?? false,
+      isBlocked: user.isBlocked ?? false,
     };
   }
 }

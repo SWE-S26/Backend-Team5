@@ -8,6 +8,7 @@ import {
   DeleteAdminUserRequestDTO,
   GetAdminAnalyticsOverviewRequestDTO,
   GetAdminAnalyticsStorageRequestDTO,
+  GetArtistAnalyticsRequestDTO,
   GetAdminMediaRequestDTO,
   GetAdminUsersRequestDTO,
   SuspendUserRequestDTO,
@@ -181,6 +182,20 @@ export class AdminController {
     }
 
     const result = await this.service.getAnalyticsStorage(req.userInfo?.role);
+
+    res.json(result);
+  }
+
+  async artistAnalytics(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetArtistAnalyticsRequestDTO, req);
+
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const result = await this.service.getArtistAnalytics({
+      userId: req.userInfo?._id,
+    });
 
     res.json(result);
   }

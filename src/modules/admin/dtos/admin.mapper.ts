@@ -7,6 +7,7 @@ import {
   AdminUserSnippetResponseDTO,
   AdminAnalyticsOverviewResponseDTO,
   AdminAnalyticsStorageResponseDTO,
+  ArtistAnalyticsResponseDTO,
 } from './admin.response';
 
 export type AdminUserListRow = {
@@ -50,6 +51,14 @@ export type AdminAnalyticsOverviewRow = {
 
 export type AdminAnalyticsStorageRow = {
   usedBytes: number;
+};
+
+export type AdminArtistAnalyticsRow = {
+  totalPlays: number;
+  totalReposts: number;
+  totalDownloads: number;
+  totalLikes: number;
+  totalComments: number;
 };
 
 export class AdminMapper {
@@ -131,6 +140,16 @@ export class AdminMapper {
   static toAnalyticsStorageResponse(entity: AdminAnalyticsStorageRow) {
     return AdminAnalyticsStorageResponseDTO.parse({
       usedBytes: entity.usedBytes,
+    });
+  }
+
+  static toArtistAnalyticsResponse(entity: AdminArtistAnalyticsRow) {
+    return ArtistAnalyticsResponseDTO.parse({
+      totalPlays: entity.totalPlays,
+      totalReposts: entity.totalReposts,
+      totalDownloads: entity.totalDownloads,
+      totalLikes: entity.totalLikes,
+      totalComments: entity.totalComments,
     });
   }
 

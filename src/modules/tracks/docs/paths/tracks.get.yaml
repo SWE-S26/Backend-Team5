@@ -4,6 +4,7 @@
     tags:
       - Track Management
     summary: Get all tracks paginated
+    deprecated: true
     description: >
       Retrieves a paginated list of publicly available tracks.
 
@@ -87,6 +88,7 @@
     tags:
       - Track Management
     summary: Get track by ID
+    deprecated: true
     description: >
       Retrieves a single track by its unique ID.
 
@@ -139,6 +141,7 @@
     tags:
       - Track Management
     summary: Get track by permalink
+    deprecated: true
     description: >
       Retrieves a single track using its unique permalink instead of the internal database ID.
 
@@ -198,6 +201,7 @@
     tags:
       - Track Management
     summary: Get user liked tracks
+    deprecated: true
     description: >
       Retrieves a list of tracks that a specific user has liked.
 
@@ -254,6 +258,7 @@
     tags:
       - Track Management
     summary: Get user posted tracks
+    deprecated: true
     description: >
       Retrieves a list of tracks that were posted (uploaded) by a specific user.
 
@@ -391,6 +396,7 @@
     tags:
       - Track Management
     summary: Get all tracks paginated
+    deprecated: true
     description: >
       Retrieves a paginated list of publicly available tracks.
 
@@ -473,6 +479,7 @@
     tags:
       - Track Management
     summary: Get track by ID
+    deprecated: true
     description: >
       Retrieves a single track by its unique ID.
 
@@ -523,6 +530,7 @@
   get:
     tags:
       - Track Management
+    deprecated: true
     summary: Get track by permalink
     description: >
       Retrieves a single track using its unique permalink instead of the internal database ID.
@@ -575,6 +583,7 @@
   get:
     tags:
       - Track Management
+    deprecated: true
     summary: Get user liked tracks
     description: >
       Retrieves a list of tracks that a specific user has liked.
@@ -630,6 +639,7 @@
   get:
     tags:
       - Track Management
+    deprecated: true
     summary: Get user posted tracks
     description: >
       Retrieves a list of tracks that were posted (uploaded) by a specific user.
@@ -853,6 +863,7 @@
   get:
     tags:
       - Track Management
+    deprecated: true
     summary: Get detailed track info
     description: >
       Retrieves detailed information about a specific track including
@@ -887,3 +898,687 @@
         $ref: '#/components/responses/NotFound'
       '500':
         $ref: '#/components/responses/ServerError'
+
+# ================================================= V2 ==================================
+
+/api/public/tracks/v2/:
+  get:
+    tags:
+      - Track Management
+    summary: Get all tracks paginated
+    deprecated: true
+    description: >
+      (Same Response As Before Internal Logic Changed)
+      (Tracks That Are not World Wide In GeoBlocking Will Not Be Retrived)
+      Retrieves a paginated list of publicly available tracks.
+
+      This endpoint is primarily used for:
+        - Displaying tracks on the home page (e.g., feed, discovery, or trending sections).
+        - Fetching a limited subset of tracks without loading the entire dataset.
+        - Supporting features such as pagination, lazy loading, or infinite scrolling.
+
+      The response includes only a portion of the total tracks based on the provided
+      pagination parameters (such as page number and page size), ensuring efficient
+      data transfer and performance.
+
+      This endpoint does not return private or restricted tracks. Only publicly
+      accessible tracks are included in the response.
+
+      Clients can use this endpoint to build user-facing views that require browsing
+      or previewing tracks without overwhelming the system or the user with all
+      available records in the database.
+
+    parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+        example: 1
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 10
+        example: 10
+
+    responses:
+      '200':
+        description: Tracks retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Tracks Retrieved Successfully
+                data:
+                  type: object
+                  properties:
+                    tracks:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/TrackPublicResponse'
+                    paginationInfo:
+                      type: object
+                      properties:
+                        totalNumTracks:
+                          type: integer
+                          example: 8
+                        page:
+                          type: integer
+                          example: 1
+                        totalPages:
+                          type: integer
+                          example: 1
+                        hasNext:
+                          type: boolean
+                          example: false
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/public/tracks/v2/{id}:
+  get:
+    tags:
+      - Track Management
+    summary: Get track by ID
+    description: >
+      (Same Response As Before Internal Logic Changed)
+      (Tracks That Are not World Wide In GeoBlocking Will Not Be Retrived)
+      Retrieves a single track by its unique ID.
+
+      This endpoint is used to fetch full details of a specific track, including its metadata,
+      audio information, and engagement statistics.
+
+      It is typically used in:
+        - Track detail pages (when a user opens a specific track).
+        - Playback screens where full track information is required.
+
+      The response includes all publicly accessible information about the track,
+      such as title, artists, genre, tags, audio URL, image, duration, and engagement metrics
+      (likes, plays, reposts, and comments).
+
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 69e6bea48ae84d2ffd60e5cb
+
+    responses:
+      '200':
+        description: Track retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track Info Retrieved Successfully
+                data:
+                  $ref: '#/components/schemas/TrackPublicResponse'
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/public/tracks/v2/permalink/{profileLink}/{permalink}:
+  get:
+    tags:
+      - Track Management
+    summary: Get track by permalink
+    description: >
+      (Same Response As Before Internal Logic Changed)
+      (Tracks That Are not World Wide In GeoBlocking Will Not Be Retrived)
+      Retrieves a single track using its unique permalink instead of the internal database ID.
+
+      This endpoint is used to fetch full track details in a user-friendly and SEO-friendly way,
+      since permalinks are readable and commonly used in URLs (e.g., /track/my-song-title).
+
+      It is typically used in:
+        - Public track pages accessed via shareable links.
+        - SEO-friendly routing for track detail pages.
+
+      The response includes complete publicly available track information such as metadata,
+      audio details, image, duration.
+
+      If no track matches the provided permalink, a 404 Not Found response is returned.
+
+    parameters:
+      - name: permalink
+        in: path
+        required: true
+        schema:
+          type: string
+        example: cairo-grid
+      - name: profilelink
+        in: path
+        required: true
+        schema:
+          type: string
+        example: user-1234
+
+    responses:
+      '200':
+        description: Track retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track Info Retrieved Successfully
+                data:
+                  $ref: '#/components/schemas/TrackPublicResponse'
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/public/tracks/v2/liked/{id}:
+  get:
+    tags:
+      - Track Management
+    summary: Get user liked tracks
+    description: >
+      (Same Response As Before Internal Logic Changed)
+      (Tracks That Are not World Wide In GeoBlocking Will Not Be Retrived)
+      Retrieves a list of tracks that a specific user has liked.
+
+      This endpoint is used to fetch all publicly accessible tracks that the user has
+      interacted with by liking them.
+
+      It is typically used in:
+        - User profile pages (Liked Tracks section).
+
+      The response includes an array of full track objects containing metadata,
+      audio information, image, and engagement statistics.
+
+      Only tracks that are accessible to the requesting context (public or permitted content)
+      are returned (Private Tracks Are Not Returned).
+
+      If the user ID is invalid or does not exist, a 404 Not Found response is returned.
+
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 69e6bea48ae84d2ffd60e5cb
+
+    responses:
+      '200':
+        description: Liked tracks retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track Info Retrieved Successfully
+                data:
+                  $ref: '#/components/schemas/TrackPublicResponse'
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/public/tracks/v2/posted/{id}:
+  get:
+    tags:
+      - Track Management
+    summary: Get user posted tracks
+    description: >
+      (Same Response As Before Internal Logic Changed)
+      (Tracks That Are not World Wide In GeoBlocking Will Not Be Retrived)
+      Retrieves a list of tracks that were posted (uploaded) by a specific user.
+
+      This endpoint is used to fetch all publicly available tracks created by the given user,
+      allowing clients to display user-generated content.
+
+      It is typically used in:
+        - User profile pages (Uploaded/Created Tracks section).
+        - Artist pages showing published works.
+
+      The response includes an array of full track objects containing metadata,
+      audio information, image, and engagement statistics.
+
+      Only tracks that are publicly accessible or allowed for viewing are returned.
+
+      If the user ID is invalid or does not exist, a 404 Not Found response is returned.
+
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 69e6bea48ae84d2ffd60e5cb
+
+    responses:
+      '200':
+        description: Posted tracks retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track Info Retrieved Successfully
+                data:
+                  $ref: '#/components/schemas/TrackPublicResponse'
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/tracks/v2/:
+  get:
+    tags:
+      - Track Management
+    summary: Get all tracks paginated
+    description: >
+      Retrieves a paginated list of publicly available tracks.
+
+      This endpoint is primarily used for:
+        - Displaying tracks on the home page (e.g., feed, discovery, or trending sections).
+        - Fetching a limited subset of tracks without loading the entire dataset.
+        - Supporting features such as pagination, lazy loading, or infinite scrolling.
+
+      The response includes only a portion of the total tracks based on the provided
+      pagination parameters (such as page number and page size), ensuring efficient
+      data transfer and performance.
+
+      This endpoint does not return private or restricted tracks. Only publicly
+      accessible tracks are included in the response.
+
+      Clients can use this endpoint to build user-facing views that require browsing
+      or previewing tracks without overwhelming the system or the user with all
+      available records in the database.
+
+    parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+        example: 1
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 10
+        example: 10
+
+    responses:
+      '200':
+        description: Tracks retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Tracks Retrieved Successfully
+                data:
+                  type: object
+                  properties:
+                    tracks:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/TrackPrivateResponseV2'
+                    paginationInfo:
+                      type: object
+                      properties:
+                        totalNumTracks:
+                          type: integer
+                          example: 8
+                        page:
+                          type: integer
+                          example: 1
+                        totalPages:
+                          type: integer
+                          example: 1
+                        hasNext:
+                          type: boolean
+                          example: false
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/tracks/v2/liked/{id}:
+  get:
+    tags:
+      - Track Management
+    summary: Get user liked tracks
+    description: >
+      (Same Response As Before Internal Logic Changed)
+      (Tracks That Are not World Wide In GeoBlocking Will Not Be Retrived)
+      Retrieves a list of tracks that a specific user has liked.
+
+      This endpoint is used to fetch all publicly accessible tracks that the user has
+      interacted with by liking them.
+
+      It is typically used in:
+        - User profile pages (Liked Tracks section).
+
+      The response includes an array of full track objects containing metadata,
+      audio information, image, and engagement statistics.
+
+      Only tracks that are accessible to the requesting context (public or permitted content)
+      are returned (Private Tracks Are Not Returned).
+
+      If the user ID is invalid or does not exist, a 404 Not Found response is returned.
+
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 69e6bea48ae84d2ffd60e5cb
+
+    responses:
+      '200':
+        description: Liked tracks retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track Info Retrieved Successfully
+                data:
+                  $ref: '#/components/schemas/TrackPrivateResponseV2'
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/tracks/v2/posted/{id}:
+  get:
+    tags:
+      - Track Management
+    summary: Get user posted tracks
+    description: >
+      Retrieves a list of tracks that were posted (uploaded) by a specific user.
+
+      This endpoint is used to fetch all publicly available tracks created by the given user,
+      allowing clients to display user-generated content.
+
+      It is typically used in:
+        - User profile pages (Uploaded/Created Tracks section).
+        - Artist pages showing published works.
+
+      The response includes an array of full track objects containing metadata,
+      audio information, image, and engagement statistics.
+
+      Only tracks that are publicly accessible or allowed for viewing are returned.
+
+      If the user ID is invalid or does not exist, a 404 Not Found response is returned.
+
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 69e6bea48ae84d2ffd60e5cb
+
+    responses:
+      '200':
+        description: Posted tracks retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track Info Retrieved Successfully
+                data:
+                  $ref: '#/components/schemas/TrackPrivateResponseV2'
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/tracks/v2/permalink/{profileLink}/{permalink}:
+  get:
+    tags:
+      - Track Management
+    summary: Get track by permalink
+    description: >
+      Retrieves a single track using its unique permalink instead of the internal database ID.
+
+      This endpoint is used to fetch full track details in a user-friendly and SEO-friendly way,
+      since permalinks are readable and commonly used in URLs (e.g., /track/my-song-title).
+
+      It is typically used in:
+        - Public track pages accessed via shareable links.
+        - SEO-friendly routing for track detail pages.
+
+      The response includes complete publicly available track information such as metadata,
+      audio details, image, duration.
+
+      If no track matches the provided permalink, a 404 Not Found response is returned.
+
+    parameters:
+      - name: permalink
+        in: path
+        required: true
+        schema:
+          type: string
+        example: cairo-grid
+      - name: profilelink
+        in: path
+        required: true
+        schema:
+          type: string
+        example: user-1234
+
+    responses:
+      '200':
+        description: Track retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track Info Retrieved Successfully
+                data:
+                  $ref: '#/components/schemas/TrackPrivateResponseV2'
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/tracks/v2/{id}:
+  get:
+    tags:
+      - Track Management
+    summary: Get track by ID
+    description: >
+      (Same Response As Before Internal Logic Changed)
+      (Tracks That Are not World Wide In GeoBlocking Will Not Be Retrived)
+      Retrieves a single track by its unique ID.
+
+      This endpoint is used to fetch full details of a specific track, including its metadata,
+      audio information, and engagement statistics.
+
+      It is typically used in:
+        - Track detail pages (when a user opens a specific track).
+        - Playback screens where full track information is required.
+
+      The response includes all publicly accessible information about the track,
+      such as title, artists, genre, tags, audio URL, image, duration, and engagement metrics
+      (likes, plays, reposts, and comments).
+
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 69e6bea48ae84d2ffd60e5cb
+
+    responses:
+      '200':
+        description: Track retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track Info Retrieved Successfully
+                data:
+                  $ref: '#/components/schemas/TrackPrivateResponseV2'
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/tracks/v2/detailed/{id}:
+  get:
+    tags:
+      - Track Management
+    summary: Get detailed track info
+    description: >
+      Retrieves detailed information about a specific track including
+      permissions, license, and advanced metadata.
+      Only accessible by the track owner.
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 69e6bea48ae84d2ffd60e5cb
+    responses:
+      '200':
+        description: Detailed track info retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track Info Retrieved Successfully
+                data:
+                  type: object
+                  $ref: '#/components/schemas/TrackDetailedResponseV2'
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '404':
+        $ref: '#/components/responses/NotFound'
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

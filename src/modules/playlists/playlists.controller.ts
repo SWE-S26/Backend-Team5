@@ -74,11 +74,9 @@ export class PlaylistsController {
 
     const userId = this.getUserIdFromRequest(req);
 
-    const playlist = await this.service.findById(
-      id,
-      userId,
-      validatedRequest.data.query.offset,
-    );
+    const { limit, offset } = validatedRequest.data.query;
+
+    const playlist = await this.service.findById(id, userId, offset, limit);
 
     res.json({
       message: 'Playlist retrieved successfully',
@@ -427,10 +425,16 @@ export class PlaylistsController {
     }
 
     const { permalink, profilelink } = validateRequest.data.params;
+    const { limit, offset } = validateRequest.data.query;
+
+    const userId = this.getUserIdFromRequest(req);
 
     const playlist = await this.service.getByPermaLinkAndProfileLink(
       permalink,
       profilelink,
+      userId,
+      limit,
+      offset,
     );
 
     if (!playlist) {

@@ -12,8 +12,13 @@ import {
   PaginationResponseDTO,
 } from './dtos/tracks.response';
 import { ITrack } from '../../shared/models/models.track';
-import { CreateTrackDTO, UpdateTrackDTO } from './dtos/tracks.request.body';
-import publitioMediaStorage from '../../shared/abstractions/publitio';
+import {
+  CreateTrackDTO,
+  CreateTrackDTOV2,
+  UpdateTrackDTO,
+  UpdateTrackDTOV2,
+} from './dtos/tracks.request.body';
+import publitioMediaStorage from '../../shared/abstractions/publitio.service';
 import {
   CloudinaryService,
   ImageFolder,
@@ -23,11 +28,7 @@ import { getNotificationSocketHandler } from '../../sockets/handlers/notificatio
 import { parseBuffer } from 'music-metadata';
 import logger from '../../shared/logger/logger';
 import blobStorageService from '../../shared/abstractions/blob.service';
-import {
-  PlaylistWithTracks,
-  TrackInPlaylist,
-} from '../playlists/playlists.repository';
-import Playlist from '../../shared/models/models.playlist';
+import { ValidCountries, ValidRegions, Country, Region } from './tracks.consts';
 
 type ImageInfo = {
   imgLink: string;
@@ -210,12 +211,26 @@ export class TracksService {
         this.calculateTrackDuration(audio),
         this.trackUploader.uploadAudioTrack(audio),
         this.uploadImgToCloud(image),
-        this.tracksRepository.trackExistsByPermalinkForUser(
-          trackInfo.basicInfo.permalink,
-          posterId,
-        ),
+        trackInfo.basicInfo.permalink
+          ? this.tracksRepository.trackExistsByPermalinkForUser(
+              trackInfo.basicInfo.permalink,
+              posterId,
+            )
+          : null,
         this.tracksRepository.findUserById(posterId),
       ]);
+
+    if (trackInfo.basicInfo.permalink === '') {
+      const seconds = Math.floor(Date.now() / 1000);
+      trackInfo.basicInfo.permalink =
+        trackInfo.basicInfo.title
+          .toLowerCase()
+          .trim()
+          .replace(/\s+/g, '_')
+          .replace(/[^a-z0-9_-]/g, '') +
+        '_' +
+        seconds.toLocaleString();
+    }
 
     // duration is less than preview time
     if (duration < 20) {
@@ -418,7 +433,11 @@ export class TracksService {
       throw NotFoundError('Track Not Found');
     }
 
-    this.validateTrackOwnerShip(userId, trackId, userRole);
+    this.validateTrackOwnerShip(
+      userId,
+      searchTrack.posterId.toString(),
+      userRole,
+    );
 
     const searchAdvancedInfo =
       await this.tracksRepository.getTrackAdvancedInfo(trackId);
@@ -474,5 +493,370 @@ export class TracksService {
       );
       return visiblePlaylists;
     }
+  }
+
+  // ============================================== V2 =============================================
+
+  async uploadAudioTrackV2(
+    trackInfo: CreateTrackDTOV2,
+    audio: Express.Multer.File,
+    image: Express.Multer.File | null,
+    posterId: string,
+  ): Promise<Boolean> {
+    const [duration, audioInfo, imgInfo, searchTrack, userInfo] =
+      await Promise.all([
+        this.calculateTrackDuration(audio),
+        this.trackUploader.uploadAudioTrack(audio),
+        this.uploadImgToCloud(image),
+        this.tracksRepository.trackExistsByPermalinkForUser(
+          trackInfo.basicInfo.permalink,
+          posterId,
+        ),
+        this.tracksRepository.findUserById(posterId),
+      ]);
+
+    // duration is less than preview time
+    if (duration < 20) {
+      trackInfo.advanced.audioClipStart = 0;
+      trackInfo.advanced.audioClipEnd = 0;
+    }
+
+    if (searchTrack) {
+      // if user already have this permalink
+      logger.info(
+        '[track]: user has a permalink that already exists in his collection',
+      );
+      throw BadRequestError('permalink for this user Already Exists');
+    }
+
+    // check if user is in free tier and consumed all his quota
+    if (
+      userInfo?.role == 'Listener' &&
+      (userInfo.uploads.length as number) == 3
+    ) {
+      logger.info('[track]: user of free tier has consumed all of his quota');
+      throw BadRequestError('user is in free tier and consumed all his quota');
+    }
+
+    if (
+      trackInfo.geoBlocking &&
+      trackInfo.geoBlocking.mode !== 'worldwide' &&
+      userInfo &&
+      userInfo.role == 'Listener'
+    ) {
+      throw ForbiddenError('GeoBlocking Allowed For Pro');
+    }
+
+    const trackId = new Types.ObjectId();
+    const waveformLink = await blobStorageService.uploadWaveToBlob(
+      audio,
+      trackId,
+    );
+
+    const trackInput = TracksMapper.toTrackInputV2(
+      trackInfo,
+      audioInfo,
+      imgInfo,
+      new Types.ObjectId(posterId),
+      duration,
+      waveformLink,
+    );
+
+    await this.tracksRepository.createNewTrack(trackInput, trackId);
+    logger.info('[track]: new track uploaded to db');
+
+    // send user new notification about
+    this.sendNewTrackSocketNotification(posterId, trackId.toString());
+    logger.info('[track]: notifications sent to users');
+
+    return true;
+  }
+
+  async updateTrackInfoV2(
+    trackInfo: UpdateTrackDTOV2,
+    userId: string,
+    userRole: string,
+    image: Express.Multer.File | null,
+  ) {
+    const searchTrack = await this.tracksRepository.findById(trackInfo.id);
+
+    if (!searchTrack) {
+      throw NotFoundError('Track Not Found');
+    }
+
+    const imgInfo = await this.uploadImgToCloud(image);
+
+    const posterId = searchTrack.posterId.toString();
+
+    this.validateTrackOwnerShip(userId, posterId, userRole);
+
+    if (
+      trackInfo.geoBlocking &&
+      trackInfo.geoBlocking.mode !== 'worldwide' &&
+      userRole == 'Listener'
+    ) {
+      throw ForbiddenError('GeoBlocking Allowed For Pro');
+    }
+
+    await this.tracksRepository.updateTrackInfo(trackInfo, imgInfo);
+    return true;
+  }
+
+  async getTrackByIdV2(
+    trackId: string,
+    requesterUserId: string | null,
+  ): Promise<TrackResponsePublicDTO | null> {
+    const [searchTrack, user] = await Promise.all([
+      this.tracksRepository.findById(trackId),
+      requesterUserId
+        ? this.tracksRepository.findUserById(requesterUserId)
+        : null,
+    ]);
+
+    // if not found
+    if (!searchTrack) {
+      throw NotFoundError("Track Doesn't Exists");
+    }
+
+    if (searchTrack.hidden == true) {
+      throw ForbiddenError('This Track Is Banned Cannot Access It');
+    }
+
+    const posterId = searchTrack.posterId.toString();
+    if (searchTrack.basicInfo.isPrivate && posterId != requesterUserId) {
+      throw ForbiddenError('Unauthorized Access');
+    }
+
+    if (!requesterUserId && searchTrack.geoBlocking.mode !== 'worldwide') {
+      throw ForbiddenError('Track is Restricted By Region');
+    }
+
+    if (requesterUserId) {
+      const repostedTracks =
+        user?.reposts
+          ?.filter((repost) => repost.type === 'track')
+          .map((repost) => repost.id) ?? [];
+
+      return TracksMapper.toTrackResponsePrivateV2(
+        searchTrack,
+        requesterUserId,
+        user?.country ?? '',
+        repostedTracks,
+      );
+    }
+
+    return TracksMapper.toTrackResponsePublic(searchTrack);
+  }
+
+  async getLikedTracksV2(
+    userId: string,
+    requesterUserId: string | null,
+  ): Promise<TrackResponsePublicDTO[] | null> {
+    const [likedTracksList, user] = await Promise.all([
+      this.tracksRepository.getLikedTracks(userId),
+      requesterUserId
+        ? this.tracksRepository.findUserById(requesterUserId)
+        : null,
+    ]);
+
+    // no liked tracks for this user
+    if (!likedTracksList) {
+      return null;
+    }
+    logger.info(`[track]: fetched liked tracks for user ${userId}`);
+
+    if (requesterUserId) {
+      logger.info(`[track Priavte]: fetched liked tracks for user ${userId}`);
+      // if private endpoint, fetch tracks that are not banned, user private and belong to him
+      // if he is not the owner don't get the private tracks
+      const visibleLikedTracks = likedTracksList.filter(
+        (track) =>
+          track &&
+          track.hidden !== true &&
+          (!track.basicInfo.isPrivate ||
+            track.posterId.toString() === requesterUserId),
+      );
+      const repostedTracks =
+        user?.reposts
+          ?.filter((repost) => repost.type === 'track')
+          .map((repost) => repost.id) ?? [];
+      return TracksMapper.toTrackResponsePrivateListV2(
+        visibleLikedTracks as ITrack[],
+        requesterUserId,
+        user?.country ?? '',
+        repostedTracks,
+      );
+    }
+
+    // if from public endpoint remove all private tracks
+    logger.info(`[track Public]: fetched liked tracks for user ${userId}`);
+    const visibleLikedTracks = likedTracksList.filter(
+      (track) =>
+        track &&
+        !track.basicInfo.isPrivate &&
+        track.hidden !== true &&
+        track.geoBlocking.mode === 'worldwide',
+    );
+
+    return TracksMapper.toTrackResponsePublicList(
+      visibleLikedTracks as ITrack[],
+    );
+  }
+
+  async getTrackByPermalinkV2(
+    permalink: string,
+    profileLink: string,
+    requesterUserId: string | null,
+  ) {
+    const [searchTrack, user] = await Promise.all([
+      this.tracksRepository.getTrackByProfilePermalink(permalink, profileLink),
+      requesterUserId
+        ? this.tracksRepository.findUserById(requesterUserId)
+        : null,
+    ]);
+
+    if (!searchTrack) {
+      throw NotFoundError('Track Not Found');
+    }
+
+    if (searchTrack.hidden) {
+      throw ForbiddenError('Track is Banned Cannot Access It');
+    }
+
+    if (!requesterUserId && searchTrack.geoBlocking.mode !== 'worldwide') {
+      throw ForbiddenError('Track Is Restricted By Region');
+    }
+
+    if (requesterUserId) {
+      const repostedTracks =
+        user?.reposts
+          ?.filter((repost) => repost.type === 'track')
+          .map((repost) => repost.id) ?? [];
+      return TracksMapper.toTrackResponsePrivateV2(
+        searchTrack,
+        requesterUserId,
+        user?.country ?? '',
+        repostedTracks,
+      );
+    }
+    return TracksMapper.toTrackResponsePublic(searchTrack);
+  }
+
+  async getPaginatedListV2(
+    page: number,
+    limit: number,
+    requesterUserId: string | null,
+  ): Promise<PaginationResponseDTO> {
+    const [{ tracks, info }, user] = await Promise.all([
+      this.tracksRepository.getPaginatedList(page, limit),
+      requesterUserId
+        ? this.tracksRepository.findUserById(requesterUserId)
+        : null,
+    ]);
+
+    if (requesterUserId) {
+      const visibleTracks = tracks.filter(
+        (track) =>
+          track?.hidden !== true &&
+          (!track?.basicInfo.isPrivate ||
+            track.posterId.toString() === requesterUserId),
+      );
+      const repostedTracks =
+        user?.reposts
+          ?.filter((repost) => repost.type === 'track')
+          .map((repost) => repost.id) ?? [];
+
+      return {
+        tracks: TracksMapper.toTrackResponsePrivateListV2(
+          visibleTracks as ITrack[],
+          requesterUserId,
+          user?.country ?? '',
+          repostedTracks,
+        ),
+        paginationInfo: {
+          ...info,
+        },
+      };
+    }
+    const visibleTracks = tracks.filter(
+      (track) =>
+        track &&
+        !track.basicInfo.isPrivate &&
+        track.hidden !== true &&
+        track.geoBlocking.mode === 'worldwide',
+    );
+
+    return {
+      tracks: TracksMapper.toTrackResponsePublicList(visibleTracks),
+      paginationInfo: {
+        ...info,
+      },
+    };
+  }
+
+  async getUserPostedTracksV2(userId: string, requesterUserId: string | null) {
+    const [postedTracks, user] = await Promise.all([
+      this.tracksRepository.getPostedTracks(userId),
+      requesterUserId
+        ? this.tracksRepository.findUserById(requesterUserId)
+        : null,
+    ]);
+
+    console.log(postedTracks.map((track) => String(track._id)));
+
+    if (requesterUserId) {
+      const visibleTracks = postedTracks.filter(
+        (track) =>
+          track?.hidden !== true &&
+          (!track?.basicInfo.isPrivate ||
+            track.posterId.toString() === requesterUserId),
+      );
+
+      const repostedTracks =
+        user?.reposts
+          ?.filter((repost) => repost.type === 'track')
+          .map((repost) => repost.id) ?? [];
+
+      return TracksMapper.toTrackResponsePrivateListV2(
+        visibleTracks,
+        requesterUserId,
+        user?.country ?? '',
+        repostedTracks,
+      );
+    }
+    const visibleTracks = postedTracks.filter(
+      (track) =>
+        track &&
+        !track.basicInfo.isPrivate &&
+        track.hidden !== true &&
+        track.geoBlocking.mode === 'worldwide',
+    );
+
+    return TracksMapper.toTrackResponsePublicList(visibleTracks);
+  }
+
+  async getTrackDetailedInfoV2(
+    userId: string,
+    trackId: string,
+    userRole: string,
+  ) {
+    const searchTrack = await this.tracksRepository.findById(trackId);
+
+    if (!searchTrack) {
+      throw NotFoundError('Track Not Found');
+    }
+
+    this.validateTrackOwnerShip(
+      userId,
+      searchTrack.posterId.toString(),
+      userRole,
+    );
+
+    const searchAdvancedInfo =
+      await this.tracksRepository.getTrackAdvancedInfo(trackId);
+    return TracksMapper.toTrackDetailedResponse(
+      searchTrack,
+      searchAdvancedInfo as IAdvancedAudioDetails,
+    );
   }
 }

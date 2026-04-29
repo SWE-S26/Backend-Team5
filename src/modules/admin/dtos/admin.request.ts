@@ -61,3 +61,5 @@ export const CreateAdminRequestDTO = extendedZod.object({
 export const GetAdminAnalyticsOverviewRequestDTO = extendedZod.object({});
 
 export const GetAdminAnalyticsStorageRequestDTO = extendedZod.object({});
+
+export const GetArtistAnalyticsRequestDTO = extendedZod.object({});

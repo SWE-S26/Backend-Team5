@@ -1,7 +1,15 @@
 import extendedZod from '../../../shared/docs/dtoDocumenter';
 import { z } from 'zod';
 import { Types } from 'mongoose';
-import { PublitioUploadResult } from '../../../shared/abstractions/publitio';
+import { PublitioUploadResult } from '../../../shared/abstractions/publitio.service';
+import { GeoblockingMode } from '../../../shared/models/models.track';
+import {
+  Region,
+  Country,
+  ValidCountries,
+  ValidRegions,
+  GeoblockingModeValues,
+} from '../tracks.consts';
 
 type ImageInfo = {
   imgLink: string;
@@ -17,7 +25,8 @@ export const CreateTrackRequestBodyDTO = extendedZod.object({
         /^[a-z0-9_-]+$/,
         'Use only lowercase letters, numbers, underscores, or hyphens.',
       )
-      .regex(/[a-z0-9_-]/, 'Permalink cannot be only digits.'),
+      .optional()
+      .default(''),
     mainArtists: extendedZod
       .array(extendedZod.string().min(1, 'Cannot Be Empty'))
       .min(1, 'At least one artist is required'),
@@ -92,6 +101,30 @@ export const CreateTrackRequestBodyDTO = extendedZod.object({
   }),
 });
 
+export const CreateTrackRequestBodyDTOV2 = CreateTrackRequestBodyDTO.extend({
+  geoBlocking: extendedZod
+    .object({
+      mode: extendedZod
+        .enum(GeoblockingModeValues)
+        .default(GeoblockingMode.WORLDWIDE),
+      regions: extendedZod.array(extendedZod.enum(ValidRegions)).default([]),
+      countries: extendedZod
+        .array(extendedZod.enum(ValidCountries))
+        .default([]),
+    })
+    .refine((data) => {
+      if (data.mode === GeoblockingMode.WORLDWIDE) {
+        return data.regions.length === 0 && data.countries.length === 0;
+      }
+      return data.regions.length > 0 || data.countries.length > 0;
+    })
+    .default({
+      mode: 'worldwide',
+      regions: [],
+      countries: [],
+    }),
+});
+
 // a copy for the patch request but all are optional
 export const UpdateTrackRequestBodyDTO = extendedZod.object({
   id: extendedZod.string(),
@@ -99,6 +132,15 @@ export const UpdateTrackRequestBodyDTO = extendedZod.object({
   permissions: CreateTrackRequestBodyDTO.shape.permissions.partial(),
   license: CreateTrackRequestBodyDTO.shape.license.partial(),
   advanced: CreateTrackRequestBodyDTO.shape.advanced.partial(),
+});
+
+export const UpdateTrackRequestBodyDTOV2 = extendedZod.object({
+  id: extendedZod.string(),
+  basicInfo: CreateTrackRequestBodyDTOV2.shape.basicInfo.partial(),
+  permissions: CreateTrackRequestBodyDTOV2.shape.permissions.partial(),
+  license: CreateTrackRequestBodyDTOV2.shape.license.partial(),
+  advanced: CreateTrackRequestBodyDTOV2.shape.advanced.partial(),
+  geoBlocking: CreateTrackRequestBodyDTOV2.shape.geoBlocking.optional(),
 });
 
 export type TrackInput = {
@@ -138,5 +180,17 @@ export type TrackInput = {
   };
 };
 
+export type TrackInputV2 = TrackInput & {
+  trackInfo: TrackInput['trackInfo'] & {
+    geoBlocking: {
+      mode: (typeof GeoblockingModeValues)[number];
+      regions: string[];
+      countries: string[];
+    };
+  };
+};
+
 export type CreateTrackDTO = z.infer<typeof CreateTrackRequestBodyDTO>;
+export type CreateTrackDTOV2 = z.infer<typeof CreateTrackRequestBodyDTOV2>;
 export type UpdateTrackDTO = z.infer<typeof UpdateTrackRequestBodyDTO>;
+export type UpdateTrackDTOV2 = z.infer<typeof UpdateTrackRequestBodyDTOV2>;

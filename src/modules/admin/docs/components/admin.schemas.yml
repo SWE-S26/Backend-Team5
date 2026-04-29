@@ -342,3 +342,33 @@ AdminAnalyticsStorageResponse:
       example: 524288000
   required:
     - usedBytes
+
+ArtistAnalyticsResponse:
+  type: object
+  properties:
+    totalPlays:
+      type: integer
+      minimum: 0
+      example: 1520
+    totalReposts:
+      type: integer
+      minimum: 0
+      example: 84
+    totalDownloads:
+      type: integer
+      minimum: 0
+      example: 12
+    totalLikes:
+      type: integer
+      minimum: 0
+      example: 640
+    totalComments:
+      type: integer
+      minimum: 0
+      example: 310
+  required:
+    - totalPlays
+    - totalReposts
+    - totalDownloads
+    - totalLikes
+    - totalComments

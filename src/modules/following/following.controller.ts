@@ -89,7 +89,7 @@ export class FollowingController {
     const offset = validatedRequest.data.query?.offset ?? 0;
     const limit = validatedRequest.data.query?.limit ?? 20;
 
-    const myId = req.userInfo!._id;
+    const myId = req.userInfo?._id ?? null;
 
     const followers: UserSummaryWithFollowDTOType[] =
       await this.service.getFollowers(userId, myId, offset, limit);
@@ -106,7 +106,7 @@ export class FollowingController {
     const offset = validatedRequest.data.query?.offset ?? 0;
     const limit = validatedRequest.data.query?.limit ?? 20;
 
-    const myId = req.userInfo!._id;
+    const myId = req.userInfo?._id ?? null;
 
     const followed: UserSummaryWithFollowDTOType[] =
       await this.service.getFollowed(userId, myId, offset, limit);

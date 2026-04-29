@@ -66,7 +66,7 @@ export class FeedController {
     }
 
     const searchQuery = validatedRequest.data.query.q;
-    const userId = req.userInfo!._id;
+    const userId = req.userInfo?._id ?? null;
 
     const searchSuggestions: SearchSuggestionDTOType[] =
       await this.service.getSearchSuggestions(userId, searchQuery);

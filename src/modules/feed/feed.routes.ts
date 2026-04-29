@@ -6,12 +6,13 @@ import { FeedService } from './feed.service';
 import apiVersions from '../../shared/middleware/apiVersions';
 
 const feedRoutes = Router();
+const feedPublicRouter = Router();
 
 const feedRepository = new FeedRepository();
 const feedService = new FeedService(feedRepository);
 const feedController = new FeedController(feedService);
 
-feedRoutes.get(
+feedPublicRouter.get(
   apiVersions.v1 + '/trending-tracks/:id',
   feedController.getTrendingTracks.bind(feedController),
 );
@@ -21,7 +22,7 @@ feedRoutes.get(
   feedController.getFeed.bind(feedController),
 );
 
-feedRoutes.get(
+feedPublicRouter.get(
   apiVersions.v1 + '/search/suggestions',
   feedController.getSearchSuggestions.bind(feedController),
 );
@@ -41,9 +42,10 @@ feedRoutes.post(
   feedController.addToSearchHistory.bind(feedController),
 );
 
-feedRoutes.get(
+feedPublicRouter.get(
   apiVersions.v1 + '/search',
   feedController.applyGlobalSearch.bind(feedController),
 );
 
+export { feedPublicRouter };
 export default feedRoutes;

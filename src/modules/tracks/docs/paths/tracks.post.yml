@@ -2,6 +2,7 @@
   post:
     tags:
       - Track Management
+    deprecated: true
     summary: Create a new track
     description: >
       Creates a new audio track with associated metadata, media files, permissions,
@@ -132,6 +133,103 @@
 
       '404':
         $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+
+ /api/tracks/v2:
+  post:
+    tags:
+      - Track Management
+    summary: Create a new track
+    description: >
+      Creates a new audio track with associated metadata, media files, permissions,
+      licensing, and advanced publishing settings.
+
+      This endpoint is used when a user uploads a new track to the platform.
+
+      The request supports multipart upload where:
+        - Audio file is required
+        - Cover image is optional
+        - Structured data (metadata, permissions, license, advanced settings)
+          are sent as JSON-stringified objects
+
+    operationId: createTrack
+
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required:
+              - audio
+              - basicInfo
+            properties:
+
+              audio:
+                type: string
+                format: binary
+                description: Required audio file for the track
+
+              image:
+                type: string
+                format: binary
+                description: Optional cover image for the track
+
+              basicInfo:
+                type: string
+                description: >
+                  JSON stringified object containing core track metadata:
+                  title, permalink, artists, genre, tags, description, privacy, caption
+
+              permissions:
+                type: string
+                description: >
+                  JSON stringified object controlling playback and distribution settings
+
+              license:
+                type: string
+                description: >
+                  JSON stringified object defining usage rights and licensing rules
+
+              advanced:
+                type: string
+                description: >
+                  JSON stringified object for publishing and distribution metadata
+                  (e.g. release date, ISRC, label, clip settings, album info)
+
+              geoBlocking:
+                type: string
+                description: >
+                  JSON stringified object controlling geo-restrictions.
+                  Structure:
+                  {
+                    "mode": "worldwide | exclusive | blocked",
+                    "regions": ["MENA", "EU"],
+                    "countries": ["EG", "US"]
+                  }
+
+    responses:
+      '201':
+        description: Track created successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track created successfully
+                data:
+                  $ref: '#/components/schemas/Track'
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
 
       '500':
         $ref: '#/components/responses/ServerError'
