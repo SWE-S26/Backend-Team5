@@ -31,6 +31,16 @@ followingRouter.post(
   followingController.unblock.bind(followingController),
 );
 
+followingRouter.get(
+  apiVersions.v1 + '/followers/:id',
+  followingController.getFollowers.bind(followingController),
+);
+
+followingRouter.get(
+  apiVersions.v1 + '/following/:id',
+  followingController.getFollowed.bind(followingController),
+);
+
 followingPublicRouter.get(
   apiVersions.v1 + '/followers/:id',
   followingController.getFollowers.bind(followingController),
