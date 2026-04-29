@@ -10,7 +10,7 @@ playbackRouter.get(apiVersions.v1 + '/history/tracks', (req, res) =>
 );
 
 playbackRouter.get(apiVersions.v1 + '/history/playlists', (req, res) =>
-  playbackController.getUserHistoryTracks(req, res),
+  playbackController.getUserHistoryPlaylists(req, res),
 );
 
 playbackRouter.delete(apiVersions.v1 + '/history/', (req, res) =>
