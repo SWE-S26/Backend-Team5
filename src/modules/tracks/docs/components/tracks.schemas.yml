@@ -526,3 +526,29 @@ TrackPrivateResponseV2:
         end:
           type: integer
           example: 30
+
+TopFanResponse:
+  type: object
+  properties:
+    userId:
+      type: object
+      properties:
+        displayName:
+          type: string
+        profileImg:
+          type: string
+    trackId:
+      type: string
+    totalNumberOfPlay:
+      type: integer
+    isFanOfArtist:
+      type: boolean
+    firstWeekNumPlays:
+      type: integer
+    trackCreatedAt:
+      type: string
+      format: date-time
+    playThroughPercentage:
+      type: number
+    totalListenedDuration:
+      type: number

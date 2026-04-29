@@ -1218,6 +1218,70 @@
       '500':
         $ref: '#/components/responses/ServerError'
 
+
+/api/public/tracks/v2/stats/{id}:
+  get:
+    tags:
+      - Track Management
+    summary: Get track stats
+    description: >
+      Retrieves statistics for a specific track including top fans and first week fans.
+
+      This endpoint is used to fetch engagement statistics for a given track,
+      allowing clients to display fan leaderboards and early supporter data.
+
+      It is typically used in:
+        - Track pages showing top listeners.
+        - Artist dashboards displaying fan engagement.
+
+      The response includes top fans sorted by total play count and first week fans
+      who listened during the track's first week of release.
+
+      If the track ID is invalid or does not exist, a 404 Not Found response is returned.
+
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 69e6bea48ae84d2ffd60e5cb
+
+    responses:
+      '200':
+        description: Track stats retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track Stats Retrieved Successfully
+                data:
+                  type: object
+                  properties:
+                    topFans:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/TopFanResponse'
+                    firstFans:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/TopFanResponse'
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
 /api/tracks/v2/:
   get:
     tags:
@@ -1564,6 +1628,69 @@
         $ref: '#/components/responses/Unauthorized'
       '404':
         $ref: '#/components/responses/NotFound'
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/tracks/v2/stats/{id}:
+  get:
+    tags:
+      - Track Management
+    summary: Get track stats
+    description: >
+      Retrieves statistics for a specific track including top fans and first week fans.
+
+      This endpoint is used to fetch engagement statistics for a given track,
+      allowing clients to display fan leaderboards and early supporter data.
+
+      It is typically used in:
+        - Track pages showing top listeners.
+        - Artist dashboards displaying fan engagement.
+
+      The response includes top fans sorted by total play count and first week fans
+      who listened during the track's first week of release.
+
+      If the track ID is invalid or does not exist, a 404 Not Found response is returned.
+
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: 69e6bea48ae84d2ffd60e5cb
+
+    responses:
+      '200':
+        description: Track stats retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track Stats Retrieved Successfully
+                data:
+                  type: object
+                  properties:
+                    topFans:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/TopFanResponse'
+                    firstFans:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/TopFanResponse'
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
       '500':
         $ref: '#/components/responses/ServerError'
 

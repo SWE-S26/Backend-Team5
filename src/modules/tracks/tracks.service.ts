@@ -880,6 +880,12 @@ export class TracksService {
       throw NotFoundError("Track Doesn't Exists");
     }
 
+    if (listenedDuration > searchTrack.durationInSeconds) {
+      throw BadRequestError(
+        'Cant listen to a track longer than its supposed duration',
+      );
+    }
+
     if (listenedDuration < Math.floor(0.3 * searchTrack.durationInSeconds)) {
       throw BadRequestError(
         "Listened Duration Doesn't excedd 30% of Played Track",
@@ -912,7 +918,7 @@ export class TracksService {
       ),
       redisCacher.set(
         `play:cooldown:${userId}:${trackId}`,
-        '1',
+        1,
         Math.floor(searchTrack.durationInSeconds * 0.3),
       ),
       this.tracksRepository.incrementNumPlays(trackId),
