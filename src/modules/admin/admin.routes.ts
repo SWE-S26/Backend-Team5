@@ -25,6 +25,10 @@ router.get(apiVersions.v1 + '/analytics/storage', (req, res) =>
   adminController.analyticsStorage(req, res),
 );
 
+router.get(apiVersions.v1 + '/artist-analytics/me', (req, res) =>
+  adminController.artistAnalytics(req, res),
+);
+
 router.post(apiVersions.v1 + '/reports', (req, res) =>
   adminController.createReport(req, res),
 );

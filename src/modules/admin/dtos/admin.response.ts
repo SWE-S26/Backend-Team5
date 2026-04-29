@@ -146,3 +146,21 @@ export const AdminAnalyticsStorageResponseDTO = extendedZod
       usedBytes: 524288000,
     },
   });
+
+export const ArtistAnalyticsResponseDTO = extendedZod
+  .object({
+    totalPlays: extendedZod.number().int().min(0),
+    totalReposts: extendedZod.number().int().min(0),
+    totalDownloads: extendedZod.number().int().min(0),
+    totalLikes: extendedZod.number().int().min(0),
+    totalComments: extendedZod.number().int().min(0),
+  })
+  .openapi('ArtistAnalyticsResponse', {
+    example: {
+      totalPlays: 1520,
+      totalReposts: 84,
+      totalDownloads: 12,
+      totalLikes: 640,
+      totalComments: 310,
+    },
+  });
