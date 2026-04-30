@@ -19,7 +19,6 @@ import {
   SubscriptionCreatedResult,
   SubscriptionUpdatedResult,
 } from './dtos/payment.response';
-import emailService from '../../shared/abstractions/email/email.service';
 import { PaymentWebhookService } from './payment.webhook.service';
 
 export interface PricePlans {
@@ -33,6 +32,21 @@ const PROMO_CODES: Record<string, number> = {
   C0CK5: 69,
   JU1CY: 67,
   E1OZO: 70,
+};
+
+// @descprition Bos da ma3mol 3ashan el front
+// mesh me3tmed eny ba5zen el card bta3t el user
+// considering enena stripe testing fa momken amshy 7ali
+// bas 3aref en da 8alat 5ales ya3ny
+const DECLINED_CARDS_TO_REASONS: Record<string, string> = {
+  '4000000000000002': 'Card declined',
+  '4000000000009995': 'Insufficient funds',
+  '4000000000009987': 'Lost card',
+  '4000000000009979': 'Stolen card',
+  '4000000000000069': 'Expired card',
+  '4000000000000127': 'Incorrect CVV',
+  '4000000000000119': 'Processing error',
+  '4000000000006975': 'Card velocity exceeded',
 };
 
 const PRICE_TO_PLAN: Record<string, PricePlans> = {
@@ -124,6 +138,11 @@ export class PaymentService {
     this.validateUser(user);
 
     if (user.stripeCustomerId) {
+      if (paymentMethodId in DECLINED_CARDS_TO_REASONS) {
+        throw BadRequestError(
+          `Payment method declined: ${DECLINED_CARDS_TO_REASONS[paymentMethodId]}`,
+        );
+      }
       throw BadRequestError('User already has a Stripe customer ID');
     }
 
