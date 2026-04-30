@@ -1,23 +1,27 @@
-# # DELETE
-# /api/playback/example:
-#   delete:
-#     tags:
-#       - playback
-#     summary: Get agent profile by ID.
-#     description: Returns the agent profile associated with the provided ID.
-#     parameters:
-#       - $ref: '#/components/parameters/IdPathParam'
-#     responses:
-#       204:
-#         description: Successfully retrieved agent profile.
-#         content:
-#           application/json:
-#             schema:
-#               $ref: '#/components/schemas/GetUserByIdResponseDTO'
+/api/playback/v1/history/:
+  delete:
+    tags:
+      - Playback
+    summary: Delete user history
+    operationId: deleteUserHistory
+    security:
+      - bearerAuth: []
 
-#       401:
-#         $ref: '#/components/responses/Unauthorized'
-#       404:
-#         $ref: '#/components/responses/NotFound'
-#       500:
-#         $ref: '#/components/responses/ServerError'
+    responses:
+      '200':
+        description: User history deleted successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: User History Deleted Successfully
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+      '404':
+        $ref: '#/components/responses/NotFound'
+      '500':
+        $ref: '#/components/responses/ServerError'

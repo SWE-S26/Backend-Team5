@@ -2,7 +2,7 @@ import Track, { ITrack } from '../../shared/models/models.track';
 import History, { IHistory } from '../../shared/models/models.history';
 import { NotFoundError } from '../../shared/errors/responseErrors';
 import User, { IUser } from '../../shared/models/models.user';
-import { PublitioUploadResult } from '../../shared/abstractions/publitio';
+import { PublitioUploadResult } from '../../shared/abstractions/publitio.service';
 import { CreateTrackDTO, UpdateTrackDTO } from './dtos/tracks.request.body';
 import AdvancedAudioDetails, {
   IAdvancedAudioDetails,
@@ -111,7 +111,7 @@ export class TracksRepository {
 
     // get limited tracks + total count of tracks
     const [tracks, totalNumTracks] = await Promise.all([
-      Track.find({ 'basicInfo.isPrivate': false }).skip(skip).limit(limit),
+      Track.find().skip(skip).limit(limit),
       Track.countDocuments(),
     ]);
 
@@ -141,7 +141,6 @@ export class TracksRepository {
       ...mainInfo,
       ...(imgInfo && { image: imgInfo }),
     };
-    console.log('THE ADVANCED SHIT', advanced);
     const [updatedTrack] = await Promise.all([
       Track.findByIdAndUpdate(id, { $set: updatePayload }, { new: true }),
       AdvancedAudioDetails.findOneAndUpdate(
@@ -164,7 +163,6 @@ export class TracksRepository {
     // run queries in paralled insteaad of a for loop
     const postedTracks = await Track.find({
       posterId: userId,
-      'basicInfo.isPrivate': false,
     });
     // returns null if user doesnt have any liked tracks
     return postedTracks;

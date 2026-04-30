@@ -31,7 +31,7 @@ export class ProfileService {
 
   async getProfileById(
     id: string,
-    myId: string,
+    myId: string | null,
   ): Promise<ProfileResponseDTOType | null> {
     const user: IUser | null = await this.repository.getProfileById(id);
     if (!user) throw NotFoundError('User not found');
@@ -41,7 +41,7 @@ export class ProfileService {
     let isFollowed = false;
     let isBlocked = false;
     let amIBlocked = false;
-    if (myId !== id) {
+    if (myId && myId !== id) {
       isFollowed = await this.repository.isFollowed(myId, id);
       isBlocked = await this.repository.isBlocked(myId, id);
       amIBlocked = await this.repository.isBlocked(id, myId);
@@ -236,7 +236,7 @@ export class ProfileService {
 
   async getProfileByProfileLink(
     username: string,
-    myId: string,
+    myId: string | null,
   ): Promise<ProfileResponseDTOType | null> {
     const user = await this.repository.getProfileByProfileLink(username);
     if (!user) throw NotFoundError('User not found');
@@ -248,7 +248,7 @@ export class ProfileService {
     let isFollowed = false;
     let isBlocked = false;
     let amIBlocked = false;
-    if (myId !== strId) {
+    if (myId && myId !== strId) {
       isFollowed = await this.repository.isFollowed(myId, strId);
       isBlocked = await this.repository.isBlocked(myId, strId);
       amIBlocked = await this.repository.isBlocked(strId, myId);

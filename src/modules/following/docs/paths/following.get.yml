@@ -1,4 +1,4 @@
-/api/social/v1/followers/{userId}:
+/api/public/social/v1/followers/{userId}:
   get:
     tags:
       - Social
@@ -29,6 +29,10 @@
                       isFollowed:
                         type: boolean
                         description: Whether the authenticated user follows this user
+                      isBlocked:
+                        type: boolean
+                        description: Whether the authenticated user blocks this user                        
+
       '400':
         description: Invalid user ID
         content:
@@ -67,7 +71,7 @@
                   code: 404
 
 # Get following
-/api/social/v1/following/{userId}:
+/api/public/social/v1/following/{userId}:
   get:
     tags:
       - Social
@@ -98,6 +102,9 @@
                       isFollowed:
                         type: boolean
                         description: Whether the authenticated user follows this user
+                      isBlocked:
+                        type: boolean
+                        description: Whether the authenticated user blocks this user                           
       '400':
         description: Invalid user ID
         content:

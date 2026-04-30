@@ -184,7 +184,7 @@ PlaylistPublicResponse:
       type: string
       format: date-time
 
-TrackDetailedResponse:
+TrackDetailedResponseV2:
   type: object
   properties:
     id:
@@ -279,3 +279,250 @@ TrackDetailedResponse:
         albumTitle:
           type: string
           example: My Album
+
+TrackDetailedResponse:
+  type: object
+  properties:
+    id:
+      type: string
+      example: 69e6bea48ae84d2ffd60e5cb
+
+    basicInfo:
+      type: object
+      properties:
+        title:
+          type: string
+        permalink:
+          type: string
+        mainArtists:
+          type: array
+          items:
+            type: string
+        genre:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+        caption:
+          type: string
+        isPrivate:
+          type: boolean
+
+    permissions:
+      type: object
+      properties:
+        enableDirectDownload:
+          type: boolean
+        offlineListening:
+          type: boolean
+        includeInRssFeed:
+          type: boolean
+        displayedEmbedCode:
+          type: boolean
+        enableAppPlayback:
+          type: boolean
+
+    license:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - allRightsReserved
+            - creativeCommons
+        attribution:
+          type: boolean
+        nonCommercial:
+          type: boolean
+        noDerivativeWorks:
+          type: boolean
+        shareAlike:
+          type: boolean
+
+    advanced:
+      type: object
+      properties:
+        buyLink:
+          type: string
+          example: https://example.com/buy
+        recordLabel:
+          type: string
+          example: Sony Music
+        releaseDate:
+          type: string
+          format: date-time
+        publisher:
+          type: string
+          example: Universal
+        ISRC:
+          type: string
+          example: USRC12345678
+        explicitContent:
+          type: boolean
+          example: false
+        pLine:
+          type: string
+          example: 2024 Example Records
+        audioClipStart:
+          type: integer
+          example: 0
+        audioClipEnd:
+          type: integer
+          example: 30
+        composer:
+          type: string
+          example: John Doe
+        ISWC:
+          type: string
+          example: T-123456789-0
+        albumTitle:
+          type: string
+          example: My Album
+
+TrackPrivateResponseV2:
+  type: object
+  properties:
+    trackId:
+      type: string
+      example: 69e6bea48ae84d2ffd60e5cb
+
+    basicInfo:
+      type: object
+      properties:
+        title:
+          type: string
+        permalink:
+          type: string
+        mainArtists:
+          type: array
+          items:
+            type: string
+        genre:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+        caption:
+          type: string
+        isPrivate:
+          type: boolean
+
+    posterId:
+      type: string
+      example: 69e6bea48ae84d2ffd60e5cb
+
+    durationInSeconds:
+      type: integer
+
+    audio:
+      type: object
+      description: Audio file information
+      properties:
+        audioLink:
+          type: string
+        id:
+          type: string
+        waveformLink:
+          type: string
+        downloadLink:
+          type: string
+
+    image:
+      type: object
+      properties:
+        imgLink:
+          type: string
+        publicId:
+          type: string
+
+    numLikes:
+      type: integer
+
+    numPlays:
+      type: integer
+
+    numReposts:
+      type: integer
+
+    numComments:
+      type: integer
+
+    releaseDate:
+      type: string
+      format: date-time
+
+    isLikedByUser:
+      type: boolean
+
+    isRepostedByUser:
+      type: boolean
+
+    isAvailableForUser:
+      type: boolean
+
+    permissions:
+      type: object
+      properties:
+        enableDirectDownload:
+          type: boolean
+        offlineListening:
+          type: boolean
+        includeInRssFeed:
+          type: boolean
+        displayedEmbedCode:
+          type: boolean
+        enableAppPlayback:
+          type: boolean
+
+    license:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - allRightsReserved
+            - creativeCommons
+        attribution:
+          type: boolean
+        nonCommercial:
+          type: boolean
+        noDerivativeWorks:
+          type: boolean
+        shareAlike:
+          type: boolean
+
+    geoBlocking:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum:
+            - worldwide
+            - exclusive
+            - blocked
+        regions:
+          type: array
+          items:
+            type: string
+            example: MENA
+        countries:
+          type: array
+          items:
+            type: string
+            example: EG
+
+    audioClip:
+      type: object
+      properties:
+        start:
+          type: integer
+          example: 0
+        end:
+          type: integer
+          example: 30

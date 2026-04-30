@@ -13,6 +13,7 @@ export type UserSummaryDTOType = z.infer<typeof UserSummaryDTO>;
 
 export const UserSummaryWithFollowDTO = UserSummaryDTO.extend({
   isFollowed: extendedZod.boolean(),
+  isBlocked: extendedZod.boolean(),
 });
 
 export type UserSummaryWithFollowDTOType = z.infer<

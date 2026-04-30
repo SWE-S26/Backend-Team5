@@ -129,7 +129,7 @@ export class FollowingService {
 
   async getFollowers(
     id: string,
-    myId: string,
+    myId: string | null,
     offset = 0,
     limit = 20,
   ): Promise<UserSummaryWithFollowDTOType[]> {
@@ -146,13 +146,18 @@ export class FollowingService {
     const usersStats: Record<string, UserStats> =
       await this.repository.getUsersStats(userIds);
 
-    const isFollowedUsers: Record<string, boolean> =
-      await this.repository.isUsersFollowed(myId, userIds);
+    const isFollowedUsers: Record<string, boolean> = myId
+      ? await this.repository.isUsersFollowed(myId, userIds)
+      : {};
+
+    const blockedIds = myId ? await this.repository.getBlockedIds(myId) : [];
+    const blockedSet = new Set(blockedIds.map((id) => id.toString()));
 
     const combined = users.map((user) => ({
       ...user,
       ...usersStats[user._id.toString()],
       isFollowed: isFollowedUsers[user._id.toString()] ?? false,
+      isBlocked: blockedSet.has(user._id.toString()),
     }));
 
     const followers: UserSummaryWithFollowDTOType[] = combined.map((user) =>
@@ -164,7 +169,7 @@ export class FollowingService {
 
   async getFollowed(
     id: string,
-    myId: string,
+    myId: string | null,
     offset = 0,
     limit = 20,
   ): Promise<UserSummaryWithFollowDTOType[]> {
@@ -181,13 +186,18 @@ export class FollowingService {
     const usersStats: Record<string, UserStats> =
       await this.repository.getUsersStats(userIds);
 
-    const isFollowedUsers: Record<string, boolean> =
-      await this.repository.isUsersFollowed(myId, userIds);
+    const isFollowedUsers: Record<string, boolean> = myId
+      ? await this.repository.isUsersFollowed(myId, userIds)
+      : {};
+
+    const blockedIds = myId ? await this.repository.getBlockedIds(myId) : [];
+    const blockedSet = new Set(blockedIds.map((id) => id.toString()));
 
     const combined = users.map((user) => ({
       ...user,
       ...usersStats[user._id.toString()],
       isFollowed: isFollowedUsers[user._id.toString()] ?? false,
+      isBlocked: blockedSet.has(user._id.toString()),
     }));
 
     const followed: UserSummaryWithFollowDTOType[] = combined.map((user) =>

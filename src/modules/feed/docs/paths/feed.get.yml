@@ -54,7 +54,7 @@
                 $ref: '#/components/schemas/ErrorResponse'
 
   # Global Search
-  /api/feed/v1/search:
+  /api/public/feed/v1/search:
     get:
       tags:
         - Search
@@ -153,7 +153,7 @@
   
   
   # Search Suggestions
-  /api/feed/v1/search/suggestions:
+  /api/public/feed/v1/search/suggestions:
     get:
       tags:
         - Search
@@ -249,7 +249,7 @@
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /api/feed/v1/trending-tracks/{userId}:
+  /api/public/feed/v1/trending-tracks/{userId}:
     get:
       tags:
         - Feed

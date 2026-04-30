@@ -5,6 +5,7 @@ import { FollowingService } from './following.service';
 import apiVersions from '../../shared/middleware/apiVersions';
 
 const followingRouter = Router();
+const followingPublicRouter = Router();
 
 const followingRepository = new FollowingRepository();
 const followingService = new FollowingService(followingRepository);
@@ -30,12 +31,12 @@ followingRouter.post(
   followingController.unblock.bind(followingController),
 );
 
-followingRouter.get(
+followingPublicRouter.get(
   apiVersions.v1 + '/followers/:id',
   followingController.getFollowers.bind(followingController),
 );
 
-followingRouter.get(
+followingPublicRouter.get(
   apiVersions.v1 + '/following/:id',
   followingController.getFollowed.bind(followingController),
 );
@@ -50,4 +51,5 @@ followingRouter.get(
   followingController.getSuggestedUsers.bind(followingController),
 );
 
+export { followingPublicRouter };
 export default followingRouter;

@@ -7,6 +7,7 @@ import apiVersions from '../../shared/middleware/apiVersions';
 import { upload } from '../../shared/middleware/multer.middleware';
 
 const profileRouter = Router();
+const profilePublicRouter = Router();
 const profileRepository = new ProfileRepository();
 const profileService = new ProfileService(profileRepository);
 const profileController = new ProfileController(profileService);
@@ -16,12 +17,12 @@ profileRouter.get(
   profileController.isProfileLinkTaken.bind(profileController),
 );
 
-profileRouter.get(
+profilePublicRouter.get(
   apiVersions.v1 + '/profile-link/:profileLink',
   profileController.getProfileByProfileLink.bind(profileController),
 );
 
-profileRouter.get(
+profilePublicRouter.get(
   apiVersions.v1 + '/:id',
   profileController.getProfileById.bind(profileController),
 );
@@ -74,5 +75,7 @@ profileRouter.patch(
   apiVersions.v1 + '/settings/content',
   profileController.updateContentSettings.bind(profileController),
 );
+
+export { profilePublicRouter };
 
 export default profileRouter;
