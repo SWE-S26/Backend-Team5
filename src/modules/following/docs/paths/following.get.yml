@@ -142,6 +142,151 @@
                   message: "User not found"
                   code: 404
 
+
+/api/social/v1/followers/{userId}:
+  get:
+    tags:
+      - Social
+    summary: Get followers of a user
+    description: Returns a list of users who follow the given user
+    operationId: getFollowers
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: User ID
+        schema:
+          type: string
+      - $ref: '#/components/parameters/OffsetParam'
+      - $ref: '#/components/parameters/LimitParam'            
+    responses:
+      '200':
+        description: Followers retrieved
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/UserSummary'
+                  - type: object
+                    properties:
+                      isFollowed:
+                        type: boolean
+                        description: Whether the authenticated user follows this user
+                      isBlocked:
+                        type: boolean
+                        description: Whether the authenticated user blocks this user                        
+
+      '400':
+        description: Invalid user ID
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              invalidId:
+                value:
+                  success: false
+                  message: "Invalid user ID"
+                  code: 400
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              unauthorized:
+                value:
+                  success: false
+                  message: "Unauthorized"
+                  code: 401
+      '404':
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              notFound:
+                value:
+                  success: false
+                  message: "User not found"
+                  code: 404
+
+# Get following
+/api/social/v1/following/{userId}:
+  get:
+    tags:
+      - Social
+    summary: Get users followed by a user
+    description: Returns a list of users that the given user is following
+    operationId: getFollowing
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: User ID
+        schema:
+          type: string
+      - $ref: '#/components/parameters/OffsetParam'
+      - $ref: '#/components/parameters/LimitParam'             
+    responses:
+      '200':
+        description: Following list retrieved
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/UserSummary'
+                  - type: object
+                    properties:
+                      isFollowed:
+                        type: boolean
+                        description: Whether the authenticated user follows this user
+                      isBlocked:
+                        type: boolean
+                        description: Whether the authenticated user blocks this user                           
+      '400':
+        description: Invalid user ID
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              invalidId:
+                value:
+                  success: false
+                  message: "Invalid user ID"
+                  code: 400
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              unauthorized:
+                value:
+                  success: false
+                  message: "Unauthorized"
+                  code: 401
+      '404':
+        description: User not found
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+            examples:
+              notFound:
+                value:
+                  success: false
+                  message: "User not found"
+                  code: 404
+
 # Suggested users
 /api/social/v1/suggested:
   get:

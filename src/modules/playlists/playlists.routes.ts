@@ -44,13 +44,13 @@ playlistsPrivateRouter.patch(
 );
 
 playlistsPrivateRouter.patch(
-  apiVersions.v1 + '/:id/tracks/:trackId',
-  playlistsController.addTrackToPlaylist.bind(playlistsController),
+  apiVersions.v1 + '/:id/tracks/order',
+  playlistsController.updatePlaylistSingleTrackOrder.bind(playlistsController),
 );
 
 playlistsPrivateRouter.patch(
-  apiVersions.v1 + '/:id/tracks/order',
-  playlistsController.updatePlaylistSingleTrackOrder.bind(playlistsController),
+  apiVersions.v1 + '/:id/tracks/:trackId',
+  playlistsController.addTrackToPlaylist.bind(playlistsController),
 );
 
 playlistsPublicRouter.get(

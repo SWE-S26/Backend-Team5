@@ -127,6 +127,7 @@
   patch:
     tags:
       - Track Management
+    deprecated: true
     summary: Increment track play count
     description: |
       Increments the number of plays for a specific track.
@@ -307,6 +308,73 @@
 
       '403':
         $ref: '#/components/responses/Forbidden'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'
+
+/api/tracks/v2/listen:
+  patch:
+    tags:
+      - Track Management
+    summary: Increment track play count
+    description: |
+      Increments the number of plays for a specific track based on listening threshold.
+
+      This endpoint is called when a user has listened to at least 30% of a track's duration.
+      It includes deduplication logic via a session play ID to prevent duplicate requests,
+      and a daily play limit per user per track.
+
+      **Rules:**
+        - Listened duration must exceed 30% of the track's total duration to count as a valid play.
+        - A minimum absolute floor is applied for short tracks.
+        - Each unique session play ID is deduplicated via Redis.
+        - A cooldown window is applied between plays of the same track.
+        - sessionIdPlay MUST by uuid
+
+    operationId: incrementTrackNumPlaysV2
+
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - trackId
+              - listenedDuration
+              - sessionIdPlay
+            properties:
+              trackId:
+                type: string
+                example: 69d81e7846eff3dce7069b08
+              listenedDuration:
+                type: number
+                example: 62
+              sessionIdPlay:
+                type: string
+                format: uuid
+                example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+
+    responses:
+      '200':
+        description: Play count updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Number of Plays Updated Successfully
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
 
       '404':
         $ref: '#/components/responses/NotFound'

@@ -17,6 +17,16 @@ profileRouter.get(
   profileController.isProfileLinkTaken.bind(profileController),
 );
 
+profileRouter.get(
+  apiVersions.v1 + '/profile-link/:profileLink',
+  profileController.getProfileByProfileLink.bind(profileController),
+);
+
+profileRouter.get(
+  apiVersions.v1 + '/:id',
+  profileController.getProfileById.bind(profileController),
+);
+
 profilePublicRouter.get(
   apiVersions.v1 + '/profile-link/:profileLink',
   profileController.getProfileByProfileLink.bind(profileController),
@@ -26,6 +36,7 @@ profilePublicRouter.get(
   apiVersions.v1 + '/:id',
   profileController.getProfileById.bind(profileController),
 );
+
 profileRouter.patch(
   apiVersions.v1 + '/',
   profileController.updateProfile.bind(profileController),

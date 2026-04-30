@@ -11,6 +11,7 @@ import {
   CreateTrackRequestBodyDTOV2,
   UpdateTrackRequestBodyDTO,
   UpdateTrackRequestBodyDTOV2,
+  IncrementTrackNumPlaysRequestBodyDTO,
 } from './tracks.request.body';
 
 export const DeleteTrackRequestDTO = extendedZod.object({
@@ -43,6 +44,14 @@ export const GetPostedTracksByUserIdRequestDTO = extendedZod.object({
 
 export const IncrementTrackListenCountRequestDTO = extendedZod.object({
   params: TracksIdParamDTO,
+});
+
+export const TrackStatsRequestDTO = extendedZod.object({
+  params: TracksIdParamDTO,
+});
+
+export const IncrementTrackListenCountRequestDTOV2 = extendedZod.object({
+  body: IncrementTrackNumPlaysRequestBodyDTO,
 });
 
 export const UploadAudioTrackRequestDTO = extendedZod.object({
