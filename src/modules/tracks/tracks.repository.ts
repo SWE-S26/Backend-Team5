@@ -15,6 +15,7 @@ import Following, { IFollowing } from '../../shared/models/models.following';
 import PlaysTrackHandling, {
   IPlaysTrackHandling,
 } from '../../shared/models/models.plays-track-handling';
+import Settings, { ISettings } from '../../shared/models/models.settings';
 
 type PaginationList = {
   tracks: ITrack[];
@@ -151,11 +152,15 @@ export class TracksRepository {
       ...(imgInfo && { image: imgInfo }),
     };
     const [updatedTrack] = await Promise.all([
-      Track.findByIdAndUpdate(id, { $set: updatePayload }, { new: true }),
+      Track.findByIdAndUpdate(
+        id,
+        { $set: updatePayload },
+        { returnDocument: 'after' },
+      ),
       AdvancedAudioDetails.findOneAndUpdate(
         { trackId: id },
         { $set: advanced },
-        { new: true },
+        { returnDocument: 'after' },
       ),
     ]).catch((error) => {
       throw new Error('Unexpected Error Happened During Track Update');
@@ -243,9 +248,13 @@ export class TracksRepository {
     userId: string,
     listenedDuration: number,
   ) {
-    const userFollowing = await Following.findOne<IFollowing>({
-      userId: userId,
-    });
+    const [userFollowing, userSettings] = await Promise.all([
+      Following.findOne<IFollowing>({
+        userId: userId,
+      }),
+      this.getUserSettingsById(userId),
+    ]);
+    const canAppear = userSettings?.privacy.showFirstTopFan ?? false;
     const isArtistFollowed = userFollowing?.followed.some(
       (id) => id.toString() === track.posterId.toString(),
     );
@@ -270,9 +279,10 @@ export class TracksRepository {
           },
           $set: {
             isFanOfArtist: isFanOfArtist,
+            canAppear: canAppear,
           },
         },
-        { upsert: true, new: true },
+        { upsert: true, returnDocument: 'after' },
       );
 
     const playThroughPercentage =
@@ -290,6 +300,7 @@ export class TracksRepository {
     return (await PlaysTrackHandling.find({
       trackId: trackId,
       isFanOfArtist: true,
+      canAppear: true,
     })
       .sort({ totalNumberOfPlay: -1 })
       .limit(5)
@@ -300,10 +311,15 @@ export class TracksRepository {
   async getFirstFans(trackId: string): Promise<PopulatedFans[]> {
     return (await PlaysTrackHandling.find({
       trackId: trackId,
+      canAppear: true,
     })
       .sort({ firstWeekNumPlays: -1 })
       .limit(5)
       .populate('userId', 'displayName profileImg')
       .lean()) as unknown as PopulatedFans[];
+  }
+
+  async getUserSettingsById(userId: string): Promise<ISettings | null> {
+    return await Settings.findOne({ userId: userId });
   }
 }

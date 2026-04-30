@@ -5,6 +5,7 @@ export type IPlaysTrackHandling = {
   userId: Types.ObjectId;
   totalNumberOfPlay: number;
   isFanOfArtist: boolean;
+  canAppear: boolean;
   firstWeekNumPlays: number;
   trackCreatedAt: Date;
   playThroughPercentage: number;
@@ -28,6 +29,10 @@ const playsTrackHandlingSchema = new Schema(
       default: 0,
     },
     isFanOfArtist: {
+      type: Boolean,
+      default: false,
+    },
+    canAppear: {
       type: Boolean,
       default: false,
     },
