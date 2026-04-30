@@ -393,28 +393,6 @@ export class PlaylistsController {
     });
   }
 
-  async getPlaylistByPermalink(req: Request, res: Response): Promise<void> {
-    const validateRequest = parseRequest(GetPlaylistByPermalinkDTO, req);
-    if (!validateRequest.success) {
-      throw validateRequest.error;
-    }
-
-    const { permalink } = validateRequest.data.params;
-
-    const userId = this.getUserIdFromRequest(req);
-
-    const playlist = await this.service.getByPermalink(permalink, userId);
-
-    if (!playlist) {
-      throw BadRequestError('Playlist with the given permalink not found');
-    }
-
-    res.json({
-      message: 'Playlist retrieved successfully',
-      data: { playlist },
-    });
-  }
-
   async getPlaylistByPermalinkAndProfileLink(
     req: Request,
     res: Response,

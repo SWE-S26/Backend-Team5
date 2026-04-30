@@ -260,9 +260,9 @@ export class PlaylistsRepository {
     playlistId: string,
     requestingUserId: string | null,
     offset: number = 1,
-    limit: number = 5,
+    limit: number = 20,
   ): Promise<PlaylistWithTracks | Error | null> {
-    const skip = (offset - 1) * TRACKS_PER_PAGE;
+    const skip = (offset - 1) * limit;
 
     const somePlaylist = await this.findById(playlistId);
 
@@ -276,19 +276,6 @@ export class PlaylistsRepository {
       return new Error('You are blocked from accessing this playlist') as Error;
     }
 
-    /*
-     * Viewer lookup stage — injected conditionally.
-     *
-     * We pull only two fields from the viewer:
-     *   likedTracks  – array of ObjectIds
-     *   reposts      – filtered to type 'track' only
-     *
-     * Note: reposts.id is stored as a string, not an ObjectId.
-     * We handle the ObjectId → string comparison later via $toString.
-     *
-     * If no viewer is authenticated we inject a synthetic empty object
-     * so the rest of the pipeline never needs to branch.
-     */
     const viewerStages = requestingUserId
       ? [
           {
@@ -323,9 +310,9 @@ export class PlaylistsRepository {
         $addFields: {
           totalTracks: { $size: '$listOfTracks' },
           totalPages: {
-            $ceil: { $divide: [{ $size: '$listOfTracks' }, TRACKS_PER_PAGE] },
+            $ceil: { $divide: [{ $size: '$listOfTracks' }, limit] },
           },
-          _pageIds: { $slice: ['$listOfTracks', skip, TRACKS_PER_PAGE] },
+          _pageIds: { $slice: ['$listOfTracks', skip, limit] },
           page: offset,
           limit: limit,
         },
@@ -635,26 +622,6 @@ export class PlaylistsRepository {
     }).exec();
 
     return true;
-  }
-
-  async findByPermalink(
-    permalink: string,
-    userId: string | null,
-  ): Promise<PlaylistWithTracks | Error | null> {
-    const playlist = await Playlist.findOne({ permaLink: permalink })
-      .lean()
-      .exec();
-
-    if (!playlist) {
-      return null;
-    }
-
-    const playlistPro = await this.findByIdWithTracks(
-      playlist._id.toString(),
-      userId,
-    );
-
-    return playlistPro;
   }
 
   async findByPermalinkWithProfileLink(

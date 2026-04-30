@@ -253,25 +253,6 @@ export class PlaylistsService {
     return true;
   }
 
-  async getByPermalink(
-    permalink: string,
-    userId: string | null,
-  ): Promise<PlaylistWithTracks | null> {
-    const playlist = await this.repository.findByPermalink(permalink, userId);
-    if (!playlist) {
-      throw NotFoundError('Playlist not found');
-    }
-
-    if (playlist instanceof Error) {
-      if (playlist.message === 'You are blocked from accessing this playlist') {
-        throw ForbiddenError(playlist.message);
-      } else {
-        throw NotFoundError(playlist.message);
-      }
-    }
-    return playlist;
-  }
-
   async getByPermaLinkAndProfileLink(
     permalink: string,
     profilelink: string,
