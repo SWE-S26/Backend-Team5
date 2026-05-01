@@ -126,12 +126,14 @@ export const ReportResponseDTO = extendedZod
 
 export const ReportListItemResponseDTO = ReportResponseDTO.extend({
   reporterDisplayName: extendedZod.string(),
+  violatorName: extendedZod.string(),
 }).openapi('ReportListItem', {
   example: {
     reportId: '507f1f77bcf86cd799439013',
     reportedId: '507f1f77bcf86cd799439011',
     reporterDisplayName: 'John Doe',
     violatorId: '507f1f77bcf86cd799439012',
+    violatorName: 'Summer Vibes',
     violatorType: 'track',
     reason: 'This track contains abusive content.',
     status: 'pending',
@@ -157,6 +159,7 @@ export const ReportListResponseDTO = extendedZod
           reportedId: '507f1f77bcf86cd799439011',
           reporterDisplayName: 'John Doe',
           violatorId: '507f1f77bcf86cd799439012',
+          violatorName: 'Summer Vibes',
           violatorType: 'track',
           reason: 'This track contains abusive content.',
           status: 'pending',
