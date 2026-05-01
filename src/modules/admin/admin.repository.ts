@@ -358,15 +358,7 @@ export class AdminRepository {
             _id: null,
             totalPlays: { $sum: '$numOfPlays' },
             totalReposts: { $sum: '$numberOfReposts' },
-            totalDownloads: {
-              $sum: {
-                $cond: [
-                  { $eq: ['$permissions.enableDirectDownload', true] },
-                  1,
-                  0,
-                ],
-              },
-            },
+            totalDownloads: { $sum: '$numOfDownloads' },
             totalLikes: { $sum: '$numOfLikes' },
             totalComments: {
               $sum: { $size: { $ifNull: ['$comments', []] } },
