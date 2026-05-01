@@ -8,9 +8,7 @@ import {
 import {
   CreateTrackDTO,
   CreateTrackDTOV2,
-  UpdateTrackDTOV2,
   TrackInputV2,
-  TrackUpdateInput,
 } from './tracks.request.body';
 import { PublitioUploadResult } from '../../../shared/abstractions/publitio.service';
 import { TrackInput } from './tracks.request.body';
@@ -123,44 +121,6 @@ export class TracksMapper {
         pLine: track.advanced.pLine ?? '',
         albumTitle: track.advanced.albumTitle ?? '',
       },
-    };
-  }
-
-  static toTrackUpdateInput(
-    track: UpdateTrackDTOV2,
-    imgInfo: ImageInfo | null,
-  ): TrackUpdateInput {
-    const defined = <T extends object>(obj: T) =>
-      Object.fromEntries(
-        Object.entries(obj).filter(([_, v]) => v !== undefined),
-      );
-
-    return {
-      id: track.id,
-      trackInfo: defined({
-        basicInfo: track.basicInfo,
-        image: imgInfo ?? undefined,
-        permissions: track.permissions,
-        license: track.license,
-        composer: track.advanced?.composer,
-        audioClip: track.advanced && {
-          start: track.advanced.audioClipStart,
-          end: track.advanced.audioClipEnd,
-        },
-        releaseTitle: track.advanced?.releaseTitle,
-        geoBlocking: track.geoBlocking,
-      }) as TrackUpdateInput['trackInfo'],
-      advanced: defined({
-        buyLink: track.advanced?.buyLink,
-        recordLabel: track.advanced?.recordLabel,
-        releaseDate: track.advanced?.releaseDate,
-        publisher: track.advanced?.publisher,
-        isrc: track.advanced?.ISRC,
-        iswc: track.advanced?.ISWC,
-        explicitContent: track.advanced?.explicitContent,
-        pLine: track.advanced?.pLine,
-        albumTitle: track.advanced?.albumTitle,
-      }) as TrackUpdateInput['advanced'],
     };
   }
 

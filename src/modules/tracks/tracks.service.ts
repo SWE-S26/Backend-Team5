@@ -380,10 +380,10 @@ export class TracksService {
 
     this.validateTrackOwnerShip(userId, posterId, userRole);
 
-    const trackInput = TracksMapper.toTrackUpdateInput(trackInfo, imgInfo);
-
-    const updatedTrack =
-      await this.tracksRepository.updateTrackInfo(trackInput);
+    const updatedTrack = await this.tracksRepository.updateTrackInfo(
+      trackInfo,
+      imgInfo,
+    );
     return TracksMapper.toTrackResponsePrivate(updatedTrack, userId);
   }
 
@@ -621,8 +621,7 @@ export class TracksService {
       throw ForbiddenError('GeoBlocking Allowed For Pro');
     }
 
-    const trackInput = TracksMapper.toTrackUpdateInput(trackInfo, imgInfo);
-    await this.tracksRepository.updateTrackInfo(trackInput);
+    await this.tracksRepository.updateTrackInfo(trackInfo, imgInfo);
     return true;
   }
 
@@ -876,7 +875,7 @@ export class TracksService {
 
     const searchAdvancedInfo =
       await this.tracksRepository.getTrackAdvancedInfo(trackId);
-    return TracksMapper.toTrackDetailedResponseV2(
+    return TracksMapper.toTrackDetailedResponse(
       searchTrack,
       searchAdvancedInfo as IAdvancedAudioDetails,
     );
