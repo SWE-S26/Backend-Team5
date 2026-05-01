@@ -150,19 +150,30 @@ ReportListResponse:
       example: 30
     offset:
       type: integer
-      example: 0
+      example: 1
     limit:
       type: integer
       example: 20
     reports:
       type: array
       items:
-        $ref: '#/components/schemas/Report'
+        $ref: '#/components/schemas/ReportListItem'
   required:
     - total
     - offset
     - limit
     - reports
+
+ReportListItem:
+  allOf:
+    - $ref: '#/components/schemas/Report'
+    - type: object
+      properties:
+        reporterDisplayName:
+          type: string
+          example: 'John Doe'
+      required:
+        - reporterDisplayName
 
 UpdateReportStatusRequest:
   type: object

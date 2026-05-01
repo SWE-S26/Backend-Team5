@@ -58,6 +58,20 @@ Forbidden:
             example: 'Not enough permissions to access this resource'
 
 
+
+# 409 Conflict
+Conflict:
+  description: Request conflicts with current state of the resource
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          message:
+            type: string
+            example: 'Report is already resolved'
+
+
 # 404 Not Found
 NotFound:
   description: Resource not found

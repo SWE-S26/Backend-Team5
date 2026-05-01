@@ -2,6 +2,8 @@ import { Types } from 'mongoose';
 import {
   AdminMediaListResponseDTO,
   AdminMediaSnippetResponseDTO,
+  ReportListResponseDTO,
+  ReportListItemResponseDTO,
   ReportResponseDTO,
   AdminUserListResponseDTO,
   AdminUserSnippetResponseDTO,
@@ -39,6 +41,10 @@ export type AdminReportRow = {
   reason: string;
   status: 'pending' | 'done';
   createdAt: Date;
+};
+
+export type AdminReportListRow = AdminReportRow & {
+  reporterDisplayName: string;
 };
 
 export type AdminAnalyticsOverviewRow = {
@@ -124,6 +130,33 @@ export class AdminMapper {
       reason: entity.reason,
       status: entity.status,
       createdAt: entity.createdAt.toISOString(),
+    });
+  }
+
+  static toReportListItemResponse(entity: AdminReportListRow) {
+    return ReportListItemResponseDTO.parse({
+      reportId: entity._id.toString(),
+      reportedId: entity.reporterId.toString(),
+      reporterDisplayName: entity.reporterDisplayName,
+      violatorId: entity.violatorId.toString(),
+      violatorType: entity.violatorType,
+      reason: entity.reason,
+      status: entity.status,
+      createdAt: entity.createdAt.toISOString(),
+    });
+  }
+
+  static toReportListResponse(
+    entities: AdminReportListRow[],
+    total: number,
+    offset: number,
+    limit: number,
+  ) {
+    return ReportListResponseDTO.parse({
+      total,
+      offset,
+      limit,
+      reports: entities.map((entity) => this.toReportListItemResponse(entity)),
     });
   }
 

@@ -28,6 +28,8 @@
         $ref: '#/components/responses/Forbidden'
       404:
         $ref: '#/components/responses/NotFound'
+      409:
+        $ref: '#/components/responses/Conflict'
       500:
         $ref: '#/components/responses/ServerError'
 
@@ -56,24 +58,18 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/admin/reports/{reportId}/status:
+/api/admin/v1/reports/{reportId}/status:
   patch:
     tags:
       - Admin Reports
-    summary: Resolve or dismiss a report.
-    description: Updates the resolution status of a report to either resolved or dismissed. An optional admin note can be attached. Admin only.
+    summary: Resolve a report.
+    description: Marks a pending report as done and sets the resolved timestamp. Uses only the reportId path parameter. Admin only.
     operationId: adminUpdateReportStatus
     parameters:
       - $ref: '#/components/parameters/AdminReportIdParam'
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/UpdateReportStatusRequest'
     responses:
       200:
-        description: Report status updated.
+        description: Report resolved successfully.
         content:
           application/json:
             schema:
@@ -84,8 +80,8 @@
         $ref: '#/components/responses/Forbidden'
       404:
         $ref: '#/components/responses/NotFound'
-      422:
-        $ref: '#/components/responses/InvalidParameters'
+      409:
+        $ref: '#/components/responses/Conflict'
       500:
         $ref: '#/components/responses/ServerError'
 

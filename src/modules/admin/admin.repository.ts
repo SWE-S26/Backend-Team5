@@ -9,6 +9,7 @@ import {
   AdminArtistAnalyticsRow,
   AdminAnalyticsStorageRow,
   AdminMediaListRow,
+  AdminReportListRow,
   AdminReportRow,
   AdminUserListRow,
 } from './dtos/admin.mapper';
@@ -34,6 +35,18 @@ type ListMediaFilters = {
 
 type ListMediaResult = {
   items: AdminMediaListRow[];
+  total: number;
+};
+
+type ListReportsFilters = {
+  offset: number;
+  limit: number;
+  status?: 'pending' | 'done';
+  type?: 'user' | 'track';
+};
+
+type ListReportsResult = {
+  reports: AdminReportListRow[];
   total: number;
 };
 
@@ -444,6 +457,73 @@ export class AdminRepository {
     };
   }
 
+  async findAllReports(filters: ListReportsFilters): Promise<ListReportsResult> {
+    const skip = (filters.offset - 1) * filters.limit;
+    const match: Record<string, unknown> = {};
+
+    if (filters.status) {
+      match.status = filters.status;
+    }
+
+    if (filters.type) {
+      match.violatorType = filters.type;
+    }
+
+    const [result] = await Report.aggregate<{
+      reports: AdminReportListRow[];
+      total: number;
+    }>([
+      { $match: match },
+      { $sort: { createdAt: -1 } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'reporterId',
+          foreignField: '_id',
+          as: 'reporterDoc',
+        },
+      },
+      {
+        $addFields: {
+          reporterDisplayName: {
+            $ifNull: [{ $first: '$reporterDoc.displayName' }, 'Unknown User'],
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          reporterId: 1,
+          violatorId: 1,
+          violatorType: 1,
+          reason: 1,
+          status: 1,
+          createdAt: 1,
+          reporterDisplayName: 1,
+        },
+      },
+      {
+        $facet: {
+          reports: [{ $skip: skip }, { $limit: filters.limit }],
+          metadata: [{ $count: 'total' }],
+        },
+      },
+      {
+        $project: {
+          reports: 1,
+          total: {
+            $ifNull: [{ $first: '$metadata.total' }, 0],
+          },
+        },
+      },
+    ]);
+
+    return {
+      reports: result?.reports ?? [],
+      total: result?.total ?? 0,
+    };
+  }
+
   async findAdminUserRowById(userId: string): Promise<AdminUserListRow | null> {
     const [result] = await User.aggregate<AdminUserListRow>([
       { $match: { _id: new Types.ObjectId(userId) } },
@@ -616,6 +696,57 @@ export class AdminRepository {
       violatorType: payload.violatorType,
       reason: payload.reason,
     });
+
+    return {
+      _id: report._id,
+      reporterId: report.reporterId,
+      violatorId: report.violatorId,
+      violatorType: report.violatorType,
+      reason: report.reason,
+      status: report.status,
+      createdAt: report.createdAt,
+    };
+  }
+
+  async findReportById(reportId: string): Promise<AdminReportRow | null> {
+    const report = await Report.findById(reportId).lean();
+
+    if (!report) {
+      return null;
+    }
+
+    return {
+      _id: report._id,
+      reporterId: report.reporterId,
+      violatorId: report.violatorId,
+      violatorType: report.violatorType,
+      reason: report.reason,
+      status: report.status,
+      createdAt: report.createdAt,
+    };
+  }
+
+  async resolveReport(reportId: string): Promise<AdminReportRow | null> {
+    const report = await Report.findOneAndUpdate(
+      {
+        _id: new Types.ObjectId(reportId),
+        status: 'pending',
+      },
+      {
+        $set: {
+          status: 'done',
+          resolvedTime: new Date(),
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+      },
+    ).lean();
+
+    if (!report) {
+      return null;
+    }
 
     return {
       _id: report._id,
