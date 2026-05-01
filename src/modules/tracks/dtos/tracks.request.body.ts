@@ -173,6 +173,7 @@ export type TrackInput = {
       start: number;
       end: number;
     };
+    mobileProPreview?: boolean;
   };
   advanced: {
     buyLink: string;

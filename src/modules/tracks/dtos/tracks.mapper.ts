@@ -56,6 +56,7 @@ export class TracksMapper {
         },
         releaseTitle: track.advanced.releaseTitle ?? '',
         hidden: false,
+        mobileProPreview: track.mobileProPreview ?? false,
       },
       advanced: {
         buyLink: track.advanced.buyLink ?? '',

@@ -39,6 +39,7 @@ export class PlaybackMapper {
         start: track.audioClip?.start ?? 0,
         end: track.audioClip?.end ?? 0,
       },
+      mobileProPreview: track.mobileProPreview ?? false,
     };
   }
 
