@@ -56,7 +56,9 @@ export class MessagingService {
     userId: Types.ObjectId,
     receiverId: Types.ObjectId,
   ) {
-    if (receiverSettings?.privacy.allowMessagesAnyone == false) {
+    const isAllowedMessageFromEveyOne =
+      receiverSettings?.privacy.allowMessagesAnyone ?? false;
+    if (isAllowedMessageFromEveyOne) {
       const receiverFollowing =
         await this.repository.findUserFollowedList(receiverId);
       if (!receiverFollowing) {
@@ -98,19 +100,26 @@ export class MessagingService {
     return updatedChatsHistory;
   }
 
-  private async handleEmailSentToReceiver(
+  async handleEmailSentToReceiver(
     receiverSettings: ISettings | null,
     userId: Types.ObjectId,
     receiver: IUser,
   ) {
-    if (receiverSettings?.notifications?.newMessage.email) {
+    logger.info(
+      `[message] : Email Service Status ${emailService.isEmailServiceWorking()}`,
+    );
+    const allowedEmailNotification =
+      receiverSettings?.notifications?.newMessage.email ?? false;
+    if (allowedEmailNotification) {
       const sender = await this.repository.findUserById(userId);
       emailService.sendNewMessageNotification(
         receiver.email,
         sender?.displayName as string,
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGexnRPTfFyGgeqSWNR1f279g3khX7QBVftQ&s',
+        'https://beatza.me/message',
       );
-      logger.info('[message] : Email sent to receiver about new message');
+      logger.info(
+        `[message] : Email sent to receiver ${receiver.displayName} about new message ${userId}`,
+      );
     }
   }
 
@@ -122,12 +131,14 @@ export class MessagingService {
   ) {
     try {
       let messageNotifyHandler = getMessageNotifyhandler();
+
       const messageNotifyType =
         receiverSettings?.notifications?.newMessage.devices;
       switch (messageNotifyType) {
         case 'off':
           logger.info('[message] : user has notify setting off');
           return;
+
         case 'followed':
           const receiverFollowing =
             await this.repository.findUserFollowedList(receiverId);
@@ -137,16 +148,21 @@ export class MessagingService {
           if (!receiverFollowing.followed.some((f) => f.equals(userId))) {
             throw ForbiddenError('User Privacy and settings');
           }
-
+          messageNotifyHandler.sendMessageNotification(
+            receiverId.toString(),
+            updatedChatHistory,
+          );
           return;
+
         case 'everyone':
           messageNotifyHandler.sendMessageNotification(
             receiverId.toString(),
             updatedChatHistory,
           );
+          return;
       }
-    } catch {
-      logger.info('[message] : Message Notify not working');
+    } catch (error) {
+      logger.error('[message] : Message Notify not working');
     }
   }
 
@@ -335,7 +351,9 @@ export class MessagingService {
       return null;
     }
 
-    if (receiverSettings?.privacy.allowMessagesAnyone == false) {
+    const isAllowedMessageFromEveyOne =
+      receiverSettings?.privacy.allowMessagesAnyone ?? false;
+    if (isAllowedMessageFromEveyOne === false) {
       const receiverFollowing = await this.repository.findUserFollowedList(
         receiverId as Types.ObjectId,
       );
@@ -358,6 +376,7 @@ export class MessagingService {
         userId,
       ),
       receiverSettings,
+      receiver,
     };
   }
 
