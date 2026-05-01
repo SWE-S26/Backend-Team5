@@ -29,6 +29,7 @@ export class PlaybackMapper {
       numPlays: track.numOfPlays,
       numReposts: track.numberOfReposts,
       numComments: track.comments.length,
+      numDownloads: track.numOfDownloads,
       releaseDate: track.createdAt,
       isLikedByUser: track.likedBy.map((id) => id.toString()).includes(userId),
       isRepostedByUser: repostedList.includes(track._id.toString()),
