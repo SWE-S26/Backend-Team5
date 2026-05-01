@@ -531,7 +531,7 @@ export class TracksService {
     // check if user is in free tier and consumed all his quota
     if (
       userInfo?.role == 'Listener' &&
-      (userInfo.uploads.length as number) == 3
+      (userInfo.uploads.length as number) >= 3
     ) {
       logger.info('[track]: user of free tier has consumed all of his quota');
       throw BadRequestError('user is in free tier and consumed all his quota');
