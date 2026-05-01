@@ -3,7 +3,11 @@ import History, { IHistory } from '../../shared/models/models.history';
 import { NotFoundError } from '../../shared/errors/responseErrors';
 import User, { IUser } from '../../shared/models/models.user';
 import { PublitioUploadResult } from '../../shared/abstractions/publitio.service';
-import { CreateTrackDTO, UpdateTrackDTO } from './dtos/tracks.request.body';
+import {
+  CreateTrackDTO,
+  TrackUpdateInput,
+  UpdateTrackDTO,
+} from './dtos/tracks.request.body';
 import AdvancedAudioDetails, {
   IAdvancedAudioDetails,
 } from '../../shared/models/models.advanced-audio-details';
@@ -141,20 +145,31 @@ export class TracksRepository {
     };
   }
 
-  async updateTrackInfo(
-    trackInfo: UpdateTrackDTO,
-    imgInfo: ImageInfo | null,
-  ): Promise<ITrack> {
-    const { id, advanced, ...mainInfo } = trackInfo;
+  async updateTrackInfo(trackDetails: TrackUpdateInput): Promise<ITrack> {
+    const { id, trackInfo, advanced } = trackDetails;
 
-    const updatePayload = {
-      ...mainInfo,
-      ...(imgInfo && { image: imgInfo }),
-    };
+    const flattenObject = (obj: object, prefix = '') =>
+      Object.entries(obj).reduce(
+        (acc, [key, value]) => {
+          const fullKey = prefix ? `${prefix}.${key}` : key;
+          if (
+            value !== null &&
+            typeof value === 'object' &&
+            !Array.isArray(value)
+          ) {
+            Object.assign(acc, flattenObject(value, fullKey));
+          } else {
+            acc[fullKey] = value;
+          }
+          return acc;
+        },
+        {} as Record<string, unknown>,
+      );
+
     const [updatedTrack] = await Promise.all([
       Track.findByIdAndUpdate(
         id,
-        { $set: updatePayload },
+        { $set: flattenObject(trackInfo) },
         { returnDocument: 'after' },
       ),
       AdvancedAudioDetails.findOneAndUpdate(
@@ -162,10 +177,30 @@ export class TracksRepository {
         { $set: advanced },
         { returnDocument: 'after' },
       ),
-    ]).catch((error) => {
+    ]).catch(() => {
       throw new Error('Unexpected Error Happened During Track Update');
     });
+
     return updatedTrack as ITrack;
+  }
+
+  async updateMobileProPreview(
+    trackId: string,
+    mobileProPreview: boolean,
+  ): Promise<boolean> {
+    const track = await Track.findById(trackId);
+
+    if (!track) {
+      throw new Error('Track not found');
+    }
+
+    if (track.mobileProPreview === mobileProPreview) {
+      return false;
+    }
+
+    await Track.updateOne({ _id: trackId }, { $set: { mobileProPreview } });
+
+    return true;
   }
 
   async getPostedTracks(userId: string): Promise<ITrack[]> {

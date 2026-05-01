@@ -19,6 +19,7 @@ import {
   UpdateTrackRequestDTOV2,
   TrackStatsRequestDTO,
   DownloadTrackIncrementRequestDTO,
+  UpdateTrackMobileProPreviewRequestDTO,
 } from './dtos/tracks.request';
 import logger from '../../shared/logger/logger';
 
@@ -64,7 +65,13 @@ export class TracksController {
   }
 
   private parseFormDataToJson(req: Request) {
-    const fields = ['basicInfo', 'permissions', 'license', 'advanced'];
+    const fields = [
+      'basicInfo',
+      'permissions',
+      'license',
+      'advanced',
+      'geoBlocking',
+    ];
     for (const field of fields) {
       if (req.body[field]) {
         req.body[field] = JSON.parse(req.body[field]);
@@ -498,6 +505,35 @@ export class TracksController {
     res.status(200);
     res.json({
       message: 'Track Info Updated Successfully',
+    });
+  }
+
+  async updateTrackMobileProPreview(
+    req: Request,
+    res: Response,
+  ): Promise<void> {
+    const validatedRequest = parseRequest(
+      UpdateTrackMobileProPreviewRequestDTO,
+      req,
+    );
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const userInfo = this.getUserInfo(req);
+    const trackId = validatedRequest.data.params.id;
+    const mobileProPreview = validatedRequest.data.body.mobileProPreview;
+    const result = await this.service.updateTrackMobileProPreview(
+      trackId,
+      mobileProPreview,
+      userInfo.userId,
+      userInfo.userRole,
+    );
+    res.json({
+      message: 'Track Mobile Pro Preview Updated Successfully',
+      data: {
+        isChanged: result,
+      },
     });
   }
 

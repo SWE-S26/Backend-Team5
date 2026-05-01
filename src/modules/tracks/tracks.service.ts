@@ -380,10 +380,10 @@ export class TracksService {
 
     this.validateTrackOwnerShip(userId, posterId, userRole);
 
-    const updatedTrack = await this.tracksRepository.updateTrackInfo(
-      trackInfo,
-      imgInfo,
-    );
+    const trackInput = TracksMapper.toTrackUpdateInput(trackInfo, imgInfo);
+
+    const updatedTrack =
+      await this.tracksRepository.updateTrackInfo(trackInput);
     return TracksMapper.toTrackResponsePrivate(updatedTrack, userId);
   }
 
@@ -531,7 +531,7 @@ export class TracksService {
     // check if user is in free tier and consumed all his quota
     if (
       userInfo?.role == 'Listener' &&
-      (userInfo.uploads.length as number) == 3
+      (userInfo.uploads.length as number) >= 3
     ) {
       logger.info('[track]: user of free tier has consumed all of his quota');
       throw BadRequestError('user is in free tier and consumed all his quota');
@@ -571,6 +571,30 @@ export class TracksService {
     return true;
   }
 
+  async updateTrackMobileProPreview(
+    trackId: string,
+    mobileProPreview: boolean,
+    userId: string,
+    userRole: string,
+  ) {
+    const searchTrack = await this.tracksRepository.findById(trackId);
+    if (!searchTrack) {
+      throw NotFoundError('Track Not Found');
+    }
+
+    const posterId = searchTrack.posterId.toString();
+
+    this.validateTrackOwnerShip(userId, posterId, userRole);
+
+    const updatedMobileProPreview =
+      await this.tracksRepository.updateMobileProPreview(
+        trackId,
+        mobileProPreview,
+      );
+
+    return updatedMobileProPreview;
+  }
+
   async updateTrackInfoV2(
     trackInfo: UpdateTrackDTOV2,
     userId: string,
@@ -597,7 +621,21 @@ export class TracksService {
       throw ForbiddenError('GeoBlocking Allowed For Pro');
     }
 
-    await this.tracksRepository.updateTrackInfo(trackInfo, imgInfo);
+    const trackInput = TracksMapper.toTrackUpdateInput(trackInfo, imgInfo);
+
+    const isEndBigger = Boolean(
+      trackInput.trackInfo.audioClip?.end &&
+      trackInput.trackInfo.audioClip.end >= searchTrack.durationInSeconds,
+    );
+
+    if (isEndBigger) {
+      throw BadRequestError(
+        'Audio clip end cant be bigger than duration Itsself',
+      );
+    }
+
+    if (trackInput.trackInfo.audioClip?.end)
+      await this.tracksRepository.updateTrackInfo(trackInput);
     return true;
   }
 
@@ -851,7 +889,8 @@ export class TracksService {
 
     const searchAdvancedInfo =
       await this.tracksRepository.getTrackAdvancedInfo(trackId);
-    return TracksMapper.toTrackDetailedResponse(
+
+    return TracksMapper.toTrackDetailedResponseV2(
       searchTrack,
       searchAdvancedInfo as IAdvancedAudioDetails,
     );

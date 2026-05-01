@@ -76,6 +76,7 @@ export type ITrack = {
     end: number;
   };
   updatedAt: Date;
+  mobileProPreview: boolean;
 };
 
 export enum GeoblockingMode {
@@ -297,6 +298,10 @@ const trackSchema = new Schema(
     },
     audioClip: {
       type: audioClipSchema,
+    },
+    mobileProPreview: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true },

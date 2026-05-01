@@ -99,6 +99,7 @@ export const CreateTrackRequestBodyDTO = extendedZod.object({
     albumTitle: extendedZod.string().optional(),
     releaseTitle: extendedZod.string().optional(),
   }),
+  mobileProPreview: extendedZod.coerce.boolean().optional(),
 });
 
 export const CreateTrackRequestBodyDTOV2 = CreateTrackRequestBodyDTO.extend({
@@ -141,6 +142,11 @@ export const UpdateTrackRequestBodyDTOV2 = extendedZod.object({
   license: CreateTrackRequestBodyDTOV2.shape.license.partial(),
   advanced: CreateTrackRequestBodyDTOV2.shape.advanced.partial(),
   geoBlocking: CreateTrackRequestBodyDTOV2.shape.geoBlocking.optional(),
+  mobileProPreview: extendedZod.boolean().optional(),
+});
+
+export const UpdateTrackMobileProPreviewRequestBodyDTO = extendedZod.object({
+  mobileProPreview: extendedZod.boolean(),
 });
 
 export type TrackInput = {
@@ -167,6 +173,7 @@ export type TrackInput = {
       start: number;
       end: number;
     };
+    mobileProPreview?: boolean;
   };
   advanced: {
     buyLink: string;
@@ -206,3 +213,58 @@ export const DownloadTrackIncrementRequestBodyDTO = extendedZod.object({
   trackId: extendedZod.string(),
   sessionIdDownload: extendedZod.uuid(),
 });
+
+type GeoBlocking = {
+  mode?: (typeof GeoblockingModeValues)[number];
+  regions?: (typeof ValidRegions)[number][];
+  countries?: (typeof ValidCountries)[number][];
+};
+
+export type TrackUpdateInput = {
+  id: string;
+  trackInfo: {
+    basicInfo: {
+      title?: string;
+      permalink?: string;
+      mainArtists?: string[];
+      genre?: string;
+      tags?: string[];
+      description?: string;
+      isPrivate?: boolean;
+      caption?: string;
+    };
+    image?: ImageInfo;
+    permissions?: {
+      enableDirectDownload?: boolean;
+      offlineListening?: boolean;
+      includeInRssFeed?: boolean;
+      displayedEmbedCode?: boolean;
+      enableAppPlayback?: boolean;
+    };
+    license?: {
+      type?: 'allRightsReserved' | 'creativeCommons';
+      attribution?: boolean;
+      nonCommercial?: boolean;
+      noDerivativeWorks?: boolean;
+      shareAlike?: boolean;
+    };
+    composer?: string;
+    audioClip?: {
+      start?: number;
+      end?: number;
+    };
+    releaseTitle?: string;
+    geoBlocking?: GeoBlocking;
+  };
+  advanced?: {
+    buyLink?: string;
+    recordLabel?: string;
+    releaseDate?: string;
+    publisher?: string;
+    isrc?: string;
+    iswc?: string;
+    explicitContent?: boolean;
+    pLine?: string;
+    albumTitle?: string;
+  };
+};

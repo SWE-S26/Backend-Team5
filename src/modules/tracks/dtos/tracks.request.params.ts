@@ -22,3 +22,7 @@ export const ProfilePermalinkParamDTO = PermaLinkParamDTO.extend({
       'Use only lowercase letters, numbers, underscores, or hyphens.',
     ),
 });
+
+export const UpdateMobileProPreviewParamDTO = extendedZod.object({
+  id: extendedZod.string(),
+});

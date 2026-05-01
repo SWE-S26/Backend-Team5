@@ -55,6 +55,7 @@ export const TrackResponsePublic = extendedZod.object({
     start: extendedZod.number().default(0),
     end: extendedZod.number().default(0),
   }),
+  mobileProPreview: extendedZod.boolean().optional(),
 });
 
 export const TrackResponsePrivate = TrackResponsePublic.extend({
@@ -74,6 +75,7 @@ export const TrackResponsePrivateV2 = TrackResponsePrivate.extend({
   }),
   isRepostedByUser: extendedZod.boolean(),
   isAvailableForUser: extendedZod.boolean(),
+  mobileProPreview: extendedZod.boolean().optional(),
 });
 
 export type TrackResponsePublicWithGeoBlockingDTO = z.infer<
