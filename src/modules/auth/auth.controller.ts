@@ -93,7 +93,14 @@ export class AuthController {
   ): void {
     this.setCookies(res, accessToken, refreshToken);
 
+    const { role } = this.service.decryptAccessToken(accessToken);
+
     let redirectUrl = new URL(`${this.hostUrl}/home`);
+
+    if (role === 'Admin') {
+      redirectUrl = new URL(`${this.hostUrl}/admin-dash/profiles-manage`);
+    }
+
     const activeClient =
       client ?? (typeof req.query.client === 'string' ? req.query.client : '');
 

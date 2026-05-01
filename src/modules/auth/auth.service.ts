@@ -10,7 +10,7 @@ import {
 } from '../../shared/errors/responseErrors';
 import { LoginResponse, LoginSession, AuthTokens } from './dtos/auth.response';
 import { AuthRepository } from './auth.repository';
-import JWTService from '../../shared/abstractions/jwt.service';
+import JWTService, { JWTPayload } from '../../shared/abstractions/jwt.service';
 import emailService from '../../shared/abstractions/email/email.service';
 import { AuthMapper } from './dtos/auth.mapper';
 import { PaymentInfo } from '../../shared/models/models.user';
@@ -298,6 +298,13 @@ export class AuthService {
       accessToken: this.jwtService.createJWT(userId, role, subscription),
       refreshToken: this.jwtService.createRefreshToken(userId),
     };
+  }
+
+  decryptAccessToken(token: string): JWTPayload {
+    const payload = JWTService.verifyJWTForMiddleware(token);
+    if (!payload) throw UnauthorizedError('Invalid token');
+
+    return payload;
   }
 
   issueIncompleteToken(payload: {
