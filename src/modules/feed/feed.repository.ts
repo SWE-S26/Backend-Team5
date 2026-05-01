@@ -70,7 +70,7 @@ export class FeedRepository {
     const playlists = await Playlist.find(
       {
         artistId: { $in: followedIds },
-        type: 'public',
+        isPrivate: false,
       },
       {
         createdAt: 1,
@@ -493,7 +493,7 @@ export class FeedRepository {
 
     const query: any = {
       title: regex,
-      type: 'public',
+      isPrivate: false,
     };
 
     if (tag) {
@@ -525,7 +525,7 @@ export class FeedRepository {
     const query: any = {
       title: regex,
       playlistType: 'album',
-      type: 'public',
+      isPrivate: false,
     };
 
     if (tag) {
