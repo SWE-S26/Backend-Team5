@@ -52,30 +52,18 @@
       500:
         $ref: '#/components/responses/ServerError'
 
-/api/admin/reports:
+/api/admin/v1/reports:
   get:
     tags:
       - Admin Reports
     summary: List all reports.
-    description: Returns a paginated list of all submitted reports. Supports filtering by status, complaint type, and violator type. Admin only.
+    description: Returns a paginated list of all submitted reports. Supports filtering by status and violator type. Admin only.
     operationId: adminListReports
     parameters:
       - $ref: '#/components/parameters/AdminOffsetParam'
       - $ref: '#/components/parameters/AdminLimitParam'
-      - name: status
-        in: query
-        required: false
-        schema:
-          type: string
-          enum:
-            - pending
-            - resolved
-            - dismissed
-      - name: complaintType
-        in: query
-        required: false
-        schema:
-          type: string
+      - $ref: '#/components/parameters/AdminReportStatusParam'
+      - $ref: '#/components/parameters/AdminReportTypeParam'
     responses:
       200:
         description: Paginated list of reports.
@@ -87,31 +75,6 @@
         $ref: '#/components/responses/Unauthorized'
       403:
         $ref: '#/components/responses/Forbidden'
-      500:
-        $ref: '#/components/responses/ServerError'
-
-/api/admin/reports/{reportId}:
-  get:
-    tags:
-      - Admin Reports
-    summary: Get a single report.
-    description: Returns the full detail of a specific report. Admin only.
-    operationId: adminGetReport
-    parameters:
-      - $ref: '#/components/parameters/AdminReportIdParam'
-    responses:
-      200:
-        description: Report details.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Report'
-      401:
-        $ref: '#/components/responses/Unauthorized'
-      403:
-        $ref: '#/components/responses/Forbidden'
-      404:
-        $ref: '#/components/responses/NotFound'
       500:
         $ref: '#/components/responses/ServerError'
 

@@ -88,3 +88,27 @@ AdminMediaSearchQueryParam:
   schema:
     type: string
     example: vibes
+
+AdminReportStatusParam:
+  name: status
+  in: query
+  required: false
+  description: Filter reports by status.
+  schema:
+    type: string
+    enum:
+      - pending
+      - done
+    example: pending
+
+AdminReportTypeParam:
+  name: type
+  in: query
+  required: false
+  description: Filter reports by violator type.
+  schema:
+    type: string
+    enum:
+      - user
+      - track
+    example: track

@@ -10,9 +10,11 @@ import {
   GetAdminAnalyticsStorageRequestDTO,
   GetArtistAnalyticsRequestDTO,
   GetAdminMediaRequestDTO,
+  GetAdminReportsRequestDTO,
   GetAdminUsersRequestDTO,
   SuspendUserRequestDTO,
   UnbanTrackRequestDTO,
+  UpdateAdminReportStatusRequestDTO,
   UnsuspendUserRequestDTO,
 } from './dtos/admin.request';
 
@@ -42,6 +44,21 @@ export class AdminController {
     }
 
     const result = await this.service.listMedia({
+      requesterRole: req.userInfo?.role,
+      ...parsed.data.query,
+    });
+
+    res.json(result);
+  }
+
+  async listReports(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(GetAdminReportsRequestDTO, req);
+
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const result = await this.service.listReports({
       requesterRole: req.userInfo?.role,
       ...parsed.data.query,
     });
@@ -160,6 +177,23 @@ export class AdminController {
     });
 
     res.status(201).json(result);
+  }
+
+  async updateReportStatus(req: Request, res: Response): Promise<void> {
+    const parsed = parseRequest(UpdateAdminReportStatusRequestDTO, req);
+
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    const { reportId } = parsed.data.params;
+
+    const result = await this.service.updateReportStatus(
+      reportId,
+      req.userInfo?.role,
+    );
+
+    res.status(200).json(result);
   }
 
   async analyticsOverview(req: Request, res: Response): Promise<void> {

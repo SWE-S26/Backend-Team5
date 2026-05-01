@@ -17,6 +17,10 @@ router.get(apiVersions.v1 + '/media', (req, res) =>
   adminController.listMedia(req, res),
 );
 
+router.get(apiVersions.v1 + '/reports', (req, res) =>
+  adminController.listReports(req, res),
+);
+
 router.get(apiVersions.v1 + '/analytics/overview', (req, res) =>
   adminController.analyticsOverview(req, res),
 );
@@ -31,6 +35,10 @@ router.get(apiVersions.v1 + '/artist-analytics/me', (req, res) =>
 
 router.post(apiVersions.v1 + '/reports', (req, res) =>
   adminController.createReport(req, res),
+);
+
+router.patch(apiVersions.v1 + '/reports/:reportId/status', (req, res) =>
+  adminController.updateReportStatus(req, res),
 );
 
 router.patch(apiVersions.v1 + '/users/:userId/suspend', (req, res) =>

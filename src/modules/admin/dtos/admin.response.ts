@@ -121,6 +121,48 @@ export const ReportResponseDTO = extendedZod
     },
   });
 
+export const ReportListItemResponseDTO = ReportResponseDTO.extend({
+  reporterDisplayName: extendedZod.string(),
+}).openapi('ReportListItem', {
+  example: {
+    reportId: '507f1f77bcf86cd799439013',
+    reportedId: '507f1f77bcf86cd799439011',
+    reporterDisplayName: 'John Doe',
+    violatorId: '507f1f77bcf86cd799439012',
+    violatorType: 'track',
+    reason: 'This track contains abusive content.',
+    status: 'pending',
+    createdAt: '2025-01-12T08:00:00Z',
+  },
+});
+
+export const ReportListResponseDTO = extendedZod
+  .object({
+    total: extendedZod.number().int().min(0),
+    offset: extendedZod.number().int().min(1),
+    limit: extendedZod.number().int().min(1),
+    reports: extendedZod.array(ReportListItemResponseDTO),
+  })
+  .openapi('ReportListResponse', {
+    example: {
+      total: 2,
+      offset: 1,
+      limit: 20,
+      reports: [
+        {
+          reportId: '507f1f77bcf86cd799439013',
+          reportedId: '507f1f77bcf86cd799439011',
+          reporterDisplayName: 'John Doe',
+          violatorId: '507f1f77bcf86cd799439012',
+          violatorType: 'track',
+          reason: 'This track contains abusive content.',
+          status: 'pending',
+          createdAt: '2025-01-12T08:00:00Z',
+        },
+      ],
+    },
+  });
+
 export const AdminAnalyticsOverviewResponseDTO = extendedZod
   .object({
     totalUsers: extendedZod.number().int().min(0),

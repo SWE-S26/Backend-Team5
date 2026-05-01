@@ -42,4 +42,11 @@ export const ListAdminMediaQueryDto = extendedZod.object({
     .optional(),
 });
 
+export const ListAdminReportsQueryDto = extendedZod.object({
+  offset: extendedZod.coerce.number().int().min(1).default(1),
+  limit: extendedZod.coerce.number().int().min(1).max(100).default(20),
+  status: extendedZod.enum(['pending', 'done']).optional(),
+  type: extendedZod.enum(['user', 'track']).optional(),
+});
+
 export const ListAdminsQueryDto = ListAdminUsersQueryDto;

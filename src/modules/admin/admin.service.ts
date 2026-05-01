@@ -3,6 +3,7 @@ import {
   BadRequestError,
   ForbiddenError,
   NotFoundError,
+  ResourceAlreadyExists,
   UnauthorizedError,
 } from '../../shared/errors/responseErrors';
 import { AdminMapper } from './dtos/admin.mapper';
@@ -23,6 +24,14 @@ type ListMediaOptions = {
   offset: number;
   limit: number;
   query?: string;
+};
+
+type ListReportsOptions = {
+  requesterRole?: string;
+  offset: number;
+  limit: number;
+  status?: 'pending' | 'done';
+  type?: 'user' | 'track';
 };
 
 type CreateReportOptions = {
@@ -76,6 +85,24 @@ export class AdminService {
     });
 
     return AdminMapper.toMediaListResponse(items, total, offset, limit);
+  }
+
+  async listReports(options: ListReportsOptions) {
+    if (options.requesterRole !== 'Admin') {
+      throw ForbiddenError('Only admins can access this resource');
+    }
+
+    const offset = Math.max(1, options.offset || 1);
+    const limit = Math.max(1, options.limit || 20);
+
+    const { reports, total } = await this.repository.findAllReports({
+      offset,
+      limit,
+      status: options.status,
+      type: options.type,
+    });
+
+    return AdminMapper.toReportListResponse(reports, total, offset, limit);
   }
 
   async suspend(userId: string, reason: string, requesterRole?: string) {
@@ -259,6 +286,30 @@ export class AdminService {
     });
 
     return AdminMapper.toReportResponse(report);
+  }
+
+  async updateReportStatus(reportId: string, requesterRole?: string) {
+    if (requesterRole !== 'Admin') {
+      throw ForbiddenError('Only admins can access this resource');
+    }
+
+    const report = await this.repository.findReportById(reportId);
+
+    if (!report) {
+      throw NotFoundError('report not found');
+    }
+
+    if (report.status === 'done') {
+      throw ResourceAlreadyExists('Report is already resolved');
+    }
+
+    const updated = await this.repository.resolveReport(reportId);
+
+    if (!updated) {
+      throw BadRequestError('Only pending reports can be resolved');
+    }
+
+    return AdminMapper.toReportResponse(updated);
   }
 
   async getAnalyticsOverview(requesterRole?: string) {

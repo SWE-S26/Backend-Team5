@@ -6,11 +6,13 @@ import {
 } from './admin.request.body';
 import {
   AdminIdParamDTO,
+  ReportIdParamDTO,
   TrackIdParamDTO,
   UserIdParamDTO,
 } from './admin.request.params';
 import {
   ListAdminMediaQueryDto,
+  ListAdminReportsQueryDto,
   ListAdminUsersQueryDto,
   ListAdminsQueryDto,
 } from './admin.request.query';
@@ -23,8 +25,16 @@ export const GetAdminMediaRequestDTO = extendedZod.object({
   query: ListAdminMediaQueryDto,
 });
 
+export const GetAdminReportsRequestDTO = extendedZod.object({
+  query: ListAdminReportsQueryDto,
+});
+
 export const CreateAdminReportRequestDTO = extendedZod.object({
   body: CreateReportRequestBodyDTO,
+});
+
+export const UpdateAdminReportStatusRequestDTO = extendedZod.object({
+  params: ReportIdParamDTO,
 });
 
 export const SuspendUserRequestDTO = extendedZod.object({

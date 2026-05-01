@@ -9,3 +9,7 @@ export const UserIdParamDTO = extendedZod.object({
 export const TrackIdParamDTO = extendedZod.object({
   trackId: extendedZod.mongoId(),
 });
+
+export const ReportIdParamDTO = extendedZod.object({
+  reportId: extendedZod.mongoId(),
+});
