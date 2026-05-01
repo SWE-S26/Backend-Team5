@@ -4,9 +4,9 @@ import Track from '../../src/shared/models/models.track';
 import publitioMediaStorage from '../../src/shared/abstractions/publitio.service';
 import blobStorageService from '../../src/shared/abstractions/blob.service';
 
-export const deleteTracksOnPublitioZero = async (): Promise<void> => {
+export const deleteTrackOfNullWaveform = async (): Promise<void> => {
   const tracks = await Track.find({
-    $and: [{ 'audio.waveformLink': null }],
+    'basicInfo.title': 'Should Generate Waveform blob storage',
   });
 
   for (const track of tracks) {
@@ -17,5 +17,5 @@ export const deleteTracksOnPublitioZero = async (): Promise<void> => {
     await Track.deleteOne({ _id: track._id });
   }
 
-  logger.info(`Deleted ${tracks.length} Tracks On Cloud Storage 0`);
+  logger.info(`Deleted ${tracks.length} Tracks with Null waveform`);
 };
