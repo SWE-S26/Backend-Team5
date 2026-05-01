@@ -3,7 +3,11 @@ import History, { IHistory } from '../../shared/models/models.history';
 import { NotFoundError } from '../../shared/errors/responseErrors';
 import User, { IUser } from '../../shared/models/models.user';
 import { PublitioUploadResult } from '../../shared/abstractions/publitio.service';
-import { CreateTrackDTO, UpdateTrackDTO } from './dtos/tracks.request.body';
+import {
+  CreateTrackDTO,
+  TrackUpdateInput,
+  UpdateTrackDTO,
+} from './dtos/tracks.request.body';
 import AdvancedAudioDetails, {
   IAdvancedAudioDetails,
 } from '../../shared/models/models.advanced-audio-details';
@@ -141,20 +145,13 @@ export class TracksRepository {
     };
   }
 
-  async updateTrackInfo(
-    trackInfo: UpdateTrackDTO,
-    imgInfo: ImageInfo | null,
-  ): Promise<ITrack> {
-    const { id, advanced, ...mainInfo } = trackInfo;
+  async updateTrackInfo(trackDetails: TrackUpdateInput): Promise<ITrack> {
+    const { id, trackInfo, advanced } = trackDetails;
 
-    const updatePayload = {
-      ...mainInfo,
-      ...(imgInfo && { image: imgInfo }),
-    };
     const [updatedTrack] = await Promise.all([
       Track.findByIdAndUpdate(
         id,
-        { $set: updatePayload },
+        { $set: trackInfo },
         { returnDocument: 'after' },
       ),
       AdvancedAudioDetails.findOneAndUpdate(
