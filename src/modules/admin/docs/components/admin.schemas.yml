@@ -366,9 +366,15 @@ ArtistAnalyticsResponse:
       type: integer
       minimum: 0
       example: 310
+    totalplayrate:
+      type: integer
+      minimum: 0
+      maximum: 100
+      example: 67
   required:
     - totalPlays
     - totalReposts
     - totalDownloads
     - totalLikes
     - totalComments
+    - totalplayrate

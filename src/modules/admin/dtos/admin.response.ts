@@ -154,6 +154,7 @@ export const ArtistAnalyticsResponseDTO = extendedZod
     totalDownloads: extendedZod.number().int().min(0),
     totalLikes: extendedZod.number().int().min(0),
     totalComments: extendedZod.number().int().min(0),
+    totalplayrate: extendedZod.number().int().min(0).max(100),
   })
   .openapi('ArtistAnalyticsResponse', {
     example: {
@@ -162,5 +163,6 @@ export const ArtistAnalyticsResponseDTO = extendedZod
       totalDownloads: 12,
       totalLikes: 640,
       totalComments: 310,
+      totalplayrate: 67,
     },
   });
