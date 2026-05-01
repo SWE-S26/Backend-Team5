@@ -1,11 +1,13 @@
 import { SocketService } from '../socket.service';
 import { SocketEvents } from '../socket.events';
-import { IConversationPopulated } from '../../modules/messaging/dtos/messaging.response';
+import { FcmService } from '../../shared/abstractions/fcm/fcm.service';
 
 export class MessageNotifyHandler {
   private readonly socketService: SocketService;
-  constructor(socketService: SocketService) {
+  private readonly fcmService: FcmService;
+  constructor(socketService: SocketService, fcmService: FcmService) {
     this.socketService = socketService;
+    this.fcmService = fcmService;
   }
 
   async sendMessageNotification(
@@ -17,6 +19,11 @@ export class MessageNotifyHandler {
       SocketEvents.MSG_NOTIFY,
       sentMessage,
     );
+
+    await this.fcmService.sendMessageNotificationToUser(
+      receiverId,
+      sentMessage,
+    );
   }
 }
 
@@ -24,8 +31,9 @@ let messageNotifyHandler: MessageNotifyHandler | null = null;
 
 export function initializeMessageNotifyHandler(
   socketService: SocketService,
+  fcmService: FcmService,
 ): MessageNotifyHandler {
-  messageNotifyHandler = new MessageNotifyHandler(socketService);
+  messageNotifyHandler = new MessageNotifyHandler(socketService, fcmService);
   return messageNotifyHandler;
 }
 

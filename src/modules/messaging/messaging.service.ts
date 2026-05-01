@@ -148,14 +148,14 @@ export class MessagingService {
           if (!receiverFollowing.followed.some((f) => f.equals(userId))) {
             throw ForbiddenError('User Privacy and settings');
           }
-          messageNotifyHandler.sendMessageNotification(
+          await messageNotifyHandler.sendMessageNotification(
             receiverId.toString(),
             updatedChatHistory,
           );
           return;
 
         case 'everyone':
-          messageNotifyHandler.sendMessageNotification(
+          await messageNotifyHandler.sendMessageNotification(
             receiverId.toString(),
             updatedChatHistory,
           );

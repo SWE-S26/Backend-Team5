@@ -204,7 +204,7 @@ export function RegisterMessageSocketHandlers(
         );
 
         if (!isActive) {
-          messageService.handlePushNotification(
+          await messageService.handlePushNotification(
             receiverSettings,
             userId,
             receiverId,

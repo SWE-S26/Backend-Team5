@@ -8,6 +8,7 @@ import { initializeNotificationSocketHandler } from './handlers/notification.han
 import { RegisterMessageSocketHandlers } from './handlers/message.handler';
 import { MessagingService } from '../modules/messaging/messaging.service';
 import { initializeMessageNotifyHandler } from './handlers/message.notify';
+import fcmService from '../shared/abstractions/fcm/fcm.service';
 
 declare module 'socket.io' {
   interface SocketData {
@@ -72,7 +73,7 @@ function attachAuthMiddleware(io: Server): void {
 export function initSocket(io: Server): SocketService {
   const socketService = new SocketService(io);
   initializeNotificationSocketHandler(socketService);
-  initializeMessageNotifyHandler(socketService);
+  initializeMessageNotifyHandler(socketService, fcmService);
 
   attachAuthMiddleware(io);
 
