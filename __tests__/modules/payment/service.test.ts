@@ -272,16 +272,6 @@ describe('PaymentService : createPayingUser', () => {
     ).rejects.toThrow('Admin users cannot have subscriptions');
   });
 
-  it('should throw BadRequestError when user already has a stripeCustomerId', async () => {
-    (PaymentRepository.prototype.findUserById as jest.Mock).mockResolvedValue(
-      fakeUser,
-    );
-
-    await expect(
-      paymentService.createPayingUser('user_123', 'pm_123'),
-    ).rejects.toThrow('User already has a Stripe customer ID');
-  });
-
   it('should throw BadRequestError when Stripe customer creation fails', async () => {
     (PaymentRepository.prototype.findUserById as jest.Mock).mockResolvedValue(
       fakeUserNoStripe,
@@ -292,7 +282,7 @@ describe('PaymentService : createPayingUser', () => {
 
     await expect(
       paymentService.createPayingUser('user_123', 'pm_123'),
-    ).rejects.toThrow('Failed to create Stripe customer: Card declined');
+    ).rejects.toThrow('Failed to process payment method');
   });
 
   it('should throw when findUserById throws', async () => {

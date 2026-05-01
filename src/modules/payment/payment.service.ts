@@ -34,21 +34,6 @@ const PROMO_CODES: Record<string, number> = {
   E1OZO: 70,
 };
 
-// @descprition Bos da ma3mol 3ashan el front
-// mesh me3tmed eny ba5zen el card bta3t el user
-// considering enena stripe testing fa momken amshy 7ali
-// bas 3aref en da 8alat 5ales ya3ny
-const DECLINED_CARDS_TO_REASONS: Record<string, string> = {
-  '4000000000000002': 'Card declined',
-  '4000000000009995': 'Insufficient funds',
-  '4000000000009987': 'Lost card',
-  '4000000000009979': 'Stolen card',
-  '4000000000000069': 'Expired card',
-  '4000000000000127': 'Incorrect CVV',
-  '4000000000000119': 'Processing error',
-  '4000000000006975': 'Card velocity exceeded',
-};
-
 const PRICE_TO_PLAN: Record<string, PricePlans> = {
   price_1TGQ4EKiCVlMQgBUJwZCK3um: {
     role: 'Pro',
@@ -137,37 +122,34 @@ export class PaymentService {
     const user = await this.repository.findUserById(userId);
     this.validateUser(user);
 
-    if (user.stripeCustomerId) {
-      if (paymentMethodId in DECLINED_CARDS_TO_REASONS) {
-        throw BadRequestError(
-          `Payment method declined: ${DECLINED_CARDS_TO_REASONS[paymentMethodId]}`,
-        );
-      }
-      throw BadRequestError('User already has a Stripe customer ID');
-    }
-
-    let customer: Stripe.Customer;
     try {
-      customer = await this.stripe.customers.create({
+      if (user.stripeCustomerId) {
+        await this.stripe.paymentMethods.attach(paymentMethodId, {
+          customer: user.stripeCustomerId,
+        });
+        return PaymentMapper.toCreatePayingUserResponse(user.stripeCustomerId);
+      }
+
+      const customer = await this.stripe.customers.create({
         email: user.email,
         name: `${user.firstName} ${user.lastName}`,
         payment_method: paymentMethodId,
         invoice_settings: { default_payment_method: paymentMethodId },
       });
+
+      await this.repository.updateUser(userId, {
+        stripeCustomerId: customer.id,
+      });
+
+      return PaymentMapper.toCreatePayingUserResponse(customer.id);
     } catch (error) {
-      if (error instanceof Error) {
-        logger.error(`Stripe customer creation failed ${error.message}`);
-        throw BadRequestError(
-          'Failed to create Stripe customer: ' + error.message,
-        );
+      if (error instanceof Stripe.errors.StripeError) {
+        logger.error(`Stripe error: ${error.message}`);
+        throw BadRequestError('Your card has been declined: ' + error.message);
       }
 
-      throw BadRequestError('Failed to create Stripe customer');
+      throw BadRequestError('Failed to process payment method');
     }
-
-    await this.repository.updateUser(userId, { stripeCustomerId: customer.id });
-
-    return PaymentMapper.toCreatePayingUserResponse(customer.id);
   }
 
   async createSubscription(
