@@ -101,6 +101,11 @@ tracksPrivateRouter.delete(apiVersions.v1 + '/:id', (req, res) =>
 
 // ================= PATCH ===================
 
+tracksPrivateRouter.patch(
+  apiVersions.v1 + '/mobile-pro-preview/:id',
+  (req, res) => tracksController.updateTrackMobileProPreview(req, res),
+);
+
 tracksPrivateRouter.patch(apiVersions.v1 + '/listen/:id', (req, res) =>
   tracksController.incrementTrackNumPlays(req, res),
 );

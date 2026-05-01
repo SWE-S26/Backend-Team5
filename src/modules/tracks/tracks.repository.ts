@@ -168,6 +168,25 @@ export class TracksRepository {
     return updatedTrack as ITrack;
   }
 
+  async updateMobileProPreview(
+    trackId: string,
+    mobileProPreview: boolean,
+  ): Promise<boolean> {
+    const track = await Track.findById(trackId);
+
+    if (!track) {
+      throw new Error('Track not found');
+    }
+
+    if (track.mobileProPreview === mobileProPreview) {
+      return false;
+    }
+
+    await Track.updateOne({ _id: trackId }, { $set: { mobileProPreview } });
+
+    return true;
+  }
+
   async getPostedTracks(userId: string): Promise<ITrack[]> {
     const searchUser = await User.findById<IUser>(userId);
     if (!searchUser) {

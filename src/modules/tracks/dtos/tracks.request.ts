@@ -4,6 +4,7 @@ import {
   PermaLinkParamDTO,
   UserIdParamDTO,
   ProfilePermalinkParamDTO,
+  UpdateMobileProPreviewParamDTO,
 } from './tracks.request.params';
 import { ListTrackssQueryDto } from './tracks.request.query';
 import {
@@ -13,6 +14,7 @@ import {
   UpdateTrackRequestBodyDTOV2,
   IncrementTrackNumPlaysRequestBodyDTO,
   DownloadTrackIncrementRequestBodyDTO,
+  UpdateTrackMobileProPreviewRequestBodyDTO,
 } from './tracks.request.body';
 
 export const DeleteTrackRequestDTO = extendedZod.object({
@@ -81,4 +83,9 @@ export const GetTrackByProfilePermalinkRequestDTO = extendedZod.object({
 
 export const PaginationRequestDTO = extendedZod.object({
   query: ListTrackssQueryDto,
+});
+
+export const UpdateTrackMobileProPreviewRequestDTO = extendedZod.object({
+  params: UpdateMobileProPreviewParamDTO,
+  body: UpdateTrackMobileProPreviewRequestBodyDTO,
 });
