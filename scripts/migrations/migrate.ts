@@ -16,20 +16,22 @@ import { cleanUpPlaylistsWithNoTracks } from './cleanUpPlaylistsWithNoTracks';
 import { deleteTrackOfNullWaveform } from './deleteTracksOfNullWaveform';
 import { updateNumOfDownloads } from './updateNumOfDownloads';
 import { deletePlaylistsWithInvalidTracks } from './deleteInvalidTrackIdsFromPlaylists';
+import { addMobileViewField } from './AddTrackMobileView';
 
 const runMigrations = async () => {
   try {
-    await cleanUpDeletedUsers();
-    await deleteStaleUnverifiedUsers();
-    await changeTracksImages();
-    await changeProfileImages();
-    await deleteTracksWithoutDuration();
-    await deleteTrackOfNullWaveform();
-    await updateNumOfDownloads();
+    // await cleanUpDeletedUsers();
+    // await deleteStaleUnverifiedUsers();
+    // await changeTracksImages();
+    // await changeProfileImages();
+    // await deleteTracksWithoutDuration();
+    // await deleteTrackOfNullWaveform();
+    // await updateNumOfDownloads();
     // await cleanUpBelalMess();
     // await deleteTracksOnPublitioZero();
-    await cleanUpPlaylistsWithNoTracks();
-    await deletePlaylistsWithInvalidTracks();
+    // await cleanUpPlaylistsWithNoTracks();
+    // await deletePlaylistsWithInvalidTracks();
+    await addMobileViewField();
   } catch (e) {
     if (e instanceof Error) {
       logger.error(`Error during migration execution: ${e.message}`);
