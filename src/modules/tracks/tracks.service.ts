@@ -622,20 +622,7 @@ export class TracksService {
     }
 
     const trackInput = TracksMapper.toTrackUpdateInput(trackInfo, imgInfo);
-
-    const isEndBigger = Boolean(
-      trackInput.trackInfo.audioClip?.end &&
-      trackInput.trackInfo.audioClip.end >= searchTrack.durationInSeconds,
-    );
-
-    if (isEndBigger) {
-      throw BadRequestError(
-        'Audio clip end cant be bigger than duration Itsself',
-      );
-    }
-
-    if (trackInput.trackInfo.audioClip?.end)
-      await this.tracksRepository.updateTrackInfo(trackInput);
+    await this.tracksRepository.updateTrackInfo(trackInput);
     return true;
   }
 
@@ -889,7 +876,6 @@ export class TracksService {
 
     const searchAdvancedInfo =
       await this.tracksRepository.getTrackAdvancedInfo(trackId);
-
     return TracksMapper.toTrackDetailedResponseV2(
       searchTrack,
       searchAdvancedInfo as IAdvancedAudioDetails,
