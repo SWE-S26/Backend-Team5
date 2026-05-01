@@ -65,13 +65,7 @@ export class TracksController {
   }
 
   private parseFormDataToJson(req: Request) {
-    const fields = [
-      'basicInfo',
-      'permissions',
-      'license',
-      'advanced',
-      'geoBlocking',
-    ];
+    const fields = ['basicInfo', 'permissions', 'license', 'advanced'];
     for (const field of fields) {
       if (req.body[field]) {
         req.body[field] = JSON.parse(req.body[field]);
