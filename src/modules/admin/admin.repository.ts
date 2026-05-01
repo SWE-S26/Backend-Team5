@@ -437,7 +437,7 @@ export class AdminRepository {
     const trackProjectionPipeline: PipelineStage[] = [
       {
         $project: {
-          _id: 0,
+          _id: 1,
           title: '$basicInfo.title',
           artistId: '$posterId',
           type: { $literal: 'track' },
@@ -464,6 +464,7 @@ export class AdminRepository {
       },
       {
         $project: {
+          _id: 1,
           title: 1,
           artistName: 1,
           type: 1,

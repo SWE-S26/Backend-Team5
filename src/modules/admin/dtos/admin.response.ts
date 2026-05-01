@@ -53,6 +53,7 @@ export const AdminUserListResponseDTO = extendedZod
 
 export const AdminMediaSnippetResponseDTO = extendedZod
   .object({
+    id: extendedZod.string(),
     title: extendedZod.string(),
     artistName: extendedZod.string(),
     type: extendedZod.enum(['track']),
@@ -63,6 +64,7 @@ export const AdminMediaSnippetResponseDTO = extendedZod
   })
   .openapi('AdminMediaSnippet', {
     example: {
+      id: '507f1f77bcf86cd799439011',
       title: 'Summer Vibes',
       artistName: 'DJ Cool',
       type: 'track',
@@ -87,6 +89,7 @@ export const AdminMediaListResponseDTO = extendedZod
       limit: 20,
       items: [
         {
+          id: '507f1f77bcf86cd799439011',
           title: 'Summer Vibes',
           artistName: 'DJ Cool',
           type: 'track',
