@@ -178,7 +178,6 @@ export class TracksService {
     logger.info(`[track]: fetched liked tracks for user ${userId}`);
 
     let trackResponseList: any;
-    console.log(likedTracksList);
     if (requesterUserId) {
       logger.info(`[track Priavte]: fetched liked tracks for user ${userId}`);
       // if private endpoint, fetch tracks that are not banned, user private and belong to him
@@ -199,7 +198,6 @@ export class TracksService {
       const visibleLikedTracks = likedTracksList.filter(
         (track) => !track?.basicInfo.isPrivate && track?.hidden !== true,
       );
-      console.log(visibleLikedTracks);
       trackResponseList = TracksMapper.toTrackResponsePublicList(
         visibleLikedTracks as ITrack[],
       );
@@ -810,8 +808,6 @@ export class TracksService {
         : null,
     ]);
 
-    console.log(postedTracks.map((track) => String(track._id)));
-
     if (requesterUserId) {
       const visibleTracks = postedTracks.filter(
         (track) =>
@@ -940,13 +936,22 @@ export class TracksService {
       throw NotFoundError("Track Doesn't Exists");
     }
 
-    const [topFans, firstFans] = await Promise.all([
-      this.tracksRepository.getTopFans(trackId),
-      this.tracksRepository.getFirstFans(trackId),
-    ]);
-    return {
-      topFans: topFans,
-      firstFans: firstFans,
-    };
+    const posterSettings = await this.tracksRepository.getUserSettingsById(
+      searchTrack.posterId.toString(),
+    );
+
+    const artistAllowsFans = posterSettings?.privacy.showTrackTopFans ?? false;
+    if (artistAllowsFans) {
+      const [topFans, firstFans] = await Promise.all([
+        this.tracksRepository.getTopFans(trackId),
+        this.tracksRepository.getFirstFans(trackId),
+      ]);
+      return {
+        topFans: topFans,
+        firstFans: firstFans,
+      };
+    } else {
+      throw ForbiddenError('Track stats are private');
+    }
   }
 }
