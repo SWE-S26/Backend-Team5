@@ -18,6 +18,7 @@ import {
   UploadAudioTrackRequestDTOV2,
   UpdateTrackRequestDTOV2,
   TrackStatsRequestDTO,
+  DownloadTrackIncrementRequestDTO,
 } from './dtos/tracks.request';
 import logger from '../../shared/logger/logger';
 
@@ -643,8 +644,6 @@ export class TracksController {
     if (type == 'PRIVATE') {
       requesterUserId = this.getUserInfo(req).userId;
     }
-    console.log(`userId : ${userId}`);
-    console.log(`requesterUserId : ${requesterUserId}`);
     const postedTracks = await this.service.getUserPostedTracksV2(
       userId,
       requesterUserId,
@@ -720,6 +719,24 @@ export class TracksController {
     res.json({
       message: 'Track Stats Retrieved Sucessfully',
       data: trackStats,
+    });
+  }
+
+  async incrementDownloads(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(
+      DownloadTrackIncrementRequestDTO,
+      req,
+    );
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    const trackId = validatedRequest.data.body.trackId;
+    const sessionIdDownload = validatedRequest.data.body.sessionIdDownload;
+    await this.service.incrementDownloads(trackId, sessionIdDownload);
+    res.json({
+      message: 'Track Number Of Downloads Incremented ',
     });
   }
 }

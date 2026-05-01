@@ -79,7 +79,6 @@ class BlobStorageService {
     audioFile: Express.Multer.File,
     trackId: Types.ObjectId,
   ) {
-    console.log('ffmpeg path:', ffmpegPath);
     const waveformData = await this.generateWaveForm(audioFile);
     const filename = `${trackId.toString()}.json`;
     const content = JSON.stringify(waveformData);

@@ -381,3 +381,46 @@
 
       '500':
         $ref: '#/components/responses/ServerError'
+
+/api/tracks/v2/download:
+  patch:
+    tags:
+      - Track Management
+    summary: Increment track download count
+    description: |
+      Increments the download counter for a specific track.
+
+      Uses a session ID to prevent duplicate increments from the same session.
+
+    operationId: incrementTrackDownloads
+
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DownloadTrackIncrementDTO'
+
+    responses:
+      '200':
+        description: Download count updated successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Track Number Of Downloads Incremented
+
+      '400':
+        $ref: '#/components/responses/InvalidParameters'
+
+      '401':
+        $ref: '#/components/responses/Unauthorized'
+
+      '404':
+        $ref: '#/components/responses/NotFound'
+
+      '500':
+        $ref: '#/components/responses/ServerError'

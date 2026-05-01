@@ -42,6 +42,7 @@ export type ITrack = {
   };
   durationInSeconds: number;
   numOfPlays: number;
+  numOfDownloads: number;
   comments: Types.ObjectId[];
   numberOfReposts: number;
   numOfLikes: number;
@@ -233,6 +234,11 @@ const trackSchema = new Schema(
       min: [1, 'Duration Cannot Be Less Than One Second'],
     },
     numOfPlays: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    numOfDownloads: {
       type: Number,
       default: 0,
       min: 0,

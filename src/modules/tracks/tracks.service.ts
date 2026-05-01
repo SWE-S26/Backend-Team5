@@ -63,13 +63,6 @@ export class TracksService {
     return imgInfo;
   }
 
-  private getSecondsUntilMidnight(): number {
-    const now = new Date();
-    const midnight = new Date();
-    midnight.setHours(24, 0, 0, 0);
-    return Math.floor((midnight.getTime() - now.getTime()) / 1000);
-  }
-
   private validateTrackOwnerShip(
     userId: string,
     posterId: string,
@@ -953,5 +946,34 @@ export class TracksService {
     } else {
       throw ForbiddenError('Track stats are private');
     }
+  }
+
+  async incrementDownloads(trackId: string, sessionIdDownload: string) {
+    const searchTrack = await this.tracksRepository.findById(trackId);
+
+    if (!searchTrack) {
+      throw NotFoundError("Track Doesn't Exists");
+    }
+
+    if (searchTrack.permissions.enableDirectDownload === false) {
+      logger.info('[tracks]: Track is Not Enabled to be downloaded');
+      throw ForbiddenError('Cant Be Downloaded Due to User Permissions');
+    }
+
+    // check duplicate download
+    const UniqueListenKey = await redisCacher.get(
+      `track:download:${trackId}:${sessionIdDownload}`,
+    );
+    if (UniqueListenKey) {
+      logger.info('[tracks]: Duplicate Key - Returning sliently');
+      return;
+    }
+
+    await Promise.all([
+      redisCacher.set(`track:download:${trackId}:${sessionIdDownload}`, 1, 60),
+      this.tracksRepository.incrementDownloads(trackId),
+    ]);
+
+    return;
   }
 }
