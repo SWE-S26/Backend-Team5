@@ -125,7 +125,7 @@
     tags:
       - Artist Analytics
     summary: Get the authenticated artist analytics.
-    description: Returns total plays, reposts, downloads, likes, and comments across all tracks uploaded by the authenticated user.
+    description: Returns total plays, reposts, downloads, likes, comments, and total play rate across all tracks uploaded by the authenticated user.
     operationId: getArtistAnalytics
     responses:
       200:

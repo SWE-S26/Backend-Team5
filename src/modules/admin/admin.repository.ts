@@ -3,6 +3,7 @@ import axios from 'axios';
 import crypto from 'crypto';
 import User, { IUser } from '../../shared/models/models.user';
 import Track from '../../shared/models/models.track';
+import PlaysTrackHandling from '../../shared/models/models.plays-track-handling';
 import Report from '../../shared/models/models.report';
 import {
   AdminAnalyticsOverviewRow,
@@ -62,6 +63,10 @@ type AnalyticsOverviewResult = AdminAnalyticsOverviewRow;
 type AnalyticsStorageResult = AdminAnalyticsStorageRow;
 
 type ArtistAnalyticsResult = AdminArtistAnalyticsRow;
+
+type ArtistPlayRateAggregationResult = {
+  totalplayrate: number;
+};
 
 type PublitioListFile = {
   size?: number | string;
@@ -343,25 +348,83 @@ export class AdminRepository {
   }
 
   async getArtistAnalytics(userId: string): Promise<ArtistAnalyticsResult> {
-    const [result] = await Track.aggregate<ArtistAnalyticsResult>([
-      { $match: { posterId: new Types.ObjectId(userId) } },
-      {
-        $group: {
-          _id: null,
-          totalPlays: { $sum: '$numOfPlays' },
-          totalReposts: { $sum: '$numberOfReposts' },
-          totalDownloads: {
-            $sum: {
-              $cond: [{ $eq: ['$permissions.enableDirectDownload', true] }, 1, 0],
+    const artistObjectId = new Types.ObjectId(userId);
+
+    const [trackStats, playRateStats] = await Promise.all([
+      Track.aggregate<ArtistAnalyticsResult>([
+        { $match: { posterId: artistObjectId } },
+        {
+          $group: {
+            _id: null,
+            totalPlays: { $sum: '$numOfPlays' },
+            totalReposts: { $sum: '$numberOfReposts' },
+            totalDownloads: {
+              $sum: {
+                $cond: [
+                  { $eq: ['$permissions.enableDirectDownload', true] },
+                  1,
+                  0,
+                ],
+              },
+            },
+            totalLikes: { $sum: '$numOfLikes' },
+            totalComments: {
+              $sum: { $size: { $ifNull: ['$comments', []] } },
             },
           },
-          totalLikes: { $sum: '$numOfLikes' },
-          totalComments: {
-            $sum: { $size: { $ifNull: ['$comments', []] } },
+        },
+      ]),
+      PlaysTrackHandling.aggregate<ArtistPlayRateAggregationResult>([
+        {
+          $lookup: {
+            from: 'tracks',
+            localField: 'trackId',
+            foreignField: '_id',
+            as: 'trackDoc',
           },
         },
-      },
+        {
+          $unwind: '$trackDoc',
+        },
+        {
+          $match: {
+            'trackDoc.posterId': artistObjectId,
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            weightedNumerator: {
+              $sum: {
+                $multiply: [
+                  { $ifNull: ['$playThroughPercentage', 0] },
+                  { $ifNull: ['$totalNumberOfPlay', 0] },
+                ],
+              },
+            },
+            weightedDenominator: {
+              $sum: { $ifNull: ['$totalNumberOfPlay', 0] },
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            totalplayrate: {
+              $cond: [
+                { $gt: ['$weightedDenominator', 0] },
+                { $divide: ['$weightedNumerator', '$weightedDenominator'] },
+                0,
+              ],
+            },
+          },
+        },
+      ]),
     ]);
+
+    const result = trackStats[0];
+    const rawTotalPlayRate = playRateStats[0]?.totalplayrate ?? 0;
+    const totalplayrate = Math.min(100, Math.max(0, Math.round(rawTotalPlayRate)));
 
     return {
       totalPlays: result?.totalPlays ?? 0,
@@ -369,6 +432,7 @@ export class AdminRepository {
       totalDownloads: result?.totalDownloads ?? 0,
       totalLikes: result?.totalLikes ?? 0,
       totalComments: result?.totalComments ?? 0,
+      totalplayrate,
     };
   }
 

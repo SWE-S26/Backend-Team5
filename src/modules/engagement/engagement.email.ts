@@ -44,7 +44,7 @@ export class EngagementEmailService {
       }
 
       // to be changed when frontend is done with it
-      const activityURL = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/tracks/${trackId}`;
+      const activityURL = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/track/${trackId}`;
       await emailService.sendEngagementNotification(
         trackWithOwner.owner.email,
         userDisplayName || 'A user',
@@ -87,7 +87,7 @@ export class EngagementEmailService {
       }
 
       // to be changed when frontend is done with it
-      const activityURL = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/tracks/${trackId}`;
+      const activityURL = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/track/${trackId}`;
       await emailService.sendEngagementNotification(
         trackWithOwner.owner.email,
         userDisplayName || 'A user',
@@ -179,7 +179,7 @@ export class EngagementEmailService {
       }
 
       // to be changed when frontend is done with it
-      const activityURL = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/playlists/${playlistId}`;
+      const activityURL = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/playlist/${playlistId}`;
       await emailService.sendEngagementNotification(
         playlistWithOwner.owner.email,
         userDisplayName || 'A user',
@@ -222,7 +222,7 @@ export class EngagementEmailService {
       }
 
       // to be changed when frontend is done with it
-      const activityURL = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/tracks/${trackId}`;
+      const activityURL = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/track/${trackId}`;
       await emailService.sendEngagementNotification(
         trackWithOwner.owner.email,
         userDisplayName || 'A user',

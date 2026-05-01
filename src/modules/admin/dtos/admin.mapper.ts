@@ -65,6 +65,7 @@ export type AdminArtistAnalyticsRow = {
   totalDownloads: number;
   totalLikes: number;
   totalComments: number;
+  totalplayrate: number;
 };
 
 export class AdminMapper {
@@ -183,6 +184,7 @@ export class AdminMapper {
       totalDownloads: entity.totalDownloads,
       totalLikes: entity.totalLikes,
       totalComments: entity.totalComments,
+      totalplayrate: entity.totalplayrate,
     });
   }
 
