@@ -541,9 +541,32 @@ export class AdminRepository {
         },
       },
       {
+        $lookup: {
+          from: 'tracks',
+          localField: 'violatorId',
+          foreignField: '_id',
+          as: 'trackDoc',
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'violatorId',
+          foreignField: '_id',
+          as: 'violatorUserDoc',
+        },
+      },
+      {
         $addFields: {
           reporterDisplayName: {
             $ifNull: [{ $first: '$reporterDoc.displayName' }, 'Unknown User'],
+          },
+          violatorName: {
+            $cond: [
+              { $eq: ['$violatorType', 'track'] },
+              { $ifNull: [{ $first: '$trackDoc.basicInfo.title' }, 'Unknown Track'] },
+              { $ifNull: [{ $first: '$violatorUserDoc.displayName' }, 'Unknown User'] },
+            ],
           },
         },
       },
@@ -557,6 +580,7 @@ export class AdminRepository {
           status: 1,
           createdAt: 1,
           reporterDisplayName: 1,
+          violatorName: 1,
         },
       },
       {

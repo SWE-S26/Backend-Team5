@@ -46,6 +46,7 @@ export type AdminReportRow = {
 
 export type AdminReportListRow = AdminReportRow & {
   reporterDisplayName: string;
+  violatorName: string;
 };
 
 export type AdminAnalyticsOverviewRow = {
@@ -142,6 +143,7 @@ export class AdminMapper {
       reportedId: entity.reporterId.toString(),
       reporterDisplayName: entity.reporterDisplayName,
       violatorId: entity.violatorId.toString(),
+      violatorName: entity.violatorName,
       violatorType: entity.violatorType,
       reason: entity.reason,
       status: entity.status,
