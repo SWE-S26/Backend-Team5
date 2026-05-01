@@ -3,6 +3,14 @@ import { getMessaging } from '../../../config/firebase';
 import logger from '../../logger/logger';
 import FcmToken from '../../models/models.fcm-token';
 import { Types } from 'mongoose';
+import { IConversationPopulated } from '../../../modules/messaging/dtos/messaging.response';
+
+export type FcmMessageNotificationPayload = IConversationPopulated & {
+  receiver: {
+    displayName: string;
+    photoUrl: string | undefined;
+  };
+};
 
 export type FcmNotificationPayload = {
   notificationId: string;
@@ -199,6 +207,95 @@ export class FcmService {
         deletedTokens: [],
       };
     }
+  }
+
+  async sendMessageNotificationToUser(
+    userId: string,
+    payload: FcmMessageNotificationPayload,
+  ) {
+    const tokens = await FcmToken.find({
+      userId: new Types.ObjectId(userId),
+    })
+      .select('token')
+      .lean<{ token: string }[]>();
+
+    if (tokens.length === 0) {
+      return { successCount: 0, failureCount: 0, deletedTokens: [] };
+    }
+
+    const tokenValues = tokens.map((t) => t.token);
+
+    const message: admin.messaging.MulticastMessage = {
+      tokens: tokenValues,
+      notification: {
+        title: `${payload.receiver.displayName} Sent you a Message`,
+        body: payload.lastMessage?.content ?? 'New Message',
+        ...(payload.receiver.photoUrl
+          ? { image: payload.receiver.photoUrl }
+          : {}),
+      },
+      data: {
+        chatId: payload._id.toString(),
+        participants: JSON.stringify(payload.participants),
+        archivedBy: JSON.stringify(payload.archivedBy),
+        lastMessage: JSON.stringify(payload.lastMessage),
+        createdAt: JSON.stringify(payload.createdAt),
+        updatedAt: JSON.stringify(payload.updatedAt),
+      },
+      android: {
+        priority: 'high',
+        notification: {
+          channelId: 'notifications',
+          sound: 'default',
+        },
+      },
+      apns: {
+        payload: {
+          aps: {
+            sound: 'default',
+            badge: 1,
+          },
+        },
+      },
+    };
+
+    // now firebase turn to send the notification
+    try {
+      const messaging = getMessaging();
+      const response = await messaging.sendEachForMulticast(message);
+      const deletedTokens: string[] = [];
+
+      if (response.failureCount > 0) {
+        response.responses.forEach((resp, index) => {
+          if (!resp.success) {
+            const errorCode = resp.error?.code;
+            if (
+              errorCode === 'messaging/invalid-registration-token' ||
+              errorCode === 'messaging/registration-token-not-registered'
+            ) {
+              deletedTokens.push(tokenValues[index]);
+            }
+          }
+        });
+      }
+
+      if (deletedTokens.length > 0) {
+        await FcmToken.deleteMany({ token: { $in: deletedTokens } });
+        logger.info(
+          `[FCM Messages Notify] Cleaned up ${deletedTokens.length} invalid tokens for user ${userId}`,
+        );
+      }
+
+      logger.info(
+        `[FCM Messages Notify] Sent to user ${userId}: ${response.successCount} success, ${response.failureCount} failed`,
+      );
+
+      return {
+        successCount: response.successCount,
+        failureCount: response.failureCount,
+        deletedTokens,
+      };
+    } catch (error) {}
   }
 }
 
