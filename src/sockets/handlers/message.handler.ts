@@ -175,7 +175,6 @@ export function RegisterMessageSocketHandlers(
         payload.content,
       );
 
-      console.log(result);
       if (!result) {
         socket.emit(SocketEvents.ERROR, {
           message: 'Failed to send message due to privacy issues',
@@ -183,7 +182,14 @@ export function RegisterMessageSocketHandlers(
         return;
       }
 
-      const { updatedConversation, receiverSettings } = result;
+      const { updatedConversation, receiverSettings, receiver } = result;
+
+      // send email to user
+      await messageService.handleEmailSentToReceiver(
+        receiverSettings,
+        userId,
+        receiver,
+      );
 
       socket
         .to(chatId.toString())
