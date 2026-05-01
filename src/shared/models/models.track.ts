@@ -298,6 +298,10 @@ const trackSchema = new Schema(
     audioClip: {
       type: audioClipSchema,
     },
+    mobileProPreview: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true },
 );
