@@ -24,6 +24,7 @@ export type AdminUserListRow = {
 };
 
 export type AdminMediaListRow = {
+  _id: string | Types.ObjectId;
   title: string;
   artistName: string;
   type: 'track';
@@ -98,6 +99,7 @@ export class AdminMapper {
 
   static toMediaResponse(entity: AdminMediaListRow) {
     return AdminMediaSnippetResponseDTO.parse({
+      id: entity._id.toString(),
       title: entity.title,
       artistName: entity.artistName,
       type: entity.type,
