@@ -12,10 +12,15 @@ import {
   UpdateTrackRequestBodyDTO,
   UpdateTrackRequestBodyDTOV2,
   IncrementTrackNumPlaysRequestBodyDTO,
+  DownloadTrackIncrementRequestBodyDTO,
 } from './tracks.request.body';
 
 export const DeleteTrackRequestDTO = extendedZod.object({
   params: TracksIdParamDTO,
+});
+
+export const DownloadTrackIncrementRequestDTO = extendedZod.object({
+  body: DownloadTrackIncrementRequestBodyDTO,
 });
 
 export const IsValidPermaLinkForUser = extendedZod.object({

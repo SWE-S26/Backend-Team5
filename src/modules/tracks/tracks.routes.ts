@@ -162,6 +162,10 @@ tracksPrivateRouter.patch(
   (req, res) => tracksController.updateTrackInfoV2(req, res),
 );
 
+tracksPrivateRouter.patch(apiVersions.v2 + '/download', (req, res) =>
+  tracksController.incrementDownloads(req, res),
+);
+
 tracksPrivateRouter.patch(apiVersions.v2 + '/listen/', (req, res) =>
   tracksController.incrementTrackNumPlaysV2(req, res),
 );

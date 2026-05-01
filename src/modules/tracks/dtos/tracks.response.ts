@@ -35,6 +35,7 @@ export const TrackResponsePublic = extendedZod.object({
   numPlays: extendedZod.number(),
   numReposts: extendedZod.number(),
   numComments: extendedZod.number(),
+  numDownloads: extendedZod.number(),
   releaseDate: extendedZod.date(),
   permissions: z.object({
     enableDirectDownload: z.boolean(),
@@ -58,6 +59,7 @@ export const TrackResponsePublic = extendedZod.object({
 
 export const TrackResponsePrivate = TrackResponsePublic.extend({
   isLikedByUser: extendedZod.boolean(),
+  numDownloads: extendedZod.number(),
 });
 
 export const TrackResponsePrivateV2 = TrackResponsePrivate.extend({

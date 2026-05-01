@@ -153,6 +153,7 @@ export type TrackInput = {
     posterId: Types.ObjectId;
     numOfPlays: number;
     numberOfReposts: number;
+    numOfDownloads: number;
     numOfLikes: number;
     durationInSeconds: number;
     likedBy: Types.ObjectId[];
@@ -199,4 +200,9 @@ export const IncrementTrackNumPlaysRequestBodyDTO = extendedZod.object({
   trackId: extendedZod.string(),
   listenedDuration: extendedZod.coerce.number(),
   sessionIdPlay: extendedZod.uuid(),
+});
+
+export const DownloadTrackIncrementRequestBodyDTO = extendedZod.object({
+  trackId: extendedZod.string(),
+  sessionIdDownload: extendedZod.uuid(),
 });

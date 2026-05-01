@@ -322,4 +322,11 @@ export class TracksRepository {
   async getUserSettingsById(userId: string): Promise<ISettings | null> {
     return await Settings.findOne({ userId: userId });
   }
+
+  async incrementDownloads(trackId: string) {
+    await Track.findOneAndUpdate(
+      { _id: trackId },
+      { $inc: { numOfDownloads: 1 } },
+    );
+  }
 }
