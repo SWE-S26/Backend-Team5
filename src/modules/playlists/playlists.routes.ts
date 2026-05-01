@@ -64,12 +64,6 @@ playlistsPrivateRouter.get(
 );
 
 playlistsPublicRouter.get(
-  apiVersions.v1 + '/permalink/:permalink',
-  optionalAuth,
-  playlistsController.getPlaylistByPermalink.bind(playlistsController),
-);
-
-playlistsPublicRouter.get(
   apiVersions.v2 + '/permalink/:profilelink/:permalink',
   optionalAuth,
   playlistsController.getPlaylistByPermalinkAndProfileLink.bind(
