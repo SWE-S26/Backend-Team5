@@ -148,10 +148,28 @@ export class TracksRepository {
   async updateTrackInfo(trackDetails: TrackUpdateInput): Promise<ITrack> {
     const { id, trackInfo, advanced } = trackDetails;
 
+    const flattenObject = (obj: object, prefix = '') =>
+      Object.entries(obj).reduce(
+        (acc, [key, value]) => {
+          const fullKey = prefix ? `${prefix}.${key}` : key;
+          if (
+            value !== null &&
+            typeof value === 'object' &&
+            !Array.isArray(value)
+          ) {
+            Object.assign(acc, flattenObject(value, fullKey));
+          } else {
+            acc[fullKey] = value;
+          }
+          return acc;
+        },
+        {} as Record<string, unknown>,
+      );
+
     const [updatedTrack] = await Promise.all([
       Track.findByIdAndUpdate(
         id,
-        { $set: trackInfo },
+        { $set: flattenObject(trackInfo) },
         { returnDocument: 'after' },
       ),
       AdvancedAudioDetails.findOneAndUpdate(
@@ -159,9 +177,10 @@ export class TracksRepository {
         { $set: advanced },
         { returnDocument: 'after' },
       ),
-    ]).catch((error) => {
+    ]).catch(() => {
       throw new Error('Unexpected Error Happened During Track Update');
     });
+
     return updatedTrack as ITrack;
   }
 
