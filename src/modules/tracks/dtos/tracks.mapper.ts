@@ -87,6 +87,9 @@ export class TracksMapper {
           ...audioInfo,
         },
         ...(imgInfo && { image: imgInfo }),
+        ...(track.mobileProPreview !== undefined && {
+          mobileProPreview: track.mobileProPreview,
+        }),
         posterId: posterId,
         numOfPlays: 0,
         numOfDownloads: 0,
@@ -155,6 +158,7 @@ export class TracksMapper {
         start: track.audioClip?.start ?? 0,
         end: track.audioClip?.end ?? 0,
       },
+      mobileProPreview: track.mobileProPreview,
     };
   }
 
@@ -229,6 +233,7 @@ export class TracksMapper {
         start: track.audioClip?.start ?? 0,
         end: track.audioClip?.end ?? 0,
       },
+      mobileProPreview: track.mobileProPreview,
     };
   }
 
@@ -262,6 +267,7 @@ export class TracksMapper {
         start: track.audioClip?.start ?? 0,
         end: track.audioClip?.end ?? 0,
       },
+      mobileProPreview: track.mobileProPreview,
     };
   }
 
@@ -363,6 +369,7 @@ export class TracksMapper {
         ISWC: advanced.iswc,
         albumTitle: advanced.albumTitle,
       },
+      mobileProPreview: track.mobileProPreview,
     };
   }
 }

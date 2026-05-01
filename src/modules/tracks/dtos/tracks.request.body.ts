@@ -99,6 +99,7 @@ export const CreateTrackRequestBodyDTO = extendedZod.object({
     albumTitle: extendedZod.string().optional(),
     releaseTitle: extendedZod.string().optional(),
   }),
+  mobileProPreview: extendedZod.coerce.boolean().optional(),
 });
 
 export const CreateTrackRequestBodyDTOV2 = CreateTrackRequestBodyDTO.extend({
@@ -141,6 +142,11 @@ export const UpdateTrackRequestBodyDTOV2 = extendedZod.object({
   license: CreateTrackRequestBodyDTOV2.shape.license.partial(),
   advanced: CreateTrackRequestBodyDTOV2.shape.advanced.partial(),
   geoBlocking: CreateTrackRequestBodyDTOV2.shape.geoBlocking.optional(),
+  mobileProPreview: extendedZod.boolean().optional(),
+});
+
+export const UpdateTrackMobileProPreviewRequestBodyDTO = extendedZod.object({
+  mobileProPreview: extendedZod.boolean(),
 });
 
 export type TrackInput = {

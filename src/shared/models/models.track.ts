@@ -76,6 +76,7 @@ export type ITrack = {
     end: number;
   };
   updatedAt: Date;
+  mobileProPreview: boolean;
 };
 
 export enum GeoblockingMode {

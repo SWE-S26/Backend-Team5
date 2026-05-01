@@ -571,6 +571,30 @@ export class TracksService {
     return true;
   }
 
+  async updateTrackMobileProPreview(
+    trackId: string,
+    mobileProPreview: boolean,
+    userId: string,
+    userRole: string,
+  ) {
+    const searchTrack = await this.tracksRepository.findById(trackId);
+    if (!searchTrack) {
+      throw NotFoundError('Track Not Found');
+    }
+
+    const posterId = searchTrack.posterId.toString();
+
+    this.validateTrackOwnerShip(userId, posterId, userRole);
+
+    const updatedMobileProPreview =
+      await this.tracksRepository.updateMobileProPreview(
+        trackId,
+        mobileProPreview,
+      );
+
+    return updatedMobileProPreview;
+  }
+
   async updateTrackInfoV2(
     trackInfo: UpdateTrackDTOV2,
     userId: string,
