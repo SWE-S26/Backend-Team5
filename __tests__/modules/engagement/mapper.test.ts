@@ -125,6 +125,7 @@ describe('EngagementMapper', () => {
         numOfPlays: 10,
         comments: [],
         numberOfReposts: 2,
+        numOfDownloads: 0,
         numOfLikes: 3,
         likedBy: [],
         permissions: {
