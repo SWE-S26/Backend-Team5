@@ -564,8 +564,18 @@ export class AdminRepository {
           violatorName: {
             $cond: [
               { $eq: ['$violatorType', 'track'] },
-              { $ifNull: [{ $first: '$trackDoc.basicInfo.title' }, 'Unknown Track'] },
-              { $ifNull: [{ $first: '$violatorUserDoc.displayName' }, 'Unknown User'] },
+              {
+                $ifNull: [
+                  { $first: '$trackDoc.basicInfo.title' },
+                  'DELETED TRACK',
+                ],
+              },
+              {
+                $ifNull: [
+                  { $first: '$violatorUserDoc.displayName' },
+                  'DELETED USER',
+                ],
+              },
             ],
           },
         },
