@@ -446,39 +446,6 @@ userSchema.post('findOneAndDelete', async function (doc: IUser | null) {
     // to avoid redundant work and double-firing hooks.
     const ownTrackIds = new Set(userTracks.map((t) => t._id.toString()));
 
-    // delete tracks from publitio
-    await Promise.allSettled(
-      userTracks.map((track) =>
-        Promise.all([
-          publitioMediaStorage
-            .deleteAudioTrack(track.audio.id, track.audio.cloudIndex)
-            .then(() => {
-              logger.debug(
-                `Successfully deleted audio track from Publitio for user ${doc._id}`,
-              );
-            })
-            .catch((error) => {
-              logger.error(
-                `Failed to delete audio track from Publitio for user ${doc._id}: ${error}`,
-              );
-            }),
-
-          blobStorageService
-            .deleteWaveFromBlob(track._id)
-            .then(() => {
-              logger.debug(
-                `Successfully deleted wave from blob for user ${doc._id}`,
-              );
-            })
-            .catch((error) => {
-              logger.error(
-                `Failed to delete wave from blob for user ${doc._id}: ${error}`,
-              );
-            }),
-        ]),
-      ),
-    );
-
     // Get all conversations the user participates in
     const conversationIds = userConversations.map((c) => c._id);
 
