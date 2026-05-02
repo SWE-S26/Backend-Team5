@@ -58,7 +58,7 @@ export class MessagingService {
   ) {
     const isAllowedMessageFromEveyOne =
       receiverSettings?.privacy.allowMessagesAnyone ?? false;
-    if (isAllowedMessageFromEveyOne) {
+    if (isAllowedMessageFromEveyOne === false) {
       const receiverFollowing =
         await this.repository.findUserFollowedList(receiverId);
       if (!receiverFollowing) {
