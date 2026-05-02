@@ -10,6 +10,12 @@ import History from '../../../src/shared/models/models.history';
 
 import { PlaylistsRepository } from '../../../src/modules/playlists/playlists.repository';
 
+jest.mock('../../../src/shared/abstractions/blob.service', () => ({
+  default: {
+    uploadWaveToBlob: jest.fn(),
+    deleteWaveFromBlob: jest.fn(),
+  },
+}));
 jest.mock('../../../src/shared/models/models.playlist');
 jest.mock('../../../src/shared/models/models.track');
 jest.mock('../../../src/shared/models/models.user');

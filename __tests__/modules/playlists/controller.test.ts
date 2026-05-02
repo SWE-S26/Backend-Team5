@@ -3,6 +3,12 @@ import { PlaylistsService } from '../../../src/modules/playlists/playlists.servi
 import { Request, Response } from 'express';
 import { parseRequest } from '../../../src/shared/dtos/requestParser';
 
+jest.mock('../../../src/shared/abstractions/blob.service', () => ({
+  default: {
+    uploadWaveToBlob: jest.fn(),
+    deleteWaveFromBlob: jest.fn(),
+  },
+}));
 jest.mock('../../../src/modules/playlists/playlists.service');
 jest.mock('../../../src/shared/dtos/requestParser');
 jest.mock('../../../src/shared/errors/responseErrors', () => ({
