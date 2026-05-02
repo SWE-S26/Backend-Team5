@@ -65,8 +65,9 @@ export class PlaybackMapper {
     userId: string,
     repostedList: string[],
   ) {
+    const plain = (playlist as any).toObject();
     return {
-      ...playlist,
+      ...plain,
       isLikedByUser: playlist.likedUser
         .map((id) => id.toString())
         .includes(userId),
