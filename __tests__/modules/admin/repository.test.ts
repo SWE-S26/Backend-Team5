@@ -118,7 +118,7 @@ describe('AdminRepository', () => {
 
       expect(Track.findByIdAndUpdate).toHaveBeenCalledWith(
         't1',
-        { hidden: false },
+        { hidden: false, banReason: '' },
         { new: true, runValidators: true },
       );
       expect(result).toEqual(updatedTrack);
