@@ -179,7 +179,7 @@ export class PlaylistsService {
     if (!playlist) {
       throw NotFoundError('Playlist not found');
     }
-    await this.repository.addPlaylistToHistory(playlistId, userId);
+    await this.repository.addPlaylistToHistory(userId, playlistId);
   }
 
   async addTrackToPlaylist(
