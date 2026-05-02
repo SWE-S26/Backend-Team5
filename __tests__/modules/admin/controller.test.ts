@@ -5,6 +5,7 @@ import { parseRequest } from '../../../src/shared/dtos/requestParser';
 
 jest.mock('../../../src/shared/dtos/requestParser');
 jest.mock('../../../src/modules/admin/admin.service');
+jest.mock('../../../src/modules/payment/payment.controller'); // Prevents Stripe crash
 
 describe('AdminController', () => {
   let controller: AdminController;

@@ -1,4 +1,3 @@
-/// <reference types="jest" />
 import { AdminService } from '../../../src/modules/admin/admin.service';
 import { AdminRepository } from '../../../src/modules/admin/admin.repository';
 import { AdminMapper } from '../../../src/modules/admin/dtos/admin.mapper';
@@ -7,6 +6,7 @@ import { AuthService } from '../../../src/modules/auth/auth.service';
 jest.mock('../../../src/modules/admin/admin.repository');
 jest.mock('../../../src/modules/admin/dtos/admin.mapper');
 jest.mock('../../../src/modules/auth/auth.service');
+jest.mock('../../../src/modules/payment/payment.controller'); // Prevents Stripe crash
 
 describe('AdminService', () => {
   let service: AdminService;
