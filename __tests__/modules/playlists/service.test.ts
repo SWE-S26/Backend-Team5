@@ -19,6 +19,12 @@ jest.mock('../../../src/shared/errors/responseErrors', () => ({
   ForbiddenError: jest.fn((msg: string) => new Error(msg)),
   NotFoundError: jest.fn((msg: string) => new Error(msg)),
 }));
+jest.mock('../../../src/shared/abstractions/blob.service', () => ({
+  default: {
+    uploadWaveToBlob: jest.fn(),
+    deleteWaveFromBlob: jest.fn(),
+  },
+}));
 jest.mock('../../../src/shared/logger/logger', () => ({
   default: { info: jest.fn(), debug: jest.fn(), error: jest.fn() },
 }));
