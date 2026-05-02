@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 import { AdminService } from '../../../src/modules/admin/admin.service';
 import { AdminRepository } from '../../../src/modules/admin/admin.repository';
 import { AdminMapper } from '../../../src/modules/admin/dtos/admin.mapper';
