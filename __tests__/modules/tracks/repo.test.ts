@@ -11,6 +11,16 @@
 import { Types } from 'mongoose';
 import { TracksRepository } from '../../../src/modules/tracks/tracks.repository';
 
+jest.mock('../../../src/shared/abstractions/blob.service', () => ({
+  __esModule: true,
+  default: {
+    uploadWaveform: jest.fn().mockResolvedValue('https://fake/waveform.json'),
+    uploadTrack: jest.fn().mockResolvedValue('https://fake/track.mp3'),
+    uploadImage: jest.fn().mockResolvedValue('https://fake/image.jpg'),
+    deleteBlob: jest.fn().mockResolvedValue(undefined),
+  },
+}));
+
 // ─── Mock all Mongoose models ─────────────────────────────────────────────────
 jest.mock('../../../src/shared/models/models.track');
 jest.mock('../../../src/shared/models/models.history');

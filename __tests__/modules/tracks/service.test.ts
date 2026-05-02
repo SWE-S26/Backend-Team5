@@ -14,6 +14,16 @@ import * as notificationHandler from '../../../src/sockets/handlers/notification
 import { Types } from 'mongoose';
 
 // ─── Auto-mock dependencies ───────────────────────────────────────────────────
+jest.mock('../../../src/shared/abstractions/blob.service', () => ({
+  __esModule: true,
+  default: {
+    uploadWaveform: jest.fn().mockResolvedValue('https://fake/waveform.json'),
+    uploadTrack: jest.fn().mockResolvedValue('https://fake/track.mp3'),
+    uploadImage: jest.fn().mockResolvedValue('https://fake/image.jpg'),
+    deleteBlob: jest.fn().mockResolvedValue(undefined),
+  },
+}));
+
 jest.mock('../../../src/modules/tracks/tracks.repository');
 jest.mock('../../../src/modules/tracks/dtos/tracks.mapper');
 jest.mock('../../../src/shared/abstractions/redis/redisCacher');
