@@ -10,6 +10,7 @@
 
 import { Types } from 'mongoose';
 import { TracksRepository } from '../../../src/modules/tracks/tracks.repository';
+import blobStorageService from '../../../src/shared/abstractions/blob.service';
 
 jest.mock('../../../src/shared/abstractions/blob.service', () => ({
   __esModule: true,
@@ -45,6 +46,7 @@ import Following from '../../../src/shared/models/models.following';
 import PlaysTrackHandling from '../../../src/shared/models/models.plays-track-handling';
 import Settings from '../../../src/shared/models/models.settings';
 import AdvancedAudioDetails from '../../../src/shared/models/models.advanced-audio-details';
+import { JSONSchemaGenerator } from 'zod/v4/core';
 
 // ─── Typed model mocks ────────────────────────────────────────────────────────
 const MockTrack = Track as jest.Mocked<typeof Track>;
