@@ -299,6 +299,25 @@ export class PlaylistsController {
     });
   }
 
+  async removeTrackFromPlaylist(req: Request, res: Response): Promise<void> {
+    const validatedRequest = parseRequest(AddTrackToPlaylistDTO, req);
+
+    if (!validatedRequest.success) {
+      throw validatedRequest.error;
+    }
+
+    this.stopAdmins(req.userInfo!.role);
+
+    const { id, trackId } = validatedRequest.data.params;
+    const userId = req.userInfo!._id;
+
+    await this.service.removeTrackFromPlaylist(id, trackId, userId);
+
+    res.json({
+      message: 'Track removed from playlist successfully',
+    });
+  }
+
   async getAlbumsOfAnArtist(req: Request, res: Response): Promise<void> {
     const validatedRequest = parseRequest(FindOnePlaylistDTO, req);
 

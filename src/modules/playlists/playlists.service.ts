@@ -198,6 +198,22 @@ export class PlaylistsService {
     }
   }
 
+  async removeTrackFromPlaylist(
+    playlistId: string,
+    trackId: string,
+    userId: string,
+  ): Promise<void> {
+    const result = await this.repository.removeTrackFromPlaylist(
+      trackId,
+      playlistId,
+      userId,
+    );
+
+    if (result instanceof Error) {
+      throw BadRequestError(result.message);
+    }
+  }
+
   async getAlbumsOfAnArtist(
     artistId: string,
     userId: string | null,
