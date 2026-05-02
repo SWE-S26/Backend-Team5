@@ -416,7 +416,10 @@ export class AdminRepository {
 
     const result = trackStats[0];
     const rawTotalPlayRate = playRateStats[0]?.totalplayrate ?? 0;
-    const totalplayrate = Math.min(100, Math.max(0, Math.round(rawTotalPlayRate)));
+    const totalplayrate = Math.min(
+      100,
+      Math.max(0, Math.round(rawTotalPlayRate)),
+    );
 
     return {
       totalPlays: result?.totalPlays ?? 0,
@@ -514,7 +517,9 @@ export class AdminRepository {
     };
   }
 
-  async findAllReports(filters: ListReportsFilters): Promise<ListReportsResult> {
+  async findAllReports(
+    filters: ListReportsFilters,
+  ): Promise<ListReportsResult> {
     const skip = (filters.offset - 1) * filters.limit;
     const match: Record<string, unknown> = {};
 
@@ -672,7 +677,7 @@ export class AdminRepository {
       { $match: { _id: new Types.ObjectId(trackId) } },
       {
         $project: {
-          _id: 0,
+          _id: 1,
           title: '$basicInfo.title',
           artistId: '$posterId',
           type: { $literal: 'track' },
@@ -699,6 +704,7 @@ export class AdminRepository {
       },
       {
         $project: {
+          _id: 1,
           title: 1,
           artistName: 1,
           type: 1,
@@ -761,12 +767,43 @@ export class AdminRepository {
       trackId,
       {
         hidden: false,
+        banReason: '',
       },
       {
         new: true,
         runValidators: true,
       },
     ).lean();
+  }
+
+  async banAllUserTracks(
+    userId: string,
+    banReason: string,
+  ): Promise<{ modifiedCount: number }> {
+    const result = await Track.updateMany(
+      { posterId: userId, hidden: false },
+      {
+        hidden: true,
+        banReason: banReason,
+      },
+    );
+
+    return { modifiedCount: result.modifiedCount };
+  }
+
+  async unbanAllUserTracks(userId: string): Promise<{ modifiedCount: number }> {
+    const result = await Track.updateMany(
+      {
+        posterId: userId,
+        banReason: 'User account suspended',
+      },
+      {
+        hidden: false,
+        banReason: '',
+      },
+    );
+
+    return { modifiedCount: result.modifiedCount };
   }
 
   async deleteTrackById(trackId: string): Promise<boolean> {

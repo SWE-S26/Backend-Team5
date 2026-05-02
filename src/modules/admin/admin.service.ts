@@ -126,6 +126,9 @@ export class AdminService {
       throw NotFoundError('user not found');
     }
 
+    // Ban all user's tracks with suspension reason
+    await this.repository.banAllUserTracks(userId, 'User account suspended');
+
     const adminRow = await this.repository.findAdminUserRowById(userId);
 
     return AdminMapper.toResponse(adminRow!);
@@ -151,6 +154,9 @@ export class AdminService {
     if (!result) {
       throw NotFoundError('user not found');
     }
+
+    // Unban all user's tracks that were banned due to suspension
+    await this.repository.unbanAllUserTracks(userId);
 
     const adminRow = await this.repository.findAdminUserRowById(userId);
 
