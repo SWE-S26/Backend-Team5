@@ -326,7 +326,7 @@ trackSchema.pre<ITrack>(
         { likedTracks: trackToDelete._id },
         { $pull: { likedTracks: trackToDelete._id } },
       ),
-      User.deleteMany(
+      User.updateMany(
         { reposts: { $elemMatch: { id: trackToDelete._id, type: 'track' } } },
         { $pull: { reposts: { id: trackToDelete._id, type: 'track' } } },
       ),
