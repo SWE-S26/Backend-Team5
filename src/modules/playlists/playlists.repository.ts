@@ -565,6 +565,34 @@ export class PlaylistsRepository {
     ).exec();
   }
 
+  async removeTrackFromPlaylist(
+    trackId: string,
+    playlistId: string,
+    userId: string,
+  ): Promise<Error | void> {
+    const playlist = await this.findById(playlistId);
+
+    this.validateEditingUser(playlist, userId);
+
+    const track = await Track.findById(trackId).exec();
+    if (!track) {
+      return new Error('Track not found');
+    }
+
+    if (!playlist!.listOfTracks.some((t) => t.toString() === trackId)) {
+      return new Error('Track not found in the playlist');
+    }
+
+    await Playlist.findByIdAndUpdate(
+      { _id: playlistId },
+      {
+        $pull: { listOfTracks: track._id },
+        $inc: { playlistLengthInSeconds: -track.durationInSeconds },
+      },
+      { new: true },
+    ).exec();
+  }
+
   async updateImage(
     playlistId: string,
     publicUrl: string,

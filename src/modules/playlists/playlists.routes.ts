@@ -21,11 +21,6 @@ playlistsPrivateRouter.post(
   playlistsController.createWithImage.bind(playlistsController),
 );
 
-playlistsPrivateRouter.delete(
-  apiVersions.v1 + '/:id',
-  playlistsController.delete.bind(playlistsController),
-);
-
 playlistsPrivateRouter.post(
   apiVersions.v1 + '/:id/history',
   playlistsController.addPlaylistToHistory.bind(playlistsController),
@@ -46,6 +41,11 @@ playlistsPrivateRouter.patch(
 playlistsPrivateRouter.patch(
   apiVersions.v1 + '/:id/tracks/order',
   playlistsController.updatePlaylistSingleTrackOrder.bind(playlistsController),
+);
+
+playlistsPrivateRouter.delete(
+  apiVersions.v1 + '/:id/tracks/:trackId',
+  playlistsController.removeTrackFromPlaylist.bind(playlistsController),
 );
 
 playlistsPrivateRouter.patch(
@@ -126,6 +126,11 @@ playlistsPublicRouter.get(
 playlistsPrivateRouter.get(
   apiVersions.v1 + '/:id',
   playlistsController.findById.bind(playlistsController),
+);
+
+playlistsPrivateRouter.delete(
+  apiVersions.v1 + '/:id',
+  playlistsController.delete.bind(playlistsController),
 );
 
 export { playlistsPublicRouter };
