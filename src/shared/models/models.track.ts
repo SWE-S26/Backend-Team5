@@ -16,6 +16,8 @@ import Playlist from './models.playlist';
 import Plays from './models.plays';
 import PlaysTrackHandling from './models.plays-track-handling';
 import blobStorageService from '../abstractions/blob.service';
+import publitioMediaStorage from '../abstractions/publitio.service';
+import { HydratedDocument } from 'mongoose';
 
 export type ITrack = {
   _id: Types.ObjectId;
@@ -311,7 +313,7 @@ const trackSchema = new Schema(
 trackSchema.post(
   ['deleteOne', 'findOneAndDelete'],
   { document: true, query: false },
-  async function (doc) {
+  async function (doc: HydratedDocument<ITrack>) {
     try {
       if (
         doc.image.publicId &&
@@ -329,20 +331,33 @@ trackSchema.post(
             );
           });
       }
-
-      // Blob — fixed log message
-      blobStorageService
-        .deleteWaveFromBlob(doc._id)
-        .then(() => {
-          logger.debug(
-            `Successfully deleted wave from blob for track ${doc._id}`,
-          );
-        })
-        .catch((error) => {
-          logger.error(
-            `Failed to delete wave from blob for track ${doc._id}: ${error}`,
-          );
-        });
+      await Promise.all([
+        publitioMediaStorage
+          .deleteAudioTrack(doc.audio.id, doc.audio.cloudIndex)
+          .then(() => {
+            logger.debug(
+              `Successfully deleted audio track from Publitio for user ${doc._id}`,
+            );
+          })
+          .catch((error) => {
+            logger.error(
+              `Failed to delete audio track from Publitio for user ${doc._id}: ${error}`,
+            );
+          }),
+        // Blob
+        blobStorageService
+          .deleteWaveFromBlob(doc._id)
+          .then(() => {
+            logger.debug(
+              `Successfully deleted wave from blob for track ${doc._id}`,
+            );
+          })
+          .catch((error) => {
+            logger.error(
+              `Failed to delete wave from blob for track ${doc._id}: ${error}`,
+            );
+          }),
+      ]);
 
       const comments = await Comment.find({ trackId: doc._id });
 
@@ -404,10 +419,6 @@ trackSchema.post(
           { 'historyTracks.trackId': doc._id },
           { $pull: { historyTracks: { trackId: doc._id } } },
         ),
-
-        Plays.deleteMany({ trackId: doc._id }),
-
-        PlaysTrackHandling.deleteMany({ trackId: doc._id }),
       ]);
 
       logger.debug(`Cascade deleted track ${doc._id}`);

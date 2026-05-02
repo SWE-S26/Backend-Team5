@@ -99,16 +99,6 @@ export class TracksService {
     const posterId = searchTrack.posterId.toString();
     this.validateTrackOwnerShip(userId, posterId, userRole);
 
-    // delete audio from cloud storage first
-    await Promise.all([
-      publitioMediaStorage.deleteAudioTrack(
-        searchTrack.audio.id,
-        searchTrack.audio.cloudIndex,
-      ),
-      blobStorageService.deleteWaveFromBlob(searchTrack._id),
-    ]);
-    logger.info('[track]: Delted Audio and Waveform');
-
     // delete track info from database
     const isDeleted = await this.tracksRepository.deleteById(trackId, userId);
     logger.info('[track]: Delted Track from Data Base');

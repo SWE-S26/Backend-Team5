@@ -80,7 +80,6 @@ export class TracksController {
   }
 
   async deleteTrackById(req: Request, res: Response): Promise<void> {
-    logger.info('I AM HERE HELP US GOD');
     const validatedRequest = parseRequest(DeleteTrackRequestDTO, req);
     if (!validatedRequest.success) {
       throw validatedRequest.error;
