@@ -148,7 +148,6 @@ class PublitioMediaStorage {
       url_preview: string;
       url_download: string;
     };
-
     const audioInfo: PublitioUploadResult = {
       id: id,
       audioLink: url_preview,
