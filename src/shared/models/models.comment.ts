@@ -77,6 +77,12 @@ commentSchema.post(
         // Remove this comment from its parent track's comments array
         Track.updateOne({ _id: doc.trackId }, { $pull: { comments: doc._id } }),
 
+        // Remove this comment from its parent comment's replyList
+        Comment.updateOne(
+          { replyList: doc._id },
+          { $pull: { replyList: doc._id } },
+        ),
+
         // Cascade-delete each reply (each fires this same hook recursively)
         ...replies.map((reply) => reply.deleteOne()),
 

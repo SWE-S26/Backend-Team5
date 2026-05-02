@@ -15,6 +15,7 @@ import History from './models.history';
 import Playlist from './models.playlist';
 import Plays from './models.plays';
 import PlaysTrackHandling from './models.plays-track-handling';
+import blobStorageService from '../abstractions/blob.service';
 
 export type ITrack = {
   _id: Types.ObjectId;
@@ -307,47 +308,8 @@ const trackSchema = new Schema(
   { timestamps: true },
 );
 
-trackSchema.pre<ITrack>(
-  'deleteOne',
-  { document: true, query: false },
-  async function () {
-    const trackToDelete = this;
-
-    const comments = await Comment.find({ trackId: trackToDelete._id }).select(
-      '_id replyList',
-    );
-    const commentIds = comments.map((c) => c._id);
-    const replyIds = comments.flatMap((c) => c.replyList);
-
-    await Promise.all([
-      AdvancedAudioDetails.deleteOne({ trackId: trackToDelete._id }),
-      Comment.deleteMany({ _id: { $in: [...commentIds, ...replyIds] } }),
-      User.updateMany(
-        { likedTracks: trackToDelete._id },
-        { $pull: { likedTracks: trackToDelete._id } },
-      ),
-      User.updateMany(
-        { reposts: { $elemMatch: { id: trackToDelete._id, type: 'track' } } },
-        { $pull: { reposts: { id: trackToDelete._id, type: 'track' } } },
-      ),
-      History.updateMany(
-        { 'historyTracks.trackId': trackToDelete._id },
-        { $pull: { historyTracks: { trackId: trackToDelete._id } } },
-      ),
-      Playlist.updateMany(
-        { listOfTracks: trackToDelete._id },
-        { $pull: { listOfTracks: trackToDelete._id } },
-      ),
-      Plays.deleteMany({ trackId: trackToDelete._id }),
-      PlaysTrackHandling.deleteOne({ trackId: trackToDelete._id }),
-    ]);
-  },
-);
-
-const Track = model<ITrack>('Track', trackSchema);
-
 trackSchema.post(
-  'deleteOne',
+  ['deleteOne', 'findOneAndDelete'],
   { document: true, query: false },
   async function (doc) {
     try {
@@ -368,14 +330,27 @@ trackSchema.post(
           });
       }
 
-      // Fetch comment documents so each triggers its own cascade via deleteOne
+      // Blob — fixed log message
+      blobStorageService
+        .deleteWaveFromBlob(doc._id)
+        .then(() => {
+          logger.debug(
+            `Successfully deleted wave from blob for track ${doc._id}`,
+          );
+        })
+        .catch((error) => {
+          logger.error(
+            `Failed to delete wave from blob for track ${doc._id}: ${error}`,
+          );
+        });
+
       const comments = await Comment.find({ trackId: doc._id });
 
       await Promise.all([
         // Remove audio analysis record
         AdvancedAudioDetails.deleteOne({ trackId: doc._id }),
 
-        // Cascade-delete every comment on this track (each fires comment hook)
+        // Cascade-delete every comment (each fires comment hook)
         ...comments.map((comment) => comment.deleteOne()),
 
         // Remove track from all user array references
@@ -396,7 +371,7 @@ trackSchema.post(
           },
         ),
 
-        // Remove track from user reposts (reposts.id is stored as string)
+        // Remove track from user reposts
         User.updateMany(
           { 'reposts.id': doc._id.toString(), 'reposts.type': 'track' },
           { $pull: { reposts: { id: doc._id.toString(), type: 'track' } } },
@@ -408,7 +383,7 @@ trackSchema.post(
           { $pull: { listOfTracks: doc._id } },
         ),
 
-        // Delete all play-count records for this track
+        // Delete all play-count records
         Plays.deleteMany({ trackId: doc._id }),
         PlaysTrackHandling.deleteMany({ trackId: doc._id }),
 
@@ -423,6 +398,16 @@ trackSchema.post(
           { historyList: { $elemMatch: { type: 'Track', id: doc._id } } },
           { $pull: { historyList: { type: 'Track', id: doc._id } } },
         ),
+
+        // Remove track from history records
+        History.updateMany(
+          { 'historyTracks.trackId': doc._id },
+          { $pull: { historyTracks: { trackId: doc._id } } },
+        ),
+
+        Plays.deleteMany({ trackId: doc._id }),
+
+        PlaysTrackHandling.deleteMany({ trackId: doc._id }),
       ]);
 
       logger.debug(`Cascade deleted track ${doc._id}`);
@@ -432,4 +417,5 @@ trackSchema.post(
   },
 );
 
+const Track = model<ITrack>('Track', trackSchema);
 export default Track;
