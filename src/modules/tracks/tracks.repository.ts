@@ -54,11 +54,6 @@ export class TracksRepository {
     await Track.findOneAndDelete({
       _id: trackId,
     });
-
-    await User.findOneAndUpdate(
-      { _id: userId },
-      { $pull: { uploads: trackId } },
-    );
     return true;
   }
 

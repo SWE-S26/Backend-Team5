@@ -17,6 +17,8 @@ import { DEFAULT_PROFILE_IMAGE } from '../../config/constants';
 import { CloudinaryService } from '../abstractions/cloudinary.service';
 import publitioMediaStorage from '../abstractions/publitio.service';
 import FcmToken from './models.fcm-token';
+import blobStorageService from '../abstractions/blob.service';
+import Conversation from './models.conversation';
 
 export type PaymentInfo = {
   subscriptionType: string;
@@ -382,7 +384,7 @@ userSchema.post('findOneAndDelete', async function (doc: IUser | null) {
       CloudinaryService.deleteImage(doc.profileImg.publicId)
         .then(() => {
           logger.debug(
-            `Successfully deleted playlist image from Cloudinary for playlist ${doc._id}`,
+            `Successfully deleted Provile image from Cloudinary for playlist ${doc._id}`,
           );
         })
         .catch((error) => {
@@ -417,16 +419,24 @@ userSchema.post('findOneAndDelete', async function (doc: IUser | null) {
 
     // ── Fetch docs that require document-level cascade ──────────────────────
     // (document-level deleteOne / findOneAndDelete triggers their own hooks)
-    const [userTracks, userPlaylists, userComments, followingDoc] =
-      await Promise.all([
-        Track.find({ posterId: doc._id }),
-        Playlist.find({ artistId: doc._id }),
-        Comment.find({ userId: doc._id }),
-        Following.findOne({ userId: doc._id }),
-      ]);
+    const [
+      userTracks,
+      userPlaylists,
+      userComments,
+      followingDoc,
+      userConversations,
+    ] = await Promise.all([
+      Track.find({ posterId: doc._id }),
+      Playlist.find({ artistId: doc._id }),
+      Comment.find({ userId: doc._id }),
+      Following.findOne({ userId: doc._id }),
+      Conversation.find({
+        participants: doc._id,
+      }),
+    ]);
 
     // removes user id found in replies before deletion of user comments
-    Comment.updateMany(
+    await Comment.updateMany(
       { replyList: { $in: userComments.map((c) => c._id) } },
       { $pull: { replyList: { $in: userComments.map((c) => c._id) } } },
     );
@@ -436,23 +446,8 @@ userSchema.post('findOneAndDelete', async function (doc: IUser | null) {
     // to avoid redundant work and double-firing hooks.
     const ownTrackIds = new Set(userTracks.map((t) => t._id.toString()));
 
-    // delete tracks from publitio
-    await Promise.allSettled(
-      userTracks.map((track) => {
-        publitioMediaStorage
-          .deleteAudioTrack(track.audio.id, track.audio.cloudIndex)
-          .then(() => {
-            logger.debug(
-              `Successfully deleted audio track from Publitio for user ${doc._id}`,
-            );
-          })
-          .catch((error) => {
-            logger.error(
-              `Failed to audio track from Publitio for user ${doc._id}: ${error}`,
-            );
-          });
-      }),
-    );
+    // Get all conversations the user participates in
+    const conversationIds = userConversations.map((c) => c._id);
 
     const commentsOnExternalTracks = userComments.filter(
       (c) => !ownTrackIds.has(c.trackId.toString()),
@@ -482,12 +477,19 @@ userSchema.post('findOneAndDelete', async function (doc: IUser | null) {
       ),
 
       // ── Messages ──────────────────────────────────────────────────────────
-      Message.deleteMany({
-        $or: [{ senderId: doc._id }, { receiverId: doc._id }],
-      }),
+      Message.deleteMany({ chatId: { $in: conversationIds } }),
+
+      // ── Conversations ──────────────────────────────────────────────────────────
+      Conversation.deleteMany({ participants: doc._id }),
 
       // ── Following: use document deleteOne so its cascade hook fires ───────
       followingDoc ? followingDoc.deleteOne() : Promise.resolve(),
+
+      //  remove this user from other users' follower lists
+      Following.updateMany(
+        { $or: [{ followed: doc._id }, { followers: doc._id }] },
+        { $pull: { followed: doc._id, followers: doc._id } },
+      ),
 
       // ── Blocked lists ─────────────────────────────────────────────────────
       BlockedList.findOneAndDelete({ blockerId: doc._id }),
