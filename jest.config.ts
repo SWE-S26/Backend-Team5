@@ -5,8 +5,8 @@ const config: Config = {
   testEnvironment: 'node',
   roots: ['<rootDir>/src', '<rootDir>/__tests__'],
   testMatch: ['**/__tests__/**/*.test.ts'],
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   setupFiles: ['./jest.setup.ts'],
+  maxWorkers: 2,
 };
 
 export default config;
